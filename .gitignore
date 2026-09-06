@@ -1,0 +1,30 @@
+# Root .gitignore for Fashion Recommendation System Monorepo
+
+# Sensitive Environment Files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+web/.env.local
+web/.env.*.local
+
+# Build Outputs & Dependencies
+backend/target/
+web/.next/
+web/out/
+web/node_modules/
+mobile/.dart_tool/
+mobile/.pub-cache/
+mobile/build/
+
+# IDEs & OS Files
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+*.log
+.DS_Store
+Thumbs.db
