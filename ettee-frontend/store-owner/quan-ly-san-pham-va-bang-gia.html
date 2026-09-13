@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="shop_owner"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="doanh-thu-va-ban-hang.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Retail &amp; Store Management</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm sản phẩm, đơn bán lẻ, tồn kho, chiến dịch, nhân sự..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Linh Nguyen" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Store Owner / Regional Manager</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">CHỦ CỬA HÀNG</div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="doanh-thu-va-ban-hang" href="doanh-thu-va-ban-hang.html"><span class="material-symbols-outlined text-[20px]">bar_chart</span><span>Doanh thu &amp; Bán hàng</span></a><a aria-current="page" class="relative flex items-center gap-space-sm px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="quan-ly-san-pham-va-bang-gia" href="quan-ly-san-pham-va-bang-gia.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-store-owner;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">sell</span><span>Quản lý SP &amp; Bảng giá</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ton-kho-va-phe-duyet" href="ton-kho-va-phe-duyet.html"><span class="material-symbols-outlined text-[20px]">warehouse</span><span>Tồn kho &amp; Phê duyệt</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="chien-dich-va-voucher" href="chien-dich-va-voucher.html"><span class="material-symbols-outlined text-[20px]">loyalty</span><span>Chiến dịch &amp; Voucher</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhan-su-chi-nhanh" href="nhan-su-chi-nhanh.html"><span class="material-symbols-outlined text-[20px]">badge</span><span>Nhân sự chi nhánh</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhat-ky-cua-hang" href="nhat-ky-cua-hang.html"><span class="material-symbols-outlined text-[20px]">history</span><span>Nhật ký cửa hàng</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full space-y-space-xl">
+<!-- Top Control Bar & Header Context -->
+<section class="flex flex-col gap-space-lg">
+<!-- Breadcrumb & Status Meta -->
+<div class="flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider">
+<span class="text-on-surface-variant">Bảng giá &amp; Danh mục sản phẩm</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary font-bold">Store Owner</span>
+<span class="mx-space-xs inline-block w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-on-surface-variant font-data-tabular">V2.4 Live Catalog</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+<span class="">Tỷ lệ biên lợi nhuận bình quân: <strong class="text-on-surface font-data-tabular">42.6%</strong></span>
+</div>
+<div class="hidden sm:flex items-center gap-space-xs px-space-md py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+<span class="">1 Chiến dịch Flash Sale đang chạy</span>
+</div>
+</div>
+</div>
+<!-- Title & Operational Primary Actions -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+<div class="max-w-3xl">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+          Quản lý Sản phẩm &amp; Thiết lập Bảng giá Bán lẻ
+        </h1>
+<p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          Kiểm soát giá bán niêm yết, thiết lập chiến dịch Flash Sale và biên lợi nhuận thời trang cho từng SKU.
+        </p>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">price_change</span>
+<span class="">Cập nhật giá hàng loạt (Batch Price)</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md shadow-sm hover:bg-secondary/90 transition-colors" id="btn-add-product" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="">+ Thêm sản phẩm mới</span>
+</button>
+</div>
+</div>
+<!-- Filter Bar / Controls Section -->
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<!-- Search Box -->
+<div class="relative flex-1 min-w-[280px]">
+<span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">search</span>
+<input class="w-full h-10 pl-9 pr-space-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg focus:outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all" placeholder="Tìm theo tên sản phẩm, mã SKU, barcode..." type="text"/>
+</div>
+<!-- Filters Row -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Category Filter -->
+<div class="relative min-w-[150px]">
+<select class="w-full h-10 px-space-md pr-8 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+<option>Danh mục: Tất cả</option>
+<option>Áo Nam (Tops)</option>
+<option>Quần Nam (Bottoms)</option>
+<option>Đầm Nữ (Dresses)</option>
+<option>Áo Khoác (Jackets)</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Status Filter -->
+<div class="relative min-w-[160px]">
+<select class="w-full h-10 px-space-md pr-8 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+<option>Trạng thái: Tất cả</option>
+<option>Đang bán (Active)</option>
+<option>Đang Flash Sale</option>
+<option>Hết hàng (Out of stock)</option>
+<option>Sắp mở bán (Draft)</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Price Range Filter -->
+<div class="relative min-w-[150px]">
+<select class="w-full h-10 px-space-md pr-8 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:bg-surface-container-lowest">
+<option>Khoảng giá: Tất cả</option>
+<option>Dưới 200,000đ</option>
+<option>200,000đ - 500,000đ</option>
+<option>Trên 500,000đ</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Reset Button -->
+<button class="h-10 px-space-md inline-flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors" title="Đặt lại bộ lọc" type="button">
+<span class="material-symbols-outlined text-[20px]">filter_alt_off</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Metric Snapshot Ribbon -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tổng SKU đang quản lý</span>
+<span class="material-symbols-outlined text-outline text-[20px]">app_registration</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display text-display text-on-surface font-bold">1,482</span>
+<span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">+18 SKU mới</span>
+</div>
+</div>
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Biên lợi nhuận gộp mục tiêu</span>
+<span class="material-symbols-outlined text-outline text-[20px]">query_stats</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display text-display text-on-surface font-bold">44.8%</span>
+<span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">Chuẩn &gt; 40%</span>
+</div>
+</div>
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">SKU đang áp dụng Flash Sale</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">local_fire_department</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display text-display text-secondary font-bold">24</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-fixed px-2 py-0.5 rounded-full">Kết thúc sau 3 ngày</span>
+</div>
+</div>
+<div class="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Cảnh báo Tồn kho chạm đáy</span>
+<span class="material-symbols-outlined text-amber-600 text-[20px]">warning</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display text-display text-on-surface font-bold">12</span>
+<span class="font-label-sm text-label-sm text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full">Cần bổ sung ngay</span>
+</div>
+</div>
+</section>
+<!-- Main Grid: Fashion Product Table & Live Pricing Adjustment Drawer -->
+<section class="grid grid-cols-1 2xl:grid-cols-12 gap-space-xl items-start">
+<!-- Fashion Product Table (Left / 8 cols on 2xl) -->
+<div class="2xl:col-span-8 rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden flex flex-col">
+<!-- Table Header Status Bar -->
+<div class="px-space-xl py-space-md bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Danh mục Sản phẩm Thời trang</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">4 SKU Hiển thị</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="">Sắp xếp theo: <strong>Giá bán giảm dần</strong></span>
+<span class="material-symbols-outlined text-[16px]">swap_vert</span>
+</div>
+</div>
+<!-- High-Density Responsive Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none">
+<th class="py-3 px-space-md text-center w-10">
+<input class="w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</th>
+<th class="py-3 px-space-md">Hình ảnh</th>
+<th class="py-3 px-space-md">Tên Sản Phẩm / SKU</th>
+<th class="py-3 px-space-md">Danh Mục</th>
+<th class="py-3 px-space-md">Biến thể</th>
+<th class="py-3 px-space-md text-right">Giá Gốc / Nhập</th>
+<th class="py-3 px-space-md text-right">Giá Bán Hiện Tại</th>
+<th class="py-3 px-space-md">Tồn Khả Dụng</th>
+<th class="py-3 px-space-md">Trạng thái</th>
+<th class="py-3 px-space-md text-center">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low font-body-sm text-body-sm" id="product-table-body">
+<!-- Row 1: Áo Polo Nam Minimalist (Currently Inspected in Drawer) -->
+<tr class="bg-secondary-fixed/20 hover:bg-secondary-fixed/30 transition-colors">
+<td class="py-space-md px-space-md text-center">
+<input checked="" class="w-4 h-4 rounded bg-surface-container-lowest text-secondary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-space-md px-space-md">
+<div class="w-12 h-14 rounded-lg bg-surface-container overflow-hidden shrink-0 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Close-up studio apparel product shot of a navy blue minimalist men polo shirt on clean Scandinavian neutral background with soft natural lighting and refined fabric weave details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRy2kWPTFzCSBNwJfHuejghZbtI-WC3jcQwqBqWvGW1nSWe9Do6BQsRx1Cwa5OLpwIWuxd4up0rZVWQrMUz5ffUWannLzKuK4r9wC6_R3ZlCDGIgXzE9bYT8d7sLZIIvqujlLTZMlAgGsf8QZyYjk-z19t0fncWJTu4_RNuEjjzg6KN9vMd9g6Ljivcw0n9ozfoChOkdFQ5-DDcM5a5_i6to2YFOy_nwvsaMMNen-Rf8pF2w4WItw0-A"/>
+</div>
+</td>
+<td class="py-space-md px-space-md min-w-[200px]">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold hover:text-secondary cursor-pointer">Áo Polo Nam Minimalist</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-[11px] text-outline font-data-tabular">SKU: ETEE-POLO-01</span>
+<span class="material-symbols-outlined text-[12px] text-outline cursor-pointer hover:text-on-surface" title="Sao chép SKU">content_copy</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">Áo Nam (Tops)</span>
+</td>
+<td class="py-space-md px-space-md text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-medium text-on-surface">5 Sizes, 3 Colors</span>
+<p class="text-[11px] text-outline font-data-tabular">15 SKUs con</p>
+</td>
+<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                165,000đ
+              </td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 font-data-tabular text-data-tabular font-bold text-secondary">
+<span class="">299,000đ</span>
+<span class="text-[10px] px-1 py-0.2 rounded bg-secondary-fixed text-on-secondary-fixed font-semibold">-15%</span>
+</div>
+<span class="font-data-tabular text-[11px] text-outline line-through">350,000đ</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1 w-28">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-data-tabular font-bold text-emerald-800">142 cái</span>
+<span class="text-[10px] text-emerald-600 font-semibold">An toàn</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  Đang bán
+                </span>
+</td>
+<td class="py-space-md px-space-md text-center">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary hover:text-on-secondary transition-colors" onclick="openPriceDrawer()" title="Chỉnh sửa Giá &amp; Flash Sale" type="button">
+                    Chỉnh sửa
+                  </button>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" title="Xem Lịch sử giá" type="button">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Đầm Nữ Dáng Xòe Floral -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md text-center">
+<input class="w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-space-md px-space-md">
+<div class="w-12 h-14 rounded-lg bg-surface-container overflow-hidden shrink-0 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Editorial lookbook flat lay photograph of a modern floral print summer dress tailored for women with soft pastel tones, high texture linen, soft light on white Nordic oak tabletop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-FPeXP3RzWr8cJ2CRMIeKeDQV2hbmE2-jP-Y6iPTwjjPsL0f-IFPtYDtMzGoEr8AjKIgoJJQZi26g8OGnGWUu7fPyiUPnBkvaWYzfPV9EUs4xw9KzW_2pwCLUBszQZSTTDtC9WNH0GVYMhQjiTk4Mk5dLxw9lRV6SRVJNOFDv88N4FFXIYNbhtyDpdsMOjBkviZlY4gDwZ7AT4zU70B-aLPBuWK3mIAq4H8xt0jRpas7YUaRHKKJVtw"/>
+</div>
+</td>
+<td class="py-space-md px-space-md min-w-[200px]">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold hover:text-secondary cursor-pointer">Đầm Nữ Dáng Xòe Floral</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-[11px] text-outline font-data-tabular">SKU: ETEE-DRS-09</span>
+<span class="material-symbols-outlined text-[12px] text-outline cursor-pointer hover:text-on-surface">content_copy</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">Đầm Nữ</span>
+</td>
+<td class="py-space-md px-space-md text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-medium text-on-surface">3 Sizes (S, M, L)</span>
+<p class="text-[11px] text-outline font-data-tabular">3 SKUs con</p>
+</td>
+<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                260,000đ
+              </td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex flex-col items-end">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">520,000đ</span>
+<span class="font-label-sm text-[11px] text-emerald-700">Margin 50%</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-error font-label-sm text-label-sm font-bold">
+                    0 cái (Hết hàng)
+                  </span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Tạm hết kho
+                </span>
+</td>
+<td class="py-space-md px-space-md text-center">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary hover:text-on-secondary transition-colors" type="button">
+                    Chỉnh sửa
+                  </button>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Quần Chinos Dáng Regular Kaki -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md text-center">
+<input class="w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-space-md px-space-md">
+<div class="w-12 h-14 rounded-lg bg-surface-container overflow-hidden shrink-0 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Minimalist product studio shot of folded men regular-fit khaki chinos on clean warm off-white surface, sharp seams, cotton texture, daylight style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIYo-qNKNN6EycLONkp-KnJElzjdMpBPP8Sr_JASne9R8B15WfAtTAr3xpU-zIse7o-pEwXrhyOg4vmgHtsrL2Y537A5v082pfDuDH9eFBXFFc3JvN6mzyWqYKNE_koPdc-1yiY85BGllKsI2LAHvfI-tpPaG4yU3S0v65WGcOF7ZLBFpztJ5-pH42r0fqfArFlHvxBk-NCNWejf9tYF6SqR9kYbiN9o0Aix00BaxwOruTGknPSqCJuw"/>
+</div>
+</td>
+<td class="py-space-md px-space-md min-w-[200px]">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold hover:text-secondary cursor-pointer">Quần Chinos Dáng Regular Kaki</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-[11px] text-outline font-data-tabular">SKU: ETEE-CH-04</span>
+<span class="material-symbols-outlined text-[12px] text-outline cursor-pointer hover:text-on-surface">content_copy</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">Quần Nam</span>
+</td>
+<td class="py-space-md px-space-md text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-medium text-on-surface">4 Sizes (29-32)</span>
+<p class="text-[11px] text-outline font-data-tabular">4 SKUs con</p>
+</td>
+<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                220,000đ
+              </td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex flex-col items-end">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">499,000đ</span>
+<span class="font-label-sm text-[11px] text-emerald-700">Margin 55.9%</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1 w-28">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-data-tabular font-bold text-on-surface">85 cái</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Trung bình</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-amber-500 rounded-full" style="width: 52%;"></div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                  Đang bán
+                </span>
+</td>
+<td class="py-space-md px-space-md text-center">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary hover:text-on-secondary transition-colors" type="button">
+                    Chỉnh sửa
+                  </button>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Áo Hoodie Nỉ Bông Unisex -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md text-center">
+<input class="w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</td>
+<td class="py-space-md px-space-md">
+<div class="w-12 h-14 rounded-lg bg-surface-container overflow-hidden shrink-0 shadow-inner">
+<img class="w-full h-full object-cover" data-alt="High quality lookbook photoshoot of an oversized ash grey fleece hoodie worn lightly on hanger, neutral aesthetic background, minimalist Scandinavian streetwear style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR0dEkY5DGRTR1T7aJkt8VpmbVGvZAigs7tCyXEhyNs3PTthmbT-6CUzpuh8s3Rt1JYyji8zzUx_0Q-Pm8Fspua-SF_eK5SpHmypGa8gFPZYEX5v7WTt3w8JWVRaFJ97-5lvmguyIU_ZhUIaBYUG_rlk1JOlr6-cxGOdi4TRTFQqrylD8hs9reHcRDrsRtsOW22vUKqz-_jx-dITd_Nj8b4qS8h6orKV_KOJ6ZpCS4Knitf1C5PGG4rA"/>
+</div>
+</td>
+<td class="py-space-md px-space-md min-w-[200px]">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold hover:text-secondary cursor-pointer">Áo Hoodie Nỉ Bông Unisex</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-[11px] text-outline font-data-tabular">SKU: ETEE-HD-09</span>
+<span class="material-symbols-outlined text-[12px] text-outline cursor-pointer hover:text-on-surface">content_copy</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">Áo Khoác</span>
+</td>
+<td class="py-space-md px-space-md text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-medium text-on-surface">Free Size (Oversize)</span>
+<p class="text-[11px] text-outline font-data-tabular">1 SKU duy nhất</p>
+</td>
+<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                280,000đ
+              </td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex flex-col items-end">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">549,000đ</span>
+<span class="font-label-sm text-[11px] text-emerald-700">Margin 49.0%</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1 w-28">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-data-tabular font-bold text-emerald-800">310 cái</span>
+<span class="text-[10px] text-emerald-600 font-semibold">Dồi dào</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-emerald-600 rounded-full" style="width: 95%;"></div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Sắp mở bán mùa đông
+                </span>
+</td>
+<td class="py-space-md px-space-md text-center">
+<div class="inline-flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary hover:text-on-secondary transition-colors" type="button">
+                    Chỉnh sửa
+                  </button>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination and Bulk Info -->
+<div class="p-space-lg bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+          Hiển thị <strong>1 - 4</strong> trong số <strong>1,482</strong> sản phẩm
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors">3</button>
+<span class="px-1 text-outline font-label-sm text-label-sm">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors">75</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side Modal / Dedicated Pricing Adjustment Panel (4 cols on 2xl) -->
+<div class="2xl:col-span-4 rounded-xl bg-surface-container-lowest shadow-md overflow-hidden flex flex-col" id="pricing-editor-panel">
+<!-- Panel Header -->
+<div class="p-space-xl bg-surface-container-low flex items-start justify-between">
+<div class="space-y-1">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] font-bold uppercase tracking-wider">
+              Chế độ Điều Chỉnh Trực Tiếp
+            </span>
+<span class="font-label-sm text-label-sm text-outline font-data-tabular">ETEE-POLO-01</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">
+            Điều chỉnh Giá &amp; Khuyến Mãi
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Áo Polo Nam Minimalist (15 Biến thể áp dụng cùng công thức)
+          </p>
+</div>
+<button class="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors" title="Đóng bảng" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Panel Form Body -->
+<div class="p-space-xl space-y-space-xl flex-1">
+<!-- Product Quick Summary Pill -->
+<div class="flex items-center gap-space-md p-space-md rounded-lg bg-surface-container">
+<div class="w-12 h-14 rounded bg-surface-container-lowest overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of dark navy blue apparel knit polo collar, fine cotton pique weave pattern, studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw2b6FeDFULXqaOrNiukWwn76mLFunOqCegr7_ke6o7TslrW1rv1RrHNcDNTeAgaImnG9KWkrXn8ff04aJxDtI8QB8qeKGiauDJ7Gm2eOpK-dciB9_Xw7BzsoU92HJ6iEDqK_hEi6NmXYN4lHVE8uBa02-QRUJQr-wDqFKCVZidgJpZEoirqe1cVD1TXPauBKwiwU2tzCD7cPQQxmywnZUJjyV18jP728p6pHZo25g0RZSLtLcY4IN9A"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-md text-label-md text-on-surface font-semibold truncate">Polo Nam Minimalist Regular</div>
+<div class="flex items-center gap-space-sm mt-0.5 text-[12px] text-on-surface-variant">
+<span class="">Đang tồn: <strong>142</strong> sp</span>
+<span class="">•</span>
+<span class="text-secondary font-semibold">Flash Sale Active</span>
+</div>
+</div>
+</div>
+<!-- Input Group 1: COGS / Retail / Discount -->
+<div class="space-y-space-md">
+<!-- Cost of Goods -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1 flex items-center justify-between">
+<span class="">Giá Nhập (Cost of Goods - COGS)</span>
+<span class="text-outline text-[11px]">Cố định từ xưởng may</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md bg-surface-container text-on-surface-variant font-data-tabular text-data-tabular rounded-lg cursor-not-allowed select-none" readonly="" type="text" value="165,000"/>
+<span class="absolute right-space-md font-label-sm text-label-sm text-outline font-bold">VNĐ</span>
+</div>
+</div>
+<!-- Retail Price -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">
+              Giá Niêm Yết Gốc (Retail Price)
+            </label>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md bg-surface-container-lowest text-on-surface font-data-tabular text-data-tabular font-semibold rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-low transition-colors" id="input-retail-price" type="text" value="350,000"/>
+<span class="absolute right-space-md font-label-sm text-label-sm text-outline font-bold">VNĐ</span>
+</div>
+</div>
+<!-- Discounted Price -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-md text-label-md text-secondary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+<span class="">Giá Khuyến Mãi (Discounted Price)</span>
+</label>
+<span class="font-label-sm text-[11px] text-secondary font-semibold bg-secondary-fixed px-1.5 py-0.5 rounded">
+                -14.6% so với niêm yết
+              </span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md bg-surface-container-lowest text-secondary font-data-tabular text-data-tabular font-bold rounded-lg shadow-sm focus:outline-none focus:bg-secondary-fixed/20 transition-colors" id="input-sale-price" type="text" value="299,000"/>
+<span class="absolute right-space-md font-label-sm text-label-sm text-secondary font-bold">VNĐ</span>
+</div>
+</div>
+</div>
+<!-- Flash Sale Schedule Picker -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_month</span>
+              Lịch áp dụng Flash Sale
+            </span>
+<span class="text-[11px] font-semibold text-secondary">3 ngày còn lại</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div>
+<span class="block text-[11px] text-outline uppercase font-semibold mb-0.5">Bắt đầu</span>
+<div class="h-9 px-space-sm rounded bg-surface-container-lowest flex items-center justify-between text-on-surface font-data-tabular text-body-sm shadow-sm">
+<span class="">15/09/2026</span>
+<span class="material-symbols-outlined text-[16px] text-outline">event</span>
+</div>
+</div>
+<div>
+<span class="block text-[11px] text-outline uppercase font-semibold mb-0.5">Kết thúc</span>
+<div class="h-9 px-space-sm rounded bg-surface-container-lowest flex items-center justify-between text-on-surface font-data-tabular text-body-sm shadow-sm">
+<span class="">18/09/2026</span>
+<span class="material-symbols-outlined text-[16px] text-outline">event</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Profit Margin Calculator Widget -->
+<div class="p-space-lg rounded-xl bg-gradient-to-br from-surface-container-high to-surface-container shadow-inner space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">calculate</span>
+              Tự Động Tính Biên Lợi Nhuận
+            </span>
+<span class="material-symbols-outlined text-outline text-[16px]">info</span>
+</div>
+<div class="grid grid-cols-2 gap-space-md pt-1">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lợi nhuận gộp / sp:</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold font-data-tabular mt-0.5">
+                +134,000 VNĐ
+              </span>
+<span class="text-[11px] text-outline">(299k - 165k giá vốn)</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tỷ suất lợi nhuận:</span>
+<span class="font-display text-display text-emerald-700 font-bold font-data-tabular mt-0.5 leading-none">
+                44.8%
+              </span>
+<span class="text-[11px] text-emerald-800 font-medium mt-1">Biên gộp an toàn</span>
+</div>
+</div>
+<!-- Profit Margin Target Status Badge -->
+<div class="p-space-sm rounded-lg bg-emerald-50 text-emerald-800 flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 shrink-0">check_circle</span>
+<span class="font-label-sm text-label-sm font-semibold leading-tight">
+              Đạt chuẩn biên độ lợi nhuận bán lẻ ET.TEE Store (&gt; 40%)
+            </span>
+</div>
+<!-- Visual Progress Gauge -->
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-data-tabular text-outline">
+<span class="">Hòa vốn (0%)</span>
+<span class="text-on-surface font-semibold">Hiện tại: 44.8%</span>
+<span class="">Mục tiêu: 50%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden flex">
+<div class="h-full bg-emerald-500 rounded-full" style="width: 44.8%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel Footer Actions -->
+<div class="p-space-xl bg-surface-container-low flex items-center justify-end gap-space-md">
+<button class="px-space-lg py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-container transition-colors" type="button">
+          Hủy bỏ
+        </button>
+<button class="px-space-xl py-2.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md font-bold shadow-md hover:bg-secondary/90 transition-all flex items-center gap-1.5" onclick="notifyPriceSaved()" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span class="">Áp dụng bảng giá mới</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Interactive Client-side Script -->
+<script>
+    function openPriceDrawer() {
+      const panel = document.getElementById('pricing-editor-panel');
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        panel.classList.add('ring-2', 'ring-secondary');
+        setTimeout(() => panel.classList.remove('ring-2', 'ring-secondary'), 1200);
+      }
+    }
+
+    function notifyPriceSaved() {
+      const btn = event.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span> Đang đồng bộ...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span> Đã cập nhật thành công!';
+        btn.classList.remove('bg-secondary');
+        btn.classList.add('bg-emerald-600');
+
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('bg-emerald-600');
+          btn.classList.add('bg-secondary');
+          btn.disabled = false;
+        }, 1800);
+      }, 700);
+    }
+  </script>
+<script src="../assets/api.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const tbody = document.getElementById('product-table-body');
+  const addBtn = document.getElementById('btn-add-product');
+  let categoryNameById = {};
+
+  const STATUS_LABEL = {
+    draft: '<span class="px-2 py-1 rounded-full bg-surface-container text-outline font-label-sm text-label-sm">Draft</span>',
+    active: '<span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm">Đang bán</span>',
+    hidden: '<span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-label-sm text-label-sm">Đã ẩn</span>',
+    discontinued: '<span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-label-sm text-label-sm">Ngừng KD</span>'
+  };
+
+  function fmtVnd(n) { return new Intl.NumberFormat('vi-VN').format(n) + 'đ'; }
+
+  function flattenCategories(nodes, map) {
+    (nodes || []).forEach(function (n) {
+      map[n.id] = n.name;
+      flattenCategories(n.children, map);
+    });
+    return map;
+  }
+
+  function priceRange(variants) {
+    if (!variants.length) return '—';
+    const prices = variants.map(function (v) { return Number(v.price); });
+    const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+    return min === max ? fmtVnd(min) : fmtVnd(min) + ' - ' + fmtVnd(max);
+  }
+
+  function renderRow(p) {
+    const variantSummary = p.variants.length
+      ? p.variants.map(function (v) { return v.sku + (v.active ? '' : ' (ẩn)'); }).join(', ')
+      : '<span class="text-outline">Chưa có biến thể</span>';
+
+    return '<tr class="hover:bg-surface-container-low transition-colors" data-product-id="' + p.id + '">' +
+      '<td class="py-space-md px-space-md text-center"><input class="w-4 h-4 rounded" type="checkbox"/></td>' +
+      '<td class="py-space-md px-space-md"><div class="w-12 h-14 rounded-lg bg-surface-container flex items-center justify-center text-outline"><span class="material-symbols-outlined">image</span></div></td>' +
+      '<td class="py-space-md px-space-md min-w-[200px]"><div class="flex flex-col">' +
+      '<span class="font-headline-sm text-[14px] text-on-surface font-semibold">' + p.name + '</span>' +
+      '<span class="font-label-sm text-[11px] text-outline font-data-tabular">' + p.slug + '</span></div></td>' +
+      '<td class="py-space-md px-space-md"><span class="px-2 py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">' + (categoryNameById[p.categoryId] || '—') + '</span></td>' +
+      '<td class="py-space-md px-space-md text-on-surface-variant font-label-sm text-label-sm"><span class="font-medium text-on-surface">' + p.variants.length + ' biến thể</span>' +
+      '<p class="text-[11px] text-outline">' + variantSummary + '</p></td>' +
+      '<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface-variant">' + fmtVnd(p.basePrice) + '</td>' +
+      '<td class="py-space-md px-space-md text-right font-data-tabular text-data-tabular text-on-surface font-semibold">' + priceRange(p.variants) + '</td>' +
+      '<td class="py-space-md px-space-md">' + (STATUS_LABEL[p.status] || p.status) + '</td>' +
+      '<td class="py-space-md px-space-md text-center"><div class="inline-flex items-center gap-1">' +
+      '<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-high" title="Thêm biến thể" type="button" onclick="addVariant(\'' + p.id + '\')"><span class="material-symbols-outlined text-[18px]">add_box</span></button>' +
+      '<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-high" title="Sửa giá biến thể" type="button" onclick="editVariantPrice(\'' + p.id + '\')"><span class="material-symbols-outlined text-[18px]">sell</span></button>' +
+      '<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-high" title="Đổi trạng thái" type="button" onclick="toggleStatus(\'' + p.id + '\', \'' + p.status + '\')"><span class="material-symbols-outlined text-[18px]">visibility</span></button>' +
+      '</div></td></tr>';
+  }
+
+  window.__products = [];
+
+  async function loadProducts() {
+    tbody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-on-surface-variant">Đang tải danh sách sản phẩm...</td></tr>';
+    try {
+      const catTree = await EtteeApi.get('/api/admin/categories');
+      categoryNameById = flattenCategories(catTree, {});
+      const page = await EtteeApi.get('/api/store-owner/products?size=100');
+      window.__products = page.items;
+      tbody.innerHTML = page.items.length
+        ? page.items.map(renderRow).join('')
+        : '<tr><td colspan="9" class="py-6 text-center text-on-surface-variant">Chưa có sản phẩm nào</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-rose-600">' + err.message + '</td></tr>';
+    }
+  }
+
+  window.addVariant = async function (productId) {
+    const sku = prompt('SKU biến thể mới (VD: ETT-TS-001-M-DEN):');
+    if (!sku) return;
+    const price = prompt('Giá bán (VNĐ):');
+    if (!price) return;
+    const attributeSignature = prompt('Thuộc tính (VD: Size M / Màu đen) — để trống nếu chưa xác định:');
+    try {
+      await EtteeApi.post('/api/store-owner/products/' + productId + '/variants', {
+        sku: sku, price: Number(price), attributeSignature: attributeSignature || null
+      });
+      loadProducts();
+    } catch (err) {
+      alert('Không thêm được biến thể: ' + err.message);
+    }
+  };
+
+  window.editVariantPrice = async function (productId) {
+    const product = window.__products.find(function (p) { return p.id === productId; });
+    if (!product || !product.variants.length) { alert('Sản phẩm chưa có biến thể nào'); return; }
+    const skuList = product.variants.map(function (v) { return v.sku; }).join(', ');
+    const sku = prompt('Chọn SKU cần sửa giá (' + skuList + '):', product.variants[0].sku);
+    const variant = product.variants.find(function (v) { return v.sku === sku; });
+    if (!variant) { alert('Không tìm thấy SKU này'); return; }
+    const newPrice = prompt('Giá bán mới cho ' + sku + ':', variant.price);
+    if (!newPrice) return;
+    try {
+      await EtteeApi.put('/api/store-owner/products/variants/' + variant.id + '/price', {
+        price: Number(newPrice), compareAtPrice: variant.compareAtPrice
+      });
+      loadProducts();
+    } catch (err) {
+      alert('Không sửa được giá: ' + err.message);
+    }
+  };
+
+  window.toggleStatus = async function (productId, currentStatus) {
+    const next = prompt('Trạng thái mới (draft / active / hidden / discontinued):', currentStatus === 'active' ? 'hidden' : 'active');
+    if (!next) return;
+    try {
+      await EtteeApi.put('/api/store-owner/products/' + productId + '/status', { status: next });
+      loadProducts();
+    } catch (err) {
+      alert('Không đổi được trạng thái: ' + err.message);
+    }
+  };
+
+  addBtn.addEventListener('click', async function () {
+    const name = prompt('Tên sản phẩm mới:');
+    if (!name) return;
+    const slug = prompt('Slug:', name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-'));
+    if (!slug) return;
+    const basePrice = prompt('Giá gốc (VNĐ):', '0');
+    if (basePrice === null) return;
+
+    const catKeys = Object.keys(categoryNameById);
+    if (!catKeys.length) { alert('Chưa có danh mục nào — hãy tạo danh mục trước ở trang Admin.'); return; }
+    const categoryId = prompt('Category ID (xem ở trang Admin > Danh mục toàn hệ thống):', catKeys[0]);
+    if (!categoryId) return;
+
+    try {
+      await EtteeApi.post('/api/store-owner/products', {
+        categoryId: categoryId, name: name, slug: slug, basePrice: Number(basePrice) || 0
+      });
+      loadProducts();
+    } catch (err) {
+      alert('Không tạo được sản phẩm: ' + err.message);
+    }
+  });
+
+  loadProducts();
+})();
+</script>
+</div></main></div>
+</body></html>

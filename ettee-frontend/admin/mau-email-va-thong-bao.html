@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="admin"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="tong-quan-he-thong.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operations Core</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm logs, tài khoản, cấu hình, mã đơn..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Super Admin</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">SUPER ADMIN</div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tong-quan-he-thong" href="tong-quan-he-thong.html"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Tổng quan hệ thống</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tai-khoan-va-khoa-user" href="tai-khoan-va-khoa-user.html"><span class="material-symbols-outlined text-[20px]">manage_accounts</span><span>Tài khoản &amp; Khóa user</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ma-tran-phan-quyen" href="ma-tran-phan-quyen.html"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span>Ma trận phân quyền</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="danh-muc-toan-he-thong" href="danh-muc-toan-he-thong.html"><span class="material-symbols-outlined text-[20px]">category</span><span>Danh mục toàn hệ thống</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="cong-thanh-toan-va-van-chuyen" href="cong-thanh-toan-va-van-chuyen.html"><span class="material-symbols-outlined text-[20px]">local_shipping</span><span>Cổng thanh toán &amp; Vận chuyển</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ai-engine-va-feature-flags" href="ai-engine-va-feature-flags.html"><span class="material-symbols-outlined text-[20px]">neurology</span><span>AI Engine &amp; Feature Flags</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhat-ky-he-thong" href="nhat-ky-he-thong.html"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span>Nhật ký hệ thống (Logs)</span></a><a aria-current="page" class="relative flex items-center gap-space-md px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="mau-email-va-thong-bao" href="mau-email-va-thong-bao.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-admin;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">mark_email_read</span><span>Mẫu Email &amp; Thông báo</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full">
+<!-- Top Command & Action Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-xl">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-widest text-outline">
+<span class="">Giao tiếp tự động</span>
+<span class="text-outline-variant">•</span>
+<span class="text-on-tertiary-container font-bold">Transactional Emails &amp; Notifications</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Cấu hình Mẫu Email &amp; Thông báo Tự động</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+        Thiết kế, tùy biến nội dung mẫu email giao dịch, email chăm sóc khách hàng và xem trước trực quan đa thiết bị với chuẩn hiển thị responsive.
+      </p>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="h-[38px] px-space-md rounded-lg bg-surface-container-lowest text-on-primary-fixed font-label-md text-label-md flex items-center gap-1.5 shadow-sm hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add_box</span>
+<span class="">+ Thêm mẫu email mới</span>
+</button>
+<button class="h-[38px] px-space-lg rounded-lg bg-secondary-container text-on-secondary font-label-md text-label-md flex items-center gap-1.5 shadow-sm hover:bg-secondary transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span class="">Lưu thay đổi mẫu</span>
+</button>
+</div>
+</div>
+<!-- Main 40/60 Split Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- LEFT COLUMN (40%): Channels & Templates -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- SMTP Gateway Connectivity Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-start justify-between gap-space-md mb-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[24px]">forward_to_inbox</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">SendGrid Cloud API</span>
+<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Production Mail Gateway (v3 SSL)</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low font-label-sm text-label-sm text-on-surface font-semibold">Live TLS 1.3</span>
+</div>
+<!-- Metric Bars -->
+<div class="space-y-space-sm bg-surface-container-low/60 rounded-lg p-space-md">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Quota tháng: <strong>45,200</strong> / 100,000</span>
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">45.2%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-on-tertiary-container rounded-full" style="width: 45.2%;"></div>
+</div>
+<div class="pt-space-xs grid grid-cols-2 gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Delivery Rate:</span>
+<span class="font-data-tabular text-data-tabular font-bold text-emerald-600">99.4%</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Spam Score:</span>
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">0.01 (Low)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Template Catalog Section -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<!-- Category Segment Switcher -->
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="flex-1 py-1.5 px-space-xs text-center font-label-md text-label-md rounded-md bg-surface-container-lowest text-on-surface shadow-xs font-semibold" type="button">
+            Giao Dịch (6)
+          </button>
+<button class="flex-1 py-1.5 px-space-xs text-center font-label-md text-label-md rounded-md text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+            Marketing (4)
+          </button>
+<button class="flex-1 py-1.5 px-space-xs text-center font-label-md text-label-md rounded-md text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+            Hệ Thống (3)
+          </button>
+</div>
+<!-- Search Templates -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-surface-container-low rounded-lg text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none" placeholder="Lọc theo tên hoặc mã trigger..." type="text"/>
+</div>
+<!-- Template Items List -->
+<div class="flex flex-col gap-2 pt-1" id="template-list">
+<!-- Item 1: Active/Selected -->
+<div class="p-space-md rounded-lg bg-surface-container-high/60 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-tertiary-container">shopping_bag</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Xác nhận Đơn hàng (Order Confirmation)</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: order.placed.success • ID: #TPL-ET-01</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold">Active</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Tỷ lệ mở: <strong class="text-on-surface font-data-tabular">78.4%</strong></span>
+<span class="">CTR: <strong class="text-on-surface font-data-tabular">41.2%</strong></span>
+<span class="">Sửa 2 giờ trước</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high/40 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">password</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Khôi phục Mật khẩu &amp; 2FA</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: auth.reset_requested • ID: #TPL-ET-02</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold">Active</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Tỷ lệ mở: <strong class="text-on-surface font-data-tabular">92.1%</strong></span>
+<span class="">CTR: <strong class="text-on-surface font-data-tabular">88.5%</strong></span>
+<span class="">Sửa 3 ngày trước</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high/40 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">local_shipping</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Giao hàng Thành công (Delivered)</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: shipping.status.delivered • ID: #TPL-ET-03</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold">Active</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Tỷ lệ mở: <strong class="text-on-surface font-data-tabular">65.0%</strong></span>
+<span class="">CTR: <strong class="text-on-surface font-data-tabular">22.8%</strong></span>
+<span class="">Sửa 1 tuần trước</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high/40 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">production_quantity_limits</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Nhắc nhở Giỏ hàng Bỏ quên</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: cart.abandoned.24h • ID: #TPL-ET-04</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold">Active</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Khôi phục GH: <strong class="text-secondary font-data-tabular">14.2%</strong></span>
+<span class="">CTR: <strong class="text-on-surface font-data-tabular">19.4%</strong></span>
+<span class="">Sửa 2 tuần trước</span>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high/40 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline">waving_hand</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Chào mừng Khách hàng Mới</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: user.registration.welcome • ID: #TPL-ET-05</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold">Active</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Tỷ lệ mở: <strong class="text-on-surface font-data-tabular">81.3%</strong></span>
+<span class="">Voucher used: <strong class="text-on-surface font-data-tabular">34%</strong></span>
+<span class="">Sửa 1 tháng trước</span>
+</div>
+</div>
+<!-- Item 6 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high/40 cursor-pointer transition-all">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">block</span>
+<span class="font-headline-sm text-[14px] text-on-surface font-semibold">Khóa Tài khoản Do Vi Phạm</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-0.5">Trigger: account.suspended • ID: #TPL-ET-06</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-sm text-[11px] font-semibold">Restricted</span>
+</div>
+<div class="mt-2 flex items-center justify-between font-label-sm text-label-sm text-outline">
+<span class="">Gửi phát sinh: <strong class="text-on-surface font-data-tabular">28</strong></span>
+<span class="">Ticket tạo: <strong class="text-on-surface font-data-tabular">12</strong></span>
+<span class="">Sửa 2 tháng trước</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (60%): Editor & Visual Canvas -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Section 1: Template Metadata & Variables -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pb-space-xs">
+<div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Chỉnh sửa mẫu</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Order Confirmation Email Template</h2>
+</div>
+<!-- Visual / Source Code Toggle -->
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="px-3 py-1 rounded text-body-sm font-label-md bg-surface-container-lowest text-on-surface font-semibold shadow-xs flex items-center gap-1" id="btn-visual-mode" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span class="">Trực quan (WYSIWYG)</span>
+</button>
+<button class="px-3 py-1 rounded text-body-sm font-label-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1" id="btn-code-mode" type="button">
+<span class="material-symbols-outlined text-[16px]">code</span>
+<span class="">Mã nguồn HTML</span>
+</button>
+</div>
+</div>
+<!-- Subject Line Input -->
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Tiêu đề thư (Email Subject Line)</label>
+<div class="relative">
+<input class="w-full h-10 px-space-md bg-surface-container-low rounded-lg text-body-md font-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors" type="text" value="Cảm ơn bạn đã đặt hàng tại ET.TEE Store! [Mã đơn {{order_id}}]"/>
+<span class="absolute right-3 top-2.5 font-label-sm text-label-sm text-outline font-data-tabular">58 / 100 ký tự</span>
+</div>
+</div>
+<!-- Variable Insert Chips -->
+<div class="space-y-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Biến động sẵn có (Click để chèn vào con trỏ):</span>
+<div class="flex flex-wrap gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{customer_name}}</code>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{order_id}}</code>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{total_amount}}</code>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{items_summary}}</code>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{tracking_link}}</code>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" type="button">
+<span class="text-on-tertiary-container">+</span>
+<code>{{shipping_address}}</code>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 2: Visual Live Preview Canvas (Nordic/Canifa Minimalist) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container">devices</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Khung Xem Trước Trực Quan</span>
+</div>
+<!-- Device Switcher -->
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="px-2.5 py-1 rounded text-body-sm font-label-md bg-surface-container-lowest text-on-surface font-semibold shadow-xs flex items-center gap-1" id="btn-device-desktop" type="button">
+<span class="material-symbols-outlined text-[16px]">desktop_windows</span>
+<span class="">Desktop (640px)</span>
+</button>
+<button class="px-2.5 py-1 rounded text-body-sm font-label-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1" id="btn-device-mobile" type="button">
+<span class="material-symbols-outlined text-[16px]">smartphone</span>
+<span class="">Mobile (375px)</span>
+</button>
+</div>
+</div>
+<!-- Simulated Email Client Canvas -->
+<div class="w-full bg-surface-container-low p-space-lg rounded-xl flex justify-center overflow-x-auto">
+<div class="w-full max-w-[620px] bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300" id="email-preview-container">
+<!-- Email Header Ribbon with Red Accent Detail -->
+<div class="bg-white px-8 pt-8 pb-4 flex flex-col items-center text-center">
+<div class="flex items-center gap-2">
+<span class="text-[22px] font-headline-lg font-bold tracking-tighter text-on-surface">ET.TEE</span>
+<span class="h-2 w-2 rounded-full bg-secondary-container"></span>
+</div>
+<span class="font-label-sm text-[11px] text-outline uppercase tracking-widest mt-1">Thời Trang Tối Giản &amp; Hiện Đại</span>
+<div class="w-16 h-0.5 bg-secondary-container mt-3"></div>
+</div>
+<!-- Email Hero Greeting -->
+<div class="px-8 py-4 bg-surface-container-lowest text-left">
+<div class="p-space-lg rounded-lg bg-surface-container-low/50">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">
+                  Xin chào <span class="text-on-tertiary-container font-semibold">Linh Nguyen</span>,
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Cảm ơn bạn đã tin chọn ET.TEE Store. Đơn hàng của bạn đã được tiếp nhận và nhân viên kho đang tiến hành kiểm định đóng gói cẩn thận!
+                </p>
+</div>
+</div>
+<!-- Order Snapshot Specs -->
+<div class="px-8 py-2">
+<div class="flex flex-wrap items-center justify-between py-2 px-space-md bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface-variant">
+<span class="">Mã đơn: <strong class="text-on-surface font-semibold font-data-tabular">#ET-99420</strong></span>
+<span class="">Ngày đặt: <strong class="text-on-surface font-semibold font-data-tabular">08/09/2026</strong></span>
+<span class="">Thanh toán: <strong class="text-on-surface font-semibold">COD (Khi nhận hàng)</strong></span>
+</div>
+</div>
+<!-- Product Table in Email -->
+<div class="px-8 py-4">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Chi tiết sản phẩm kiện hàng</span>
+<div class="mt-2 space-y-3">
+<!-- Product 1 -->
+<div class="flex items-center gap-space-md p-space-sm bg-surface-container-low/40 rounded-lg">
+<img class="w-14 h-14 object-cover rounded-md bg-surface-container shrink-0" data-alt="Minimalist luxury white airweave polo shirt on neutral beige studio background, soft editorial studio lighting, folded crisp fabric, Scandinavian apparel styling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_dldup2nwUDP3xv5xbcjhebFiqPAxgzLDNjaYdzV9ChaL5b9fR59bxK-5n0rJmymTqilip0rNT3BQP2OTfNWM49Egf6qD1Kl8TnjNeEZnUiePn1xMUsQi4TDqOOAV4UNCrM4J81BGhg6Qn5OST9pSpI9bw7B6PzaVfwvr21GjVKXq0EONUWFyTSD9QcFp0IsMsKggHcIFhbrMBkv1KGcCEKwCKv8ILqru5J4a4-e2SubOO8fr9GU1bQ"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-headline-sm text-[14px] text-on-surface truncate">Áo Polo Airweave Minimalist</h4>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Phân loại: Trắng Ngà • Size: L • SL: 1</span>
+</div>
+<div class="text-right shrink-0">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">299.000 đ</span>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="flex items-center gap-space-md p-space-sm bg-surface-container-low/40 rounded-lg">
+<img class="w-14 h-14 object-cover rounded-md bg-surface-container shrink-0" data-alt="Classic regular fit tailored khaki chinos trousers folded neatly, clean modern minimalist menswear photograph, muted neutral studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW5F2mLBKWGk_h53VdNAg7WoY9glJ1XORb0AQjngExswSJohBoV0OPYQuf8Rjur51ez2HgqTB4wfhDiazqqLRAZDhVxDaP3CdlnZHEec2mqOfvDOCbjFTx0jnCobIIABA3oz5Oa32DdRvjAuXmV8s8VfJ4j0nqIxnLhX9cZM-do8TxwjXsQjs6EbsIz-pl4oKCU8bH0bS6dY7gdNDC5LfJZC1Aemlf3B9NjxPNHLGhaIWE4vYEYqeWmA"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-headline-sm text-[14px] text-on-surface truncate">Quần Chinos Kaki Regular Fit</h4>
+<span class="font-body-sm text-[12px] text-on-surface-variant">Phân loại: Be Cát • Size: 31 • SL: 1</span>
+</div>
+<div class="text-right shrink-0">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">499.000 đ</span>
+</div>
+</div>
+</div>
+<!-- Price breakdown -->
+<div class="mt-4 p-space-md bg-surface-container-low/50 rounded-lg space-y-1.5 font-body-sm text-body-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span class="">Tạm tính tiền hàng:</span>
+<span class="font-data-tabular">798.000 đ</span>
+</div>
+<div class="flex justify-between text-emerald-600 font-semibold">
+<span class="">Phí vận chuyển chuẩn:</span>
+<span class="">Miễn phí (Voucher Freeship)</span>
+</div>
+<div class="flex justify-between text-on-surface pt-2 font-headline-sm text-headline-sm">
+<span class="">Tổng thanh toán thực tế:</span>
+<span class="text-secondary font-bold font-data-tabular">798.000 VNĐ</span>
+</div>
+</div>
+</div>
+<!-- Email Hero CTA Button -->
+<div class="px-8 py-6 text-center">
+<a class="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-secondary-container text-on-secondary font-headline-sm text-headline-sm shadow-md hover:bg-secondary transition-all" href="#">
+<span class="">Theo dõi hành trình đơn hàng</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<p class="font-label-sm text-label-sm text-outline mt-2">Đơn hàng dự kiến được chuyển đến địa chỉ của bạn trong vòng 2-3 ngày làm việc.</p>
+</div>
+<!-- Email Nordic Footer Details -->
+<div class="px-8 py-6 bg-surface-container text-center space-y-2">
+<div class="flex items-center justify-center gap-2">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">ET.TEE Flagship Store Hanoi</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">68 Tràng Tiền, Hoàn Kiếm</span>
+</div>
+<div class="flex items-center justify-center gap-4 text-[12px] text-on-surface-variant font-body-sm">
+<span class="">Hotline: <strong class="text-on-surface">1900-8889</strong> (8:30 - 22:00)</span>
+<span class="">Email: support@etteestore.vn</span>
+</div>
+<div class="pt-2 text-[11px] text-outline font-label-sm">
+                Bạn nhận được email này vì đã đăng ký tài khoản hoặc mua sắm tại ET.TEE. <br/>
+<a class="underline hover:text-on-surface" href="#">Hủy nhận thông báo đơn hàng</a> • <a class="underline hover:text-on-surface" href="#">Chính sách bảo mật</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Control Strip -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-2 text-body-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="">Trạng thái bản dựng: <strong>Đã kiểm thử responsive trên iOS Mail &amp; Gmail</strong></span>
+</div>
+<div class="flex items-center gap-space-sm w-full sm:w-auto justify-end">
+<button class="h-[38px] px-space-md rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+              Lưu bản nháp
+            </button>
+<button class="h-[38px] px-space-md rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm hover:bg-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span class="">Gửi email thử nghiệm (Test)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Device preview switcher
+    const btnDesktop = document.getElementById('btn-device-desktop');
+    const btnMobile = document.getElementById('btn-device-mobile');
+    const previewContainer = document.getElementById('email-preview-container');
+
+    if (btnDesktop && btnMobile && previewContainer) {
+      btnDesktop.addEventListener('click', function() {
+        previewContainer.style.maxWidth = '620px';
+        btnDesktop.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnDesktop.classList.remove('text-on-surface-variant');
+        btnMobile.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnMobile.classList.add('text-on-surface-variant');
+      });
+
+      btnMobile.addEventListener('click', function() {
+        previewContainer.style.maxWidth = '375px';
+        btnMobile.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnMobile.classList.remove('text-on-surface-variant');
+        btnDesktop.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnDesktop.classList.add('text-on-surface-variant');
+      });
+    }
+
+    // Visual vs Code view micro-switch
+    const btnVisual = document.getElementById('btn-visual-mode');
+    const btnCode = document.getElementById('btn-code-mode');
+
+    if (btnVisual && btnCode) {
+      btnCode.addEventListener('click', function() {
+        btnCode.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnCode.classList.remove('text-on-surface-variant');
+        btnVisual.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnVisual.classList.add('text-on-surface-variant');
+      });
+
+      btnVisual.addEventListener('click', function() {
+        btnVisual.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnVisual.classList.remove('text-on-surface-variant');
+        btnCode.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-xs');
+        btnCode.classList.add('text-on-surface-variant');
+      });
+    }
+  })();
+</script></main></div>
+</body></html>

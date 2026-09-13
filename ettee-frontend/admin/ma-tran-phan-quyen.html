@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="admin"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="tong-quan-he-thong.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operations Core</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm logs, tài khoản, cấu hình, mã đơn..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Super Admin</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">SUPER ADMIN</div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tong-quan-he-thong" href="tong-quan-he-thong.html"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Tổng quan hệ thống</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tai-khoan-va-khoa-user" href="tai-khoan-va-khoa-user.html"><span class="material-symbols-outlined text-[20px]">manage_accounts</span><span>Tài khoản &amp; Khóa user</span></a><a aria-current="page" class="relative flex items-center gap-space-md px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="ma-tran-phan-quyen" href="ma-tran-phan-quyen.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-admin;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span>Ma trận phân quyền</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="danh-muc-toan-he-thong" href="danh-muc-toan-he-thong.html"><span class="material-symbols-outlined text-[20px]">category</span><span>Danh mục toàn hệ thống</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="cong-thanh-toan-va-van-chuyen" href="cong-thanh-toan-va-van-chuyen.html"><span class="material-symbols-outlined text-[20px]">local_shipping</span><span>Cổng thanh toán &amp; Vận chuyển</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ai-engine-va-feature-flags" href="ai-engine-va-feature-flags.html"><span class="material-symbols-outlined text-[20px]">neurology</span><span>AI Engine &amp; Feature Flags</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhat-ky-he-thong" href="nhat-ky-he-thong.html"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span>Nhật ký hệ thống (Logs)</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="mau-email-va-thong-bao" href="mau-email-va-thong-bao.html"><span class="material-symbols-outlined text-[20px]">mark_email_read</span><span>Mẫu Email &amp; Thông báo</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full">
+<!-- Top Context Header & KPI Indicator Bar -->
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md mb-space-xl">
+<div class="space-y-space-2xs">
+<div class="flex items-center gap-space-sm text-outline font-label-sm uppercase tracking-wider">
+<span class="">Bảo mật &amp; Kiểm soát</span>
+<span class="inline-block w-1 h-1 rounded-full bg-outline"></span>
+<span class="text-on-surface font-semibold">Ma trận phân quyền (RBAC)</span>
+</div>
+<div class="flex items-baseline gap-space-md">
+<h1 class="font-display text-display text-on-surface tracking-tight">Vai trò &amp; Phân quyền hệ thống</h1>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm">v2.4 Core Spec</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Thiết lập phạm vi quyền hạn dữ liệu đa chi nhánh, bảo đảm tính phân lập giữa quản trị, kho vận và hỗ trợ khách hàng.</p>
+</div>
+<!-- Quick Stats Metric Snippets -->
+<div class="flex items-center gap-space-md w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0">
+<div class="flex items-center gap-space-md px-space-lg py-2.5 rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tổng vai trò</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">7 vai trò</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md px-space-lg py-2.5 rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">group</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tài khoản gắn quyền</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">33 nhân sự</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md px-space-lg py-2.5 rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Trạng thái bảo mật</span>
+<span class="font-label-md text-label-md text-emerald-700 font-semibold">Đồng bộ 100%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main 2-Column Split Master-Detail Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start pb-space-3xl">
+<!-- LEFT COLUMN: Master Role List Panel (approx 28% -> 3.5 cols on 12-col grid, rounded to 4 cols) -->
+<div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-space-lg">
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm space-y-space-md">
+<!-- Role Panel Header -->
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-on-surface">badge</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Vai trò hệ thống</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-data-tabular text-[11px]">7 nhóm</span>
+</div>
+<!-- Create New Role Action -->
+<button class="w-full flex items-center justify-center gap-space-sm h-[38px] px-space-md bg-surface-container-lowest hover:bg-surface-container-low text-primary font-label-md text-label-md rounded-lg shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">add_moderator</span>
+<span class="">Tạo vai trò mới</span>
+</button>
+<!-- Role Search Filter -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-space-md top-2.5 text-outline text-[18px]">search</span>
+<input class="w-full h-[38px] pl-9 pr-space-md bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" id="role-search" placeholder="Tìm kiếm vai trò..." type="text"/>
+</div>
+<!-- Role List Navigation Stack -->
+<nav class="space-y-1.5 pt-space-xs" id="role-item-container">
+<!-- Role 1: Super Admin -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Super Admin</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Toàn quyền hệ thống</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">2 user</span>
+</div>
+<!-- Role 2: Chủ cửa hàng -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">storefront</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Store Owner</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Chủ chuỗi ET.TEE</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">1 user</span>
+</div>
+<!-- Role 3: Quản lý bán hàng -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">point_of_sale</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Quản lý bán hàng</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Sales Staff &amp; POS</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">5 user</span>
+</div>
+<!-- Role 4: Customer CSKH [ACTIVE HIGHLIGHT] -->
+<div class="role-card active relative flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-primary-container text-on-primary shadow-md transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-on-primary/10 flex items-center justify-center text-on-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-on-primary font-semibold truncate">Chăm sóc khách hàng</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container animate-ping"></span>
+</div>
+<span class="font-label-sm text-label-sm text-on-primary-container truncate">Customer CSKH Core</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-on-primary/20 text-on-primary shrink-0">8 user</span>
+</div>
+<!-- Role 5: Nhân viên Kho -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Nhân viên Kho</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Warehouse &amp; Stock</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">4 user</span>
+</div>
+<!-- Role 6: Đơn vị Vận chuyển -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Đơn vị Vận chuyển</span>
+<span class="font-label-sm text-label-sm text-outline truncate">GHTK, GHN, Viettel Post</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">10 đối tác</span>
+</div>
+<!-- Role 7: Marketing & Khuyến mãi -->
+<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer bg-surface-container-lowest hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate">Marketing &amp; Khuyến mãi</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Voucher &amp; Ads Campaign</span>
+</div>
+</div>
+<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">3 user</span>
+</div>
+</nav>
+<!-- Role Auditing Informative Card -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface font-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">info</span>
+<span class="">Chính sách gán vai trò</span>
+</div>
+<p class="font-body-sm text-[12px] text-on-surface-variant leading-relaxed">
+            Mỗi tài khoản nhân sự có thể sở hữu 1 vai trò chính và kế thừa quyền hạn tạm thời khi có phê duyệt từ Super Admin.
+          </p>
+</div>
+</div>
+<!-- Quick Team Member Preview for Active Role -->
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Nhân sự thuộc vai trò (8)</span>
+<a class="font-label-sm text-secondary hover:underline" href="tai-khoan-va-khoa-user.html">Quản lý user</a>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-container-low text-on-surface">
+<span class="w-5 h-5 rounded-full bg-surface-container-high text-primary flex items-center justify-center text-[10px] font-bold">HA</span>
+<span class="font-body-sm text-[12px]">Hà Anh</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-container-low text-on-surface">
+<span class="w-5 h-5 rounded-full bg-surface-container-high text-primary flex items-center justify-center text-[10px] font-bold">MN</span>
+<span class="font-body-sm text-[12px]">Minh Nhật</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-container-low text-on-surface">
+<span class="w-5 h-5 rounded-full bg-surface-container-high text-primary flex items-center justify-center text-[10px] font-bold">PT</span>
+<span class="font-body-sm text-[12px]">Phương Thảo</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-container-low text-on-surface">
+<span class="w-5 h-5 rounded-full bg-surface-container-high text-primary flex items-center justify-center text-[10px] font-bold">TT</span>
+<span class="font-body-sm text-[12px]">Tuấn Tú</span>
+</div>
+<span class="flex items-center px-2 py-1 rounded-md bg-surface-container-high text-on-surface-variant font-label-sm text-[11px]">+4 nhân sự khác</span>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Permission Matrix Grid (approx 72% -> 8 or 9 cols on 12-col grid) -->
+<div class="lg:col-span-8 xl:col-span-9 flex flex-col gap-space-xl">
+<!-- Detail Header Card -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-space-md">
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md pb-space-sm">
+<div class="space-y-space-2xs">
+<div class="flex items-center gap-space-sm">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container/10 text-secondary font-label-sm uppercase tracking-wider font-bold">Quyền cấp CSKH</span>
+<span class="font-label-sm text-outline uppercase tracking-wider">Mã quyền: ROLE_SUPPORT_L1</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Phân quyền chi tiết: Customer CSKH (Nhân viên CSKH)</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+              Quy định quyền truy cập xử lý đơn hàng, live chat hỗ trợ và cấp voucher đền bù. Giới hạn truy cập doanh thu tổng và các thiết lập tài chính nhạy cảm.
+            </p>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="flex items-center gap-space-xs h-[38px] px-space-md rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="">Sửa tên &amp; mô tả</span>
+</button>
+<button class="flex items-center gap-space-xs h-[38px] px-space-md rounded-lg bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-label-md text-label-md shadow-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+<span class="">Sao chép quyền</span>
+</button>
+</div>
+</div>
+<!-- Role Capability Metric Bars -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-xs">
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Quyền đã cấp</span>
+<span class="material-symbols-outlined text-[18px] text-primary">task_alt</span>
+</div>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-md text-headline-md text-on-surface">7</span>
+<span class="font-body-sm text-body-sm text-outline">/ 11 quyền phân hệ</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 63.6%"></div>
+</div>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Hạn mức Voucher đền bù</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">redeem</span>
+</div>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-md text-headline-md text-secondary">Max 10%</span>
+<span class="font-body-sm text-body-sm text-outline">hoặc 30k VNĐ</span>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant mt-2">Áp dụng đơn &lt; 500k VNĐ</span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Phạm vi dữ liệu</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">share_location</span>
+</div>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-md text-headline-md text-on-surface">Đa chi nhánh</span>
+<span class="font-body-sm text-body-sm text-outline">Omnichannel</span>
+</div>
+<span class="font-label-sm text-[11px] text-emerald-700 font-semibold mt-2">Đồng bộ Live Chat realtime</span>
+</div>
+</div>
+</div>
+<!-- Functional Permission Modules Container -->
+<div class="space-y-space-lg" id="permission-modules-container">
+<!-- MODULE 1: Quản lý Đơn hàng (Order Management) -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">shopping_bag</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Module 1: Quản lý Đơn hàng</h3>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm font-semibold">2/4 Kích hoạt</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Quyền xem, tra cứu thông tin địa chỉ đơn đặt hàng từ Website &amp; Cửa hàng</span>
+</div>
+</div>
+<button class="text-left font-label-sm text-outline hover:text-on-surface transition-colors flex items-center gap-1" type="button">
+<span class="">Bật tất cả</span>
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+</button>
+</div>
+<!-- Permissions List Items -->
+<div class="space-y-2">
+<!-- Perm 1.1: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Xem danh sách đơn hàng toàn hệ thống</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Cho phép tìm kiếm danh sách mã đơn, lọc theo trạng thái (Mới, Đang giao, Đã hủy)</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+<!-- Perm 1.2: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Tra cứu thông tin khách hàng cơ bản</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Xem số điện thoại, địa chỉ nhận hàng và lịch sử 5 đơn hàng gần nhất để đối soát</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+<!-- Perm 1.3: Unchecked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer group opacity-85">
+<div class="flex items-start gap-space-md">
+<input class="mt-1 w-4 h-4 rounded bg-surface-container text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Hủy đơn hàng trực tiếp</span>
+<span class="px-2 py-0.2 rounded bg-surface-container-high text-outline font-label-sm text-[10px]">Chỉ xem &amp; ghi chú</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Chỉ được phép gửi yêu cầu hủy và kèm lý do vào Ticket để Quản lý chi nhánh phê duyệt</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm uppercase font-semibold shrink-0">Vô hiệu hóa</span>
+</label>
+<!-- Perm 1.4: Unchecked Locked -->
+<div class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest opacity-60">
+<div class="flex items-start gap-space-md">
+<div class="mt-1 w-4 h-4 rounded bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Duyệt hoàn tiền / Hoàn trả qua tài khoản ngân hàng</span>
+<span class="px-2 py-0.2 rounded bg-secondary-container/10 text-secondary font-label-sm text-[10px] font-bold">Chỉ Super Admin &amp; Chủ shop</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Thao tác giải ngân tài chính trực tiếp qua cổng thanh toán VNPay / MoMo</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-sm uppercase font-semibold shrink-0">Bị khóa cấp cao</span>
+</div>
+</div>
+</div>
+<!-- MODULE 2: Hỗ trợ Khách hàng & CSKH (Customer Support & RMA) -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">forum</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Module 2: Hỗ trợ Khách hàng &amp; CSKH (RMA)</h3>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm font-semibold">4/4 Kích hoạt</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Cốt lõi vai trò CSKH: Tiếp nhận phản hồi, điều hướng hỗ trợ đổi hàng size số</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-emerald-700 font-label-sm">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="">Đã cấp toàn bộ</span>
+</div>
+</div>
+<!-- Permissions List Items -->
+<div class="space-y-2">
+<!-- Perm 2.1: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Tiếp nhận và trả lời Live Chat đa kênh</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Kết nối hộp thư Facebook Fanpage, Zalo OA và Live Chat trực tiếp trên Website ET.TEE</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+<!-- Perm 2.2: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Tạo và quản lý Ticket khiếu nại khách hàng</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ghi nhận lỗi may, sai sót màu/size, yêu cầu đổi trả hàng trong vòng 7 ngày tiêu chuẩn</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+<!-- Perm 2.3: Checked with Constraint Tag -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Cấp Mã giảm giá / Voucher đền bù sự cố</span>
+<span class="px-2 py-0.2 rounded bg-secondary-container/10 text-secondary font-label-sm text-[10px] font-bold">Giới hạn trần</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Trần tối đa: Giảm 10% giá trị đơn hoặc mã Freeship 30.000đ khi giao chậm / lỗi giao vận</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Có hạn mức</span>
+</label>
+<!-- Perm 2.4: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Chuyển tiếp khiếu nại lên cấp Quản lý / Chủ shop (Escalate)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Gửi thông báo khẩn qua Telegram / Zalo nhóm khi phát sinh ca khiếu nại gay gắt mức độ cao</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+</div>
+</div>
+<!-- MODULE 3: Kho hàng & Sản phẩm (Inventory & Catalog) -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">inventory</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Module 3: Kho hàng &amp; Bảng giá</h3>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm">1/3 Kích hoạt</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Truy cập dữ liệu tồn thực tế để tư vấn khách mua hàng và đổi sản phẩm</span>
+</div>
+</div>
+<span class="font-label-sm text-outline">Khu vực hạn chế</span>
+</div>
+<!-- Permissions List Items -->
+<div class="space-y-2">
+<!-- Perm 3.1: Checked -->
+<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-start gap-space-md">
+<input checked="" class="mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Xem tồn kho khả dụng theo từng SKU/Chi nhánh</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Kiểm tra số lượng tồn áo thun, sơ mi, màu sắc tại Kho Tổng và các Store vệ tinh</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-label-sm uppercase font-semibold shrink-0">Cho phép</span>
+</label>
+<!-- Perm 3.2: Unchecked Locked -->
+<div class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest opacity-60">
+<div class="flex items-start gap-space-md">
+<div class="mt-1 w-4 h-4 rounded bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Điều chỉnh số lượng tồn kho (Nhập / Xuất / Kiểm kê)</span>
+<span class="px-2 py-0.2 rounded bg-surface-container-high text-outline font-label-sm text-[10px]">Yêu cầu quyền Kho</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Quyền hạn can thiệp trực tiếp số liệu thẻ kho vật lý</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm uppercase font-semibold shrink-0">Bị từ chối</span>
+</div>
+<!-- Perm 3.3: Unchecked Locked -->
+<div class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest opacity-60">
+<div class="flex items-start gap-space-md">
+<div class="mt-1 w-4 h-4 rounded bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Thiết lập bảng giá bán &amp; Cài đặt Flash Sale</span>
+<span class="px-2 py-0.2 rounded bg-surface-container-high text-outline font-label-sm text-[10px]">Yêu cầu quyền Chủ shop</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Thay đổi giá niêm yết bán buôn, bán lẻ toàn bộ mẫu mã thời trang</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm uppercase font-semibold shrink-0">Bị từ chối</span>
+</div>
+</div>
+</div>
+<!-- MODULE 4: Cấu hình Hệ thống (System Config & Logs) -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">tune</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Module 4: Cấu hình Hệ thống &amp; Logs</h3>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm">0/2 Kích hoạt</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Nhật ký truy cập, khóa người dùng và cấu hình API nhà vận chuyển</span>
+</div>
+</div>
+<span class="font-label-sm text-outline">Bảo mật cao</span>
+</div>
+<!-- Permissions List Items -->
+<div class="space-y-2">
+<!-- Perm 4.1: Unchecked Locked -->
+<div class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest opacity-60">
+<div class="flex items-start gap-space-md">
+<div class="mt-1 w-4 h-4 rounded bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Xem nhật ký kiểm toán hệ thống (Audit Logs)</span>
+<span class="font-body-sm text-body-sm text-outline">Theo dõi lịch sử IP đăng nhập, thao tác xuất tệp Excel của nhân viên khác</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm uppercase font-semibold shrink-0">Bị từ chối</span>
+</div>
+<!-- Perm 4.2: Unchecked Locked -->
+<div class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-lowest opacity-60">
+<div class="flex items-start gap-space-md">
+<div class="mt-1 w-4 h-4 rounded bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Thay đổi Feature Flags &amp; Model AI gợi ý phối đồ</span>
+<span class="font-body-sm text-body-sm text-outline">Bật/tắt tính năng thử nghiệm và cấu hình prompt bot CSKH tự động</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm uppercase font-semibold shrink-0">Bị từ chối</span>
+</div>
+</div>
+</div>
+</div>
+<!-- BOTTOM STICKY ACTIONS BAR -->
+<div class="sticky bottom-4 z-20 w-full p-space-lg rounded-lg bg-surface-container-lowest/95 backdrop-blur-md shadow-xl flex flex-col md:flex-row items-center justify-between gap-space-md">
+<!-- Left: Auditing update metadata -->
+<div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm">
+<span class="material-symbols-outlined text-[18px] text-outline">history</span>
+<div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+<span class="font-semibold text-on-surface">Lần cập nhật gần nhất:</span>
+<span class="font-data-tabular text-data-tabular text-on-surface-variant">14/09/2026 15:42</span>
+<span class="hidden sm:inline text-outline">•</span>
+<span class="text-on-surface font-medium">Bởi Linh Nguyen (Super Admin)</span>
+</div>
+</div>
+<!-- Right: Control Actions -->
+<div class="flex items-center gap-space-md shrink-0 w-full md:w-auto justify-end">
+<button class="px-space-md py-2 font-label-md text-label-md text-outline hover:text-on-surface transition-colors cursor-pointer" type="button">
+            Hủy thay đổi
+          </button>
+<button class="flex items-center justify-center gap-space-xs h-[38px] px-space-xl bg-secondary hover:bg-secondary/90 text-on-secondary font-label-md text-label-md rounded-lg shadow-sm transition-all cursor-pointer" id="btn-save-permission" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span class="">Lưu thay đổi phân quyền</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple Client-side interactivity for Role List and Search Filter
+  (function initRoleMatrix() {
+    const searchInput = document.getElementById('role-search');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        document.querySelectorAll('.role-card').forEach(card => {
+          const text = card.textContent.toLowerCase();
+          card.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+      });
+    }
+  })();
+</script>
+<script src="../assets/api.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const roleListEl = document.getElementById('role-item-container');
+  const permListEl = document.getElementById('permission-modules-container');
+  const saveBtn = document.getElementById('btn-save-permission');
+
+  const ROLE_ICON = {
+    admin: 'shield_person', shop_owner: 'storefront', sales_staff: 'point_of_sale',
+    warehouse_staff: 'inventory_2', shipper_staff: 'local_shipping', cskh_staff: 'support_agent',
+    marketing_staff: 'campaign', customer: 'person'
+  };
+
+  let allRoles = [];
+  let allPermissions = [];
+  let selectedRoleCode = null;
+  // Set các permission code đang tick cho role đang chọn (thay đổi tại client, chưa lưu).
+  let checkedSet = new Set();
+
+  function renderRoleList() {
+    roleListEl.innerHTML = allRoles.map(function (r) {
+      const active = r.code === selectedRoleCode;
+      const activeCls = active ? 'bg-primary-container text-on-primary shadow-md active' : 'bg-surface-container-lowest hover:bg-surface-container-low';
+      return '<div class="role-card group flex items-center justify-between p-space-md rounded-lg cursor-pointer ' + activeCls + ' transition-all" data-role-code="' + r.code + '">' +
+        '<div class="flex items-center gap-space-md min-w-0">' +
+        '<div class="w-8 h-8 rounded-md bg-surface-container flex items-center justify-center ' + (active ? 'text-on-primary' : 'text-on-surface-variant group-hover:text-primary') + ' transition-colors shrink-0">' +
+        '<span class="material-symbols-outlined text-[18px]">' + (ROLE_ICON[r.code] || 'shield') + '</span></div>' +
+        '<div class="flex flex-col min-w-0"><span class="font-label-md text-label-md truncate">' + r.name + '</span>' +
+        '<span class="font-label-sm text-label-sm ' + (active ? 'text-on-primary/80' : 'text-outline') + ' truncate">' + (r.description || r.code) + '</span></div></div>' +
+        '<span class="font-data-tabular text-data-tabular px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant shrink-0">' + r.permissionCodes.length + ' quyền</span>' +
+        '</div>';
+    }).join('');
+
+    roleListEl.querySelectorAll('.role-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        selectRole(card.getAttribute('data-role-code'));
+      });
+    });
+  }
+
+  function renderPermissionList() {
+    const role = allRoles.find(function (r) { return r.code === selectedRoleCode; });
+    const isAdminRole = selectedRoleCode === 'admin';
+
+    const header = '<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex items-center justify-between">' +
+      '<div class="flex flex-col"><h3 class="font-headline-sm text-headline-sm text-on-surface">Quyền của: ' + (role ? role.name : '') + '</h3>' +
+      '<span class="font-body-sm text-body-sm text-on-surface-variant">' + checkedSet.size + ' / ' + allPermissions.length + ' quyền đang bật' +
+      (isAdminRole ? ' — role admin luôn có toàn quyền, không thể chỉnh sửa' : '') + '</span></div></div>';
+
+    const items = allPermissions.map(function (p) {
+      const checked = checkedSet.has(p.code);
+      return '<label class="flex items-start justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors ' +
+        (isAdminRole ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer') + ' group">' +
+        '<div class="flex items-start gap-space-md">' +
+        '<input ' + (checked ? 'checked' : '') + ' ' + (isAdminRole ? 'disabled' : '') +
+        ' class="perm-checkbox mt-1 w-4 h-4 rounded bg-surface-container-lowest text-primary focus:ring-0 focus:ring-offset-0 transition" type="checkbox" data-perm-code="' + p.code + '"/>' +
+        '<div class="flex flex-col"><span class="font-label-md text-label-md text-on-surface font-semibold">' + p.code + '</span>' +
+        '<span class="font-body-sm text-body-sm text-on-surface-variant">' + (p.description || '') + '</span></div></div>' +
+        '<span class="px-2 py-0.5 rounded font-label-sm uppercase font-semibold shrink-0 ' + (checked ? 'bg-emerald-100 text-emerald-800' : 'bg-surface-container text-outline') + '">' +
+        (checked ? 'Cho phép' : 'Vô hiệu hóa') + '</span></label>';
+    }).join('');
+
+    permListEl.innerHTML = header + '<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm space-y-2">' + items + '</div>';
+
+    permListEl.querySelectorAll('.perm-checkbox').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        const code = cb.getAttribute('data-perm-code');
+        if (cb.checked) checkedSet.add(code); else checkedSet.delete(code);
+        renderPermissionList();
+      });
+    });
+
+    saveBtn.disabled = isAdminRole;
+  }
+
+  function selectRole(code) {
+    selectedRoleCode = code;
+    const role = allRoles.find(function (r) { return r.code === code; });
+    checkedSet = new Set(role ? role.permissionCodes : []);
+    renderRoleList();
+    renderPermissionList();
+  }
+
+  async function loadAll() {
+    permListEl.innerHTML = '<div class="text-center py-10 text-on-surface-variant font-body-sm text-body-sm">Đang tải ma trận phân quyền...</div>';
+    try {
+      allRoles = await EtteeApi.get('/api/admin/rbac/roles');
+      allPermissions = await EtteeApi.get('/api/admin/rbac/permissions');
+      selectRole(allRoles[0] ? allRoles[0].code : null);
+    } catch (err) {
+      permListEl.innerHTML = '<div class="text-center py-10 text-rose-600 font-body-sm text-body-sm">Lỗi tải dữ liệu: ' + err.message + '</div>';
+    }
+  }
+
+  saveBtn.addEventListener('click', async function () {
+    if (!selectedRoleCode || selectedRoleCode === 'admin') return;
+    const originalHtml = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Đang cập nhật...</span>';
+    try {
+      const updated = await EtteeApi.put('/api/admin/rbac/roles/' + selectedRoleCode + '/permissions', {
+        permissionCodes: Array.from(checkedSet)
+      });
+      const idx = allRoles.findIndex(function (r) { return r.code === selectedRoleCode; });
+      if (idx >= 0) allRoles[idx] = updated;
+      saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span><span>Đã lưu thành công!</span>';
+      saveBtn.classList.remove('bg-secondary');
+      saveBtn.classList.add('bg-emerald-600');
+      setTimeout(function () {
+        saveBtn.innerHTML = originalHtml;
+        saveBtn.classList.remove('bg-emerald-600');
+        saveBtn.classList.add('bg-secondary');
+        saveBtn.disabled = false;
+      }, 1800);
+    } catch (err) {
+      alert('Không lưu được: ' + err.message);
+      saveBtn.innerHTML = originalHtml;
+      saveBtn.disabled = false;
+    }
+  });
+
+  loadAll();
+})();
+</script></main></div>
+</body></html>

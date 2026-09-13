@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="shop_owner"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="doanh-thu-va-ban-hang.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Retail &amp; Store Management</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm sản phẩm, đơn bán lẻ, tồn kho, chiến dịch, nhân sự..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Linh Nguyen" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Store Owner / Regional Manager</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">CHỦ CỬA HÀNG</div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="doanh-thu-va-ban-hang" href="doanh-thu-va-ban-hang.html"><span class="material-symbols-outlined text-[20px]">bar_chart</span><span>Doanh thu &amp; Bán hàng</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="quan-ly-san-pham-va-bang-gia" href="quan-ly-san-pham-va-bang-gia.html"><span class="material-symbols-outlined text-[20px]">sell</span><span>Quản lý SP &amp; Bảng giá</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ton-kho-va-phe-duyet" href="ton-kho-va-phe-duyet.html"><span class="material-symbols-outlined text-[20px]">warehouse</span><span>Tồn kho &amp; Phê duyệt</span></a><a aria-current="page" class="relative flex items-center gap-space-sm px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="chien-dich-va-voucher" href="chien-dich-va-voucher.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-store-owner;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">loyalty</span><span>Chiến dịch &amp; Voucher</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhan-su-chi-nhanh" href="nhan-su-chi-nhanh.html"><span class="material-symbols-outlined text-[20px]">badge</span><span>Nhân sự chi nhánh</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhat-ky-cua-hang" href="nhat-ky-cua-hang.html"><span class="material-symbols-outlined text-[20px]">history</span><span>Nhật ký cửa hàng</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full space-y-space-xl">
+<!-- Top Navigation Context & Action Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
+<div class="space-y-space-2xs">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<span class="">QUẢN TRỊ KHUYẾN MÃI &amp; TIẾP THỊ</span>
+<span class="">/</span>
+<span class="text-secondary font-bold">STORE OWNER CONSOLE</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+        Phê Duyệt Chiến Dịch Khuyến Mãi &amp; Voucher
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+        Xem xét, thẩm định ngân sách và kích hoạt các chiến dịch ưu đãi do Bộ phận Marketing &amp; Bán hàng đề xuất.
+      </p>
+</div>
+<!-- Actions -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded-lg shadow-sm hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+        Xuất báo cáo ngân sách (.Excel)
+      </button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 bg-secondary text-on-secondary font-label-md text-label-md rounded-lg shadow-sm hover:opacity-90 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+        + Đề xuất chiến dịch mới (Khẩn cấp)
+      </button>
+</div>
+</div>
+<!-- KPI Summary Ribbon (Section 1) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col justify-between space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ngân sách khuyến mãi T9</span>
+<span class="p-1 rounded-md bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</span>
+</div>
+<div>
+<div class="font-display text-display text-on-surface font-bold">45.0M <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">/ 60M</span></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Đã cam kết 75.0% hạn mức tháng</p>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 75%;"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col justify-between space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Chiến dịch chờ duyệt</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold">
+          Cần xử lý gấp
+        </span>
+</div>
+<div>
+<div class="font-display text-display text-secondary font-bold">02 <span class="font-headline-sm text-headline-sm font-medium text-on-surface">Chiến dịch</span></div>
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold mt-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+          Hạn thẩm định: 18:00 hôm nay
+        </div>
+</div>
+<div class="font-data-tabular text-data-tabular text-on-surface-variant">
+        Tổng dự toán: <strong class="text-on-surface">27,000,000 VNĐ</strong>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col justify-between space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Doanh thu tạo từ Flash Sale</span>
+<span class="p-1 rounded-md bg-surface-container-low text-emerald-600">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+</span>
+</div>
+<div>
+<div class="font-display text-display text-on-surface font-bold">382.5M <span class="font-label-sm text-label-sm font-semibold text-on-surface-variant">VNĐ</span></div>
+<p class="font-label-sm text-label-sm text-emerald-700 font-semibold mt-1">ROI thực tế: 8.5x so với chi phí</p>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">Tỷ lệ đóng góp</span>
+<span class="font-data-tabular font-bold text-on-surface">41.8% tổng GMV</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col justify-between space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Voucher đang phát hành</span>
+<span class="p-1 rounded-md bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+</span>
+</div>
+<div>
+<div class="font-display text-display text-on-surface font-bold">05 <span class="font-headline-sm text-headline-sm font-medium text-on-surface">Mã trực tiếp</span></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Tỷ lệ redeem toàn sàn: 68.2%</p>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">2,156 lượt sử dụng</span>
+<span class="font-label-sm font-semibold text-emerald-700">Hiệu quả cao</span>
+</div>
+</div>
+</section>
+<!-- Section 2: Danh sách Chiến dịch Chờ Duyệt (Featured Approval Queue) -->
+<section class="space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">
+          Chiến dịch Chờ Phê Duyệt Cấp Quản Lý
+        </h2>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold">
+          2 Yêu cầu mới
+        </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant hidden md:inline">
+        Chính sách: Mọi mức giảm giá &gt; 15% phải có chữ ký điện tử Store Owner
+      </span>
+</div>
+<div class="space-y-space-lg">
+<!-- Card 1: Primary Urgent Campaign -->
+<article class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-space-lg">
+<!-- Main Details -->
+<div class="space-y-space-md flex-1">
+<div class="flex flex-wrap items-center gap-space-sm">
+<span class="px-2.5 py-1 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                Ưu tiên cao - Flash Sale
+              </span>
+<span class="px-2 py-1 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                Mã đề xuất: CMP-2026-F09
+              </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+                Đề xuất bởi <strong>Nguyễn Thị Mai (Marketing Lead)</strong> • 2 giờ trước
+              </span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">
+                FLASH SALE MÙA THU - MID SEASON 2026
+              </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                Chiến dịch kích cầu danh mục Thu Đông mở sớm. Giảm sâu dòng hàng chủ lực Polo &amp; Chinos để giải phóng tồn kho quý 3 và đón đầu tệp khách công sở chuẩn bị mùa thời trang giao mùa.
+              </p>
+</div>
+<!-- Meta Grid Specs -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md p-space-md bg-surface-container-low rounded-lg">
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase">Thời gian triển khai</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
+                  15/09 – 18/09/2026 (3 ngày)
+                </span>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase">Cơ chế ưu đãi</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">
+                  Giảm 20% dòng Polo Airweave &amp; Chinos Kaki
+                </span>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase">Ràng buộc kiểm soát</span>
+<span class="font-body-md text-body-md text-on-surface">
+                  Min spend: 399,000đ • Không gộp FreeShip
+                </span>
+</div>
+</div>
+<!-- SKUs list visual -->
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">
+                  Sản phẩm tham gia áp dụng (12 SKUs chủ lực)
+                </span>
+<a class="font-label-sm text-label-sm text-secondary hover:underline" href="quan-ly-san-pham-va-bang-gia.html">Xem toàn bộ 12 sản phẩm</a>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="flex items-center gap-space-xs p-1.5 pr-3 rounded-lg bg-surface-container-low shadow-sm">
+<img class="w-10 h-10 rounded object-cover" data-alt="Scandinavian style tailored classic pique cotton polo shirt in deep navy color, crisp studio e-commerce lookbook lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8pZ7lvAPAPLaTeMrHD8RyNpJQZchf-9CZos2PT4ti2fPSTBHQim7thFoQf_I8_ljjQLkpqNK0x8FEljwJM-CKDD-i0vr0GoFSFDa7j6ccsMgOIIgnN_UFwYns4b75DOQBBPvrocBHvx-9SksscYmci390LC81YXSGjGkykuL-r-z3WkP2PG58YI_IZJ5pYd8ymWZ7YCA_19UEGI_joAboTbqFR1WBJ6L73NfpQzxuynEXTF7oSRHZmQ"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Polo Airweave Navy</span>
+<span class="font-data-tabular text-[11px] text-on-surface-variant">SKU-PL-019 • Tồn 240</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs p-1.5 pr-3 rounded-lg bg-surface-container-low shadow-sm">
+<img class="w-10 h-10 rounded object-cover" data-alt="Scandinavian minimal sand beige casual chinos trousers flat laid on modern neutral clean tabletop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5pI_BZSfdyskRPS0iUu6R9UaPJfhatMEhL186f5FhnUCDLaxlwJQ02YoPDqva41yCISc0IauBbfLaU5OQ3huEeIlljPUmklWS-x4ome8rMITeY2ckySYRyoP4R1RsHWKOqYaJtJy6Y4TbVbE-oIKDb8ui45V5UVkraUGzHIi1O7PByPbK2NRMRDOx4G0H2OVLsknPVWXAL1D_xSb5khEKdTpfTOolRTBBKA8Ty1WotoMAs0Y0eyM7ow"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Chinos Kaki Slim Beige</span>
+<span class="font-data-tabular text-[11px] text-on-surface-variant">SKU-CH-102 • Tồn 185</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs p-1.5 pr-3 rounded-lg bg-surface-container-low shadow-sm">
+<img class="w-10 h-10 rounded object-cover" data-alt="Minimalist heather grey organic knit polo shirt modern contemporary clean menswear design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC34GnofyFDPdNj3MnEcZr_wSwV0-_eqha9tNcCUjaT0QkiO4o-ZAdD074HJ41vhTQW7RoCPG7tchGny8mS47hZkqDta6bo2uFoAC7_jae1HdinTLzugEYpA7pWBWzA3_2MBYOhU5Nh1o631_AYe4iPOLRm6vmigA-Ak9ZXG_uMP_7NtZgCrYTxM5lwlF4a5GbYzrwEhcxCYstuLKR1kbp-6rDtxkAV9hWx-CmXvTAjz9ZgJUrZ6lxs9g"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Polo Airweave Grey</span>
+<span class="font-data-tabular text-[11px] text-on-surface-variant">SKU-PL-020 • Tồn 310</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs p-1.5 pr-3 rounded-lg bg-surface-container-low shadow-sm">
+<img class="w-10 h-10 rounded object-cover" data-alt="Classic charcoal dark grey cotton twill trousers studio product photography clean e-commerce background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkfHfs45PrVQBI2XbJTDmxuYSHi8xi7pZs6IXeEUCkJnQ6fuNWhnX2T5zYFB5BeLZxAPJlPghooes9V1vadRzEGguC3jGdcApQyPKafr8QoVdL2065uT0M3uHH4_VTDaPLOV-MRLiYImZMxgJJ27htfAOvID4zLGm40f7h5iKNU109MNQs9BqfhgAUaQDF8pjUKFtLJot15DJWYJratNsEG6NLLKnVcu7Rpo5-XN1UemfHg2RDUObmZQ"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Chinos Tapered Charcoal</span>
+<span class="font-data-tabular text-[11px] text-on-surface-variant">SKU-CH-114 • Tồn 142</span>
+</div>
+</div>
+<span class="px-3 py-2 rounded-lg bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-bold">
+                  +8 SKUs khác
+                </span>
+</div>
+</div>
+</div>
+<!-- Financial Impact Sidebar & Actions inside Card -->
+<div class="w-full lg:w-80 shrink-0 bg-surface-container-low rounded-lg p-space-lg space-y-space-md">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-secondary">analytics</span>
+              Thẩm Định Tài Chính
+            </h4>
+<div class="space-y-space-sm font-body-sm text-body-sm">
+<div class="flex justify-between items-center pb-1">
+<span class="text-on-surface-variant">Dự toán ngân sách:</span>
+<span class="font-data-tabular text-data-tabular font-bold text-secondary">15,000,000 VNĐ</span>
+</div>
+<div class="flex justify-between items-center pb-1">
+<span class="text-on-surface-variant">Mục tiêu GMV:</span>
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">100,000,000 VNĐ</span>
+</div>
+<div class="flex justify-between items-center pb-1">
+<span class="text-on-surface-variant">Sản lượng kỳ vọng:</span>
+<span class="font-data-tabular text-data-tabular text-on-surface font-semibold">350 sản phẩm</span>
+</div>
+<div class="flex justify-between items-center pb-1">
+<span class="text-on-surface-variant">Biên lợi nhuận gộp:</span>
+<span class="font-data-tabular text-data-tabular text-emerald-700 font-bold">34.6% (An toàn)</span>
+</div>
+</div>
+<div class="space-y-space-xs pt-space-xs">
+<!-- Approve Primary Action (Emerald #059669 per prompt requirement) -->
+<button class="w-full py-2.5 px-space-md rounded-lg text-white font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-opacity hover:opacity-90" style="background-color: #059669;" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+                Phê Duyệt &amp; Kích Hoạt
+              </button>
+<button class="w-full py-2 px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors" type="button">
+                Yêu Cầu Sửa Ngân Sách
+              </button>
+<button class="w-full py-2 px-space-md rounded-lg text-secondary hover:bg-secondary-fixed/50 font-label-md text-label-md transition-colors" type="button">
+                Từ Chối Đề Xuất
+              </button>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Secondary Campaign -->
+<article class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<div class="space-y-space-xs flex-1">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-bold uppercase">
+                Chăm Sóc Khách Hàng VIP
+              </span>
+<span class="px-2 py-0.5 rounded bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
+                CMP-2026-VIP03
+              </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                Đề xuất bởi <strong>Trần Hoàng Nam (CRM Specialist)</strong>
+</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+              ƯU ĐÃI KHÁCH HÀNG VIP GOLD – BỘ SƯU TẬP MỚI
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-4xl">
+              Cơ chế: Voucher giảm 15% (tối đa 150.000đ/đơn) dành riêng 500 khách VIP hạng Gold có chu kỳ mua lại &gt; 45 ngày.
+            </p>
+<div class="flex flex-wrap items-center gap-space-xl pt-1 text-on-surface">
+<div class="font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Ngân sách dự trù:</span>
+<strong class="font-data-tabular ml-1">12,000,000 VNĐ</strong>
+</div>
+<div class="font-body-sm text-body-sm">
+<span class="text-on-surface-variant">GMV mục tiêu:</span>
+<strong class="font-data-tabular ml-1">85,000,000 VNĐ</strong>
+</div>
+<div class="font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Tệp tiếp cận:</span>
+<span class="font-data-tabular font-medium ml-1">500 thành viên Gold Tier</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="px-space-md py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">
+              Xem Chi Tiết
+            </button>
+<button class="px-space-md py-2 rounded-lg text-secondary hover:bg-secondary-fixed/50 font-label-md text-label-md transition-colors" type="button">
+              Từ Chối
+            </button>
+<button class="px-space-md py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:opacity-90 transition-opacity" type="button">
+              Phê Duyệt
+            </button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 3: Live Voucher Management Table (Section 3) -->
+<section class="bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<!-- Table Toolbar & Filters -->
+<div class="p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest">
+<div class="space-y-1">
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">
+          Quản Lý Mã Voucher Đang Kích Hoạt
+        </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Theo dõi hạn mức phân bổ, tốc độ đốt ngân sách và trạng thái vận hành theo thời gian thực.
+        </p>
+</div>
+<!-- Quick Status Filter Pills -->
+<div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg" id="promo-status-tabs">
+<button class="px-3 py-1.5 rounded font-label-sm text-label-sm font-bold bg-surface-container-lowest text-on-surface shadow-sm" data-status="" type="button">
+          Tất cả
+        </button>
+<button class="px-3 py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" data-status="pending_approval" type="button">
+          Chờ phê duyệt
+        </button>
+<button class="px-3 py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" data-status="active" type="button">
+          Đang hoạt động
+        </button>
+<button class="px-3 py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" data-status="rejected" type="button">
+          Đã từ chối
+        </button>
+<button class="px-3 py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" data-status="expired" type="button">
+          Đã hết hạn
+        </button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider h-9">
+<th class="px-space-lg py-2">Mã Voucher</th>
+<th class="px-space-md py-2">Loại Giảm Giá</th>
+<th class="px-space-md py-2">Điều Kiện Áp Dụng</th>
+<th class="px-space-md py-2">Tiến Độ Sử Dụng</th>
+<th class="px-space-md py-2 text-right">Tổng Chi Phí Thực Tế</th>
+<th class="px-space-md py-2 text-center">Trạng Thái</th>
+<th class="px-space-lg py-2 text-right">Thao Tác</th>
+</tr>
+</thead>
+<tbody class="text-on-surface" id="promo-table-body">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-lg py-3.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">confirmation_number</span>
+<span class="font-data-tabular font-bold text-on-surface tracking-wide bg-surface-container-low px-2 py-0.5 rounded">ETTEEFALL20</span>
+</div>
+</td>
+<td class="px-space-md py-3.5 font-medium">Giảm 20% (Tối đa 80.000đ)</td>
+<td class="px-space-md py-3.5 text-on-surface-variant">Đơn từ 350.000đ</td>
+<td class="px-space-md py-3.5">
+<div class="space-y-1">
+<div class="flex justify-between font-data-tabular text-[12px]">
+<span class="">342 / 500 lượt</span>
+<span class="font-semibold text-on-surface">68.4%</span>
+</div>
+<div class="w-32 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 68%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-3.5 text-right font-data-tabular font-bold">23,940,000 VNĐ</td>
+<td class="px-space-md py-3.5 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                Active
+              </span>
+</td>
+<td class="px-space-lg py-3.5 text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-2 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors" type="button">
+                  Sửa hạn mức
+                </button>
+<button class="px-2 py-1 rounded hover:bg-secondary-fixed/40 text-secondary font-label-sm text-label-sm transition-colors" type="button">
+                  Dừng sớm
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-lg py-3.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">local_shipping</span>
+<span class="font-data-tabular font-bold text-on-surface tracking-wide bg-surface-container-low px-2 py-0.5 rounded">FREESHIP50K</span>
+</div>
+</td>
+<td class="px-space-md py-3.5 font-medium">Miễn phí giao hàng (50.000đ)</td>
+<td class="px-space-md py-3.5 text-on-surface-variant">Đơn từ 500.000đ</td>
+<td class="px-space-md py-3.5">
+<div class="space-y-1">
+<div class="flex justify-between font-data-tabular text-[12px]">
+<span class="text-secondary font-semibold">489 / 500 lượt</span>
+<span class="font-bold text-secondary">97.8%</span>
+</div>
+<div class="w-32 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 98%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-3.5 text-right font-data-tabular font-bold">24,450,000 VNĐ</td>
+<td class="px-space-md py-3.5 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                Sắp hết lượt
+              </span>
+</td>
+<td class="px-space-lg py-3.5 text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-2 py-1 rounded bg-secondary text-on-secondary hover:opacity-90 font-label-sm text-label-sm transition-opacity" type="button">
+                  +200 lượt
+                </button>
+<button class="px-2 py-1 rounded hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors" type="button">
+                  Dừng
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-lg py-3.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">workspace_premium</span>
+<span class="font-data-tabular font-bold text-on-surface tracking-wide bg-surface-container-low px-2 py-0.5 rounded">VIPGOLD100</span>
+</div>
+</td>
+<td class="px-space-md py-3.5 font-medium">Giảm thẳng 100.000đ</td>
+<td class="px-space-md py-3.5 text-on-surface-variant">Chỉ định VIP Gold Tier</td>
+<td class="px-space-md py-3.5">
+<div class="space-y-1">
+<div class="flex justify-between font-data-tabular text-[12px]">
+<span class="">85 / 100 lượt</span>
+<span class="font-semibold text-on-surface">85.0%</span>
+</div>
+<div class="w-32 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-3.5 text-right font-data-tabular font-bold">8,500,000 VNĐ</td>
+<td class="px-space-md py-3.5 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                Active
+              </span>
+</td>
+<td class="px-space-lg py-3.5 text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors" type="button">
+                  Chi tiết
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-lg py-3.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">person_add</span>
+<span class="font-data-tabular font-bold text-on-surface-variant tracking-wide bg-surface-container-low px-2 py-0.5 rounded">CHAOBANMOI</span>
+</div>
+</td>
+<td class="px-space-md py-3.5 text-on-surface-variant font-medium">Giảm 10% đơn đầu tiên</td>
+<td class="px-space-md py-3.5 text-on-surface-variant">Tài khoản mới kích hoạt</td>
+<td class="px-space-md py-3.5">
+<div class="space-y-1">
+<div class="flex justify-between font-data-tabular text-[12px] text-on-surface-variant">
+<span class="">1,240 đã dùng</span>
+<span class="">Không giới hạn</span>
+</div>
+<div class="w-32 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-3.5 text-right font-data-tabular font-bold text-on-surface-variant">37,200,000 VNĐ</td>
+<td class="px-space-md py-3.5 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                Tạm dừng
+              </span>
+</td>
+<td class="px-space-lg py-3.5 text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-primary text-on-primary hover:opacity-90 font-label-sm text-label-sm transition-opacity" type="button">
+                  Bật lại
+                </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer with Pagination & Summary -->
+<div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+        Hiển thị 4 trên tổng số 5 mã khuyến mãi đang trong kỳ hạch toán Tháng 09/2026
+      </span>
+<div class="flex items-center gap-1">
+<button aria-label="Previous page" class="p-1 rounded hover:bg-surface-container text-on-surface-variant" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-bold shadow-sm">1</span>
+<button aria-label="Next page" class="p-1 rounded hover:bg-surface-container text-on-surface-variant" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Interactive Quick Help & Guardrail Hint -->
+<aside class="p-space-lg rounded-lg bg-surface-container-low flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px] shrink-0 mt-0.5">verified_user</span>
+<div class="space-y-0.5">
+<div class="font-label-md text-label-md text-on-surface font-bold">Chính Sách Kiểm Soát Giảm Giá Tự Động (Margin Guard)</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Hệ thống sẽ tự động khóa kích hoạt nếu tỷ lệ chiết khấu chiến dịch làm biên lợi nhuận gộp danh mục rơi xuống dưới ngưỡng sàn 28%.
+        </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="text-on-surface font-label-sm text-label-sm hover:underline" type="button">
+        Cài đặt ngưỡng an toàn
+      </button>
+</div>
+</aside>
+</div>
+<script>
+  // Simple micro-interaction for quick feedback
+  document.addEventListener('DOMContentLoaded', () => {
+    const approveBtn = document.querySelector('button[style*="059669"]');
+    if (approveBtn) {
+      approveBtn.addEventListener('click', function() {
+        this.innerHTML = '<span class="material-symbols-outlined text-[18px]">done_all</span> Đã Kích Hoạt Thành Công';
+        this.classList.remove('hover:opacity-90');
+        this.classList.add('cursor-default', 'opacity-90');
+      });
+    }
+  });
+</script>
+<script src="../assets/api.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const tbody = document.getElementById('promo-table-body');
+  const tabs = document.getElementById('promo-status-tabs');
+  let currentStatus = '';
+
+  const STATUS_LABEL = {
+    draft: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-outline font-label-sm text-label-sm font-semibold">Draft</span>',
+    pending_approval: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-sm text-label-sm font-semibold">Chờ phê duyệt</span>',
+    active: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>Active</span>',
+    expired: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-outline font-label-sm text-label-sm font-semibold">Hết hạn</span>',
+    rejected: '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 font-label-sm text-label-sm font-semibold">Đã từ chối</span>'
+  };
+
+  function fmtVnd(n) { return new Intl.NumberFormat('vi-VN').format(n) + 'đ'; }
+  function discountText(p) {
+    if (p.discountType === 'percentage') return 'Giảm ' + p.discountValue + '%' + (p.maxDiscountAmount ? ' (Tối đa ' + fmtVnd(p.maxDiscountAmount) + ')' : '');
+    if (p.discountType === 'fixed_amount') return 'Giảm ' + fmtVnd(p.discountValue);
+    return 'Miễn phí vận chuyển';
+  }
+
+  function renderRow(p) {
+    const actions = p.status === 'pending_approval'
+      ? '<button class="px-2 py-1 rounded bg-emerald-600 text-white font-label-sm text-label-sm hover:bg-emerald-700" onclick="approvePromo(\'' + p.id + '\')">Duyệt</button>' +
+        '<button class="px-2 py-1 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm hover:bg-surface-container" onclick="rejectPromo(\'' + p.id + '\')">Từ chối</button>'
+      : '<span class="text-outline font-label-sm text-label-sm">—</span>';
+
+    return '<tr class="hover:bg-surface-container-low/50 transition-colors">' +
+      '<td class="px-space-lg py-3.5"><div class="flex items-center gap-2">' +
+      '<span class="material-symbols-outlined text-[18px] text-on-surface-variant">confirmation_number</span>' +
+      '<span class="font-data-tabular font-bold text-on-surface tracking-wide bg-surface-container-low px-2 py-0.5 rounded">' + p.code + '</span></div></td>' +
+      '<td class="px-space-md py-3.5 font-medium">' + discountText(p) + '</td>' +
+      '<td class="px-space-md py-3.5 text-on-surface-variant">Đơn từ ' + fmtVnd(p.minOrderValue) + '</td>' +
+      '<td class="px-space-md py-3.5 text-on-surface-variant font-label-sm text-label-sm">' + new Date(p.startAt).toLocaleDateString('vi-VN') + ' → ' + new Date(p.endAt).toLocaleDateString('vi-VN') + '</td>' +
+      '<td class="px-space-md py-3.5 text-center">' + (STATUS_LABEL[p.status] || p.status) + '</td>' +
+      '<td class="px-space-lg py-3.5 text-right"><div class="inline-flex items-center gap-space-xs">' + actions + '</div></td></tr>';
+  }
+
+  async function loadPromotions() {
+    tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-on-surface-variant">Đang tải...</td></tr>';
+    try {
+      const page = await EtteeApi.get('/api/store-owner/promotions?size=50' + (currentStatus ? '&status=' + currentStatus : ''));
+      tbody.innerHTML = page.items.length
+        ? page.items.map(renderRow).join('')
+        : '<tr><td colspan="6" class="py-6 text-center text-on-surface-variant">Không có khuyến mãi nào</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-rose-600">' + err.message + '</td></tr>';
+    }
+  }
+
+  window.approvePromo = async function (id) {
+    if (!confirm('Duyệt khuyến mãi này?')) return;
+    try {
+      await EtteeApi.post('/api/store-owner/promotions/' + id + '/approve', {});
+      loadPromotions();
+    } catch (err) {
+      alert('Không duyệt được: ' + err.message);
+    }
+  };
+
+  window.rejectPromo = async function (id) {
+    const reason = prompt('Lý do từ chối:');
+    if (!reason) return;
+    try {
+      await EtteeApi.post('/api/store-owner/promotions/' + id + '/reject', { reason: reason });
+      loadPromotions();
+    } catch (err) {
+      alert('Không từ chối được: ' + err.message);
+    }
+  };
+
+  tabs.querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      currentStatus = btn.getAttribute('data-status');
+      tabs.querySelectorAll('button').forEach(function (b) {
+        b.classList.remove('font-bold', 'bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        b.classList.add('text-on-surface-variant');
+      });
+      btn.classList.add('font-bold', 'bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+      btn.classList.remove('text-on-surface-variant');
+      loadPromotions();
+    });
+  });
+
+  loadPromotions();
+})();
+</script></main></div>
+</body></html>

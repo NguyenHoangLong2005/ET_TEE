@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Đăng nhập — ET.TEE Store Operations Core</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Be Vietnam Pro', Inter, Arial, sans-serif;
+    background: #f9f9ff;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    padding: 40px 32px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .brand-dot { width: 36px; height: 36px; border-radius: 10px; background: #DA1D26; flex-shrink: 0; }
+  .brand h1 { font-size: 16px; margin: 0; color: #151c27; }
+  .brand p { font-size: 11px; margin: 0; color: #888; letter-spacing: .05em; }
+  h2 { font-size: 20px; color: #151c27; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: #666; margin: 0 0 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
+  input {
+    width: 100%; height: 44px; padding: 0 14px; margin-bottom: 16px;
+    border: 1px solid #e2e2ea; border-radius: 10px; font-size: 14px;
+    background: #fbfbfd; transition: border-color .15s;
+  }
+  input:focus { outline: none; border-color: #DA1D26; background: #fff; }
+  button[type="submit"] {
+    width: 100%; height: 46px; border: none; border-radius: 10px;
+    background: #DA1D26; color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity .15s;
+  }
+  button[type="submit"]:disabled { opacity: .6; cursor: not-allowed; }
+  button[type="submit"]:not(:disabled):hover { opacity: .92; }
+  .error {
+    display: none; background: #fdecea; color: #b3261e; font-size: 13px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 16px;
+  }
+  .hint { margin-top: 20px; font-size: 12px; color: #999; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div>
+      <h1>ET.TEE</h1>
+      <p>OPERATIONS CORE</p>
+    </div>
+  </div>
+  <h2>Đăng nhập nội bộ</h2>
+  <p class="sub">Dành cho Admin / Chủ cửa hàng / CSKH</p>
+
+  <div class="error" id="error-box"></div>
+
+  <form id="login-form">
+    <label for="username">Email hoặc số điện thoại</label>
+    <input id="username" type="text" autocomplete="username" required/>
+    <label for="password">Mật khẩu</label>
+    <input id="password" type="password" autocomplete="current-password" required/>
+    <button type="submit" id="submit-btn">Đăng nhập</button>
+  </form>
+
+  <p class="hint">Chưa có tài khoản? Liên hệ Admin để được cấp quyền truy cập.</p>
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+  const form = document.getElementById('login-form');
+  const errorBox = document.getElementById('error-box');
+  const submitBtn = document.getElementById('submit-btn');
+
+  const ROLE_LANDING_PAGE = {
+    admin: 'admin/tong-quan-he-thong.html',
+    shop_owner: 'store-owner/doanh-thu-va-ban-hang.html',
+    cskh_staff: 'cskh/workspace-cskh-da-kenh.html'
+  };
+
+  function landingPageFor(roles) {
+    for (const role of ['admin', 'shop_owner', 'cskh_staff']) {
+      if (roles.includes(role)) return ROLE_LANDING_PAGE[role];
+    }
+    return null;
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Đang đăng nhập...';
+
+    try {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const data = await EtteeApi.login(username, password);
+
+      const target = landingPageFor(data.roles || []);
+      if (!target) {
+        throw new Error('Tài khoản chưa được gán role Admin/Store Owner/CSKH nào.');
+      }
+      window.location.href = target;
+    } catch (err) {
+      errorBox.textContent = err.message || 'Đăng nhập thất bại';
+      errorBox.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Đăng nhập';
+    }
+  });
+</script>
+</body>
+</html>
