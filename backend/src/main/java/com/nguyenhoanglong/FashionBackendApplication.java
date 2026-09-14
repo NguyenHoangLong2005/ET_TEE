@@ -19,6 +19,18 @@ public class FashionBackendApplication {
         SpringApplication.run(FashionBackendApplication.class, args);
     }
 
+    @org.springframework.context.annotation.Bean
+    public org.springframework.boot.CommandLineRunner runReviewDbMigrations(org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+        return args -> {
+            try {
+                jdbcTemplate.execute("ALTER TABLE product_reviews ALTER COLUMN user_id DROP NOT NULL;");
+                System.out.println("Success: ALTER TABLE product_reviews ALTER COLUMN user_id DROP NOT NULL;");
+            } catch (Exception e) {
+                System.out.println("Skip or failed product_reviews DDL: " + e.getMessage());
+            }
+        };
+    }
+
     /**
      * Loads key-value pairs from .env file into System properties if not already set.
      * Allows local development to read backend/.env seamlessly.

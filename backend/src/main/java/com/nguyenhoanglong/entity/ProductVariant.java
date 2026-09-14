@@ -22,14 +22,23 @@ public class ProductVariant {
     @Column(length = 50)
     private String color;
 
+    @Column(name = "color_hex", length = 50)
+    private String colorHex;
+
     @Column(length = 50)
     private String size;
 
     @Column(precision = 12, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "sale_price", precision = 12, scale = 2)
+    private BigDecimal salePrice;
+
     @Column(nullable = false)
     private Integer stock = 0;
+
+    @Column(name = "available_quantity", nullable = false)
+    private Integer availableQuantity = 0;
 
     public ProductVariant() {}
 
@@ -55,6 +64,15 @@ public class ProductVariant {
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
 
+    public String getColorHex() { return colorHex; }
+    public void setColorHex(String colorHex) { this.colorHex = colorHex; }
+
+    public BigDecimal getSalePrice() { return salePrice; }
+    public void setSalePrice(BigDecimal salePrice) { this.salePrice = salePrice; }
+
+    public Integer getAvailableQuantity() { return availableQuantity; }
+    public void setAvailableQuantity(Integer availableQuantity) { this.availableQuantity = availableQuantity; }
+
     public String getSize() { return size; }
     public void setSize(String size) { this.size = size; }
 
@@ -73,20 +91,30 @@ public class ProductVariant {
         private Product product;
         private String sku;
         private String color;
+        private String colorHex;
         private String size;
         private BigDecimal price;
+        private BigDecimal salePrice;
         private Integer stock = 0;
+        private Integer availableQuantity = 0;
 
         public ProductVariantBuilder id(Long id) { this.id = id; return this; }
         public ProductVariantBuilder product(Product product) { this.product = product; return this; }
         public ProductVariantBuilder sku(String sku) { this.sku = sku; return this; }
         public ProductVariantBuilder color(String color) { this.color = color; return this; }
+        public ProductVariantBuilder colorHex(String colorHex) { this.colorHex = colorHex; return this; }
         public ProductVariantBuilder size(String size) { this.size = size; return this; }
         public ProductVariantBuilder price(BigDecimal price) { this.price = price; return this; }
+        public ProductVariantBuilder salePrice(BigDecimal salePrice) { this.salePrice = salePrice; return this; }
         public ProductVariantBuilder stock(Integer stock) { this.stock = stock; return this; }
+        public ProductVariantBuilder availableQuantity(Integer availableQuantity) { this.availableQuantity = availableQuantity; return this; }
 
         public ProductVariant build() {
-            return new ProductVariant(id, product, sku, color, size, price, stock);
+            ProductVariant variant = new ProductVariant(id, product, sku, color, size, price, stock);
+            variant.setColorHex(colorHex);
+            variant.setSalePrice(salePrice);
+            variant.setAvailableQuantity(availableQuantity);
+            return variant;
         }
     }
 }

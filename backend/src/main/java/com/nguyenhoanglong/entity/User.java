@@ -1,83 +1,105 @@
 package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    @Column(nullable = false)
+    private String fullName;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column
+    private String phone;
+
+    @Column(nullable = false)
+    private String passwordHash;
+
+    @Column(nullable = false)
+    private boolean emailVerified;
+
+    @Column(nullable = false)
+    private String status; // PENDING_VERIFICATION, ACTIVE, BANNED
+
+    @Column
+    private String gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    @Column(name = "default_shipping_address")
+    private String defaultShippingAddress;
+
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public User() {}
-
-    public User(Long id, String username, String email, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+
+    public java.time.LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(java.time.LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public String getDefaultShippingAddress() { return defaultShippingAddress; }
+    public void setDefaultShippingAddress(String defaultShippingAddress) { this.defaultShippingAddress = defaultShippingAddress; }
+    
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
+    
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public static UserBuilder builder() {
-        return new UserBuilder();
-    }
-
-    public static class UserBuilder {
-        private Long id;
-        private String username;
-        private String email;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-
-        public UserBuilder id(Long id) { this.id = id; return this; }
-        public UserBuilder username(String username) { this.username = username; return this; }
-        public UserBuilder email(String email) { this.email = email; return this; }
-        public UserBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
-        public UserBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
-
-        public User build() {
-            return new User(id, username, email, createdAt, updatedAt);
-        }
-    }
 }

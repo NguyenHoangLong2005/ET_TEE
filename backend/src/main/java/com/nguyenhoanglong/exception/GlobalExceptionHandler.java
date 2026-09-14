@@ -8,9 +8,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.nguyenhoanglong.exception.ApiException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -35,6 +37,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         ApiResponse<Void> response = ApiResponse.error("Database constraint error: " + ex.getMostSpecificCause().getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException ex) {
+        ApiResponse<Void> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response, ex.getStatus());
+    }
+
+    /**
+     * Handle ResponseStatusException explicitly so that errors thrown via
+     * `throw new ResponseStatusException(BAD_REQUEST, "msg")` propagate
+     * with the intended status code instead of being caught by the generic
+     * 500 handler.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ApiResponse<Void> response = ApiResponse.error(ex.getReason() != null ? ex.getReason() : ex.getMessage());
+        return new ResponseEntity<>(response, status);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
