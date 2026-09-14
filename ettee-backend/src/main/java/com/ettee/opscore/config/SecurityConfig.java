@@ -60,7 +60,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()
                         // Khớp đúng role code seed sẵn trong schema: admin / shop_owner / cskh_staff
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/store-owner/**").hasAnyRole("SHOP_OWNER", "ADMIN")

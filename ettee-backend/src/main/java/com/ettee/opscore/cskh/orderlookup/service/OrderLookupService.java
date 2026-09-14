@@ -43,6 +43,14 @@ public class OrderLookupService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderSummaryDto> getByCustomerId(UUID customerId) {
+        return orderRepository.findAllByCustomerIdOrderByPlacedAtDesc(customerId)
+                .stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderDetailDto getById(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppExceptions.ResourceNotFoundException("Đơn hàng", id));

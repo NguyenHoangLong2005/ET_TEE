@@ -1,0 +1,129 @@
+"use client";
+
+import Link from "next/link";
+import { FormEvent, useState } from "react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+
+export default function RegisterPage() {
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email || null,
+          phone: form.phone || null,
+          password: form.password,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Đăng ký thất bại");
+      }
+
+      setMessage("Đăng ký thành công. Bạn có thể đăng nhập bằng email và mật khẩu đã nhập.");
+      setForm({ fullName: "", email: "", phone: "", password: "" });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Đăng ký thất bại");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl shadow-violet-950/40">
+        <div className="text-center space-y-3 mb-8">
+          <p className="text-xs uppercase tracking-[0.25em] text-violet-400 font-bold">ET.TEE</p>
+          <h1 className="text-3xl font-black text-white">Đăng ký</h1>
+          <p className="text-sm text-slate-400">Tạo tài khoản mới cho khách hàng</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm text-slate-300">Họ và tên</label>
+            <input
+              value={form.fullName}
+              onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-white outline-none focus:border-violet-500"
+              placeholder="Nguyễn Văn A"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-slate-300">Email</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-white outline-none focus:border-violet-500"
+              placeholder="customer@example.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-slate-300">Số điện thoại</label>
+            <input
+              value={form.phone}
+              onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-white outline-none focus:border-violet-500"
+              placeholder="0901234567"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-slate-300">Mật khẩu</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-white outline-none focus:border-violet-500"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 py-3 font-bold text-white transition"
+          >
+            {loading ? "Đang đăng ký..." : "Đăng ký"}
+          </button>
+        </form>
+
+        <div className="mt-6 flex items-center justify-between text-sm">
+          <Link href="/login" className="text-violet-300 hover:text-violet-200">
+            Đã có tài khoản? Đăng nhập
+          </Link>
+          <Link href="/" className="text-slate-300 hover:text-white">
+            Về trang chủ
+          </Link>
+        </div>
+
+        {message ? (
+          <div className="mt-6 rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-slate-200">
+            {message}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}

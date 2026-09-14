@@ -57,4 +57,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
        List<Object[]> countByStatus(@Param("from") Instant from, @Param("to") Instant to);
 
        List<Order> findAllByCustomerPhoneOrderByPlacedAtDesc(String phone);
+
+       List<Order> findAllByCustomerIdOrderByPlacedAtDesc(UUID customerId);
 }

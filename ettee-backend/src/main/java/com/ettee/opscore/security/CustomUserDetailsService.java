@@ -24,9 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .or(() -> userRepository.findByPhone(usernameOrPhone))
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản: " + usernameOrPhone));
 
-        if (!user.isStaff()) {
-            // Khu vực Admin/Store Owner/CSKH chỉ dành cho nhân viên nội bộ.
-            throw new UsernameNotFoundException("Tài khoản không thuộc hệ thống nội bộ");
+        if (user.getStatus() != com.ettee.opscore.identity.entity.AccountStatus.active) {
+            throw new UsernameNotFoundException("Tài khoản chưa ở trạng thái hoạt động");
         }
 
         var roleCodes = userRoleRepository.findRoleCodesByUserId(user.getId());
