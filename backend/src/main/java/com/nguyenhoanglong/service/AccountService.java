@@ -51,6 +51,11 @@ public class AccountService {
         user.setAvatarUrl(request.getAvatarUrl());
         user.setDefaultShippingAddress(request.getDefaultShippingAddress());
 
+        // Validate dateOfBirth is not in the future
+        if (request.getDateOfBirth() != null && request.getDateOfBirth().isAfter(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày sinh không thể là ngày trong tương lai.");
+        }
+
         userRepository.save(user);
         return getProfile(user);
     }

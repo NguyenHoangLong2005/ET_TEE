@@ -36,4 +36,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT COUNT(p) FROM Product p WHERE p.status = 'ACTIVE'")
     long countActive();
+
+    // Stats: kids products broken down by gender (for sidebar boy/girl counts)
+    @Query("SELECT p.gender, COUNT(p) FROM Product p WHERE p.status = 'ACTIVE' AND p.targetGroup = 'kids' GROUP BY p.gender")
+    java.util.List<Object[]> countActiveKidsByGender();
 }

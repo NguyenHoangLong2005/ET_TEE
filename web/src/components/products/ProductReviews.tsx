@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { getAuthToken } from '@/lib/auth';
 
 export default function ProductReviews({ productId, slug }: { productId: number, slug: string }) {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
 
   const checkEligibility = useCallback(async (orderCode?: string, email?: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getAuthToken();
       if (token || (orderCode && email)) {
         const elig = await ReviewService.checkReviewEligibility(token, slug, orderCode, email);
         setEligibility(elig);
@@ -87,7 +88,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
     setError('');
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getAuthToken();
       if (!token && (!guestOrderCode || !guestEmail)) throw new Error('Không tìm thấy thông tin xác thực');
       
       await ReviewService.createReview(token, slug, {

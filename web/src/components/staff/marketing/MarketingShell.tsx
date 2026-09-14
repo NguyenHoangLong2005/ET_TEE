@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, LogOut, User2 } from 'lucide-react';
 import MarketingSidebar from './MarketingSidebar';
+import { getAuthToken } from '@/lib/auth';
 
 interface MarketingShellProps {
   children: React.ReactNode;
@@ -24,8 +25,8 @@ export default function MarketingShell({ children, title, subtitle, action }: Ma
         const u = JSON.parse(raw);
         setUserEmail(u?.email || null);
       } else {
-        const t = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        if (t) setUserEmail('Đã đăng nhập');
+      const t = getAuthToken();
+      if (t) setUserEmail('Đã đăng nhập');
       }
     } catch {}
   }, []);
