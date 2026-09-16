@@ -65,9 +65,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         // Khớp đúng role code seed sẵn trong schema: admin / shop_owner / cskh_staff
+                        .requestMatchers("/api/admin/categories/**").hasAnyRole("SHOP_OWNER", "ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/store-owner/**").hasAnyRole("SHOP_OWNER", "ADMIN")
-                        .requestMatchers("/api/cskh/**").hasAnyRole("CSKH_STAFF", "ADMIN")
+                        .requestMatchers("/api/cskh/**").hasAnyRole("CSKH_STAFF", "SHOP_OWNER", "ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

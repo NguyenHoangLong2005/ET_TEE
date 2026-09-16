@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -363,7 +364,8 @@ export default function StaffProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
+    <ProtectedRoute allowedRoles={["ADMIN", "SHOP_OWNER"]} allowedPermissions={["product.manage"]}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold">
@@ -762,6 +764,7 @@ export default function StaffProductsPage() {
           </aside>
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

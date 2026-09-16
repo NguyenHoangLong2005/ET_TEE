@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { apiClient } from "@/lib/api-client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -14,6 +16,7 @@ type OrderItem = {
   paymentStatus: string;
   total: number;
   placedAt: string;
+  version: number;
 };
 
 function getAuthHeaders(): HeadersInit {
@@ -40,6 +43,15 @@ export default function StaffOrdersPage() {
   const [keyword, setKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const nextStatus: Record<string, string> = {
+    pending_confirmation: "confirmed",
+    confirmed: "picking",
+    picking: "packed",
+    packed: "handed_to_carrier",
+    handed_to_carrier: "shipping",
+    shipping: "delivered",
+  };
+
   const loadOrders = async () => {
     try {
       setLoading(true);
@@ -65,12 +77,29 @@ export default function StaffOrdersPage() {
     }
   };
 
+  const advanceOrder = async (order: OrderItem) => {
+    const status = nextStatus[order.status];
+    if (!status) return;
+    try {
+      setError(null);
+      await apiClient.post(`/api/cskh/orders/${order.id}/status`, {
+        status,
+        expectedVersion: order.version,
+        note: `Cập nhật bởi staff: ${status}`,
+      });
+      await loadOrders();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể cập nhật trạng thái đơn hàng");
+    }
+  };
+
   useEffect(() => {
     loadOrders();
   }, [keyword, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
+    <ProtectedRoute allowedRoles={["ADMIN", "SHOP_OWNER", "CSKH_STAFF"]} allowedPermissions={["order.view"]}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold">
@@ -133,12 +162,13 @@ export default function StaffOrdersPage() {
                   <th className="p-3">Thanh toán</th>
                   <th className="p-3">Trạng thái</th>
                   <th className="p-3">Thời gian</th>
+                  <th className="p-3">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {orders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-4 text-slate-400">Không có đơn hàng nào</td>
+                    <td colSpan={7} className="p-4 text-slate-400">Không có đơn hàng nào</td>
                   </tr>
                 ) : (
                   orders.map((order) => (
@@ -158,6 +188,17 @@ export default function StaffOrdersPage() {
                         </span>
                       </td>
                       <td className="p-3">{new Date(order.placedAt).toLocaleString("vi-VN")}</td>
+                      <td className="p-3">
+                        {nextStatus[order.status] ? (
+                          <button
+                            type="button"
+                            onClick={() => advanceOrder(order)}
+                            className="rounded-lg bg-violet-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-violet-500"
+                          >
+                            → {nextStatus[order.status]}
+                          </button>
+                        ) : <span className="text-slate-500">-</span>}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -166,6 +207,7 @@ export default function StaffOrdersPage() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

@@ -11,12 +11,17 @@ import com.ettee.opscore.order.repository.OrderItemRepository;
 import com.ettee.opscore.order.repository.OrderRepository;
 import com.ettee.opscore.storeowner.product.entity.ProductVariant;
 import com.ettee.opscore.storeowner.product.repository.ProductVariantRepository;
+import com.ettee.opscore.storeowner.inventory.entity.Inventory;
+import com.ettee.opscore.storeowner.inventory.entity.StockHold;
+import com.ettee.opscore.storeowner.inventory.repository.InventoryRepository;
+import com.ettee.opscore.storeowner.inventory.repository.StockHoldRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +35,8 @@ public class CheckoutService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StockHoldRepository stockHoldRepository;
 
     @Transactional
     public CheckoutResponse checkout(UUID userId, CheckoutRequest request) {
@@ -96,8 +103,9 @@ public class CheckoutService {
                 "province", request.shippingAddress().getOrDefault("province", ""),
                 "district", request.shippingAddress().getOrDefault("district", ""),
                 "ward", request.shippingAddress().getOrDefault("ward", ""),
-                "streetAddress", request.shippingAddress().getOrDefault("streetAddress", "")));
-        order.setStatus(OrderStatus.pending_confirmation);
+                "street_address", request.shippingAddress().getOrDefault(
+                        "street_address", request.shippingAddress().getOrDefault("streetAddress", ""))));
+        order.setStatus(OrderStatus.draft);
         order.setPaymentMethod(request.paymentMethod());
         order.setPaymentStatus(PaymentStatus.unpaid);
         order.setCurrency("VND");
@@ -129,9 +137,47 @@ public class CheckoutService {
             orderItem.setUnitPrice(variant.getPrice());
             orderItem.setQuantity(item.quantity());
             orderItem.setDiscountAmount(BigDecimal.ZERO);
-            orderItemRepository.save(orderItem);
+            OrderItem savedItem = orderItemRepository.save(orderItem);
+            reserveInventory(savedItem, item.quantity(), userId, order.getId());
         }
 
+        order.setStatus(request.paymentMethod() == PaymentMethod.cod
+                ? OrderStatus.pending_confirmation
+                : OrderStatus.pending_payment);
+        order.setVersion(1L);
+        orderRepository.save(order);
+
         return new CheckoutResponse(order.getId(), order.getOrderCode(), "Đặt hàng thành công");
+    }
+
+    private void reserveInventory(OrderItem orderItem, int requestedQuantity, UUID userId, UUID orderId) {
+        int remaining = requestedQuantity;
+        for (Inventory inventory : inventoryRepository.lockAvailableByVariant(orderItem.getVariantId())) {
+            int reserved = Math.min(inventory.getAvailable(), remaining);
+            if (reserved == 0)
+                continue;
+
+            inventory.setQuantityReserved(inventory.getQuantityReserved() + reserved);
+            inventoryRepository.save(inventory);
+
+            StockHold hold = new StockHold();
+            hold.setVariantId(orderItem.getVariantId());
+            hold.setLocationId(inventory.getId().getLocationId());
+            hold.setQuantity(reserved);
+            hold.setOrderId(orderId);
+            hold.setOrderItemId(orderItem.getId());
+            hold.setRequestedBy(userId);
+            hold.setIdempotencyKey(orderId + ":" + orderItem.getId() + ":" + inventory.getId().getLocationId());
+            hold.setCreatedAt(Instant.now());
+            hold.setExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES));
+            stockHoldRepository.save(hold);
+
+            remaining -= reserved;
+            if (remaining == 0)
+                return;
+        }
+
+        throw new AppExceptions.BusinessRuleViolationException(
+                "Sản phẩm không đủ tồn kho cho số lượng đã chọn: " + orderItem.getSkuSnapshot());
     }
 }

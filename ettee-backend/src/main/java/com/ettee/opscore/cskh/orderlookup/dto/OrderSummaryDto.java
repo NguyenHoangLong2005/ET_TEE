@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record OrderSummaryDto(
-        UUID id, String orderCode, String customerName, String customerPhone,
-        OrderStatus status, PaymentStatus paymentStatus, BigDecimal total, Instant placedAt
-) {
+                UUID id, String orderCode, String customerName, String customerPhone,
+                OrderStatus status, PaymentStatus paymentStatus, BigDecimal total, Instant placedAt, Long version) {
 }

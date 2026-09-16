@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { setAuthSession } from "@/lib/auth";
+import { mergeGuestCart } from "@/lib/api-client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -31,10 +33,18 @@ export default function LoginPage() {
         throw new Error(payload.message || "Đăng nhập thất bại");
       }
 
-      localStorage.setItem("ettee_access_token", payload.data.accessToken);
-      localStorage.setItem("ettee_refresh_token", payload.data.refreshToken);
-      localStorage.setItem("ettee_user", JSON.stringify(payload.data));
-      setMessage("Đăng nhập thành công. Bạn đã được lưu token vào localStorage.");
+      const userPayload = {
+        ...payload.data,
+        fullName: payload.data.fullName || payload.data.username || "ET.TEE User",
+        email: payload.data.email || payload.data.username,
+        roles: payload.data.roles || [],
+        permissions: payload.data.permissions || [],
+      };
+
+      setAuthSession(userPayload);
+      await mergeGuestCart();
+      setMessage("Đăng nhập thành công. Đang chuyển hướng...");
+      window.location.href = "/";
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Đăng nhập thất bại");
     } finally {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -119,7 +120,8 @@ export default function AdminAiConfigPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
+    <ProtectedRoute allowedRoles={["ADMIN"]} allowedPermissions={["feature.manage", "model.manage"]}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20 text-xs font-bold">
@@ -268,6 +270,7 @@ export default function AdminAiConfigPage() {
           </div>
         </div>
       ) : null}
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

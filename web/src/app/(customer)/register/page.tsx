@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { setAuthSession } from "@/lib/auth";
+import { mergeGuestCart } from "@/lib/api-client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -39,8 +41,28 @@ export default function RegisterPage() {
         throw new Error(payload.message || "Đăng ký thất bại");
       }
 
-      setMessage("Đăng ký thành công. Bạn có thể đăng nhập bằng email và mật khẩu đã nhập.");
+      const loginResponse = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernameOrPhone: form.email || form.phone, password: form.password }),
+      });
+
+      const loginPayload = await loginResponse.json();
+      if (!loginResponse.ok || !loginPayload.success) {
+        throw new Error(loginPayload.message || "Đăng ký thành công nhưng không thể đăng nhập tự động");
+      }
+
+      setAuthSession({
+        ...loginPayload.data,
+        fullName: form.fullName,
+        email: form.email || loginPayload.data.email,
+        phone: form.phone || loginPayload.data.phone,
+      });
+      await mergeGuestCart();
+
+      setMessage("Đăng ký và đăng nhập thành công.");
       setForm({ fullName: "", email: "", phone: "", password: "" });
+      window.location.href = "/";
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Đăng ký thất bại");
     } finally {

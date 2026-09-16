@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -50,7 +51,7 @@ export default function AdminUsersPage() {
     password: "",
     employeeCode: "",
     department: "",
-    roleCodes: "STORE_STAFF",
+    roleCodes: "CSKH_STAFF",
   });
   const [creating, setCreating] = useState(false);
 
@@ -144,7 +145,7 @@ export default function AdminUsersPage() {
         password: "",
         employeeCode: "",
         department: "",
-        roleCodes: "STORE_STAFF",
+        roleCodes: "CSKH_STAFF",
       });
       await loadUsers();
     } catch (err) {
@@ -212,7 +213,8 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
+    <ProtectedRoute allowedRoles={["ADMIN"]} allowedPermissions={["account.manage"]}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 p-8 space-y-8">
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20 text-xs font-bold">
@@ -315,7 +317,7 @@ export default function AdminUsersPage() {
             <input
               value={formState.roleCodes}
               onChange={(e) => setFormState((prev) => ({ ...prev, roleCodes: e.target.value }))}
-              placeholder="Role codes, ví dụ: STORE_STAFF,CSKH"
+              placeholder="Role codes, ví dụ: SHOP_OWNER,CSKH_STAFF"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
               required
             />
@@ -463,6 +465,7 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

@@ -8,6 +8,7 @@ import com.ettee.opscore.storeowner.product.entity.ProductStatus;
 import com.ettee.opscore.storeowner.product.entity.ProductVariant;
 import com.ettee.opscore.storeowner.product.repository.ProductRepository;
 import com.ettee.opscore.storeowner.product.repository.ProductVariantRepository;
+import com.ettee.opscore.storeowner.product.repository.ProductImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductVariantRepository variantRepository;
+    private final ProductImageRepository imageRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductDto> search(String keyword, UUID categoryId, ProductStatus status, Pageable pageable) {
@@ -111,9 +113,13 @@ public class ProductService {
 
     private ProductDto toDto(Product p) {
         List<ProductVariantDto> variants = p.getVariants().stream().map(this::toVariantDto).toList();
+        List<ProductImageDto> images = imageRepository.findAllByProductIdOrderBySortOrderAsc(p.getId()).stream()
+                .map(i -> new ProductImageDto(i.getId(), i.getVariantId(), i.getUrl(), i.getAltText(), i.isPrimary(),
+                        i.getSortOrder()))
+                .toList();
         return new ProductDto(p.getId(), p.getCategoryId(), p.getName(), p.getSlug(), p.getDescription(),
                 p.getBrand(), p.getGenderTarget(), p.getBasePrice(), p.getStatus(), p.isRepeatPurchase(),
-                variants, p.getCreatedAt(), p.getUpdatedAt());
+                variants, images, p.getCreatedAt(), p.getUpdatedAt());
     }
 
     private ProductVariantDto toVariantDto(ProductVariant v) {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { apiClient } from "@/lib/api-client";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 const CART_STORAGE_KEY = "ettee_cart";
@@ -40,31 +41,39 @@ export default function CustomerCartPage() {
   const [orderHistory, setOrderHistory] = useState<Array<{ orderCode: string; status: string; total: number; placedAt: string }>>([]);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(CART_STORAGE_KEY);
-    if (raw) {
-      try {
-        setCartItems(JSON.parse(raw));
-      } catch {
-        setCartItems([]);
+    async function loadCartAndProfile() {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (raw) {
+        try {
+          const parsedItems = JSON.parse(raw) as CartItem[];
+          setCartItems(parsedItems);
+          if (window.localStorage.getItem("ettee_access_token")) {
+            await Promise.all(parsedItems.map((item) => apiClient.put("/api/cart/items", {
+              variantId: item.id,
+              quantity: item.quantity,
+            })));
+          }
+        } catch {
+          setCartItems([]);
+        }
       }
-    }
 
-    const savedUser = window.localStorage.getItem("ettee_user");
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setCustomerProfile({
-          fullName: parsedUser.fullName,
-          email: parsedUser.email || parsedUser.username,
-          phone: parsedUser.phone,
-        });
-      } catch {
-        // ignore malformed stored profile
+      const savedUser = window.localStorage.getItem("ettee_user");
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setCustomerProfile({
+            fullName: parsedUser.fullName,
+            email: parsedUser.email || parsedUser.username,
+            phone: parsedUser.phone,
+          });
+        } catch {
+          // ignore malformed stored profile
+        }
       }
-    }
 
-    const token = window.localStorage.getItem("ettee_access_token");
-    if (token) {
+      const token = window.localStorage.getItem("ettee_access_token");
+      if (token) {
       fetch(`${API_BASE}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -90,15 +99,18 @@ export default function CustomerCartPage() {
           }
         })
         .catch(() => undefined);
+      }
     }
+
+    loadCartAndProfile();
   }, []);
 
   const subtotal = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems]
   );
-  const shipping = subtotal > 20000000 ? 0 : 350000;
-  const discount = 1500000;
+  const shipping = subtotal >= 20000000 ? 0 : 350000;
+  const discount = 0;
   const total = subtotal + shipping - discount;
 
   const updateQuantity = (id: string, nextQuantity: number) => {
@@ -108,6 +120,9 @@ export default function CustomerCartPage() {
         .map((item) => (item.id === id ? { ...item, quantity: normalized } : item))
         .filter((item) => item.quantity > 0);
       window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(next));
+      if (window.localStorage.getItem("ettee_access_token")) {
+        apiClient.put("/api/cart/items", { variantId: id, quantity: normalized }).catch(() => undefined);
+      }
       return next;
     });
   };
@@ -137,7 +152,7 @@ export default function CustomerCartPage() {
           province: "Hồ Chí Minh",
           district: "Quận 1",
           ward: "Phường Bến Nghé",
-          streetAddress: "123 Lê Lợi",
+          street_address: "123 Lê Lợi",
         },
         paymentMethod: "cod",
         items: cartItems.map((item) => ({

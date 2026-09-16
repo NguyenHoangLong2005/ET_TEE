@@ -74,6 +74,6 @@ public class OrderLookupService {
 
     private OrderSummaryDto toSummary(Order o) {
         return new OrderSummaryDto(o.getId(), o.getOrderCode(), o.getCustomerName(), o.getCustomerPhone(),
-                o.getStatus(), o.getPaymentStatus(), o.getTotal(), o.getPlacedAt());
+                o.getStatus(), o.getPaymentStatus(), o.getTotal(), o.getPlacedAt(), o.getVersion());
     }
 }

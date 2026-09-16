@@ -29,6 +29,9 @@ public class Order {
     @Column(name = "customer_id", nullable = false, columnDefinition = "uuid")
     private UUID customerId;
 
+    @Column(name = "checkout_key", nullable = false, unique = true, columnDefinition = "uuid")
+    private UUID checkoutKey;
+
     @Column(name = "source_platform", nullable = false, length = 10)
     private String sourcePlatform;
 
@@ -75,7 +78,8 @@ public class Order {
     @Column(name = "shipping_discount", nullable = false, precision = 12, scale = 2)
     private BigDecimal shippingDiscount;
 
-    // Generated column (STORED) — chỉ đọc, DB tự tính = subtotal - discount_total + shipping_fee - shipping_discount
+    // Generated column (STORED) — chỉ đọc, DB tự tính = subtotal - discount_total +
+    // shipping_fee - shipping_discount
     @Column(insertable = false, updatable = false, precision = 12, scale = 2)
     private BigDecimal total;
 
