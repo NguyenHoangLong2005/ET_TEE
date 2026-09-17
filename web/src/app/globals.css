@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+:root {
+  --background: #020817;
+  --foreground: #e2e8f0;
+  --muted: #94a3b8;
+  --card: rgba(15, 23, 42, 0.82);
+  --line: rgba(148, 163, 184, 0.18);
+}
+
 @theme {
   --color-primary: #e50027; /* ET.TEE red */
   --color-brand-primary: #18181B; /* Zinc-900 */
@@ -15,6 +23,31 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight text-slate-900;
   }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(229, 0, 39, 0.2);
+  color: #e50027;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }
 
 /* Custom scrollbar */

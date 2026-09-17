@@ -14,6 +14,8 @@ const inter = Inter({ subsets: ["latin", "vietnamese"] });
 export const metadata: Metadata = {
   title: "ET.TEE - Thời trang gia đình, mặc đẹp mỗi ngày",
   description: "Khám phá bộ sưu tập thời trang mới nhất dành cho gia đình Việt. Áo phông, áo khoác, váy đầm thiết kế chuẩn form dáng, chất liệu cao cấp.",
+  keywords: ["ET.TEE", "fashion", "thời trang", "AI", "ecommerce"],
+  metadataBase: new URL("http://localhost:3000"),
 };
 
 export default function RootLayout({

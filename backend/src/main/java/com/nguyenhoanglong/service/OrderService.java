@@ -85,11 +85,11 @@ public class OrderService {
         
         if ("COD".equals(request.getPaymentMethod())) {
             order.setOrderStatus("PENDING_CONFIRMATION");
-            order.setStatus("PENDING_CONFIRMATION");
+            order.setStatus(OrderStatus.PENDING_CONFIRMATION);
             order.setPaymentStatus("COD_PENDING");
         } else if ("BANK_TRANSFER".equals(request.getPaymentMethod())) {
             order.setOrderStatus("PENDING_PAYMENT");
-            order.setStatus("PENDING_PAYMENT");
+            order.setStatus(OrderStatus.PENDING_PAYMENT);
             order.setPaymentStatus("WAITING_TRANSFER");
         } else {
             throw new RuntimeException("Phương thức thanh toán không hợp lệ");

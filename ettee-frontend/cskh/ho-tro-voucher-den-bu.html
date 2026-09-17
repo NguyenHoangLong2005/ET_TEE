@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="cskh_staff"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="workspace-cskh-da-kenh.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Retail &amp; Store Management</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm sản phẩm, đơn bán lẻ, tồn kho, chiến dịch, nhân sự..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Linh Nguyen" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Store Owner / Regional Manager</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="flex items-center justify-between px-space-sm py-1"><span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">CSKH &amp; TICKET</span><span class="px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] font-bold">Active Role</span></div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="workspace-cskh-da-kenh" href="workspace-cskh-da-kenh.html"><span class="material-symbols-outlined text-[20px]">forum</span><span>Workspace CSKH đa kênh</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="quan-ly-ticket-va-khieu-nai" href="quan-ly-ticket-va-khieu-nai.html"><span class="material-symbols-outlined text-[20px]">confirmation_number</span><span>Ticket &amp; Khiếu nại</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tra-cuu-va-doi-tra-don" href="tra-cuu-va-doi-tra-don.html"><span class="material-symbols-outlined text-[20px]">assignment_return</span><span>Tra cứu &amp; Đổi trả đơn</span></a><a aria-current="page" class="relative flex items-center gap-space-sm px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="ho-tro-voucher-den-bu" href="ho-tro-voucher-den-bu.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-cskh;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">redeem</span><span>Hỗ trợ Voucher đền bù</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full">
+<!-- Ambient Backdrop Grid (Background Operational Workspace) -->
+<div class="relative w-full">
+<!-- Top Action Header & Stats Ribbon -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-xl">
+<div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm mb-1 uppercase tracking-wider">
+<span class="">CSKH &amp; Ticket</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-bold">Hỗ Trợ Voucher Đền Bù &amp; Phê Duyệt</span>
+</div>
+<h1 class="font-display text-display text-on-surface tracking-tight">Hạn Mức Đền Bù CSKH &amp; Thẩm Quyền</h1>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<div class="hidden sm:flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-space-sm rounded-lg shadow-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ngân sách CSKH tháng 09:</span>
+<span class="font-data-tabular text-data-tabular text-on-surface font-bold">12.450.000 / 20.000.000 đ</span>
+</div>
+<button class="inline-flex items-center gap-space-xs bg-primary text-on-primary px-space-lg py-2 rounded-lg font-label-md text-label-md font-semibold hover:opacity-95 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+<span class="">Cấu hình định mức</span>
+</button>
+</div>
+</div>
+<!-- Mini KPI Bento -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-xl">
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Voucher cấp tự động (Hôm nay)</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-display text-display text-on-surface">18</span>
+<span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">94.7% hài lòng</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Giá trị cấp phát tích lũy</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-display text-display text-on-surface font-data-tabular">640.000 đ</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">35.5k đ / ca</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ticket cần escalate Chủ Shop</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-display text-display text-secondary-container">02</span>
+<span class="font-label-sm text-label-sm text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Chờ duyệt gấp</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-space-lg shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tỷ lệ khách quay lại mua (Retention)</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-display text-display text-on-surface">68.4%</span>
+<span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">+4.2% MoM</span>
+</div>
+</div>
+</div>
+<!-- MAIN INTERACTIVE MODAL (Primary Focus) -->
+<div class="relative w-full bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden mb-space-2xl">
+<!-- Modal Header Bar -->
+<div class="bg-primary-container text-on-primary px-space-xl py-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest/10 flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-primary-container">CSKH Thẩm Quyền Tức Thì</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+<span class="font-label-sm text-label-sm text-emerald-300">Quy trình SLA &lt; 5 phút</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-primary tracking-tight">Xử Lý Đền Bù Sự Cố &amp; Chuyển Duyệt Cấp Cao (Escalation Console)</h2>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="px-space-md py-1 rounded-full bg-surface-container-lowest/15 font-label-sm text-label-sm text-on-primary">
+            Ticket ID: #TK-88392
+          </span>
+<button aria-label="Minimize or Close" class="text-on-primary/70 hover:text-on-primary p-1.5 rounded-lg hover:bg-surface-container-lowest/10 transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Incident Customer Context Card -->
+<div class="bg-surface-container-low p-space-lg grid grid-cols-1 md:grid-cols-4 gap-space-md text-on-surface">
+<div class="flex items-center gap-space-md">
+<div class="relative">
+<img class="w-11 h-11 rounded-full object-cover shadow-sm" data-alt="Chân dung tối giản của khách hàng nữ trẻ tuổi tóc đen ngang vai, ánh sáng dịu phong cách Scandinavian ấm áp, đại diện cho khách hàng thân thiết Lê Thu Trang của thương hiệu thời trang ET.TEE." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnnK5WVWdw4NbRgpCh5SdCzdnmy-G7dnn_BxbikhroWTPssoe-_LgfGrkDuDfLihMHZ-kBnLrboOvu9OmuXLTVhFlMxGG8Li3gZuqXf13wAxG2CyPKaVXljgxTYHNJgtcQ2hmqJawI--pxLb2Do5FNMHNpiSfqDRVT13XLeoCFlSR3H-zYY1eXtfGflwPBo52ySc-cM8vQdOMpB11NW8KBdwGmTURLgpTxx7o8dmrrntjtkAZLmqRFPA"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-[9px] text-white font-bold">★</span>
+</div>
+<div class="min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate block">Lê Thu Trang</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">0982 ••• 412 (Gold Member)</span>
+</div>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Đơn Hàng Sự Cố</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface">#ORD-99201</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface px-1.5 py-0.5 rounded">350.000 đ</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate block">Áo Polo Minimalist ET.TEE (Black, Size L)</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Nguyên Nhân Khiếu Nại</span>
+<div class="flex items-center gap-space-2xs mt-0.5 text-secondary-container font-semibold font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="">GHTK Chậm 3 Ngày</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate block">Khách lỡ dịp sinh nhật bạn</span>
+</div>
+<div class="flex items-center md:justify-end gap-space-xs">
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-on-surface px-space-md py-1.5 rounded-lg shadow-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+            Khách VIP Chưa Nhận Voucher Nào
+          </span>
+</div>
+</div>
+<!-- Tab Switcher (Scandinavian Segmented Control) -->
+<div class="p-space-lg bg-surface-container-lowest">
+<div class="flex flex-wrap p-1 bg-surface-container-low rounded-lg gap-1 max-w-2xl">
+<button class="flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm shadow-sm transition-all" id="tab-btn-1" onclick="switchTab(1)" type="button">
+<span class="material-symbols-outlined text-secondary-container text-[20px]">confirmation_number</span>
+<span class="">Tạo Mã Voucher Đền Bù</span>
+<span class="font-label-sm text-[11px] bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.2 rounded-full font-bold">Thẩm quyền CSKH</span>
+</button>
+<button class="flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all" id="tab-btn-2" onclick="switchTab(2)" type="button">
+<span class="material-symbols-outlined text-amber-600 text-[20px]">upgrade</span>
+<span class="">Chuyển Khiếu Nại Lên Chủ Shop</span>
+<span class="font-label-sm text-[11px] bg-surface-container-high text-on-surface-variant px-1.5 py-0.2 rounded-full font-semibold">Escalate</span>
+</button>
+</div>
+</div>
+<!-- TAB 1 CONTENT: Cấp Voucher Đền Bù Trong Thẩm Quyền CSKH -->
+<div class="p-space-xl space-y-space-xl" id="tab-content-1">
+<!-- Policy Authority Banner (Scandinavian Navy Tone) -->
+<div class="bg-primary-container text-on-primary rounded-lg p-space-lg flex items-start gap-space-md shadow-sm">
+<span class="material-symbols-outlined text-on-primary-container text-[24px] mt-0.5 shrink-0">gavel</span>
+<div class="space-y-1">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-primary font-bold">Quy Chế CSKH ET.TEE Store v2.4 (Quyền Ra Quyết Định Tức Thì)</span>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest/20 text-on-primary px-2 py-0.5 rounded-full font-mono">AUTONOMY-LEVEL-1</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary-container leading-relaxed">
+              Nhân viên CSKH được quyền chủ động phát hành mã giảm tối đa <strong class="text-on-primary">10% (tối đa 50,000đ)</strong> hoặc <strong class="text-on-primary">Miễn phí vận chuyển (Freeship 30,000đ)</strong> cho mỗi đơn sự cố mà không cần xin chữ ký quản lý. Thời gian kích hoạt có hiệu lực ngay lập tức trong 15 ngày.
+            </p>
+</div>
+</div>
+<!-- Voucher Type Radio Selection -->
+<div class="space-y-space-sm">
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center justify-between">
+<span class="">1. Chọn loại ưu đãi đền bù phù hợp mức độ sự cố</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mức độ thiệt hại: Trung bình (Giao trễ hẹn quà)</span>
+</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Radio Option 1: Freeship -->
+<label class="relative flex items-start p-space-lg bg-surface-container-lowest rounded-lg cursor-pointer hover:bg-surface-container-low transition-all shadow-sm">
+<input class="mt-1 w-4 h-4 accent-secondary-container cursor-pointer" name="voucher_type" onchange="toggleVoucherCalc('freeship')" type="radio" value="freeship"/>
+<div class="ml-space-md flex-1">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Mã Freeship Toàn Quốc</span>
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface bg-surface-container-high px-2 py-0.5 rounded">30.000 VNĐ</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Phù hợp cho khách bị dời lịch giao hàng ngắn ngày hoặc lỗi đóng gói bao bì.</p>
+<div class="flex items-center gap-space-xs mt-space-sm text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+<span class="">Tự động khấu trừ vào chi phí đối soát bưu cục GHTK</span>
+</div>
+</div>
+</label>
+<!-- Radio Option 2: Percentage (Selected) -->
+<label class="relative flex items-start p-space-lg bg-surface-container-lowest rounded-lg cursor-pointer transition-all shadow-sm">
+<input checked="" class="mt-1 w-4 h-4 accent-secondary-container cursor-pointer" name="voucher_type" onchange="toggleVoucherCalc('percent')" type="radio" value="percent"/>
+<div class="ml-space-md flex-1">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-1.5">
+                    Mã Voucher Giảm Trực Tiếp %
+                    <span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+</span>
+<span class="font-data-tabular text-data-tabular font-bold text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded">Giảm 10% (Tối đa 50k)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Áp dụng cho trường hợp khách thất vọng vì trễ hẹn tặng quà, cần giữ chân khách mua lần tới.</p>
+<div class="flex items-center gap-space-xs mt-space-sm text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[15px] text-secondary-container">savings</span>
+<span class="">Tương đương giảm ước tính 35.000đ cho giỏ hàng tiếp theo</span>
+</div>
+</div>
+</label>
+</div>
+</div>
+<!-- Voucher Configuration Parameters -->
+<div class="space-y-space-sm">
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+            2. Thông số mã phát hành tự động &amp; Ràng buộc sử dụng
+          </label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Code Generator Input -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Mã Tự Sinh Độc Bản</span>
+<div class="flex items-center justify-between mt-2 bg-surface-container-lowest px-space-md py-2 rounded-lg shadow-sm">
+<span class="font-data-tabular text-data-tabular text-headline-sm font-bold tracking-wider text-secondary-container" id="voucher-code-display">ETTEE-CARE10-8812</span>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded transition-colors" onclick="copyVoucherCode()" title="Copy mã" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-emerald-600">lock</span>
+                Mã gắn cố định duy nhất với SĐT khách
+              </span>
+</div>
+<!-- Expiry Duration -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Thời Gian Hiệu Lực</span>
+<div class="flex items-center justify-between mt-2 bg-surface-container-lowest px-space-md py-2 rounded-lg shadow-sm">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">15 Ngày Kích Hoạt</span>
+<span class="font-data-tabular text-data-tabular text-on-surface-variant">Hết hạn: 29/09/2026</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-1.5">Hệ thống gửi SMS nhắc khách trước 48h khi hết hạn</span>
+</div>
+<!-- Conditions & Min Spend -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Điều Kiện Giỏ Hàng</span>
+<div class="flex items-center justify-between mt-2 bg-surface-container-lowest px-space-md py-2 rounded-lg shadow-sm">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Đơn Từ 0 VNĐ</span>
+<span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">Không giới hạn</span>
+</div>
+<span class="font-body-sm text-[12px] text-on-surface-variant mt-1.5">Áp dụng đồng thời với các khuyến mãi khác của shop</span>
+</div>
+</div>
+</div>
+<!-- Reason & Audit Log Area -->
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold" for="audit-reason">
+              3. Lý do phát hành &amp; Cam kết khắc phục (Lưu vết Audit Trail)
+            </label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Bắt buộc theo ISO CSKH ET.TEE</span>
+</div>
+<textarea class="w-full p-space-md rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-colors resize-none" id="audit-reason" rows="3">Bưu cục giao trễ 3 ngày khiến khách lỡ hẹn tặng quà sinh nhật. Đã xin lỗi khách bằng điện thoại và nhận được sự thông cảm. Phát hành voucher 10% để tri ân đơn kế tiếp.</textarea>
+</div>
+<!-- Instant Notification Multi-channel Dispatch -->
+<div class="bg-surface-container-low p-space-lg rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<label class="flex items-start gap-space-md cursor-pointer select-none">
+<input checked="" class="mt-1 w-4 h-4 accent-secondary-container rounded cursor-pointer" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tự động gửi tin nhắn SMS Brandname &amp; Tin nhắn Live Chat ngay lập tức</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Brandname [ET.TEE STORE] &amp; Kênh Zalo OA liên kết tài khoản khách hàng</span>
+</div>
+</label>
+<div class="flex items-center gap-space-xs shrink-0 font-data-tabular text-data-tabular text-on-surface-variant bg-surface-container-lowest px-space-md py-1.5 rounded-md shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">sms</span>
+<span class="">SMS Balance: 4.820 msgs</span>
+</div>
+</div>
+<!-- Action Button Panel -->
+<div class="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="">Thực hiện bởi: <strong class="text-on-surface">Linh Nguyen (Store Owner)</strong> • Quyền CSKH Master</span>
+</div>
+<div class="flex items-center gap-space-md w-full sm:w-auto justify-end">
+<button class="px-space-lg py-2.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest font-label-md text-label-md font-semibold transition-colors" type="button">
+              Hủy Bỏ
+            </button>
+<button class="inline-flex items-center justify-center gap-space-xs px-space-xl py-2.5 rounded-lg bg-secondary-container hover:bg-secondary text-on-secondary font-label-md text-label-md font-bold shadow-md hover:shadow-lg transition-all" onclick="confirmCompensation()" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span class="">Xác Nhận &amp; Kích Hoạt Mã Đền Bù</span>
+</button>
+</div>
+</div>
+</div>
+<!-- TAB 2 CONTENT (Hidden by default): Chuyển Khiếu Nại Lên Cấp Quản Lý Duyệt -->
+<div class="p-space-xl space-y-space-xl hidden" id="tab-content-2">
+<!-- Escalation Condition Banner -->
+<div class="bg-amber-50 rounded-lg p-space-lg flex items-start gap-space-md">
+<span class="material-symbols-outlined text-amber-700 text-[26px] mt-0.5 shrink-0">report_problem</span>
+<div class="space-y-1">
+<h3 class="font-headline-md text-headline-md text-amber-900 font-bold">Khi nào cần chuyển cấp quản lý (Escalation Protocol)?</h3>
+<p class="font-body-md text-body-md text-amber-800 leading-relaxed">
+              Áp dụng cho các trường hợp vượt quá thẩm quyền độc lập của CSKH: Đơn khiếu nại đòi hoàn tiền mặt <strong class="text-amber-950">&gt; 500,000đ</strong>, khách yêu cầu bồi thường thiệt hại đặc biệt, tranh chấp chất lượng vải diện rộng, hoặc sự cố đứt gãy dây chuyền giao nhận vận hành trên 10 đơn hàng cùng đợt.
+            </p>
+</div>
+</div>
+<!-- Escalation Form -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
+<div class="space-y-space-md">
+<div>
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold block mb-1">Mức Độ Khẩn Cấp &amp; Thiệt Hại</label>
+<div class="grid grid-cols-3 gap-space-sm">
+<button class="py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container font-semibold" type="button">Ưu tiên Vừa</button>
+<button class="py-2 rounded-lg bg-amber-100 text-amber-900 font-label-md text-label-md font-bold shadow-sm" type="button">Ưu Tiên Cao (P1)</button>
+<button class="py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container font-semibold" type="button">Khẩn Cấp (P0)</button>
+</div>
+</div>
+<div>
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold block mb-1">Yêu Cầu Từ Phía Khách Hàng</label>
+<select class="w-full h-10 px-space-md bg-surface-container-low text-on-surface rounded-lg font-body-sm text-body-sm focus:outline-none">
+<option>Hoàn tiền mặt 100% qua STK ngân hàng (350.000đ)</option>
+<option>Đổi sản phẩm mới nguyên seal + Tặng voucher đền bù cao cấp</option>
+<option>Bồi thường chi phí phát sinh ngoài hợp đồng vận chuyển</option>
+<option>Khác (Cần trao đổi trực tiếp qua điện thoại)</option>
+</select>
+</div>
+<div>
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold block mb-1">Người Tiếp Nhận Phê Duyệt Cấp Shop</label>
+<div class="flex items-center gap-space-md bg-surface-container-low p-space-md rounded-lg">
+<img alt="Linh Nguyen" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold block">Linh Nguyen (Chủ Shop / Regional Manager)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">SLA phản hồi: Trong vòng 30 phút • Online</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-space-md flex flex-col justify-between">
+<div>
+<label class="font-headline-sm text-headline-sm text-on-surface font-semibold block mb-1">Bản Tường Trình Sự Việc Gửi Cấp Quản Lý</label>
+<textarea class="w-full p-space-md rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none resize-none" placeholder="Mô tả cụ thể quá trình trao đổi, thái độ khách hàng, rủi ro đánh giá xấu 1 sao trên sàn hoặc mạng xã hội..." rows="5"></textarea>
+</div>
+<div class="flex items-center justify-end gap-space-md pt-space-sm">
+<button class="px-space-lg py-2.5 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold" onclick="switchTab(1)" type="button">
+                Quay lại Tab Voucher
+              </button>
+<button class="inline-flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg bg-secondary-container text-on-secondary font-label-md text-label-md font-bold shadow-md hover:bg-secondary transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">publish</span>
+<span class="">Chuyển Duyệt Khẩn Cấp Lên Chủ Shop Linh Nguyen</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ESCALATION DRAWER PREVIEW / HELPER CALLOUT (Persistent Operational Guidance) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm mb-space-2xl flex flex-col lg:flex-row items-center justify-between gap-space-lg">
+<div class="flex items-start gap-space-md">
+<div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">lightbulb</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Mẹo CSKH ET.TEE: Giữ Chân Khách Hàng Sau Sự Cố Giao Hàng</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Dữ liệu Q2/2026 cho thấy tặng Voucher 10% kèm lời xin lỗi chân thành qua SMS giúp khôi phục 74% thiện cảm của khách hàng so với chỉ hoàn tiền vận chuyển thông thường.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-md shrink-0 w-full lg:w-auto justify-end">
+<button class="font-label-md text-label-md text-on-surface hover:text-secondary font-semibold flex items-center gap-1" type="button">
+<span class="">Xem cẩm nang xử lý khủng hoảng</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- AUDIT TABLE: Lịch Sử Các Mã Đền Bù CSKH Đã Phát Hành Gần Nhất -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<!-- Table Header Bar -->
+<div class="p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-md bg-surface-container-lowest">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">Lịch Sử Cấp Mã Đền Bù Gần Nhất (Audit Trail)</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-bold">Tháng Hiện Tại</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Minh bạch ngân sách CSKH, ghi nhận chi tiết lý do và nhân sự chịu trách nhiệm</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-outline text-[18px]">search</span>
+<input class="h-9 pl-8 pr-space-md bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none" placeholder="Tìm theo mã voucher, khách..." type="text"/>
+</div>
+<button class="inline-flex items-center gap-1 h-9 px-space-md bg-surface-container-low text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span class="">Lọc</span>
+</button>
+<button class="inline-flex items-center gap-1 h-9 px-space-md bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:opacity-95 shadow-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="">Xuất Báo Cáo</span>
+</button>
+<button class="inline-flex items-center gap-1 h-9 px-space-md bg-secondary text-on-secondary rounded-lg font-label-md text-label-md font-semibold hover:opacity-95 shadow-sm transition-colors" id="btn-issue-code" type="button">
+<span class="material-symbols-outlined text-[18px]">redeem</span>
+<span class="">+ Phát mã hỗ trợ</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+<th class="py-3 px-space-lg">Mã Voucher</th>
+<th class="py-3 px-space-lg">Khách Hàng &amp; Đơn Hàng</th>
+<th class="py-3 px-space-lg">Loại Ưu Đãi</th>
+<th class="py-3 px-space-lg">Lý Do Đền Bù</th>
+<th class="py-3 px-space-lg">Nhân Sự Cấp</th>
+<th class="py-3 px-space-lg">Trạng Thái Sử Dụng</th>
+<th class="py-3 px-space-lg text-right">Thời Gian</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/40 font-body-sm text-body-sm text-on-surface" id="support-code-table-body">
+<!-- Row 1: Ready/Active -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-md px-space-lg font-data-tabular text-data-tabular font-bold text-secondary-container">
+<div class="flex items-center gap-1">
+<span class="">ETTEE-CARE10-8812</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500" title="Vừa tạo - Chưa dùng"></span>
+</div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-headline-sm text-headline-sm font-semibold block text-on-surface">Lê Thu Trang</span>
+<span class="font-data-tabular text-[12px] text-on-surface-variant">Đơn #ORD-99201 • Áo Polo Minimalist</span>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded font-bold">Giảm 10% (Tối đa 50k)</span>
+</td>
+<td class="py-space-md px-space-lg max-w-xs truncate text-on-surface-variant" title="GHTK giao trễ 3 ngày lỡ hẹn quà sinh nhật">
+                GHTK giao trễ 3 ngày lỡ hẹn quà sinh nhật
+              </td>
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center">LN</span>
+<span class="font-body-sm text-body-sm font-medium">Linh Nguyen</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Đã Gửi SMS (Chưa Dùng)
+                </span>
+</td>
+<td class="py-space-md px-space-lg text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                Vừa xong
+              </td>
+</tr>
+<!-- Row 2: Redeemed -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-md px-space-lg font-data-tabular text-data-tabular font-bold text-on-surface">
+<span class="">ETTEE-FREE-7721</span>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-headline-sm text-headline-sm font-semibold block text-on-surface">Trần Minh Hoàng</span>
+<span class="font-data-tabular text-[12px] text-on-surface-variant">Đơn #ORD-99180 • Quần Khaki Chino</span>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface px-2 py-0.5 rounded font-bold">Freeship 30.000 VNĐ</span>
+</td>
+<td class="py-space-md px-space-lg max-w-xs truncate text-on-surface-variant" title="Áo dính bụi chỉ may nhẹ, hỗ trợ giặt ủi">
+                Áo dính bụi chỉ may nhẹ, hỗ trợ giặt ủi
+              </td>
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-6 h-6 rounded-full bg-surface-container text-on-surface text-[10px] font-bold flex items-center justify-center">HT</span>
+<span class="font-body-sm text-body-sm font-medium">Hoàng Thảo</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface bg-surface-container px-2 py-0.5 rounded font-semibold">
+<span class="material-symbols-outlined text-[12px]">done_all</span>
+                  Đã Áp Dụng (Đơn #ORD-99245)
+                </span>
+</td>
+<td class="py-space-md px-space-lg text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                Hôm qua, 14:22
+              </td>
+</tr>
+<!-- Row 3: Escalate Approved -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-space-md px-space-lg font-data-tabular text-data-tabular font-bold text-on-surface">
+<span class="">ETTEE-VIPCARE-0199</span>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-headline-sm text-headline-sm font-semibold block text-on-surface">Vũ Quỳnh Anh</span>
+<span class="font-data-tabular text-[12px] text-on-surface-variant">Đơn #ORD-98920 • Set Dạ Tweed Winter</span>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="font-label-sm text-label-sm bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Giảm 20% + Tặng Áo Thun</span>
+</td>
+<td class="py-space-md px-space-lg max-w-xs truncate text-on-surface-variant" title="Lỗi khuy áo tuột trong tiệc cưới, chủ shop phê duyệt đặc cách">
+                Lỗi khuy áo tuột, chủ shop duyệt đặc cách
+              </td>
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center">LN</span>
+<span class="font-body-sm text-body-sm font-medium">Linh Nguyen (Chủ Duyệt)</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-purple-800 bg-purple-50 px-2 py-0.5 rounded font-semibold">
+<span class="material-symbols-outlined text-[12px]">shield_person</span>
+                  Phê Duyệt Quản Lý Cấp Cao
+                </span>
+</td>
+<td class="py-space-md px-space-lg text-right font-data-tabular text-data-tabular text-on-surface-variant">
+                12/09/2026
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Audit Summary Footer -->
+<div class="bg-surface-container-low p-space-md px-space-lg flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+          Hiển thị 3 / 18 ca phát hành voucher trong tuần qua • Tất cả mã đều mã hóa SHA-256 đối soát bưu điện
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="w-8 h-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high flex items-center justify-center shadow-sm disabled:opacity-50" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-space-md font-data-tabular text-data-tabular font-bold text-on-surface">Trang 1 / 6</span>
+<button class="w-8 h-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-high flex items-center justify-center shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Inline Micro-Interactions Script -->
+<script>
+    function switchTab(tabIndex) {
+      const btn1 = document.getElementById('tab-btn-1');
+      const btn2 = document.getElementById('tab-btn-2');
+      const content1 = document.getElementById('tab-content-1');
+      const content2 = document.getElementById('tab-content-2');
+
+      if (tabIndex === 1) {
+        btn1.className = 'flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm shadow-sm transition-all';
+        btn2.className = 'flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all';
+        content1.classList.remove('hidden');
+        content2.classList.add('hidden');
+      } else {
+        btn2.className = 'flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm shadow-sm transition-all';
+        btn1.className = 'flex-1 min-w-[200px] flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-md text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all';
+        content2.classList.remove('hidden');
+        content1.classList.add('hidden');
+      }
+    }
+
+    function toggleVoucherCalc(type) {
+      const codeDisplay = document.getElementById('voucher-code-display');
+      if (type === 'freeship') {
+        codeDisplay.innerText = 'ETTEE-FREE-9921';
+      } else {
+        codeDisplay.innerText = 'ETTEE-CARE10-8812';
+      }
+    }
+
+    function copyVoucherCode() {
+      const code = document.getElementById('voucher-code-display').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Đã sao chép mã voucher: ' + code + ' vào clipboard!');
+      });
+    }
+
+    function confirmCompensation() {
+      const code = document.getElementById('voucher-code-display').innerText;
+      alert('Thành công! Mã đền bù ' + code + ' đã kích hoạt và tự động phát lệnh gửi SMS/Zalo OA đến số điện thoại 0982***412 của khách hàng Lê Thu Trang.');
+    }
+  </script>
+<script src="../assets/api.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const tbody = document.getElementById('support-code-table-body');
+  const issueBtn = document.getElementById('btn-issue-code');
+
+  const STATUS_LABEL = {
+    pending: '<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Chờ phê duyệt</span>',
+    approved: '<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đã duyệt</span>',
+    rejected: '<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-rose-800 bg-rose-50 px-2 py-0.5 rounded font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Đã từ chối</span>'
+  };
+
+  function fmtVnd(n) { return new Intl.NumberFormat('vi-VN').format(n) + 'đ'; }
+  function fmtTime(iso) { return new Date(iso).toLocaleString('vi-VN'); }
+
+  function renderRow(c) {
+    const action = c.approvalStatus === 'pending'
+      ? '<button class="px-2 py-1 rounded bg-emerald-600 text-white font-label-sm text-label-sm hover:bg-emerald-700" onclick="approveCode(\'' + c.id + '\')">Duyệt</button>'
+      : '<span class="text-outline font-label-sm">—</span>';
+
+    return '<tr class="hover:bg-surface-container-low/50 transition-colors">' +
+      '<td class="py-space-md px-space-lg font-data-tabular text-data-tabular font-bold text-secondary-container">' + c.promotionCode + '</td>' +
+      '<td class="py-space-md px-space-lg"><span class="font-data-tabular text-[12px] text-on-surface-variant">Customer: ' + c.customerId.slice(0, 8) + '... • Ticket: ' + c.ticketId.slice(0, 8) + '...</span></td>' +
+      '<td class="py-space-md px-space-lg"><span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded font-bold">' + fmtVnd(c.value) + '</span></td>' +
+      '<td class="py-space-md px-space-lg text-on-surface-variant">Hết hạn: ' + fmtTime(c.expiresAt) + '</td>' +
+      '<td class="py-space-md px-space-lg font-body-sm text-body-sm">' + c.issuedBy.slice(0, 8) + '...</td>' +
+      '<td class="py-space-md px-space-lg">' + (STATUS_LABEL[c.approvalStatus] || c.approvalStatus) + '</td>' +
+      '<td class="py-space-md px-space-lg text-right"><div class="flex items-center justify-end gap-2"><span class="font-data-tabular text-data-tabular text-on-surface-variant">' + fmtTime(c.issuedAt) + '</span>' + action + '</div></td></tr>';
+  }
+
+  async function loadCodes() {
+    tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-on-surface-variant">Đang tải...</td></tr>';
+    try {
+      const page = await EtteeApi.get('/api/cskh/support-codes?size=50');
+      tbody.innerHTML = page.items.length
+        ? page.items.map(renderRow).join('')
+        : '<tr><td colspan="7" class="py-6 text-center text-on-surface-variant">Chưa có mã hỗ trợ nào</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-rose-600">' + err.message + '</td></tr>';
+    }
+  }
+
+  window.approveCode = async function (id) {
+    if (!confirm('Phê duyệt mã hỗ trợ này?')) return;
+    try {
+      await EtteeApi.post('/api/cskh/support-codes/' + id + '/approve', {});
+      loadCodes();
+    } catch (err) {
+      alert('Không duyệt được: ' + err.message);
+    }
+  };
+
+  issueBtn.addEventListener('click', async function () {
+    const ticketId = prompt('Ticket ID (UUID):');
+    if (!ticketId) return;
+    const customerId = prompt('Customer ID (UUID):');
+    if (!customerId) return;
+    const value = prompt('Giá trị mã hỗ trợ (VNĐ):');
+    if (!value) return;
+    const days = prompt('Số ngày hết hạn:', '30');
+    if (!days) return;
+
+    const expiresAt = new Date(Date.now() + Number(days) * 86400000).toISOString();
+    try {
+      await EtteeApi.post('/api/cskh/support-codes', {
+        ticketId: ticketId, customerId: customerId, value: Number(value), expiresAt: expiresAt
+      });
+      loadCodes();
+    } catch (err) {
+      alert('Không phát được mã: ' + err.message);
+    }
+  });
+
+  loadCodes();
+})();
+</script>
+</div></main></div>
+</body></html>

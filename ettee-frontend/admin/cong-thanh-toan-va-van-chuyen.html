@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="vi"><head><script src="../assets/auth-guard.js" data-required-role="admin"></script><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet"/><link rel="stylesheet" href="../assets/app.css"/></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="vt-header fixed top-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-lg"><a class="flex items-center gap-space-md w-sidebar-width shrink-0 cursor-pointer" href="tong-quan-he-thong.html"><div class="flex items-center gap-space-md w-sidebar-width shrink-0"><img alt="ET.TEE Logo" class="h-9 w-9 rounded-md object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALKYw0oFfA_zSG2X_-Fv-XfeJMSQ5NSZBJDDZfJ8VTzBiw-CRKgys97RoAM-0GjRuurE8TBO8SJIq-VnqUQ53Q_3QKiIgsgpVzOHb_KHxC1hRCOdALYB8FzNRTrL7pAiwOX2Mg27rdjz1Coi7bxAAbxoGGG9wSwWj4GdmxrPpmbG-9XBsL-mShc6vJkHTerx2p2vA6kiZV9OwsyHe8BFw-4NLq-H_kpNtCYWYfpJY_4_HJWFq-UUeIZzV73BLDjPtxB20"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">ET.TEE</span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Operations Core</span></div></div></a><div class="flex-1 max-w-xl mx-auto"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.05)] focus:outline-none focus:ring-1 focus:ring-on-surface transition-all" placeholder="Tìm kiếm logs, tài khoản, cấu hình, mã đơn..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden xl:flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold">All Services Healthy</span><span class="font-data-tabular text-data-tabular text-on-surface-variant">99.98% Uptime</span></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-secondary-container text-on-secondary font-label-sm text-[10px] font-bold rounded-full">2</span></button><div class="flex items-center gap-space-md pl-space-sm"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wwvdxf1CPaWGXqviLQcQXNeBZ4LpZNKJOc-liAeiK579ZV-rban_6eozrizdypVI1aDlEYa-SNOZrOKM-R8ulIFAkFFgULOwtlvMs0Kg-29mFUQ2gPqMb-hYR1_g6F7vSQpY7F9uWMlIf_bG7wJuuxJ3XIhZoMv7U19FKdWEB5hDA0x-w1CM-USk6YHGEAtqMCKyzS7YDGlwxxSwn1vDHAvaW4CTEt0FhsHAzTceL0fv6iMRcJemgH1TJO"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Linh Nguyen</span><span class="font-label-sm text-label-sm text-on-surface-variant">Super Admin</span></div></div></div></div></header><aside class="vt-sidebar fixed left-0 top-16 bottom-0 w-sidebar-width bg-surface-container-lowest z-30 overflow-y-auto"><div class="py-space-lg px-space-md flex flex-col justify-between h-full"><div class="space-y-space-xs"><div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">SUPER ADMIN</div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold rounded-lg"><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tong-quan-he-thong" href="tong-quan-he-thong.html"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Tổng quan hệ thống</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="tai-khoan-va-khoa-user" href="tai-khoan-va-khoa-user.html"><span class="material-symbols-outlined text-[20px]">manage_accounts</span><span>Tài khoản &amp; Khóa user</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ma-tran-phan-quyen" href="ma-tran-phan-quyen.html"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span>Ma trận phân quyền</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="danh-muc-toan-he-thong" href="danh-muc-toan-he-thong.html"><span class="material-symbols-outlined text-[20px]">category</span><span>Danh mục toàn hệ thống</span></a><a aria-current="page" class="relative flex items-center gap-space-md px-space-sm py-2 transition-colors text-on-primary font-semibold rounded-lg" style="isolation:isolate" data-path="cong-thanh-toan-va-van-chuyen" href="cong-thanh-toan-va-van-chuyen.html"><span class="absolute inset-0 rounded-lg bg-primary-container" style="view-transition-name:sidebar-active-pill-admin;z-index:-1" aria-hidden="true"></span><span class="material-symbols-outlined text-[20px]">local_shipping</span><span>Cổng thanh toán &amp; Vận chuyển</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="ai-engine-va-feature-flags" href="ai-engine-va-feature-flags.html"><span class="material-symbols-outlined text-[20px]">neurology</span><span>AI Engine &amp; Feature Flags</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="nhat-ky-he-thong" href="nhat-ky-he-thong.html"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span>Nhật ký hệ thống (Logs)</span></a><a class="flex items-center gap-space-md px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-sm text-body-sm transition-colors" data-path="mau-email-va-thong-bao" href="mau-email-va-thong-bao.html"><span class="material-symbols-outlined text-[20px]">mark_email_read</span><span>Mẫu Email &amp; Thông báo</span></a></nav></div></div></aside><div class="pl-sidebar-width"><main class="vt-main pt-16 w-full px-space-xl pb-space-3xl min-h-screen bg-surface"><div class="flex flex-col w-full">
+<!-- Top Context Header & KPI Ribbon -->
+<div class="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-space-lg mb-space-2xl">
+<div class="space-y-space-xs max-w-2xl">
+<div class="flex items-center gap-space-xs text-label-sm font-label-sm text-outline uppercase tracking-wider">
+<span class="">Cấu hình hệ thống</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary font-bold">Tích hợp đối tác vận hành</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+        Cấu hình Cổng Thanh toán &amp; Đối tác Vận chuyển
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Thiết lập thông số kết nối API, môi trường Sandbox/Production và cơ chế tự động điều phối đơn hàng đa kênh cho toàn bộ chi nhánh ET.TEE Store.
+      </p>
+</div>
+<!-- Quick Status Badges / Metas -->
+<div class="flex flex-wrap items-center gap-space-sm self-stretch xl:self-auto bg-surface-container-lowest p-space-sm rounded-xl shadow-sm">
+<div class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Thanh toán</span>
+<span class="font-data-tabular text-data-tabular font-semibold text-on-surface">3 Cổng (2 Active)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-low">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Vận chuyển</span>
+<span class="font-data-tabular text-data-tabular font-semibold text-on-surface">4 Đơn vị (100% Sẵn sàng)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg bg-surface-container-high/60">
+<span class="material-symbols-outlined text-[16px] text-secondary">wifi_tethering</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Webhook Health</span>
+<span class="font-data-tabular text-data-tabular font-semibold text-on-surface">99.98% (32ms)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Flow Highlight Banner -->
+<div class="relative overflow-hidden rounded-xl bg-primary-container text-on-primary mb-space-2xl shadow-md">
+<div class="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-secondary/15 blur-2xl pointer-events-none"></div>
+<div class="relative z-10 px-space-xl py-space-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-lg">
+<div class="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[26px]">hub</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-primary font-semibold">Tự Động Phân Tuyến Thông Minh (Smart Routing v2.4)</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm uppercase tracking-wide">Live</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary-container max-w-2xl">
+            Hệ thống đang tự động cân tải 100% đơn hàng nội đô qua GHTK (giao tức thì) và điều hướng các kiện hàng nặng trên 2kg tới bưu cục GHN Express để tối ưu 23.4% chi phí.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-md shrink-0 w-full lg:w-auto justify-end">
+<div class="hidden sm:flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-on-primary-container uppercase">Kiểm tra kết nối</span>
+<span class="font-data-tabular text-data-tabular text-on-primary font-bold">2.410 req / 24h</span>
+</div>
+<button class="flex items-center gap-space-xs px-space-lg h-[38px] bg-secondary-container hover:bg-secondary text-on-secondary font-label-md text-label-md rounded-lg transition-colors shadow-sm" id="btn-global-ping" type="button">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span class="">Kiểm tra toàn hệ thống</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Interactive Pill Tab Selector -->
+<div class="flex items-center justify-between gap-space-md mb-space-xl">
+<div class="inline-flex p-1 rounded-xl bg-surface-container-high/80 shadow-sm">
+<button class="flex items-center gap-space-sm px-space-lg py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface font-semibold shadow-sm transition-all" id="tab-payment-btn" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">account_balance_wallet</span>
+<span class="">Cổng Thanh Toán Trực Tuyến</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</button>
+<button class="flex items-center gap-space-sm px-space-lg py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" id="tab-shipping-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+<span class="">Đối Tác Vận Chuyển &amp; Logistics</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-[10px] font-bold">4 Đơn vị</span>
+</button>
+</div>
+<!-- Quick Environment Indicator -->
+<div class="hidden md:flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
+<span class="">Môi trường bảo mật SSL 256-bit • PCI-DSS Level 1 Ready</span>
+</div>
+</div>
+<!-- SECTION 1: CỔNG THANH TOÁN (PAYMENT GATEWAYS) -->
+<div class="flex flex-col gap-space-xl" id="section-payment">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-xl">
+<!-- Card 1: COD (Thanh toán tiền mặt khi nhận hàng) -->
+<div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-all hover:shadow-md">
+<div class="space-y-space-lg">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">COD Tiền Mặt</h3>
+</div>
+<span class="font-label-sm text-label-sm text-emerald-700 font-semibold uppercase tracking-wider">Thanh toán khi nhận</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              Đang hoạt động
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Cho phép khách hàng mở gói bọc kiểm hàng (đồng kiểm theo chính sách ET.TEE) và thanh toán tiền mặt trực tiếp cho shipper khi nhận bưu phẩm.
+          </p>
+<!-- Setting Fields -->
+<div class="space-y-space-md pt-space-xs">
+<!-- Toggle 1: Kích hoạt -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Trạng thái kích hoạt</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cho phép chọn tại Checkout</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+</label>
+</div>
+<!-- Giới hạn đơn COD -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Hạn mức COD tối đa / đơn</label>
+<div class="relative flex items-center">
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular font-semibold text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container" type="text" value="10.000.000"/>
+<span class="absolute right-3 font-label-sm text-label-sm text-outline font-semibold">VNĐ</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline italic">Đơn hàng vượt quá 10 triệu bắt buộc chuyển khoản để hạn chế tỷ lệ hoàn huỷ.</p>
+</div>
+<!-- Custom Product Deposit -->
+<div class="flex items-start justify-between gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Yêu cầu cọc đơn Custom</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Bắt buộc đặt cọc 20% với áo in thêu riêng</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+</label>
+</div>
+<!-- Phí thu hộ -->
+<div class="flex items-center justify-between py-1 px-space-xs text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Phí thu hộ tiền mặt (COD Fee):</span>
+<span class="font-data-tabular text-data-tabular font-bold text-emerald-700">0 VNĐ (Shop chịu phí)</span>
+</div>
+</div>
+</div>
+<div class="pt-space-lg mt-space-md">
+<button class="w-full h-[38px] flex items-center justify-center gap-space-xs rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+<span class="">Cấu hình hạn mức theo khu vực</span>
+</button>
+</div>
+</div>
+<!-- Card 2: VNPay & ZaloPay QR (Quốc gia) -->
+<div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-all hover:shadow-md relative overflow-hidden">
+<div class="absolute top-0 right-0 left-0 h-1 bg-secondary"></div>
+<div class="space-y-space-lg">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-11 h-11 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[24px]">qr_code_2</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">VNPay &amp; ZaloPay QR</h3>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">Cổng nội địa tích hợp</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+              Live Production
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Hỗ trợ quét mã QR động kết nối tức thời qua hơn 34 ngân hàng quốc gia (Vietcombank, MB, Techcombank...) và ví điện tử ZaloPay thanh toán tức thời.
+          </p>
+<!-- Settings Inputs -->
+<div class="space-y-space-md">
+<!-- Merchant ID -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Merchant ID (Mã điểm bán)</label>
+<div class="flex items-center gap-space-xs">
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular font-semibold text-on-surface" readonly="" type="text" value="ETTEE_CORP_VN88"/>
+<button class="h-[38px] px-space-md bg-surface-container-high hover:bg-surface-variant rounded-lg text-on-surface font-label-sm text-label-sm font-semibold shrink-0" onclick="navigator.clipboard.writeText('ETTEE_CORP_VN88')" type="button">
+                  Copy
+                </button>
+</div>
+</div>
+<!-- Secret Key -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Hash Secret Key</label>
+<div class="flex items-center gap-space-xs">
+<div class="relative w-full">
+<input class="w-full h-[38px] px-space-md pr-10 bg-surface-container-low rounded-lg font-data-tabular text-data-tabular text-on-surface" id="input-secret-key" readonly="" type="password" value="vnpay_live_sec_9941a02xkl8"/>
+<button class="absolute right-2.5 top-2 text-outline hover:text-on-surface" id="btn-toggle-key" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+<button class="h-[38px] px-space-md bg-surface-container-high hover:bg-surface-variant rounded-lg text-on-surface font-label-sm text-label-sm font-semibold shrink-0" onclick="navigator.clipboard.writeText('vnpay_live_sec_9941a02xkl8')" type="button">
+                  Copy
+                </button>
+</div>
+</div>
+<!-- Operational Mode Selector -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Chế độ vận hành API</label>
+<div class="grid grid-cols-2 gap-space-xs p-1 bg-surface-container-low rounded-lg">
+<button class="py-1.5 px-space-sm rounded-md font-label-sm text-label-sm text-outline hover:text-on-surface" type="button">Sandbox Thử nghiệm</button>
+<button class="py-1.5 px-space-sm rounded-md bg-surface-container-lowest text-on-surface font-semibold shadow-sm" type="button">Production Trực tiếp</button>
+</div>
+</div>
+<!-- Fee Coverage Radio -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Cơ chế chịu phí giao dịch (1.1%)</label>
+<div class="space-y-1">
+<label class="flex items-center gap-space-sm p-2 rounded-lg bg-surface-container-low cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary" name="fee_coverage" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Cửa hàng chịu phí <span class="text-secondary font-bold">(Khuyên dùng)</span></span>
+</label>
+<label class="flex items-center gap-space-sm p-2 rounded-lg hover:bg-surface-container-low cursor-pointer">
+<input class="w-4 h-4 text-primary" name="fee_coverage" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Cộng thêm vào hóa đơn người mua</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Ping Webhook Action -->
+<div class="pt-space-lg mt-space-md flex items-center gap-space-sm">
+<button class="flex-1 h-[38px] flex items-center justify-center gap-space-xs rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" id="btn-ping-vnpay" type="button">
+<span class="material-symbols-outlined text-[18px]">cell_tower</span>
+<span class="">Ping Webhook</span>
+</button>
+<div class="px-space-md py-1.5 rounded-lg bg-emerald-50 text-emerald-800 font-data-tabular text-data-tabular font-bold flex items-center gap-1" id="vnpay-ping-result">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+<span class="">200 OK (32ms)</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Thẻ Quốc tế Visa / Mastercard / Stripe -->
+<div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-all hover:shadow-md opacity-90 hover:opacity-100">
+<div class="space-y-space-lg">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[24px]">credit_card</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Visa / Mastercard</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-semibold uppercase tracking-wider">Cổng thẻ Quốc tế (Stripe)</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+              Đang tạm dừng
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Chấp nhận thanh toán thẻ quốc tế Visa, Mastercard, JCB, Apple Pay cho tệp khách du lịch, kiều bào và các đơn hàng xuất khẩu cross-border.
+          </p>
+<!-- Setting Fields (Disabled state preview) -->
+<div class="space-y-space-md pt-space-xs">
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Kích hoạt cổng Quốc tế</span>
+<span class="font-label-sm text-label-sm text-outline">Bật để mở giao diện thẻ</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+</label>
+</div>
+<!-- API Key Placeholder -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-outline uppercase font-semibold">Stripe Publishable Key</label>
+<input class="w-full h-[38px] px-space-md bg-surface-container-low/60 rounded-lg font-data-tabular text-data-tabular text-outline cursor-not-allowed" disabled="" placeholder="pk_live_••••••••••••••••••••" type="text"/>
+</div>
+<!-- 3D Secure Verification Notice -->
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface-variant space-y-1">
+<div class="flex items-center gap-space-xs font-label-md text-label-md font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-secondary">security</span>
+<span class="">Bảo mật 3D-Secure 2.0</span>
+</div>
+<p class="font-label-sm text-label-sm">
+                Yêu cầu OTP xác thực ngân hàng phát hành để chống rủi ro gian lận và tranh chấp bồi hoàn (Chargeback).
+              </p>
+</div>
+</div>
+</div>
+<div class="pt-space-lg mt-space-md">
+<button class="w-full h-[38px] flex items-center justify-center gap-space-xs rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">add_link</span>
+<span class="">+ Kết nối tài khoản Stripe Global</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Payment Gateway Fallback & Transaction Analytics Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+<!-- Mini Chart & Ratio -->
+<div class="lg:col-span-8 rounded-xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tỷ trọng giao dịch 30 ngày gần nhất</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Phân bố doanh thu theo cổng thanh toán trên toàn hệ thống ET.TEE</p>
+</div>
+<span class="font-data-tabular text-data-tabular font-bold text-on-surface px-space-sm py-1 rounded-md bg-surface-container-low">Tổng: 4.820.500.000 VNĐ</span>
+</div>
+<!-- Progress Visual Bars -->
+<div class="space-y-space-md my-space-md">
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-label-sm font-semibold">
+<span class="text-on-surface">VNPay &amp; ZaloPay QR (68.4%)</span>
+<span class="font-data-tabular text-data-tabular text-on-surface">3.297.220.000 VNĐ</span>
+</div>
+<div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-secondary-container rounded-full" style="width: 68.4%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-label-sm font-semibold">
+<span class="text-on-surface">COD Tiền mặt nhận hàng (30.1%)</span>
+<span class="font-data-tabular text-data-tabular text-on-surface">1.450.970.500 VNĐ</span>
+</div>
+<div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary-container rounded-full" style="width: 30.1%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-label-sm font-semibold text-outline">
+<span class="">Visa / Mastercard Quốc tế (1.5%)</span>
+<span class="font-data-tabular text-data-tabular">72.309.500 VNĐ</span>
+</div>
+<div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-outline rounded-full" style="width: 1.5%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg pt-space-sm font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-secondary-container"></span>
+<span class="">QR Động Không Tiền Mặt</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-primary-container"></span>
+<span class="">COD Tiền Mặt</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-outline"></span>
+<span class="">Cổng Quốc Tế</span>
+</div>
+</div>
+</div>
+<!-- Realtime Webhook Log Preview -->
+<div class="lg:col-span-4 rounded-xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Nhật ký Webhook tức thì</h4>
+<span class="material-symbols-outlined text-[18px] text-emerald-600">sync</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">3 sự kiện IPN phản hồi gần nhất</p>
+<div class="space-y-space-sm">
+<div class="p-space-sm rounded-lg bg-surface-container-low font-data-tabular text-data-tabular space-y-0.5">
+<div class="flex items-center justify-between">
+<span class="text-emerald-700 font-bold">200 OK • VNPAY</span>
+<span class="text-outline text-label-sm">14:28:02</span>
+</div>
+<div class="text-on-surface text-body-sm truncate">ORDER_ET9941 • 650.000 VNĐ</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low font-data-tabular text-data-tabular space-y-0.5">
+<div class="flex items-center justify-between">
+<span class="text-emerald-700 font-bold">200 OK • ZALOPAY</span>
+<span class="text-outline text-label-sm">14:25:19</span>
+</div>
+<div class="text-on-surface text-body-sm truncate">ORDER_ET9938 • 1.290.000 VNĐ</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low font-data-tabular text-data-tabular space-y-0.5">
+<div class="flex items-center justify-between">
+<span class="text-emerald-700 font-bold">200 OK • VNPAY</span>
+<span class="text-outline text-label-sm">14:21:44</span>
+</div>
+<div class="text-on-surface text-body-sm truncate">ORDER_ET9935 • 320.000 VNĐ</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-space-md py-2 text-center text-secondary font-label-md text-label-md font-semibold hover:underline cursor-pointer" onclick="window.location.href='nhat-ky-he-thong.html?tab=payments'" type="button">
+          Xem toàn bộ Transaction Logs →
+        </button>
+</div>
+</div>
+</div>
+<!-- SECTION 2: ĐỐI TÁC VẬN CHUYỂN & LOGISTICS (SHIPPING CARRIERS) -->
+<div class="flex flex-col gap-space-xl mt-space-3xl" id="section-shipping">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm uppercase font-bold tracking-wider">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="">Hệ Thống Logistics Tích Hợp</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Đơn vị vận chuyển liên kết API tự động</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Thiết lập token điều phối, mã bưu cục lấy hàng mặc định và thuật toán phân tuyến</p>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-lg h-[38px] bg-surface-container-lowest hover:bg-surface-container-low text-on-surface rounded-lg font-label-md text-label-md font-semibold shadow-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add_business</span>
+<span class="">+ Thêm đối tác vận chuyển mới</span>
+</button>
+</div>
+<!-- 2 Main Carrier Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-xl">
+<!-- Card A: GHTK (Giao Hàng Tiết Kiệm) -->
+<div class="rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-all hover:shadow-md flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-emerald-600"></div>
+<div class="space-y-space-lg">
+<!-- Carrier Header -->
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center font-display text-[18px] font-bold">
+                GHTK
+              </div>
+<div>
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Giao Hàng Tiết Kiệm</h3>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">Ưu tiên #01</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">Đối tác chiến lược chặng giao nhanh nội thành</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Tỷ lệ phát thành công</span>
+<span class="font-data-tabular text-headline-sm text-emerald-700 font-bold">98.2%</span>
+</div>
+</div>
+<!-- Configuration Fields -->
+<div class="space-y-space-md">
+<!-- API Token -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">GHTK Secret API Token</label>
+<div class="flex items-center gap-space-xs">
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular text-on-surface" readonly="" type="password" value="GHTK_PROD_9921_xX994_SecureToken"/>
+<button class="h-[38px] px-space-md bg-surface-container-high hover:bg-surface-variant rounded-lg text-on-surface font-label-sm text-label-sm font-semibold shrink-0" type="button">
+                  Cập nhật
+                </button>
+</div>
+</div>
+<!-- Mã kho lấy hàng mặc định -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Kho lấy hàng mặc định (Default Pick Hub)</label>
+<div class="relative">
+<select class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none appearance-none cursor-pointer">
+<option selected="">Kho Tổng Hà Nội - 123 Thái Hà, Đống Đa</option>
+<option>Kho Miền Nam - 458 Cách Mạng Tháng 8, Q.3, TP.HCM</option>
+<option>Kho Trung Chuyển Đà Nẵng - 88 Nguyễn Văn Linh</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Dịch vụ kích hoạt -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Gói cước vận hành áp dụng</label>
+<div class="flex flex-wrap gap-space-xs">
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check</span> Giao Tiết Kiệm (Road)
+                </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check</span> Giao Nhanh 2H (Hà Nội &amp; HCM)
+                </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">check</span> Hỗ trợ lấy hàng ca tối (đến 21h)
+                </span>
+</div>
+</div>
+<!-- Smart Auto Routing Rule -->
+<div class="p-space-md rounded-lg bg-emerald-50/70 text-emerald-950 space-y-1">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm font-bold uppercase tracking-wide text-emerald-900">
+<span class="material-symbols-outlined text-[16px]">alt_route</span>
+<span class="">Thuật toán phân phối tự động</span>
+</div>
+<p class="font-body-sm text-body-sm text-emerald-900 leading-snug">
+<strong>Tự động gán cho 100% đơn hàng nội thành Hà Nội &amp; TP.HCM</strong> có khối lượng dưới 2kg nhằm tối ưu thời gian giao dưới 24h và hạn chế tỷ lệ hoàn hàng.
+              </p>
+</div>
+</div>
+</div>
+<div class="pt-space-lg mt-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-emerald-700 font-label-sm text-label-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span class="">API Đồng bộ trạng thái tự động (Mỗi 5 phút)</span>
+</div>
+<button class="px-space-md h-[38px] rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+            Cấu hình bảng cước
+          </button>
+</div>
+</div>
+<!-- Card B: GHN Express (Giao Hàng Nhanh) -->
+<div class="rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-all hover:shadow-md flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary-container"></div>
+<div class="space-y-space-lg">
+<!-- Carrier Header -->
+<div class="flex items-start justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center font-display text-[18px] font-bold">
+                GHN
+              </div>
+<div>
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Giao Hàng Nhanh (GHN)</h3>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Dự phòng &amp; Liên tỉnh</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">Chuyên trách tuyến đường dài &amp; bưu kiện cồng kềnh</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Tỷ lệ phát thành công</span>
+<span class="font-data-tabular text-headline-sm text-on-surface font-bold">97.8%</span>
+</div>
+</div>
+<!-- Configuration Fields -->
+<div class="space-y-space-md">
+<!-- Client & Shop ID -->
+<div class="grid grid-cols-2 gap-space-md">
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Client ID</label>
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular font-semibold text-on-surface" readonly="" type="text" value="GHN_VN_4410"/>
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Shop ID định danh</label>
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular font-semibold text-on-surface" readonly="" type="text" value="SHOP-ETTEE-01"/>
+</div>
+</div>
+<!-- API Token GHN -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">GHN Token Xác thực</label>
+<div class="flex items-center gap-space-xs">
+<input class="w-full h-[38px] px-space-md bg-surface-container-low rounded-lg font-data-tabular text-data-tabular text-on-surface" readonly="" type="password" value="ghn_production_token_secret_88190"/>
+<button class="h-[38px] px-space-md bg-surface-container-high hover:bg-surface-variant rounded-lg text-on-surface font-label-sm text-label-sm font-semibold shrink-0" type="button">
+                  Cập nhật
+                </button>
+</div>
+</div>
+<!-- Dịch vụ chuẩn -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Dịch vụ kích hoạt</label>
+<div class="flex flex-wrap gap-space-xs">
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-secondary">check</span> GHN Chuẩn Toàn Quốc
+                </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-secondary">check</span> GHN Siêu Nhanh Hàng Không
+                </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px] text-secondary">check</span> Bảo hiểm hàng giá trị cao
+                </span>
+</div>
+</div>
+<!-- Fallback Rule -->
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface-variant space-y-1">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm font-bold uppercase tracking-wide text-secondary">
+<span class="material-symbols-outlined text-[16px]">swap_calls</span>
+<span class="">Cơ chế Fallback &amp; Ngoại tỉnh</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+<strong>Tự động điều chuyển đơn hàng</strong> khi trọng lượng kiện hàng trên 2.0kg, đơn chuyển phát tuyến huyện xã vùng sâu, hoặc khi GHTK thông báo quá tải quá 30 phút.
+              </p>
+</div>
+</div>
+</div>
+<div class="pt-space-lg mt-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span class="">Kết nối API Sẵn sàng</span>
+</div>
+<button class="px-space-md h-[38px] rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+            Cấu hình bảng cước
+          </button>
+</div>
+</div>
+</div>
+<!-- Logistics Routing Rule Custom Table Preview -->
+<div class="rounded-xl bg-surface-container-lowest p-space-xl shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-space-lg">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Ma trận điều phối vận chuyển (Carrier Routing Rules)</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cơ chế ưu tiên phân chia bưu phẩm theo giá trị và vị trí địa lý</p>
+</div>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-secondary font-semibold hover:underline" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+          Thêm quy tắc điều phối
+        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface-container-low font-label-sm text-label-sm uppercase text-outline tracking-wider">
+<tr>
+<th class="py-2.5 px-space-md rounded-l-lg">Tên Quy Tắc</th>
+<th class="py-2.5 px-space-md">Khu vực áp dụng</th>
+<th class="py-2.5 px-space-md">Điều kiện tải trọng / Giá trị</th>
+<th class="py-2.5 px-space-md">Đơn vị tiếp nhận</th>
+<th class="py-2.5 px-space-md">Đơn vị dự phòng</th>
+<th class="py-2.5 px-space-md text-right rounded-r-lg">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-space-md font-semibold text-on-surface">Đơn Hỏa Tốc Nội Thành</td>
+<td class="py-3 px-space-md">Hà Nội (12 Quận), HCM (Quận 1, 3, 7, Bình Thạnh)</td>
+<td class="py-3 px-space-md font-data-tabular">&lt; 3.0 kg • Mọi giá trị</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 font-semibold text-emerald-800">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span> GHTK Express
+                </span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant">Ahamove / GrabExpress</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-on-surface" type="button"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-space-md font-semibold text-on-surface">Đơn Tuyến Tỉnh Tiêu Chuẩn</td>
+<td class="py-3 px-space-md">Miền Trung, Tây Bắc, Miền Tây Nam Bộ</td>
+<td class="py-3 px-space-md font-data-tabular">Mọi khối lượng • Đơn &lt; 5 triệu</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 font-semibold text-secondary">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span> GHN Chuẩn
+                </span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant">ViettelPost</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-on-surface" type="button"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-space-md font-semibold text-on-surface">Đơn VIP Giá Trị Cao</td>
+<td class="py-3 px-space-md">Toàn quốc (63 Tỉnh Thành)</td>
+<td class="py-3 px-space-md font-data-tabular">Đơn hàng &gt; 5.000.000 VNĐ</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 font-semibold text-primary">
+<span class="w-2 h-2 rounded-full bg-primary"></span> VNPost EMS Bảo Đảm
+                </span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant">GHN Đồng Kiểm</td>
+<td class="py-3 px-space-md text-right">
+<button class="text-outline hover:text-on-surface" type="button"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- STICKY ACTION FOOTER BAR -->
+<div class="sticky bottom-4 z-20 mt-space-3xl p-space-md rounded-xl bg-surface-container-lowest/95 backdrop-blur-md shadow-xl flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm text-body-sm font-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-emerald-600">published_with_changes</span>
+<span class="">Các thông số đã chỉnh sửa được tự động lưu bản nháp tại Local Storage.</span>
+</div>
+<div class="flex items-center gap-space-md w-full sm:w-auto justify-end">
+<button class="px-space-lg h-[38px] rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" id="btn-reset-config" type="button">
+        Khôi phục mặc định
+      </button>
+<button class="px-space-xl h-[38px] rounded-lg bg-secondary-container hover:bg-secondary text-on-secondary font-label-md text-label-md font-semibold transition-colors shadow-sm flex items-center gap-space-xs" id="btn-save-config" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span class="">Lưu toàn bộ cấu hình tích hợp</span>
+</button>
+</div>
+</div>
+<!-- Notification Toast Container -->
+<div class="fixed bottom-20 right-8 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-space-sm px-space-lg py-space-md bg-primary text-on-primary rounded-xl shadow-2xl" id="toast-notify">
+<span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold">Thành công</span>
+<span class="font-body-sm text-body-sm text-surface-variant" id="toast-message">Đã lưu và đồng bộ cấu hình tới các API gateway!</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Tab Switching Logic
+    const tabPaymentBtn = document.getElementById('tab-payment-btn');
+    const tabShippingBtn = document.getElementById('tab-shipping-btn');
+    const sectionPayment = document.getElementById('section-payment');
+    const sectionShipping = document.getElementById('section-shipping');
+
+    function setActiveTab(isPayment) {
+      if (isPayment) {
+        tabPaymentBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+        tabPaymentBtn.classList.remove('text-on-surface-variant');
+        tabShippingBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+        tabShippingBtn.classList.add('text-on-surface-variant');
+        
+        sectionPayment.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        tabShippingBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+        tabShippingBtn.classList.remove('text-on-surface-variant');
+        tabPaymentBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+        tabPaymentBtn.classList.add('text-on-surface-variant');
+
+        sectionShipping.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    if (tabPaymentBtn && tabShippingBtn) {
+      tabPaymentBtn.addEventListener('click', () => setActiveTab(true));
+      tabShippingBtn.addEventListener('click', () => setActiveTab(false));
+    }
+
+    // Toggle Secret Key Visibility
+    const btnToggleKey = document.getElementById('btn-toggle-key');
+    const inputSecretKey = document.getElementById('input-secret-key');
+    if (btnToggleKey && inputSecretKey) {
+      btnToggleKey.addEventListener('click', () => {
+        const isPassword = inputSecretKey.type === 'password';
+        inputSecretKey.type = isPassword ? 'text' : 'password';
+        btnToggleKey.innerHTML = `<span class="material-symbols-outlined text-[18px]">${isPassword ? 'visibility_off' : 'visibility'}</span>`;
+      });
+    }
+
+    // Ping Test Interaction
+    const btnPingVnpay = document.getElementById('btn-ping-vnpay');
+    const pingResult = document.getElementById('vnpay-ping-result');
+    if (btnPingVnpay && pingResult) {
+      btnPingVnpay.addEventListener('click', () => {
+        pingResult.innerHTML = `<span class="material-symbols-outlined text-[16px] text-outline animate-spin">progress_activity</span> <span>Đang ping...</span>`;
+        setTimeout(() => {
+          const lat = Math.floor(Math.random() * 25) + 18;
+          pingResult.innerHTML = `<span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span> <span>200 OK (${lat}ms)</span>`;
+          showToast(`Đã kiểm tra cổng VNPay: Thời gian phản hồi ${lat}ms`);
+        }, 600);
+      });
+    }
+
+    // Toast Utility
+    const toast = document.getElementById('toast-notify');
+    const toastMsg = document.getElementById('toast-message');
+    function showToast(message) {
+      if (!toast) return;
+      if (toastMsg) toastMsg.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3200);
+    }
+
+    // Save and Global Ping buttons
+    const btnSaveConfig = document.getElementById('btn-save-config');
+    if (btnSaveConfig) {
+      btnSaveConfig.addEventListener('click', () => {
+        showToast('Toàn bộ thông số kết nối API & điều phối đã được đồng bộ an toàn!');
+      });
+    }
+
+    const btnGlobalPing = document.getElementById('btn-global-ping');
+    if (btnGlobalPing) {
+      btnGlobalPing.addEventListener('click', () => {
+        showToast('Đang phát tín hiệu Ping đến 7 đối tác: Tất cả đều sẵn sàng!');
+      });
+    }
+  })();
+</script></main></div>
+</body></html>
