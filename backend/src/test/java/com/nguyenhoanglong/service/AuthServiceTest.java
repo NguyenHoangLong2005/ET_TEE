@@ -82,7 +82,7 @@ class AuthServiceTest {
         when(cartService.mergeGuestCartIntoUserCart("user@example.com", "guest-xyz"))
                 .thenReturn(CartMergeResult.empty());
 
-        AuthDto.AuthResponse res = authService.login(req);
+        AuthDto.AuthResponse res = authService.login(req, "127.0.0.1");
 
         assertThat(res.getToken()).isEqualTo("jwt-token");
         assertThat(res.getEmail()).isEqualTo("user@example.com");
@@ -103,7 +103,7 @@ class AuthServiceTest {
         req.setPassword("password");
         // no guest token
 
-        AuthDto.AuthResponse res = authService.login(req);
+        AuthDto.AuthResponse res = authService.login(req, "127.0.0.1");
 
         assertThat(res.getToken()).isEqualTo("jwt-token");
         verify(wishlistService, never()).mergeGuestWishlistToUser(any(), any());
@@ -123,7 +123,7 @@ class AuthServiceTest {
         req.setPassword("password");
         req.setGuestToken("guest-xyz");
 
-        AuthDto.AuthResponse res = authService.login(req);
+        AuthDto.AuthResponse res = authService.login(req, "127.0.0.1");
 
         // Login must still succeed even if the merge failed
         assertThat(res.getToken()).isEqualTo("jwt-token");
@@ -144,7 +144,7 @@ class AuthServiceTest {
         req.setPassword("password");
         req.setGuestToken("guest-xyz");
 
-        AuthDto.AuthResponse res = authService.login(req);
+        AuthDto.AuthResponse res = authService.login(req, "127.0.0.1");
 
         assertThat(res.getToken()).isEqualTo("jwt-token");
         assertThat(res.getCartWarnings()).containsExactly("stock warning 1", "stock warning 2");
@@ -159,7 +159,7 @@ class AuthServiceTest {
         req.setEmail("user@example.com");
         req.setPassword("wrong");
 
-        assertThatThrownBy(() -> authService.login(req))
+        assertThatThrownBy(() -> authService.login(req, "127.0.0.1"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("không đúng");
         verify(jwtService, never()).generateToken(any(Map.class), anyString(), anyString());
@@ -180,7 +180,7 @@ class AuthServiceTest {
         req.setEmail("u@example.com");
         req.setPassword("password");
 
-        assertThatThrownBy(() -> authService.login(req)).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(() -> authService.login(req, "127.0.0.1")).isInstanceOf(RuntimeException.class)
                 .hasMessage("UNVERIFIED");
         verify(jwtService, never()).generateToken(any(Map.class), anyString(), anyString());
     }
@@ -196,7 +196,7 @@ class AuthServiceTest {
         req.setEmail("user@example.com");
         req.setPassword("password");
 
-        assertThatThrownBy(() -> authService.login(req))
+        assertThatThrownBy(() -> authService.login(req, "127.0.0.1"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("bị khóa");
     }
@@ -215,7 +215,7 @@ class AuthServiceTest {
         req.setEmail("user@example.com");
         req.setPassword("password");
 
-        authService.login(req);
+        authService.login(req, "127.0.0.1");
 
         Map<String, Object> claims = captor.getValue();
         assertThat(claims).containsEntry("role", "USER");

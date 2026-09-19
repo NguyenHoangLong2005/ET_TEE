@@ -52,7 +52,13 @@ public class DataSeederService {
             return;
         }
 
-        File jsonFile = new File("../valid-products.json");
+        File jsonFile = new File("src/main/resources/data/valid-products.json");
+        if (!jsonFile.exists()) {
+            jsonFile = new File("backend/src/main/resources/data/valid-products.json");
+        }
+        if (!jsonFile.exists()) {
+            jsonFile = new File("../valid-products.json");
+        }
         if (!jsonFile.exists()) {
             jsonFile = new File("valid-products.json");
         }
@@ -122,6 +128,7 @@ public class DataSeederService {
                     variant.setSku(vNode.get("sku").asText());
                     variant.setColor(vNode.has("colorName") ? vNode.get("colorName").asText() : null);
                     variant.setColorHex(vNode.has("colorHex") ? vNode.get("colorHex").asText() : null);
+                    variant.setColorCode(vNode.has("colorCode") ? vNode.get("colorCode").asText() : null);
                     variant.setSize(vNode.has("size") ? vNode.get("size").asText() : null);
                     variant.setStock(vNode.get("stockQuantity").asInt());
                     variant.setAvailableQuantity(vNode.get("availableQuantity").asInt());
@@ -139,6 +146,8 @@ public class DataSeederService {
                     img.setAlt(imgNode.has("alt") ? imgNode.get("alt").asText() : "");
                     img.setIsPrimary(imgNode.has("isPrimary") && imgNode.get("isPrimary").asBoolean());
                     img.setSortOrder(imgNode.has("sortOrder") ? imgNode.get("sortOrder").asInt() : 0);
+                    img.setColorCode(imgNode.has("colorCode") ? imgNode.get("colorCode").asText() : null);
+                    img.setColorHex(imgNode.has("colorHex") ? imgNode.get("colorHex").asText() : null);
                     product.addImage(img);
                 }
             }

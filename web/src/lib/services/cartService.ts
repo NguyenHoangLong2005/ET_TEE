@@ -21,11 +21,13 @@ export type CartData = {
   totalQuantity: number;
 };
 
+import { getApiBaseUrl } from '@/lib/api-config';
+import { getAuthHeaders } from '@/lib/auth';
+
 const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+  return getApiBaseUrl();
 };
 
-import { getAuthHeaders } from '@/lib/auth';
 
 const getHeaders = () => {
   return getAuthHeaders(true) as Record<string, string>;

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { errorMessage, staffAction, staffList } from "@/lib/staff-api";
+import SearchInput from "@/components/shared/SearchInput";
 
 type Inventory = {
   id: number;
@@ -20,6 +21,18 @@ export default function WarehouseInventoryPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const lowerQ = searchQuery.toLowerCase();
+    return items.filter(item => 
+      (item.productName || "").toLowerCase().includes(lowerQ) ||
+      (item.productId?.toString() || "").includes(lowerQ) ||
+      (item.warehouseLocation || "").toLowerCase().includes(lowerQ)
+    );
+  }, [items, searchQuery]);
+
   const load = useCallback(async (signal?: AbortSignal) => {
     setError(""); setLoading(true);
     try { setItems(await staffList<Inventory>("/api/staff/warehouse/inventory", signal)); }
@@ -83,6 +96,9 @@ export default function WarehouseInventoryPage() {
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/shipments">Bàn giao</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/replenishment">Đề xuất nhập thêm</Link>
         </nav>
+        <div className="w-full md:w-64">
+          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Tìm tên SP, ID, vị trí..." />
+        </div>
         {error && <p role="alert" className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-800 bg-emerald-950/50 p-3 text-sm text-emerald-200">{notice}</p>}
         {loading ? <p role="status">Đang tải tồn kho...</p> : (
@@ -90,7 +106,7 @@ export default function WarehouseInventoryPage() {
             <table className="w-full min-w-[850px] text-sm">
               <thead className="bg-slate-800 text-left text-slate-300"><tr>{["Sản phẩm / ID", "Vị trí", "Tồn thực tế", "Đã giữ", "Khả dụng", "Mức nhập lại", "Thao tác"].map((label) => <th scope="col" key={label} className="p-3">{label}</th>)}</tr></thead>
               <tbody>
-                {items.map((item) => <tr key={item.id} className="border-t border-slate-800 align-top">
+                {filteredItems.map((item) => <tr key={item.id} className="border-t border-slate-800 align-top">
                   <td className="p-3 font-medium">{item.productName}<div className="text-xs text-slate-500">SP #{item.productId} · tồn #{item.id}</div></td>
                   <td className="p-3">{item.warehouseLocation || "Chưa gán"}</td>
                   <td className="p-3">{item.quantityOnHand}</td>
@@ -99,7 +115,7 @@ export default function WarehouseInventoryPage() {
                   <td className="p-3">{item.reorderLevel}</td>
                   <td className="space-x-2 p-3"><button disabled={busy === item.id} onClick={() => void updateLocation(item)} className="rounded bg-sky-700 px-3 py-1.5 text-xs disabled:opacity-50">Sửa vị trí</button><button disabled={busy === item.id} onClick={() => void requestAdjustment(item)} className="rounded bg-orange-700 px-3 py-1.5 text-xs disabled:opacity-50">Đề nghị điều chỉnh</button></td>
                 </tr>)}
-                {items.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-slate-400">Chưa có dữ liệu tồn kho.</td></tr>}
+                {filteredItems.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-slate-400">Không tìm thấy dữ liệu.</td></tr>}
               </tbody>
             </table>
           </div>

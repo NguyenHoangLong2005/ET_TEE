@@ -228,6 +228,9 @@ public class ReviewService {
         orderItem.setReviewed(true);
         orderItemRepository.save(orderItem);
         
+        // Update Product stats atomically
+        productRepository.recalculateProductRating(product.getId());
+        
         return mapToResponse(review);
     }
 

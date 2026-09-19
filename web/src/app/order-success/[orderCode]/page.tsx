@@ -7,6 +7,8 @@ import { CheckCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getAuthHeaders, getGuestCartToken } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
+
 
 export default function OrderSuccessPage() {
   const { orderCode } = useParams();
@@ -27,7 +29,7 @@ export default function OrderSuccessPage() {
         if (guestToken && !headers['Authorization']) {
           headers['X-Guest-Cart-Token'] = guestToken;
         }
-        const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081'}/api/orders/${orderCode}`, {
+        const orderRes = await fetch(`${getApiBaseUrl()}/api/orders/${orderCode}`, {
           headers
         });
         const orderJson = await orderRes.json();
@@ -35,7 +37,7 @@ export default function OrderSuccessPage() {
           setOrder(orderJson.data);
           
           if (orderJson.data.paymentMethod === 'BANK_TRANSFER') {
-            const bankRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081'}/api/payment-methods/bank-transfer`);
+            const bankRes = await fetch(`${getApiBaseUrl()}/api/payment-methods/bank-transfer`);
             const bankJson = await bankRes.json();
             if (bankJson.success) {
               setBankConfig(bankJson.data);

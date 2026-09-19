@@ -25,6 +25,9 @@ public class ProductVariant {
     @Column(name = "color_hex", length = 50)
     private String colorHex;
 
+    @Column(name = "color_code", length = 30)
+    private String colorCode;
+
     @Column(length = 50)
     private String size;
 
@@ -67,6 +70,9 @@ public class ProductVariant {
     public String getColorHex() { return colorHex; }
     public void setColorHex(String colorHex) { this.colorHex = colorHex; }
 
+    public String getColorCode() { return colorCode; }
+    public void setColorCode(String colorCode) { this.colorCode = colorCode; }
+
     public BigDecimal getSalePrice() { return salePrice; }
     public void setSalePrice(BigDecimal salePrice) { this.salePrice = salePrice; }
 
@@ -92,6 +98,7 @@ public class ProductVariant {
         private String sku;
         private String color;
         private String colorHex;
+        private String colorCode;
         private String size;
         private BigDecimal price;
         private BigDecimal salePrice;
@@ -103,6 +110,7 @@ public class ProductVariant {
         public ProductVariantBuilder sku(String sku) { this.sku = sku; return this; }
         public ProductVariantBuilder color(String color) { this.color = color; return this; }
         public ProductVariantBuilder colorHex(String colorHex) { this.colorHex = colorHex; return this; }
+        public ProductVariantBuilder colorCode(String colorCode) { this.colorCode = colorCode; return this; }
         public ProductVariantBuilder size(String size) { this.size = size; return this; }
         public ProductVariantBuilder price(BigDecimal price) { this.price = price; return this; }
         public ProductVariantBuilder salePrice(BigDecimal salePrice) { this.salePrice = salePrice; return this; }
@@ -112,6 +120,7 @@ public class ProductVariant {
         public ProductVariant build() {
             ProductVariant variant = new ProductVariant(id, product, sku, color, size, price, stock);
             variant.setColorHex(colorHex);
+            variant.setColorCode(colorCode);
             variant.setSalePrice(salePrice);
             variant.setAvailableQuantity(availableQuantity);
             return variant;

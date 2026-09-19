@@ -283,6 +283,7 @@ public class CartService {
                 imageUrl,
                 variant.getColor(),
                 variant.getColorHex(),
+                variant.getColorCode(),
                 variant.getSize(),
                 variant.getPrice(),
                 variant.getSalePrice(),

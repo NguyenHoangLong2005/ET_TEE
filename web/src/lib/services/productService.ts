@@ -3,6 +3,7 @@ export interface ProductVariant {
   sku: string;
   color: string;
   colorHex?: string;
+  colorCode?: string;
   size: string;
   price: number;
   salePrice?: number;
@@ -34,7 +35,10 @@ export interface Product {
   styleTags?: string[];
   recommendationTags?: string[];
   variants: ProductVariant[];
-  images: { imageUrl: string; alt?: string; isPrimary?: boolean; sortOrder?: number }[];
+  images: { imageUrl: string; alt?: string; isPrimary?: boolean; sortOrder?: number; colorCode?: string; colorHex?: string; }[];
+  averageRating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -50,24 +54,30 @@ export interface ProductStats {
   targetGroup: Record<string, number>;
   productType: Record<string, number>;
   category: Record<string, number>;
+  sizes: { adult: string[]; kids: string[] };
   totalActive: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+import { getApiBaseUrl } from '@/lib/api-config';
+
+const getBaseUrl = () => getApiBaseUrl();
 
 export const ProductService = {
   
   async getProducts(params: Record<string, any>): Promise<PaginatedResponse<Product>> {
-    const url = new URL(`${API_BASE_URL}/api/products`);
+    const searchParams = new URLSearchParams();
     
     // Append query params
     Object.keys(params).forEach(key => {
       if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        url.searchParams.append(key, String(params[key]));
+        searchParams.append(key, String(params[key]));
       }
     });
 
-    const res = await fetch(url.toString(), {
+    const queryString = searchParams.toString();
+    const endpoint = `${getBaseUrl()}/api/products${queryString ? `?${queryString}` : ''}`;
+
+    const res = await fetch(endpoint, {
       next: { revalidate: 60 } // optional Next.js cache
     });
 
@@ -78,9 +88,10 @@ export const ProductService = {
     return json.data;
   },
 
+
   async getProductBySlug(slug: string): Promise<Product | undefined> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${slug}`, {
+      const res = await fetch(`${getBaseUrl()}/api/products/${slug}`, {
         next: { revalidate: 60 }
       });
       if (!res.ok) return undefined;
@@ -94,7 +105,7 @@ export const ProductService = {
 
   async getSimilarProducts(slug: string): Promise<Product[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${slug}/similar`);
+      const res = await fetch(`${getBaseUrl()}/api/products/${slug}/similar`);
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -105,7 +116,7 @@ export const ProductService = {
 
   async getOutfits(slug: string): Promise<Product[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${slug}/outfits`);
+      const res = await fetch(`${getBaseUrl()}/api/products/${slug}/outfits`);
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -136,7 +147,7 @@ export const ProductService = {
   },
 
   async getStats(): Promise<ProductStats> {
-    const res = await fetch(`${API_BASE_URL}/api/products/stats`, {
+    const res = await fetch(`${getBaseUrl()}/api/products/stats`, {
       next: { revalidate: 60 }
     });
     if (!res.ok) {

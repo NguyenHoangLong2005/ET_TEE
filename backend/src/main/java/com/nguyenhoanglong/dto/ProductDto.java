@@ -31,6 +31,9 @@ public class ProductDto {
     private List<String> recommendationTags = new ArrayList<>();
     private List<ProductVariantDto> variants = new ArrayList<>();
     private List<Map<String, Object>> images = new ArrayList<>();
+    private Double averageRating = 0.0;
+    private Integer totalReviews = 0;
+    private Integer soldCount = 0;
 
     public ProductDto() {}
 
@@ -83,6 +86,12 @@ public class ProductDto {
     public void setVariants(List<ProductVariantDto> variants) { this.variants = variants; }
     public List<Map<String, Object>> getImages() { return images; }
     public void setImages(List<Map<String, Object>> images) { this.images = images; }
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+    public Integer getTotalReviews() { return totalReviews; }
+    public void setTotalReviews(Integer totalReviews) { this.totalReviews = totalReviews; }
+    public Integer getSoldCount() { return soldCount; }
+    public void setSoldCount(Integer soldCount) { this.soldCount = soldCount; }
 
     public static ProductDtoBuilder builder() {
         return new ProductDtoBuilder();
@@ -115,6 +124,9 @@ public class ProductDto {
         public ProductDtoBuilder recommendationTags(List<String> recommendationTags) { dto.setRecommendationTags(recommendationTags); return this; }
         public ProductDtoBuilder variants(List<ProductVariantDto> variants) { dto.setVariants(variants); return this; }
         public ProductDtoBuilder images(List<Map<String, Object>> images) { dto.setImages(images); return this; }
+        public ProductDtoBuilder averageRating(Double averageRating) { dto.setAverageRating(averageRating); return this; }
+        public ProductDtoBuilder totalReviews(Integer totalReviews) { dto.setTotalReviews(totalReviews); return this; }
+        public ProductDtoBuilder soldCount(Integer soldCount) { dto.setSoldCount(soldCount); return this; }
 
         public ProductDto build() { return dto; }
     }

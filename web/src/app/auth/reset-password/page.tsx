@@ -32,9 +32,27 @@ function ResetPasswordForm() {
   }, [searchParams, router]);
 
   useEffect(() => {
+    const expiryTime = sessionStorage.getItem('resetPwdCooldownExpiry');
+    if (expiryTime) {
+      const remaining = Math.max(0, Math.floor((parseInt(expiryTime) - Date.now()) / 1000));
+      setResendCooldown(remaining);
+      if (remaining === 0) {
+        sessionStorage.removeItem('resetPwdCooldownExpiry');
+      }
+    } else {
+      sessionStorage.setItem('resetPwdCooldownExpiry', (Date.now() + 60000).toString());
+    }
+  }, []);
+
+  useEffect(() => {
     let timer: NodeJS.Timeout;
     if (resendCooldown > 0) {
-      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+        if (resendCooldown - 1 <= 0) {
+          sessionStorage.removeItem('resetPwdCooldownExpiry');
+        }
+      }, 1000);
     }
     return () => clearTimeout(timer);
   }, [resendCooldown]);
@@ -84,6 +102,7 @@ function ResetPasswordForm() {
       await authService.resendPasswordResetCode({ email });
       setSuccessMessage('Mã khôi phục mới đã được gửi');
       setResendCooldown(60);
+      sessionStorage.setItem('resetPwdCooldownExpiry', (Date.now() + 60000).toString());
     } catch (err: any) {
       setError(err.message || 'Lỗi gửi lại mã khôi phục');
     } finally {
@@ -154,6 +173,8 @@ function ResetPasswordForm() {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#e50027] focus:border-[#e50027] sm:text-sm"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onPaste={(e) => e.preventDefault()}
+                  onCopy={(e) => e.preventDefault()}
                 />
               </div>
             </div>

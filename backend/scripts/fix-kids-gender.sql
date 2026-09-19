@@ -1,0 +1,3 @@
+-- Placeholder migration for fixing kids gender data
+-- This SQL file is optional; the actual fix is performed via a CommandLineRunner in Java.
+-- If using Flyway in future, place this script in src/main/resources/db/migration/V20230913__fix_kids_gender.sql

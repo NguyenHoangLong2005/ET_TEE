@@ -12,7 +12,7 @@ public interface ProductService {
     PaginatedResponseDto<ProductDto> getProducts(
             String q, String targetGroup, String gender, String productType, String category, String collection,
             String color, String adultSize, String kidsSize, String accessorySize,
-            BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
+            BigDecimal minPrice, BigDecimal maxPrice, String status, Pageable pageable);
 
     ProductDto getProductById(Long id);
     ProductDto getProductBySlug(String slug);

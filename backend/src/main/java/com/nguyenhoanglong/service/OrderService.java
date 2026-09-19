@@ -38,6 +38,9 @@ public class OrderService {
     @Autowired
     private MarketingService marketingService;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     @Transactional
     public OrderResponse checkout(User user, String guestToken, CheckoutRequest request) {
         Cart cart;
@@ -112,6 +115,11 @@ public class OrderService {
             variant.setAvailableQuantity(variant.getAvailableQuantity() - cartItem.getQuantity());
             variant.setStock(variant.getStock() - cartItem.getQuantity());
             variantRepository.save(variant);
+
+            // Increment sold count
+            Product product = variant.getProduct();
+            product.setSoldCount((product.getSoldCount() != null ? product.getSoldCount() : 0) + cartItem.getQuantity());
+            productRepository.save(product);
 
             // Create snapshot
             OrderItem orderItem = new OrderItem();

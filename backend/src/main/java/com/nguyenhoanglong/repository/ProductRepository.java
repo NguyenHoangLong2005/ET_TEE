@@ -40,4 +40,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     // Stats: kids products broken down by gender (for sidebar boy/girl counts)
     @Query("SELECT p.gender, COUNT(p) FROM Product p WHERE p.status = 'ACTIVE' AND p.targetGroup = 'kids' GROUP BY p.gender")
     java.util.List<Object[]> countActiveKidsByGender();
+
+    // Stats: distinct sizes and their target groups
+    @Query("SELECT DISTINCT v.size, p.targetGroup FROM ProductVariant v JOIN v.product p WHERE p.status = 'ACTIVE' AND v.size IS NOT NULL")
+    java.util.List<Object[]> findDistinctSizesAndTargetGroups();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.totalReviews = (SELECT COUNT(r) FROM ProductReview r WHERE r.product.id = p.id AND r.status = 'APPROVED'), p.averageRating = COALESCE((SELECT CAST(AVG(r.rating) AS Double) FROM ProductReview r WHERE r.product.id = p.id AND r.status = 'APPROVED'), 0.0) WHERE p.id = :productId")
+    void recalculateProductRating(@org.springframework.data.repository.query.Param("productId") Long productId);
 }

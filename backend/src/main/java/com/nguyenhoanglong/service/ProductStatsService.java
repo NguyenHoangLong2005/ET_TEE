@@ -95,6 +95,25 @@ public class ProductStatsService {
         }
         dto.setCategory(cat);
 
+        // sizes
+        Map<String, List<String>> sizesMap = new LinkedHashMap<>();
+        List<String> adultSizes = new java.util.ArrayList<>();
+        List<String> kidsSizes = new java.util.ArrayList<>();
+        
+        for (Object[] row : productRepository.findDistinctSizesAndTargetGroups()) {
+            String size = (String) row[0];
+            String tGroup = (String) row[1];
+            if ("kids".equals(tGroup) || "baby".equals(tGroup) || "boys".equals(tGroup) || "girls".equals(tGroup)) {
+                if (!kidsSizes.contains(size)) kidsSizes.add(size);
+            } else {
+                if (!adultSizes.contains(size) && !"One Size".equals(size)) adultSizes.add(size);
+            }
+        }
+        
+        sizesMap.put("adult", adultSizes);
+        sizesMap.put("kids", kidsSizes);
+        dto.setSizes(sizesMap);
+
         return dto;
     }
 }

@@ -1,6 +1,8 @@
 import { clearAuthSession, getAuthToken, setAuthSession } from "@/lib/auth";
+import { getApiBaseUrl } from "@/lib/api-config";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+const getApiBase = () => getApiBaseUrl();
+
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken() {
@@ -8,7 +10,7 @@ async function refreshAccessToken() {
   refreshPromise = (async () => {
     const refreshToken = typeof window !== "undefined" ? window.localStorage.getItem("ettee_refresh_token") : null;
     if (!refreshToken) return false;
-    const response = await fetch(`${API_BASE}/api/auth/refresh`, {
+    const response = await fetch(`${getApiBase()}/api/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
@@ -31,7 +33,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    response = await fetch(`${getApiBase()}${path}`, { ...options, headers });
   } catch {
     throw new Error("Không kết nối được tới backend. Vui lòng kiểm tra server.");
   }

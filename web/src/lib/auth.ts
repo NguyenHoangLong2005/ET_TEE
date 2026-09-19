@@ -12,7 +12,7 @@ export type StoredUser = {
 };
 
 export const AUTH_STORAGE = {
-  accessToken: "ettee_access_token",
+  accessToken: "auth_token",
   refreshToken: "ettee_refresh_token",
   user: "ettee_user",
   cart: "ettee_cart",
@@ -64,7 +64,7 @@ export function normalizePermissionList(values?: string[] | null) {
 export function getStoredUser(): StoredUser | null {
   if (typeof window === "undefined") return null;
 
-  const raw = window.localStorage.getItem(AUTH_STORAGE.user);
+  const raw = window.localStorage.getItem(AUTH_STORAGE.user) || window.sessionStorage.getItem(AUTH_STORAGE.user);
   if (!raw) return null;
 
   try {
@@ -84,7 +84,6 @@ export function setAuthSession(payload: StoredUser) {
 
   if (payload.accessToken) {
     window.localStorage.setItem(AUTH_STORAGE.accessToken, payload.accessToken);
-    window.localStorage.setItem('auth_token', payload.accessToken);
   }
 
   if (payload.refreshToken) {
@@ -110,12 +109,15 @@ export function clearAuthSession() {
   window.localStorage.removeItem(AUTH_STORAGE.accessToken);
   window.localStorage.removeItem(AUTH_STORAGE.refreshToken);
   window.localStorage.removeItem(AUTH_STORAGE.user);
-  window.localStorage.removeItem('auth_token');
+
+  window.sessionStorage.removeItem(AUTH_STORAGE.accessToken);
+  window.sessionStorage.removeItem(AUTH_STORAGE.refreshToken);
+  window.sessionStorage.removeItem(AUTH_STORAGE.user);
 }
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(AUTH_STORAGE.accessToken) || window.localStorage.getItem('auth_token');
+  return window.localStorage.getItem(AUTH_STORAGE.accessToken) || window.sessionStorage.getItem(AUTH_STORAGE.accessToken);
 }
 
 export function getGuestCartToken(): string | null {
@@ -140,10 +142,13 @@ export function hasAnyPermission(userPermissions: string[] | null | undefined, a
   return normalizedAllowed.some((permission) => normalizedUserPermissions.includes(permission));
 }
 
-export async function refreshCurrentUser(apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080") {
+import { getApiBaseUrl } from "@/lib/api-config";
+
+export async function refreshCurrentUser(apiBase = getApiBaseUrl()) {
   if (typeof window === "undefined" || !getAuthToken()) return null;
 
   const response = await fetch(`${apiBase}/api/auth/me`, {
+
     headers: getAuthHeaders(),
     cache: "no-store",
   });

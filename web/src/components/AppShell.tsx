@@ -14,9 +14,9 @@ const NAV_ITEMS = [
 
 const OPERATIONS_ITEMS = [
   { href: "/staff/dashboard", label: "Cửa hàng", roles: ["ADMIN", "SHOP_OWNER"], permissions: ["report.view"] },
-  { href: "/staff/orders", label: "Đơn vận hành", roles: ["ADMIN", "SHOP_OWNER", "CSKH_STAFF"], permissions: ["order.view"] },
-  { href: "/staff/support", label: "CSKH", roles: ["ADMIN", "SHOP_OWNER", "CSKH_STAFF"], permissions: ["support.handle", "return.handle", "refund.process"] },
-  { href: "/staff/products", label: "Sản phẩm & kho", roles: ["ADMIN", "SHOP_OWNER"], permissions: ["product.manage"] },
+  { href: "/staff/orders", label: "Đơn vận hành", roles: ["ADMIN", "SHOP_OWNER", "SALES_STAFF"], permissions: ["order.view"] },
+  { href: "/staff/support", label: "CSKH", roles: ["ADMIN", "SHOP_OWNER", "SALES_STAFF"], permissions: ["support.handle", "return.handle", "refund.process"] },
+  { href: "/staff/products", label: "Sản phẩm & kho", roles: ["ADMIN", "SHOP_OWNER", "MARKETING_STAFF", "WAREHOUSE_STAFF"], permissions: ["product.manage"] },
   { href: "/admin/dashboard", label: "Admin", roles: ["ADMIN"], permissions: ["report.view"] },
   { href: "/admin/users", label: "RBAC", roles: ["ADMIN"], permissions: ["account.manage"] },
   { href: "/admin/ai-config", label: "AI config", roles: ["ADMIN"], permissions: ["feature.manage", "model.manage"] },
@@ -93,7 +93,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  <Link href="/profile" className="hidden sm:inline-flex px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-100 text-xs font-semibold hover:bg-slate-800 transition">
+                  <Link href={
+                    hasAnyRole(user.roles, ["ADMIN"]) ? "/admin/dashboard" :
+                    hasAnyRole(user.roles, ["SHOP_OWNER"]) ? "/staff/dashboard" :
+                    hasAnyRole(user.roles, ["MARKETING_STAFF"]) ? "/staff/dashboard/marketing" :
+                    hasAnyRole(user.roles, ["SALES_STAFF"]) ? "/staff/dashboard/sales" :
+                    hasAnyRole(user.roles, ["WAREHOUSE_STAFF"]) ? "/staff/dashboard/warehouse" :
+                    hasAnyRole(user.roles, ["SHIPPING_STAFF"]) ? "/staff/dashboard/shipping" :
+                    "/profile"
+                  } className="hidden sm:inline-flex px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-100 text-xs font-semibold hover:bg-slate-800 transition">
                     {user.fullName || user.email || "Tài khoản"}
                   </Link>
                   <button

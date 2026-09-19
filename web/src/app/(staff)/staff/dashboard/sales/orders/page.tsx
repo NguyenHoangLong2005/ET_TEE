@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { errorMessage, staffAction, staffList } from "@/lib/staff-api";
+import SearchInput from "@/components/shared/SearchInput";
 
 type Order = {
   id?: number; orderId?: number; orderCode?: string; customerName?: string; customerEmail?: string;
@@ -22,6 +23,18 @@ export default function SalesOrdersPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery.trim()) return orders;
+    const lowerQ = searchQuery.toLowerCase();
+    return orders.filter(o => 
+      (o.orderCode || "").toLowerCase().includes(lowerQ) ||
+      (o.customerName || "").toLowerCase().includes(lowerQ) ||
+      (o.phone || "").includes(lowerQ) ||
+      (o.id?.toString() || "").includes(lowerQ)
+    );
+  }, [orders, searchQuery]);
 
   const load = useCallback(async (mode: "all" | "new" | "sla" = filter, signal?: AbortSignal) => {
     setLoading(true); setError("");
@@ -84,9 +97,12 @@ export default function SalesOrdersPage() {
         <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/sales/orders">Đơn cần xử lý</Link>
       </nav>
     <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-3xl font-bold">Xử lý đơn hàng</h1><p className="mt-2 text-sm text-slate-400">Kiểm tra, xác minh, xác nhận/hủy, ghi chú, yêu cầu giữ hàng và SLA.</p></div><button type="button" onClick={() => void load()} className="rounded bg-sky-700 px-4 py-2">Làm mới</button></header>
-    <div className="flex flex-wrap gap-2">{[{ key:"all", label:"Tất cả" },{ key:"new", label:"Đơn mới" },{ key:"sla", label:"Cảnh báo SLA" }].map(tab => <button type="button" key={tab.key} onClick={() => setFilter(tab.key as "all" | "new" | "sla")} className={`rounded px-4 py-2 text-sm ${filter === tab.key ? "bg-sky-600" : "bg-slate-800"}`}>{tab.label}</button>)}</div>
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap gap-2">{[{ key:"all", label:"Tất cả" },{ key:"new", label:"Đơn mới" },{ key:"sla", label:"Cảnh báo SLA" }].map(tab => <button type="button" key={tab.key} onClick={() => setFilter(tab.key as "all" | "new" | "sla")} className={`rounded px-4 py-2 text-sm ${filter === tab.key ? "bg-sky-600" : "bg-slate-800"}`}>{tab.label}</button>)}</div>
+      <div className="w-full md:w-64"><SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Tìm mã đơn, tên, SĐT..." /></div>
+    </div>
     {error && <p role="alert" className="rounded border border-red-700 bg-red-950 p-3 text-red-200">{error}</p>}{notice && <p role="status" className="rounded border border-emerald-700 bg-emerald-950 p-3 text-emerald-200">{notice}</p>}
-    {loading ? <p role="status">Đang tải đơn...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[1100px] text-sm"><thead className="bg-slate-800"><tr>{["Mã đơn", "Người nhận", "Liên hệ / Địa chỉ", "Trạng thái", "SLA", "Tổng tiền", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{orders.map(order => { const id=getId(order); const canVerify=pendingStatuses.includes(order.status); const canConfirm=order.status === "PENDING_CONFIRMATION"; const canCancel=!(["DELIVERED", "CANCELLED"].includes(order.status)); return <tr key={id ?? order.orderCode} className="border-t border-slate-800 align-top"><td className="p-3 font-bold">{order.orderCode ?? `#${id ?? "?"}`}</td><td className="p-3">{order.customerName || order.customerEmail || "—"}</td><td className="max-w-xs p-3 text-xs">{order.phone || "—"}<br />{order.shippingAddress || "Chưa có địa chỉ"}</td><td className="p-3">{order.status}</td><td className="p-3 text-xs">{order.slaDeadline ? new Date(order.slaDeadline).toLocaleString("vi-VN") : "—"}</td><td className="p-3">{Number(order.total || 0).toLocaleString("vi-VN")} ₫</td><td className="p-3"><div className="flex flex-wrap gap-2">{canVerify && <button disabled={busy !== null || id == null} onClick={() => verify(order)} className="rounded bg-sky-700 px-2 py-1.5 disabled:opacity-50">Xác minh</button>}{canConfirm && <button disabled={busy !== null || id == null} onClick={() => id != null && window.confirm(`Xác nhận đơn #${id}?`) && void perform(id,"confirm","POST")} className="rounded bg-emerald-700 px-2 py-1.5 disabled:opacity-50">Xác nhận</button>}{canCancel && <button disabled={busy !== null || id == null} onClick={() => cancel(order)} className="rounded bg-red-700 px-2 py-1.5 disabled:opacity-50">Hủy</button>}{order.status === "CONFIRMED" && <button disabled={busy !== null || id == null} onClick={() => reserve(order)} className="rounded bg-amber-700 px-2 py-1.5 disabled:opacity-50">Yêu cầu giữ</button>}<button disabled={busy !== null || id == null} onClick={() => addNote(order)} className="rounded bg-slate-700 px-2 py-1.5 disabled:opacity-50">Ghi chú</button><button disabled={id == null} onClick={() => void openNotes(order)} className="rounded border border-slate-600 px-2 py-1.5 disabled:opacity-50">Xem ghi chú</button></div></td></tr>; })}{!orders.length && <tr><td colSpan={7} className="p-6 text-center text-slate-400">Không có đơn phù hợp.</td></tr>}</tbody></table></div>}
+    {loading ? <p role="status">Đang tải đơn...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[1100px] text-sm"><thead className="bg-slate-800"><tr>{["Mã đơn", "Người nhận", "Liên hệ / Địa chỉ", "Trạng thái", "SLA", "Tổng tiền", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{filteredOrders.map(order => { const id=getId(order); const canVerify=pendingStatuses.includes(order.status); const canConfirm=order.status === "PENDING_CONFIRMATION"; const canCancel=!(["DELIVERED", "CANCELLED"].includes(order.status)); return <tr key={id ?? order.orderCode} className="border-t border-slate-800 align-top"><td className="p-3 font-bold">{order.orderCode ?? `#${id ?? "?"}`}</td><td className="p-3">{order.customerName || order.customerEmail || "—"}</td><td className="max-w-xs p-3 text-xs">{order.phone || "—"}<br />{order.shippingAddress || "Chưa có địa chỉ"}</td><td className="p-3">{order.status}</td><td className="p-3 text-xs">{order.slaDeadline ? new Date(order.slaDeadline).toLocaleString("vi-VN") : "—"}</td><td className="p-3">{Number(order.total || 0).toLocaleString("vi-VN")} ₫</td><td className="p-3"><div className="flex flex-wrap gap-2">{canVerify && <button disabled={busy !== null || id == null} onClick={() => verify(order)} className="rounded bg-sky-700 px-2 py-1.5 disabled:opacity-50">Xác minh</button>}{canConfirm && <button disabled={busy !== null || id == null} onClick={() => id != null && window.confirm(`Xác nhận đơn #${id}?`) && void perform(id,"confirm","POST")} className="rounded bg-emerald-700 px-2 py-1.5 disabled:opacity-50">Xác nhận</button>}{canCancel && <button disabled={busy !== null || id == null} onClick={() => cancel(order)} className="rounded bg-red-700 px-2 py-1.5 disabled:opacity-50">Hủy</button>}{order.status === "CONFIRMED" && <button disabled={busy !== null || id == null} onClick={() => reserve(order)} className="rounded bg-amber-700 px-2 py-1.5 disabled:opacity-50">Yêu cầu giữ</button>}<button disabled={busy !== null || id == null} onClick={() => addNote(order)} className="rounded bg-slate-700 px-2 py-1.5 disabled:opacity-50">Ghi chú</button><button disabled={id == null} onClick={() => void openNotes(order)} className="rounded border border-slate-600 px-2 py-1.5 disabled:opacity-50">Xem ghi chú</button></div></td></tr>; })}{!filteredOrders.length && <tr><td colSpan={7} className="p-6 text-center text-slate-400">Không có đơn phù hợp.</td></tr>}</tbody></table></div>}
     {selected && <section className="rounded-xl border border-slate-700 bg-slate-900 p-5"><div className="flex justify-between gap-3"><h2 className="font-bold">Ghi chú đơn {selected.orderCode ?? `#${getId(selected)}`}</h2><button onClick={() => setSelected(null)} className="text-sm text-slate-300">Đóng</button></div><div className="mt-3 space-y-2">{notes.map(note => <p key={note.id} className="rounded bg-slate-800 p-3 text-sm">{note.content} <span className="text-xs text-slate-400">{note.createdAt || ""}</span></p>)}{!notes.length && <p className="text-sm text-slate-400">Chưa có ghi chú.</p>}</div></section>}
   </div></main>;
 }

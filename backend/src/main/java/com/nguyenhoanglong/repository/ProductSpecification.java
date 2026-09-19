@@ -25,13 +25,12 @@ public class ProductSpecification {
             String kidsSize,
             String accessorySize,
             BigDecimal minPrice,
-            BigDecimal maxPrice) {
+            BigDecimal maxPrice,
+            String status) {
 
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Avoid duplicate rows when joining variants
-            query.distinct(true);
+            boolean needsDistinct = false;
 
             if (q != null && !q.trim().isEmpty()) {
                 String searchPattern = "%" + q.trim().toLowerCase() + "%";
@@ -41,63 +40,105 @@ public class ProductSpecification {
                 ));
             }
 
-            // Always enforce ACTIVE status so DRAFT/HIDDEN products are not exposed,
-            // unless a specific status was requested (which we'll override if it's not active contextually)
+            // Always enforce ACTIVE status so DRAFT/HIDDEN products are not exposed
             predicates.add(criteriaBuilder.equal(root.get("status"), "ACTIVE"));
 
-
-            if (targetGroup != null && !targetGroup.isEmpty()) {
-                // UI sidebar uses "boys"/"girls" for kids sub-segments. The DB
-                // stores everything under targetGroup="kids" plus a gender field.
-                if ("boys".equalsIgnoreCase(targetGroup)) {
-                    predicates.add(criteriaBuilder.equal(root.get("targetGroup"), "kids"));
-                    predicates.add(criteriaBuilder.or(
-                            criteriaBuilder.equal(root.get("gender"), "boy"),
-                            criteriaBuilder.equal(root.get("gender"), "boys")
-                    ));
-                } else if ("girls".equalsIgnoreCase(targetGroup)) {
-                    predicates.add(criteriaBuilder.equal(root.get("targetGroup"), "kids"));
-                    predicates.add(criteriaBuilder.or(
-                            criteriaBuilder.equal(root.get("gender"), "girl"),
-                            criteriaBuilder.equal(root.get("gender"), "girls")
-                    ));
-                } else {
-                    predicates.add(criteriaBuilder.equal(root.get("targetGroup"), targetGroup));
+            // Filter by product catalog status badges (sale, new, best) — supports multi-select comma-separated
+            if (status != null && !status.trim().isEmpty()) {
+                String[] statusArray = status.split(",");
+                List<Predicate> statusPredicates = new ArrayList<>();
+                for (String st : statusArray) {
+                    st = st.trim();
+                    if ("sale".equalsIgnoreCase(st)) {
+                        statusPredicates.add(criteriaBuilder.or(
+                                criteriaBuilder.equal(root.get("isSale"), true),
+                                criteriaBuilder.isNotNull(root.get("salePrice"))
+                        ));
+                    } else if ("new".equalsIgnoreCase(st)) {
+                        statusPredicates.add(criteriaBuilder.equal(root.get("isNew"), true));
+                    } else if ("best".equalsIgnoreCase(st) || "bestseller".equalsIgnoreCase(st)) {
+                        statusPredicates.add(criteriaBuilder.equal(root.get("isBestSeller"), true));
+                    }
+                }
+                if (!statusPredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(statusPredicates.toArray(new Predicate[0])));
                 }
             }
 
-            if (gender != null && !gender.isEmpty()) {
-                // For kids, if gender is provided, match that gender or "unisex" if we had one.
-                // The requirements say:
-                // Nếu targetGroup=kids&gender=boy -> chỉ trả sản phẩm kids có gender = boy hoặc boys.
-                // Nếu targetGroup=kids&gender=girl -> chỉ trả sản phẩm kids có gender = girl hoặc girls.
-                Predicate exactGender = criteriaBuilder.equal(root.get("gender"), gender);
-                Predicate pluralGender = criteriaBuilder.equal(root.get("gender"), gender + "s");
-                
-                // If gender is unisex in DB, maybe we show it? The requirement says:
-                // Nếu gender null/unisex thì chỉ hiện ở Bé trai/Bé gái nếu product thật sự unisex và muốn hiển thị cả hai. Nếu chưa chắc, tạm không đưa vào boy/girl riêng.
-                // So we will just filter by exact gender or plural gender.
+            // Filter by targetGroup — supports multi-select comma-separated
+            if (targetGroup != null && !targetGroup.trim().isEmpty()) {
+                String[] tgArray = targetGroup.split(",");
+                List<Predicate> tgPredicates = new ArrayList<>();
+                for (String tg : tgArray) {
+                    tg = tg.trim();
+                    if ("boys".equalsIgnoreCase(tg)) {
+                        tgPredicates.add(criteriaBuilder.and(
+                                criteriaBuilder.equal(root.get("targetGroup"), "kids"),
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("gender"), "boy"),
+                                        criteriaBuilder.equal(root.get("gender"), "boys")
+                                )
+                        ));
+                    } else if ("girls".equalsIgnoreCase(tg)) {
+                        tgPredicates.add(criteriaBuilder.and(
+                                criteriaBuilder.equal(root.get("targetGroup"), "kids"),
+                                criteriaBuilder.or(
+                                        criteriaBuilder.equal(root.get("gender"), "girl"),
+                                        criteriaBuilder.equal(root.get("gender"), "girls")
+                                )
+                        ));
+                    } else {
+                        tgPredicates.add(criteriaBuilder.equal(root.get("targetGroup"), tg));
+                    }
+                }
+                if (!tgPredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(tgPredicates.toArray(new Predicate[0])));
+                }
+            }
+
+            if (gender != null && !gender.trim().isEmpty()) {
+                Predicate exactGender = criteriaBuilder.equal(root.get("gender"), gender.trim());
+                Predicate pluralGender = criteriaBuilder.equal(root.get("gender"), gender.trim() + "s");
                 predicates.add(criteriaBuilder.or(exactGender, pluralGender));
             }
 
-            if (productType != null && !productType.isEmpty()) {
-                // Sidebar "Family Set" maps to targetGroup=family rather than a
-                // literal productType (the catalog has no productType="family-set").
-                if ("family-set".equalsIgnoreCase(productType)) {
-                    predicates.add(criteriaBuilder.equal(root.get("targetGroup"), "family"));
-                } else {
-                    predicates.add(criteriaBuilder.equal(root.get("productType"), productType));
+            // Filter by productType — supports multi-select comma-separated
+            if (productType != null && !productType.trim().isEmpty()) {
+                String[] ptArray = productType.split(",");
+                List<Predicate> ptPredicates = new ArrayList<>();
+                for (String pt : ptArray) {
+                    pt = pt.trim();
+                    if ("family-set".equalsIgnoreCase(pt)) {
+                        ptPredicates.add(criteriaBuilder.equal(root.get("targetGroup"), "family"));
+                    } else {
+                        ptPredicates.add(criteriaBuilder.equal(root.get("productType"), pt));
+                    }
+                }
+                if (!ptPredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(ptPredicates.toArray(new Predicate[0])));
                 }
             }
 
             if (collection != null && !collection.isEmpty() && !"all".equalsIgnoreCase(collection)) {
+                needsDistinct = true;
                 Join<Object, Object> tagsJoin = root.join("styleTags", JoinType.LEFT);
                 predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(tagsJoin.as(String.class)), collection.toLowerCase()));
             }
 
             if (category != null && !category.isEmpty()) {
                 Join<Object, Object> categoryJoin = root.join("category", JoinType.LEFT);
-                predicates.add(criteriaBuilder.equal(categoryJoin.get("slug"), category));
+                if ("accessories".equalsIgnoreCase(category)) {
+                    predicates.add(criteriaBuilder.or(
+                            criteriaBuilder.equal(categoryJoin.get("slug"), "accessories"),
+                            criteriaBuilder.equal(root.get("productType"), "accessories")
+                    ));
+                    predicates.add(criteriaBuilder.not(root.get("productType").in(
+                            "tshirt", "t-shirt", "shirt", "polo", "pants", "trousers", 
+                            "jeans", "shorts", "jacket", "coat", "outerwear", "dress", "skirt", "set", "homewear"
+                    )));
+                } else {
+                    predicates.add(criteriaBuilder.equal(categoryJoin.get("slug"), category));
+                }
             }
 
             if (minPrice != null) {
@@ -107,25 +148,47 @@ public class ProductSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
             }
 
-            // Variant filters (Color & Size)
+            // Variant filters (Color & Size) — supports multi-select comma-separated sizes
             if ((color != null && !color.isEmpty()) || 
                 (adultSize != null && !adultSize.isEmpty()) || 
                 (kidsSize != null && !kidsSize.isEmpty()) || 
                 (accessorySize != null && !accessorySize.isEmpty())) {
                 
+                needsDistinct = true;
                 Join<Product, ProductVariant> variantsJoin = root.join("variants", JoinType.INNER);
 
                 if (color != null && !color.isEmpty()) {
                     predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(variantsJoin.get("color")), color.toLowerCase()));
                 }
 
-                if (adultSize != null && !adultSize.isEmpty()) {
-                    predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), adultSize));
-                } else if (kidsSize != null && !kidsSize.isEmpty()) {
-                    predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), kidsSize));
-                } else if (accessorySize != null && !accessorySize.isEmpty()) {
-                    predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), accessorySize));
+                if (adultSize != null && !adultSize.trim().isEmpty()) {
+                    String[] sizes = adultSize.split(",");
+                    if (sizes.length == 1) {
+                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
+                    } else {
+                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
+                    }
                 }
+                if (kidsSize != null && !kidsSize.trim().isEmpty()) {
+                    String[] sizes = kidsSize.split(",");
+                    if (sizes.length == 1) {
+                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
+                    } else {
+                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
+                    }
+                }
+                if (accessorySize != null && !accessorySize.trim().isEmpty()) {
+                    String[] sizes = accessorySize.split(",");
+                    if (sizes.length == 1) {
+                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
+                    } else {
+                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
+                    }
+                }
+            }
+
+            if (needsDistinct && query != null) {
+                query.distinct(true);
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

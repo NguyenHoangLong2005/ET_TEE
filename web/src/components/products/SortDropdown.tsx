@@ -1,10 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTransition } from 'react';
 
 export default function SortDropdown() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
   const currentSort = searchParams.get('sort') || 'default';
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -17,17 +20,22 @@ export default function SortDropdown() {
     }
     // Reset to first page
     params.delete('page');
-    router.push(`/products?${params.toString()}`);
+
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Sắp xếp theo:</span>
-      <div className="relative">
+      <span className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wide shrink-0">
+        Sắp xếp theo:
+      </span>
+      <div className={`relative transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
         <select 
           value={currentSort}
           onChange={handleSortChange}
-          className="appearance-none border-b border-gray-300 rounded-none py-1.5 pl-0 pr-6 text-sm font-bold focus:outline-none focus:border-slate-900 bg-transparent cursor-pointer"
+          className="appearance-none border-b border-gray-300 rounded-none py-1.5 pl-1 pr-7 text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:border-slate-900 bg-transparent cursor-pointer transition-colors"
         >
           <option value="default">Phù hợp nhất</option>
           <option value="newest">Mới nhất</option>
@@ -37,7 +45,7 @@ export default function SortDropdown() {
           <option value="bestseller">Bán chạy nhất</option>
         </select>
         {/* Custom arrow for select */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-700">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1 text-gray-700">
           <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
             <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
           </svg>

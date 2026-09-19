@@ -1,7 +1,16 @@
+"use client";
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MapPin, Phone, Mail } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/staff') || pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <footer className="bg-[#f4f4f4] text-[#18181B] text-[13px] border-t border-gray-200">
       <div className="container mx-auto px-4 xl:px-8 py-12 md:py-16">

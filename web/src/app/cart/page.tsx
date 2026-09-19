@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, Sparkles, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
 import { toast } from 'sonner';
+
+const FREE_SHIPPING_THRESHOLD = 499000;
 
 export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeItem } = useCart();
@@ -20,67 +22,101 @@ export default function CartPage() {
     toast.info('Tính năng mã giảm giá sẽ được hoàn thiện sau.');
   };
 
-    // No login requirement for guest carts anymore
-    // (We rely on Guest Token and JWT handled transparently in Context and CartService)
-
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900"></div>
       </div>
     );
   }
 
   const isEmpty = !cart || !cart.items || cart.items.length === 0;
+  const subtotal = cart?.subtotal || 0;
+  const shippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
   return (
-    <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+    <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 text-slate-900">
       {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500 mb-8">
+      <nav className="text-xs text-slate-500 mb-6">
         <ol className="flex items-center space-x-2">
           <li>
-            <Link href="/" className="hover:text-black transition-colors">Trang chủ</Link>
+            <Link href="/" className="hover:text-slate-900 transition-colors">Trang chủ</Link>
           </li>
           <li><span>/</span></li>
-          <li className="text-gray-900 font-medium">Giỏ hàng</li>
+          <li className="text-slate-900 font-bold">Giỏ hàng của tôi</li>
         </ol>
       </nav>
 
-      <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900 mb-8 lg:mb-12">
-        Giỏ hàng của bạn {cart && !isEmpty && <span className="text-gray-400 font-medium ml-2">({cart.totalQuantity})</span>}
+      <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-900 mb-8 flex items-center gap-3">
+        <span>Giỏ hàng</span>
+        {cart && !isEmpty && (
+          <span className="text-xs md:text-sm font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+            {cart.totalQuantity} sản phẩm
+          </span>
+        )}
       </h1>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200 mb-16">
-          <div className="w-24 h-24 bg-white shadow-sm rounded-full flex items-center justify-center mb-6">
-            <ShoppingBag className="w-10 h-10 text-gray-300" />
+        <div className="flex flex-col items-center justify-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mb-16 text-center">
+          <div className="w-20 h-20 bg-white shadow-md rounded-2xl flex items-center justify-center mb-6">
+            <ShoppingBag className="w-10 h-10 text-slate-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Giỏ hàng của bạn đang trống</h2>
-          <p className="text-gray-500 mb-8">Khám phá các sản phẩm mới nhất của ET.TEE</p>
+          <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase">Giỏ hàng của bạn đang trống</h2>
+          <p className="text-slate-500 text-sm mb-8 max-w-sm">
+            Hãy khám phá các thiết kế thời trang mới nhất từ ET.TEE Studio
+          </p>
           <Link 
             href="/products"
-            className="bg-black text-white px-8 py-3.5 rounded-md font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors flex items-center gap-2"
+            className="bg-slate-900 text-white px-8 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
           >
-            Tiếp tục mua sắm
+            <span>Tiếp tục mua sắm</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-16 items-start">
           {/* Item List (Left) */}
-          <div className="flex-1">
-            <div className="hidden lg:grid grid-cols-12 gap-4 pb-4 border-b border-gray-200 text-sm font-bold text-gray-500 uppercase tracking-wide">
+          <div className="flex-1 w-full">
+            
+            {/* Free Shipping Progress Bar Banner */}
+            <div className="bg-gradient-to-r from-red-50 via-rose-50 to-red-50 border border-red-100 p-4 rounded-2xl mb-8">
+              <div className="flex items-center justify-between text-xs font-bold text-red-900 mb-2">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-red-600" />
+                  {amountNeeded > 0 ? (
+                    <span>
+                      Thêm <strong className="text-red-600 font-black">{amountNeeded.toLocaleString('vi-VN')}₫</strong> để được <strong>FREESHIP TOÀN QUỐC</strong>
+                    </span>
+                  ) : (
+                    <span className="text-emerald-700 font-black flex items-center gap-1">
+                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      Chúc mừng! Bạn đã đạt điều kiện MIỄN PHÍ GIAO HÀNG
+                    </span>
+                  )}
+                </div>
+                <span className="text-slate-500">{shippingProgress}%</span>
+              </div>
+              <div className="w-full bg-red-200/50 h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-red-600 to-rose-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${shippingProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="hidden lg:grid grid-cols-12 gap-4 pb-4 border-b border-slate-200 text-xs font-black text-slate-400 uppercase tracking-wider">
               <div className="col-span-6">Sản phẩm</div>
               <div className="col-span-3 text-center">Số lượng</div>
               <div className="col-span-3 text-right">Tổng cộng</div>
             </div>
 
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-slate-100">
               {cart.items.map((item) => (
                 <div key={item.id} className="py-6 flex flex-col sm:flex-row gap-4 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center group">
                   {/* Product Info */}
                   <div className="col-span-6 flex gap-4">
-                    <Link href={`/products/${item.productSlug}`} className="w-24 h-[128px] sm:w-[120px] sm:h-[160px] relative bg-gray-50 rounded-md overflow-hidden flex-shrink-0">
+                    <Link href={`/products/${item.productSlug}`} className="w-24 h-[120px] relative bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                       <Image 
                         src={item.productImage || '/images/placeholder.webp'}
                         alt={item.productName}
@@ -90,83 +126,61 @@ export default function CartPage() {
                     </Link>
                     <div className="flex flex-col justify-center">
                       <Link href={`/products/${item.productSlug}`}>
-                        <h3 className="font-bold text-gray-900 hover:text-[#e50027] text-base mb-1 line-clamp-2 pr-4 transition-colors">
+                        <h3 className="font-bold text-slate-900 hover:text-red-600 text-sm md:text-base mb-1 line-clamp-2 transition-colors">
                           {item.productName}
                         </h3>
                       </Link>
-                      <div className="text-sm text-gray-500 space-y-1 mb-2">
-                        <p>Màu: <span className="font-medium text-gray-900">{item.color}</span></p>
-                        <p>Size: <span className="font-medium text-gray-900">{item.size}</span></p>
+                      <div className="text-xs text-slate-500 space-y-0.5 mb-2">
+                        <p>Màu: <span className="font-bold text-slate-900">{item.color}</span></p>
+                        <p>Size: <span className="font-bold text-slate-900">{item.size}</span></p>
                       </div>
-                      <div className="lg:hidden text-sm mt-1">
+                      <div className="lg:hidden text-xs mt-1">
                         {item.salePrice && item.salePrice < item.price ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[#e50027]">{item.salePrice.toLocaleString('vi-VN')}đ</span>
-                            <span className="text-gray-400 line-through text-xs">{item.price.toLocaleString('vi-VN')}đ</span>
+                            <span className="font-black text-red-600">{item.salePrice.toLocaleString('vi-VN')}₫</span>
+                            <span className="text-slate-400 line-through text-[11px]">{item.price.toLocaleString('vi-VN')}₫</span>
                           </div>
                         ) : (
-                          <span className="font-bold text-gray-900">{item.price.toLocaleString('vi-VN')}đ</span>
+                          <span className="font-black text-slate-900">{item.price.toLocaleString('vi-VN')}₫</span>
                         )}
                       </div>
                       <button 
                         onClick={() => removeItem(item.id)}
-                        className="text-sm text-gray-400 hover:text-red-500 flex items-center gap-1 mt-3 w-max transition-colors"
+                        className="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 mt-2 w-max transition-colors font-medium"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                         Xóa
                       </button>
                     </div>
                   </div>
 
-                  {/* Mobile price row & quantity */}
-                  <div className="flex items-center justify-between sm:hidden mt-2">
-                    <div className="flex items-center border border-gray-200 rounded-md bg-white">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                        disabled={item.quantity <= 1}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-10 text-center text-sm font-bold text-gray-900">{item.quantity}</span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                        disabled={item.quantity >= item.availableQuantity}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <span className="font-black text-lg text-gray-900">{item.itemTotal.toLocaleString('vi-VN')}đ</span>
-                  </div>
-
-                  {/* Desktop Quantity */}
+                  {/* Desktop Quantity Controls */}
                   <div className="hidden sm:flex lg:col-span-3 items-center lg:justify-center">
-                    <div className="flex items-center border border-gray-200 rounded-md bg-white">
+                    <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50">
                       <button 
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-l-xl transition-colors"
                         disabled={item.quantity <= 1}
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="w-12 text-center text-sm font-bold text-gray-900">{item.quantity}</span>
+                      <span className="w-10 text-center text-xs font-black text-slate-900">{item.quantity}</span>
                       <button 
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors"
                         disabled={item.quantity >= item.availableQuantity}
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
                   {/* Desktop Total */}
                   <div className="hidden lg:block lg:col-span-3 text-right">
-                    <span className="font-black text-lg text-gray-900">{item.itemTotal.toLocaleString('vi-VN')}đ</span>
+                    <span className="font-black text-base text-slate-900">{item.itemTotal.toLocaleString('vi-VN')}₫</span>
                     {item.salePrice && item.salePrice < item.price && (
-                      <p className="text-xs text-green-600 font-medium mt-1">
-                        Tiết kiệm {(item.price - item.salePrice).toLocaleString('vi-VN')}đ
+                      <p className="text-[11px] text-emerald-600 font-bold mt-0.5">
+                        Tiết kiệm {((item.price - item.salePrice) * item.quantity).toLocaleString('vi-VN')}₫
                       </p>
                     )}
                   </div>
@@ -175,48 +189,52 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Order Summary (Right) */}
+          {/* Order Summary (Right Card) */}
           <div className="w-full lg:w-[380px] flex-shrink-0">
-            <div className="bg-gray-50 rounded-xl p-6 lg:p-8 sticky top-24 border border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide mb-6">Tóm tắt đơn hàng</h2>
+            <div className="bg-slate-50 rounded-2xl p-6 lg:p-7 sticky top-24 border border-slate-200 shadow-sm">
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider mb-6 pb-3 border-b border-slate-200">
+                Tóm tắt đơn hàng
+              </h2>
               
-              <div className="space-y-4 text-sm mb-6 pb-6 border-b border-gray-200">
-                <div className="flex justify-between items-center text-gray-600">
+              <div className="space-y-3.5 text-xs mb-6 pb-6 border-b border-slate-200">
+                <div className="flex justify-between items-center text-slate-600">
                   <span>Tạm tính ({cart.totalQuantity} sản phẩm)</span>
-                  <span className="font-medium text-gray-900">{cart.subtotal.toLocaleString('vi-VN')}đ</span>
+                  <span className="font-bold text-slate-900">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
                 </div>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Khuyến mãi</span>
-                  <span className="font-medium text-gray-900">0đ</span>
-                </div>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Phí giao hàng</span>
-                  <span className="font-medium text-gray-900 italic text-xs">Tính khi thanh toán</span>
+                <div className="flex justify-between items-center text-slate-600">
+                  <span>Phí vận chuyển</span>
+                  <span className="font-bold text-slate-900">
+                    {subtotal >= FREE_SHIPPING_THRESHOLD ? (
+                      <span className="text-emerald-600 font-black">MIỄN PHÍ</span>
+                    ) : (
+                      'Tính khi thanh toán'
+                    )}
+                  </span>
                 </div>
               </div>
 
               <div className="flex justify-between items-end mb-8">
-                <span className="font-bold text-gray-900 uppercase">Tổng cộng</span>
-                <div className="text-right">
-                  <span className="font-black text-2xl text-[#e50027]">{cart.subtotal.toLocaleString('vi-VN')}đ</span>
-                  <p className="text-xs text-gray-500 mt-1">(Đã bao gồm VAT)</p>
+                <div>
+                  <span className="font-black text-slate-900 uppercase text-xs tracking-wider block">Tổng thanh toán</span>
+                  <span className="text-[10px] text-slate-400 font-medium">(Đã bao gồm VAT)</span>
                 </div>
+                <span className="font-black text-2xl text-red-600 tracking-tight">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
               </div>
 
               {/* Voucher */}
-              <form onSubmit={handleApplyVoucher} className="mb-8">
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-2 tracking-wide">Mã giảm giá</label>
+              <form onSubmit={handleApplyVoucher} className="mb-6">
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-2 tracking-wider">Mã giảm giá</label>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
-                    placeholder="Nhập mã..." 
-                    className="flex-1 h-12 px-4 border border-gray-300 rounded-md focus:border-black focus:ring-1 focus:ring-black outline-none transition-all uppercase placeholder:normal-case text-sm font-medium"
+                    placeholder="Mã voucher..." 
+                    className="flex-1 h-11 px-4 border border-slate-300 rounded-xl focus:border-slate-900 outline-none text-xs font-bold uppercase placeholder:normal-case bg-white"
                     value={voucherCode}
                     onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                   />
                   <button 
                     type="submit"
-                    className="h-12 px-6 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold rounded-md transition-colors text-sm uppercase tracking-wide disabled:opacity-50"
+                    className="h-11 px-5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider disabled:opacity-50 transition-colors"
                     disabled={!voucherCode.trim()}
                   >
                     Áp dụng
@@ -226,23 +244,30 @@ export default function CartPage() {
 
               <Link 
                 href="/checkout"
-                className="w-full flex items-center justify-center h-14 bg-black text-white rounded-md font-bold uppercase tracking-widest text-sm hover:bg-gray-800 transition-all shadow-md hover:shadow-lg"
+                className="w-full flex items-center justify-center h-13 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-red-600/30 gap-2"
               >
-                Tiến hành thanh toán
+                <span>Tiến hành thanh toán</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
+
+              <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Bảo mật thanh toán 100%</span>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* Recommendations */}
-      <div className="border-t border-gray-100 pt-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-gray-900">Có thể bạn sẽ thích</h2>
-          <p className="text-gray-500 mt-2">Những sản phẩm được gợi ý riêng cho bạn</p>
+      <div className="border-t border-slate-100 pt-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Có thể bạn sẽ thích</h2>
+          <p className="text-slate-500 text-xs mt-1 font-medium">Những đề xuất trang phục được lựa chọn bởi AI</p>
         </div>
         <CartRecommendations cartItems={cart?.items || []} />
       </div>
     </div>
   );
 }
+

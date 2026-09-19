@@ -15,7 +15,11 @@ public class AuthDto {
         @Email(message = "Email không hợp lệ")
         private String email;
 
+        @NotBlank(message = "Số điện thoại không được để trống")
         private String phone;
+
+        @NotBlank(message = "Địa chỉ không được để trống")
+        private String address;
 
         @NotBlank(message = "Mật khẩu không được để trống")
         @Size(min = 6, message = "Mật khẩu phải từ 6 ký tự trở lên")
@@ -30,6 +34,8 @@ public class AuthDto {
         public void setEmail(String email) { this.email = email; }
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
     }

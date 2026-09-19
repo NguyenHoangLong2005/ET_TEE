@@ -1,6 +1,7 @@
 package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,7 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_products_status_tg", columnList = "status, target_group"),
+    @Index(name = "idx_products_tg_gender", columnList = "target_group, gender"),
+    @Index(name = "idx_products_prod_type", columnList = "product_type"),
+    @Index(name = "idx_products_slug", columnList = "slug"),
+    @Index(name = "idx_products_status_price", columnList = "status, price"),
+    @Index(name = "idx_products_status_saleprice", columnList = "status, sale_price"),
+    @Index(name = "idx_products_status_isnew", columnList = "status, is_new"),
+    @Index(name = "idx_products_status_isbest", columnList = "status, is_best_seller")
+})
+@BatchSize(size = 30)
 public class Product {
 
     @Id
@@ -70,20 +81,33 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "average_rating")
+    private Double averageRating = 0.0;
+
+    @Column(name = "total_reviews")
+    private Integer totalReviews = 0;
+
+    @Column(name = "sold_count")
+    private Integer soldCount = 0;
+
     @ElementCollection
     @CollectionTable(name = "product_style_tags", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "tag")
+    @BatchSize(size = 30)
     private List<String> styleTags = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "product_recommendation_tags", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "tag")
+    @BatchSize(size = 30)
     private List<String> recommendationTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 30)
     private List<ProductVariant> variants = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 30)
     private List<ProductImage> images = new ArrayList<>();
 
     public Product() {}
@@ -166,4 +190,10 @@ public class Product {
     public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
     public List<ProductImage> getImages() { return images; }
     public void setImages(List<ProductImage> images) { this.images = images; }
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+    public Integer getTotalReviews() { return totalReviews; }
+    public void setTotalReviews(Integer totalReviews) { this.totalReviews = totalReviews; }
+    public Integer getSoldCount() { return soldCount; }
+    public void setSoldCount(Integer soldCount) { this.soldCount = soldCount; }
 }

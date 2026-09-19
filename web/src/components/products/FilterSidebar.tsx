@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, useTransition } from 'react';
+import { ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 
 interface FilterSidebarProps {
   stats: {
@@ -23,7 +23,6 @@ const getProductTypeLabel = (type: string) => {
   const map: Record<string, string> = {
     'tshirt': 'Áo thun',
     't-shirt': 'Áo thun',
-    'áo thun': 'Áo thun',
     'shirt': 'Áo sơ mi',
     'polo': 'Áo polo',
     'pants': 'Quần',
@@ -43,9 +42,14 @@ const getProductTypeLabel = (type: string) => {
   return map[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1);
 };
 
+// Known women-only or men-only product types for intelligent cross-category fallback
+const WOMEN_ONLY_TYPES = new Set(['skirt', 'dress']);
+const MEN_ONLY_TYPES = new Set<string>([]);
+
 export default function FilterSidebar({ stats }: FilterSidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   // Expanded states
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
@@ -66,9 +70,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
   const currentMaxPrice = searchParams.get('maxPrice');
 
   useEffect(() => {
-    // Sync input state with URL if custom price is used
     if (currentMinPrice || currentMaxPrice) {
-      // Check if it matches a preset. If not, it's custom.
       const isPreset = PRICE_RANGES.some(r => 
         (r.min === undefined ? !currentMinPrice : r.min.toString() === currentMinPrice) &&
         (r.max === undefined ? !currentMaxPrice : r.max.toString() === currentMaxPrice)
@@ -90,20 +92,55 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const updateFilter = (key: string, value: string | undefined) => {
+  // Helper for parsing comma-separated param into a Set
+  const getParamSet = (key: string): Set<string> => {
+    const raw = searchParams.get(key) || '';
+    if (!raw) return new Set();
+    return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+  };
+
+  const currentTargetSet = getParamSet('targetGroup');
+  const currentProductTypeSet = getParamSet('productType');
+  const currentAdultSizeSet = getParamSet('adultSize');
+  const currentKidsSizeSet = getParamSet('kidsSize');
+  const currentStatusSet = getParamSet('status');
+
+  // Toggle multi-select checkbox for array parameters
+  const toggleMultiFilter = (key: string, value: string) => {
+    const currentSet = getParamSet(key);
+    const nextSet = new Set(currentSet);
+
+    if (nextSet.has(value)) {
+      nextSet.delete(value);
+    } else {
+      nextSet.add(value);
+    }
+
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-      if (key === 'targetGroup') {
-        params.delete('adultSize');
-        params.delete('kidsSize');
-        params.delete('accessorySize');
+
+    // Smart UX: If user checks a productType like "Chân váy" or "Váy" while targetGroup="men",
+    // remove restrictive targetGroup so products are displayed instead of 0 items!
+    if (key === 'productType' && !currentSet.has(value)) {
+      if (WOMEN_ONLY_TYPES.has(value.toLowerCase())) {
+        // If current targetGroup is strictly men/boys, clear or update targetGroup
+        if (currentTargetSet.has('men') && !currentTargetSet.has('women')) {
+          params.delete('targetGroup');
+        }
       }
+    }
+
+    if (nextSet.size > 0) {
+      params.set(key, Array.from(nextSet).join(','));
     } else {
       params.delete(key);
     }
+
+    // Reset page to 1
     params.delete('page');
-    router.push(`/products?${params.toString()}`);
+
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   };
 
   const applyCustomPrice = () => {
@@ -119,9 +156,12 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     setPriceError('');
     const params = new URLSearchParams(searchParams.toString());
     if (min !== undefined) params.set('minPrice', min.toString()); else params.delete('minPrice');
-    if (max !== undefined) params.set('maxPrice', max.toString()); else params.delete('maxPrice');
+    if (max !== undefined && max !== null) params.set('maxPrice', max.toString()); else params.delete('maxPrice');
     params.delete('page');
-    router.push(`/products?${params.toString()}`);
+    
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   };
 
   const clearCustomPrice = () => {
@@ -132,22 +172,17 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     params.delete('minPrice');
     params.delete('maxPrice');
     params.delete('page');
-    router.push(`/products?${params.toString()}`);
+    
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   };
 
-  const currentTarget = searchParams.get('targetGroup');
-  const currentCategory = searchParams.get('productType');
-  const currentAdultSize = searchParams.get('adultSize');
-  const currentKidsSize = searchParams.get('kidsSize');
-  const currentAccessorySize = searchParams.get('accessorySize');
-  const currentStatus = searchParams.get('status');
-
   const getPriceRangeId = () => {
-    const idx = PRICE_RANGES.findIndex(r => 
+    return PRICE_RANGES.findIndex(r => 
       (r.min === undefined ? !currentMinPrice : r.min?.toString() === currentMinPrice) &&
       (r.max === undefined ? !currentMaxPrice : r.max?.toString() === currentMaxPrice)
     );
-    return idx;
   };
 
   const currentPriceIdx = getPriceRangeId();
@@ -160,6 +195,21 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     { id: 'family', label: 'Gia đình', count: stats.targetGroup.family ?? 0 },
     { id: 'baby', label: 'Em bé', count: stats.targetGroup.baby ?? 0 }
   ].filter(item => item.count > 0);
+
+  const hasActiveSidebarFilters = 
+    currentTargetSet.size > 0 ||
+    currentProductTypeSet.size > 0 ||
+    currentAdultSizeSet.size > 0 ||
+    currentKidsSizeSet.size > 0 ||
+    currentStatusSet.size > 0 ||
+    currentMinPrice ||
+    currentMaxPrice;
+
+  const resetAllSidebarFilters = () => {
+    startTransition(() => {
+      router.push('/products');
+    });
+  };
 
   return (
     <>
@@ -174,9 +224,23 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         </button>
       </div>
 
-      <div className={`w-full text-slate-900 ${expanded.mobileOpen ? 'block' : 'hidden'} lg:block`}>
+      <div className={`w-full text-slate-900 transition-opacity duration-200 ${isPending ? 'opacity-60 pointer-events-none' : 'opacity-100'} ${expanded.mobileOpen ? 'block' : 'hidden'} lg:block`}>
         
-        {/* 1. Danh mục */}
+        {/* Reset All Filters Button */}
+        {hasActiveSidebarFilters && (
+          <div className="pb-3 border-b border-gray-200 flex justify-between items-center">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bộ lọc đang chọn</span>
+            <button
+              onClick={resetAllSidebarFilters}
+              className="text-xs text-[#e50027] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Xóa bộ lọc</span>
+            </button>
+          </div>
+        )}
+
+        {/* 1. Danh mục (Checkbox multi-select) */}
         {targetGroups.length > 0 && (
           <div className="border-b border-gray-200 py-4">
             <button 
@@ -187,27 +251,29 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
               {expanded.targetGroup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {expanded.targetGroup && (
-              <div className="space-y-2 mt-3">
-                {targetGroups.map(item => (
-                  <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
-                    <input 
-                      type="radio" 
-                      name="targetGroup"
-                      checked={currentTarget === item.id}
-                      onChange={() => updateFilter('targetGroup', currentTarget === item.id ? undefined : item.id)}
-                      className="w-4 h-4 accent-[#e50027] cursor-pointer"
-                    />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentTarget === item.id ? 'font-bold' : ''}`}>
-                      {item.label} <span className="text-gray-400 font-normal">({item.count})</span>
-                    </span>
-                  </label>
-                ))}
+              <div className="space-y-2.5 mt-3">
+                {targetGroups.map(item => {
+                  const isChecked = currentTargetSet.has(item.id);
+                  return (
+                    <label key={item.id} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked}
+                        onChange={() => toggleMultiFilter('targetGroup', item.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                      />
+                      <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                        {item.label} <span className="text-gray-400 font-normal">({item.count})</span>
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* 2. Loại sản phẩm */}
+        {/* 2. Loại sản phẩm (Checkbox multi-select) */}
         <div className="border-b border-gray-200 py-4">
           <button 
             onClick={() => toggleSection('productType')}
@@ -217,18 +283,18 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
             {expanded.productType ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {expanded.productType && (
-            <div className="space-y-2 mt-3 max-h-60 overflow-y-auto custom-scrollbar">
+            <div className="space-y-2.5 mt-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
               {Object.entries(stats.productType).map(([key, count]) => {
+                const isChecked = currentProductTypeSet.has(key);
                 return (
-                  <label key={key} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={key} className="flex items-center gap-2.5 cursor-pointer group select-none">
                     <input 
-                      type="radio" 
-                      name="productType"
-                      checked={currentCategory === key}
-                      onChange={() => updateFilter('productType', currentCategory === key ? undefined : key)}
-                      className="w-4 h-4 accent-[#e50027] cursor-pointer"
+                      type="checkbox" 
+                      checked={isChecked}
+                      onChange={() => toggleMultiFilter('productType', key)}
+                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
                     />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentCategory === key ? 'font-bold' : ''}`}>
+                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
                       {getProductTypeLabel(key)} <span className="text-gray-400 font-normal">({count})</span>
                     </span>
                   </label>
@@ -238,7 +304,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
           )}
         </div>
 
-        {/* 3. Kích cỡ */}
+        {/* 3. Kích cỡ (Multi-select toggles) */}
         <div className="border-b border-gray-200 py-4">
           <button 
             onClick={() => toggleSection('size')}
@@ -248,41 +314,57 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
             {expanded.size ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {expanded.size && (
-            <div className="mt-4 space-y-5">
+            <div className="mt-3 space-y-5">
               {/* Adult sizes */}
-              {(!currentTarget || currentTarget === 'women' || currentTarget === 'men') && stats.sizes.adult && stats.sizes.adult.length > 0 && (
+              {stats.sizes.adult && stats.sizes.adult.length > 0 && (
                 <div>
-                  <span className="text-[13px] text-gray-800 font-bold block mb-2">Người lớn</span>
+                  <span className="text-[12px] text-gray-500 uppercase font-bold block mb-2">Người lớn</span>
                   <div className="grid grid-cols-3 gap-2">
-                    {stats.sizes.adult.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => updateFilter('adultSize', currentAdultSize === size ? undefined : size)}
-                        className={`min-h-[40px] border rounded flex items-center justify-center text-[13px] md:text-[14px] font-bold transition-colors ${currentAdultSize === size ? 'border-[#18181B] bg-[#18181B] text-white' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {stats.sizes.adult.map(size => {
+                      const isChecked = currentAdultSizeSet.has(size);
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleMultiFilter('adultSize', size)}
+                          className={`min-h-[38px] border rounded text-[13px] font-bold transition-all ${
+                            isChecked 
+                              ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                              : 'border-gray-200 text-gray-700 hover:border-slate-900 bg-white'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
               
               {/* Kids sizes */}
-              {(!currentTarget || currentTarget === 'boys' || currentTarget === 'girls') && stats.sizes.kids && stats.sizes.kids.length > 0 && (
+              {stats.sizes.kids && stats.sizes.kids.length > 0 && (
                 <div>
-                  <span className="text-[13px] text-gray-800 font-bold block mb-2">Trẻ em</span>
+                  <span className="text-[12px] text-gray-500 uppercase font-bold block mb-2">Trẻ em</span>
                   <div className="grid grid-cols-4 gap-[6px]">
                     {stats.sizes.kids
-                      .filter(size => /^\d+$/.test(size)) // Only keep numeric sizes to hide "viết thường" if any
-                      .map(size => (
-                      <button
-                        key={size}
-                        onClick={() => updateFilter('kidsSize', currentKidsSize === size ? undefined : size)}
-                        className={`min-h-[36px] border rounded flex items-center justify-center text-[12px] md:text-[13px] font-bold transition-colors ${currentKidsSize === size ? 'border-[#18181B] bg-[#18181B] text-white' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                      .filter(size => /^\d+$/.test(size))
+                      .map(size => {
+                        const isChecked = currentKidsSizeSet.has(size);
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => toggleMultiFilter('kidsSize', size)}
+                            className={`min-h-[34px] border rounded text-[12px] font-bold transition-all ${
+                              isChecked 
+                                ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                                : 'border-gray-200 text-gray-700 hover:border-slate-900 bg-white'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -290,10 +372,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
           )}
         </div>
 
-        {/* 4. Màu sắc (Placeholder for Future Implementation if data supports it) */}
-        {/* Skipping strict implementation unless stats provides colors, but can add basic colors */}
-
-        {/* 5. Khoảng giá */}
+        {/* 4. Khoảng giá */}
         <div className="border-b border-gray-200 py-4">
           <button 
             onClick={() => toggleSection('price')}
@@ -306,9 +385,9 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
             <div className="space-y-4 mt-3">
               <div className="space-y-2">
                 {PRICE_RANGES.map((range, idx) => (
-                  <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                  <label key={idx} className="flex items-center gap-2.5 cursor-pointer group select-none">
                     <input 
-                      type="radio" 
+                      type="checkbox" 
                       name="priceRange"
                       checked={currentPriceIdx === idx}
                       onChange={() => {
@@ -321,11 +400,13 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                           if (range.max !== undefined) params.set('maxPrice', range.max.toString()); else params.delete('maxPrice');
                         }
                         params.delete('page');
-                        router.push(`/products?${params.toString()}`);
+                        startTransition(() => {
+                          router.push(`/products?${params.toString()}`);
+                        });
                       }}
-                      className="w-4 h-4 accent-[#e50027] cursor-pointer"
+                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
                     />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentPriceIdx === idx ? 'font-bold' : ''}`}>
+                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentPriceIdx === idx ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
                       {range.label}
                     </span>
                   </label>
@@ -341,7 +422,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                     placeholder="Từ (đ)" 
                     value={minPriceInput}
                     onChange={(e) => setMinPriceInput(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-slate-900"
+                    className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
                   />
                   <span className="text-gray-400">-</span>
                   <input 
@@ -349,19 +430,21 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                     placeholder="Đến (đ)" 
                     value={maxPriceInput}
                     onChange={(e) => setMaxPriceInput(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-slate-900"
+                    className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
                   />
                 </div>
-                {priceError && <p className="text-[#e50027] text-[11px] mb-2">{priceError}</p>}
+                {priceError && <p className="text-[#e50027] text-[11px] mb-2 font-medium">{priceError}</p>}
                 
                 <div className="flex gap-2">
                   <button 
+                    type="button"
                     onClick={applyCustomPrice}
                     className="flex-1 bg-slate-900 text-white text-[12px] font-bold py-1.5 rounded hover:bg-slate-800 transition-colors"
                   >
                     Áp dụng
                   </button>
                   <button 
+                    type="button"
                     onClick={clearCustomPrice}
                     className="flex-1 bg-gray-100 text-slate-900 text-[12px] font-bold py-1.5 rounded hover:bg-gray-200 transition-colors"
                   >
@@ -373,35 +456,37 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
           )}
         </div>
 
-        {/* 6. Trạng thái sản phẩm */}
+        {/* 5. Trạng thái sản phẩm (Checkbox multi-select) */}
         <div className="border-b border-gray-200 py-4">
           <button 
             onClick={() => toggleSection('status')}
             className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
           >
-            <span>Trạng thái</span>
+            <span>Trạng thái sản phẩm</span>
             {expanded.status ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {expanded.status && (
-            <div className="space-y-2 mt-3">
+            <div className="space-y-2.5 mt-3">
               {[
                 { id: 'sale', label: 'Đang giảm giá' },
                 { id: 'new', label: 'Hàng mới' },
                 { id: 'best', label: 'Bán chạy' }
-              ].map(item => (
-                <label key={item.id} className="flex items-center gap-3 cursor-pointer group">
-                  <input 
-                    type="radio" 
-                    name="productStatus"
-                    checked={currentStatus === item.id}
-                    onChange={() => updateFilter('status', currentStatus === item.id ? undefined : item.id)}
-                    className="w-4 h-4 accent-[#e50027] cursor-pointer"
-                  />
-                  <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentStatus === item.id ? 'font-bold' : ''}`}>
-                    {item.label}
-                  </span>
-                </label>
-              ))}
+              ].map(item => {
+                const isChecked = currentStatusSet.has(item.id);
+                return (
+                  <label key={item.id} className="flex items-center gap-2.5 cursor-pointer group select-none">
+                    <input 
+                      type="checkbox" 
+                      checked={isChecked}
+                      onChange={() => toggleMultiFilter('status', item.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                    />
+                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                      {item.label}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAuthHeaders } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -18,14 +19,9 @@ interface WishlistContextType {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const getBaseUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
-  }
-  if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:8081`;
-  }
-  return 'http://127.0.0.1:8081';
+  return getApiBaseUrl();
 };
+
 
 const getHeaders = (): Record<string, string> => {
   return getAuthHeaders(true) as Record<string, string>;

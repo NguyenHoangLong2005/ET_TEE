@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, AlertCircle } from 'lucide-react';
+import { Save, AlertCircle, Info } from 'lucide-react';
 import { getAuthHeaders } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
 import { toast } from 'sonner';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+const getApiBase = () => getApiBaseUrl();
 
 function MeasurementsSkeleton() {
   return (
@@ -37,6 +38,18 @@ function MeasurementsSkeleton() {
   );
 }
 
+const MEASUREMENT_PROFILES = [
+  { id: 'SELF_ADULT', label: 'Người lớn (Bản thân)', icon: '👤' },
+  { id: 'CHILD', label: 'Trẻ em', icon: '👦' },
+  { id: 'OTHER', label: 'Mua hộ / Khác', icon: '🎁' },
+];
+
+const FIT_PREFERENCES = [
+  { id: 'SLIM', label: 'Ôm vừa vặn', subLabel: 'Slim fit', icon: '👕' },
+  { id: 'REGULAR', label: 'Thoải mái', subLabel: 'Regular fit', icon: '👔' },
+  { id: 'LOOSE', label: 'Rộng rãi', subLabel: 'Loose / Oversize', icon: '🧥' },
+];
+
 export default function MeasurementsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +74,7 @@ export default function MeasurementsPage() {
   });
 
   const [originalData, setOriginalData] = useState<any>(null);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMeasurements = async () => {
@@ -68,7 +82,7 @@ export default function MeasurementsPage() {
       setLoadError(null);
       try {
         const headers = getAuthHeaders();
-        const res = await fetch(`${API_BASE}/api/account/measurements`, {
+        const res = await fetch(`${getApiBase()}/api/account/measurements`, {
           headers: headers as Record<string, string>
         });
         const json = await res.json();
@@ -106,19 +120,23 @@ export default function MeasurementsPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setHasChanges(true);
+  };
 
-    // Clear size logic based on type change
-    if (name === 'measurementProfileType') {
-      if (value === 'SELF_ADULT') {
-        setFormData(prev => ({ ...prev, measurementProfileType: value, preferredKidsSize: '' }));
-      } else if (value === 'CHILD') {
-        setFormData(prev => ({ ...prev, measurementProfileType: value, preferredAdultSize: '' }));
-      } else {
-        setFormData(prev => ({ ...prev, measurementProfileType: value }));
-      }
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+  const handleProfileTypeChange = (value: string) => {
+    let updates: any = { measurementProfileType: value };
+    if (value === 'SELF_ADULT') {
+      updates.preferredKidsSize = '';
+    } else if (value === 'CHILD') {
+      updates.preferredAdultSize = '';
     }
+    setFormData(prev => ({ ...prev, ...updates }));
+    setHasChanges(true);
+  };
+
+  const handleFitPreferenceChange = (value: string) => {
+    setFormData(prev => ({ ...prev, fitPreference: value }));
     setHasChanges(true);
   };
 
@@ -132,7 +150,6 @@ export default function MeasurementsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Client-side validation
     if (formData.heightCm && (Number(formData.heightCm) < 80 || Number(formData.heightCm) > 230)) {
       toast.error('Chiều cao phải từ 80 đến 230 cm.');
       return;
@@ -147,7 +164,6 @@ export default function MeasurementsPage() {
       const headers = getAuthHeaders();
       const payload: Record<string, any> = { ...formData };
 
-      // Convert strings to numbers where necessary
       ['heightCm', 'weightKg', 'shoulderCm', 'chestCm', 'waistCm', 'hipCm', 'armLengthCm', 'legLengthCm'].forEach(key => {
         if (payload[key] === '') {
           payload[key] = null;
@@ -156,7 +172,7 @@ export default function MeasurementsPage() {
         }
       });
 
-      const res = await fetch(`${API_BASE}/api/account/measurements`, {
+      const res = await fetch(`${getApiBase()}/api/account/measurements`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,6 +229,15 @@ export default function MeasurementsPage() {
     );
   }
 
+  const detailedFields = [
+    { name: 'shoulderCm', label: 'Vai', desc: 'Đo từ mỏm vai trái sang mỏm vai phải.' },
+    { name: 'chestCm', label: 'Ngực', desc: 'Đo vòng quanh phần nở nhất của ngực.' },
+    { name: 'waistCm', label: 'Eo', desc: 'Đo vòng quanh phần nhỏ nhất của eo.' },
+    { name: 'hipCm', label: 'Mông', desc: 'Đo vòng quanh phần nở nhất của mông.' },
+    { name: 'armLengthCm', label: 'Dài tay', desc: 'Đo từ mỏm vai đến cổ tay.' },
+    { name: 'legLengthCm', label: 'Dài chân', desc: 'Đo từ eo xuống mắt cá chân.' },
+  ];
+
   return (
     <div>
       <h2 className="text-2xl font-black uppercase mb-2">Số đo & Kích cỡ</h2>
@@ -223,96 +248,86 @@ export default function MeasurementsPage() {
       <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
 
         {/* Profile Type */}
-        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-          <label className="block text-sm font-bold text-gray-700 mb-3">Đối tượng đo <span className="text-red-500">*</span></label>
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="measurementProfileType"
-                value="SELF_ADULT"
-                checked={formData.measurementProfileType === 'SELF_ADULT'}
-                onChange={handleChange}
-                className="w-4 h-4 text-black focus:ring-black"
-              />
-              <span className="font-medium">Người lớn (Bản thân)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="measurementProfileType"
-                value="CHILD"
-                checked={formData.measurementProfileType === 'CHILD'}
-                onChange={handleChange}
-                className="w-4 h-4 text-black focus:ring-black"
-              />
-              <span className="font-medium">Trẻ em</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="measurementProfileType"
-                value="OTHER"
-                checked={formData.measurementProfileType === 'OTHER'}
-                onChange={handleChange}
-                className="w-4 h-4 text-black focus:ring-black"
-              />
-              <span className="font-medium">Khác (Mua hộ)</span>
-            </label>
+        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+          <label className="block text-base font-bold text-gray-900 mb-4">Đối tượng đo <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {MEASUREMENT_PROFILES.map(profile => (
+              <button
+                key={profile.id}
+                type="button"
+                onClick={() => handleProfileTypeChange(profile.id)}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                  formData.measurementProfileType === profile.id
+                    ? 'border-black bg-white shadow-sm'
+                    : 'border-transparent bg-gray-100 hover:bg-gray-200 text-gray-600'
+                }`}
+              >
+                <span className="text-3xl mb-2">{profile.icon}</span>
+                <span className={`text-sm font-semibold ${formData.measurementProfileType === profile.id ? 'text-black' : ''}`}>
+                  {profile.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Cân nặng, Chiều cao */}
           <div className="space-y-6">
-            <h3 className="font-bold text-lg">Chỉ số cơ bản</h3>
+            <h3 className="font-bold text-lg text-gray-900">Chỉ số cơ bản</h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-bold text-gray-700">Chiều cao (cm)</label>
-                <input
-                  type="number"
-                  name="heightCm"
-                  placeholder="Ví dụ: 170"
-                  value={formData.heightCm}
-                  onChange={handleChange}
-                  min="80"
-                  max="230"
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-                />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-semibold text-gray-600">Chiều cao</label>
+                <div className="relative mt-1">
+                  <input
+                    type="number"
+                    name="heightCm"
+                    placeholder="170"
+                    value={formData.heightCm}
+                    onChange={handleChange}
+                    min="80"
+                    max="230"
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                  />
+                  <span className="absolute right-4 top-3 text-gray-500 font-medium">cm</span>
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm font-bold text-gray-700">Cân nặng (kg)</label>
-                <input
-                  type="number"
-                  name="weightKg"
-                  placeholder="Ví dụ: 65"
-                  value={formData.weightKg}
-                  onChange={handleChange}
-                  min="10"
-                  max="200"
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-                />
+              <div className="flex-1">
+                <label className="text-sm font-semibold text-gray-600">Cân nặng</label>
+                <div className="relative mt-1">
+                  <input
+                    type="number"
+                    name="weightKg"
+                    placeholder="65"
+                    value={formData.weightKg}
+                    onChange={handleChange}
+                    min="10"
+                    max="200"
+                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                  />
+                  <span className="absolute right-4 top-3 text-gray-500 font-medium">kg</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Size ưu thích */}
           <div className="space-y-6">
-            <h3 className="font-bold text-lg">Size ưu tiên</h3>
+            <h3 className="font-bold text-lg text-gray-900">Size ưu tiên</h3>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               {(formData.measurementProfileType === 'SELF_ADULT' || formData.measurementProfileType === 'OTHER') && (
                 <div>
-                  <label className="text-sm font-bold text-gray-700">Size quần áo người lớn</label>
+                  <label className="text-sm font-semibold text-gray-600">Áo/Quần người lớn</label>
                   <select
                     name="preferredAdultSize"
                     value={formData.preferredAdultSize}
                     onChange={handleChange}
-                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
+                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
                   >
-                    <option value="">Chưa xác định</option>
+                    <option value="">Chọn size...</option>
                     <option value="XS">XS</option>
                     <option value="S">S</option>
                     <option value="M">M</option>
@@ -325,14 +340,14 @@ export default function MeasurementsPage() {
 
               {(formData.measurementProfileType === 'CHILD' || formData.measurementProfileType === 'OTHER') && (
                 <div>
-                  <label className="text-sm font-bold text-gray-700">Size trẻ em</label>
+                  <label className="text-sm font-semibold text-gray-600">Trẻ em</label>
                   <select
                     name="preferredKidsSize"
                     value={formData.preferredKidsSize}
                     onChange={handleChange}
-                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
+                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
                   >
-                    <option value="">Chưa xác định</option>
+                    <option value="">Chọn size...</option>
                     <option value="90">90 (1-2T)</option>
                     <option value="100">100 (2-3T)</option>
                     <option value="110">110 (3-4T)</option>
@@ -345,80 +360,103 @@ export default function MeasurementsPage() {
                 </div>
               )}
 
-              <div>
-                <label className="text-sm font-bold text-gray-700">Size giày/dép</label>
+              <div className={formData.measurementProfileType === 'OTHER' ? 'col-span-2' : ''}>
+                <label className="text-sm font-semibold text-gray-600">Giày/dép</label>
                 <input
                   type="text"
                   name="shoeSize"
-                  placeholder="Ví dụ: 40 hoặc 250mm"
+                  placeholder="Vd: 40 hoặc 250mm"
                   value={formData.shoeSize}
                   onChange={handleChange}
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
+                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
                 />
               </div>
-
-              <div>
-                <label className="text-sm font-bold text-gray-700">Sở thích mặc đồ</label>
-                <select
-                  name="fitPreference"
-                  value={formData.fitPreference}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-                >
-                  <option value="">Chưa xác định</option>
-                  <option value="SLIM">Ôm vừa vặn (Slim fit)</option>
-                  <option value="REGULAR">Thoải mái (Regular fit)</option>
-                  <option value="LOOSE">Rộng rãi (Loose / Oversize)</option>
-                </select>
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Sở thích mặc đồ */}
+        <div className="pt-6 border-t border-gray-100">
+          <h3 className="font-bold text-lg text-gray-900 mb-4">Sở thích mặc đồ</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {FIT_PREFERENCES.map(fit => (
+              <button
+                key={fit.id}
+                type="button"
+                onClick={() => handleFitPreferenceChange(fit.id)}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                  formData.fitPreference === fit.id
+                    ? 'border-black bg-white shadow-sm'
+                    : 'border-transparent bg-gray-50 hover:bg-gray-100 text-gray-600'
+                }`}
+              >
+                <span className="text-2xl">{fit.icon}</span>
+                <div>
+                  <p className={`font-semibold text-sm ${formData.fitPreference === fit.id ? 'text-black' : ''}`}>{fit.label}</p>
+                  <p className="text-xs text-gray-500">{fit.subLabel}</p>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Số đo chi tiết */}
         <div className="pt-6 border-t border-gray-100">
-          <h3 className="font-bold text-lg mb-6">Số đo chi tiết (cm) <span className="font-normal text-sm text-gray-500">- Không bắt buộc</span></h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Vai</label>
-              <input type="number" name="shoulderCm" value={formData.shoulderCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Ngực</label>
-              <input type="number" name="chestCm" value={formData.chestCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Eo</label>
-              <input type="number" name="waistCm" value={formData.waistCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Mông</label>
-              <input type="number" name="hipCm" value={formData.hipCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Dài tay</label>
-              <input type="number" name="armLengthCm" value={formData.armLengthCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-gray-600 uppercase">Dài chân</label>
-              <input type="number" name="legLengthCm" value={formData.legLengthCm} onChange={handleChange} min="0" className="w-full mt-1 p-2 border border-gray-300 rounded transition-shadow focus:outline-none focus:ring-2 focus:ring-black" />
-            </div>
+          <div className="mb-6 flex flex-col">
+            <h3 className="font-bold text-lg text-gray-900">Số đo chi tiết (cm)</h3>
+            <span className="text-sm text-gray-500">Giúp hệ thống gợi ý size quần áo chuẩn xác hơn (Không bắt buộc)</span>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+            {detailedFields.map(field => (
+              <div key={field.name}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-gray-700 uppercase">{field.label}</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onMouseEnter={() => setActiveTooltip(field.name)}
+                      onMouseLeave={() => setActiveTooltip(null)}
+                      onClick={() => setActiveTooltip(activeTooltip === field.name ? null : field.name)}
+                      className="text-gray-400 hover:text-black"
+                    >
+                      <Info className="w-3 h-3" />
+                    </button>
+                    {activeTooltip === field.name && (
+                      <div className="absolute z-10 w-48 p-2 mt-1 text-xs text-white bg-black rounded-lg shadow-lg -left-24 bottom-full mb-2">
+                        {field.desc}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <input 
+                  type="number" 
+                  name={field.name} 
+                  value={(formData as any)[field.name]} 
+                  onChange={handleChange} 
+                  min="0" 
+                  placeholder="--"
+                  className="w-full p-2 border border-gray-300 rounded-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-black text-gray-900 bg-gray-50 hover:bg-white focus:bg-white" 
+                />
+              </div>
+            ))}
           </div>
         </div>
 
         <div>
-          <label className="text-sm font-bold text-gray-700">Ghi chú thêm</label>
+          <label className="text-sm font-semibold text-gray-600 mb-1 block">Ghi chú thêm</label>
           <textarea
             name="note"
             rows={2}
             value={formData.note}
             onChange={handleChange}
-            className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow resize-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 resize-none"
             placeholder="Ví dụ: Đùi to, tay áo thích mặc dài..."
           ></textarea>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             type="submit"
             disabled={isSaving || !hasChanges}

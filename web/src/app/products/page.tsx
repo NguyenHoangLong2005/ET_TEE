@@ -31,10 +31,9 @@ export default async function ProductsPage({
   const page = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page, 10) : 1;
   const pageSize = typeof resolvedSearchParams.pageSize === 'string' ? parseInt(resolvedSearchParams.pageSize, 10) : 24;
 
-  // Fetch data
-  let result;
-  try {
-    result = await ProductService.getProducts({
+  // Fetch products and stats in parallel for maximum speed
+  const [productsPromise, statsPromise] = await Promise.allSettled([
+    ProductService.getProducts({
       targetGroup,
       gender,
       productType,
@@ -50,8 +49,11 @@ export default async function ProductsPage({
       q: search,
       page,
       pageSize,
-    });
-  } catch (err: any) {
+    }),
+    ProductService.getStats(),
+  ]);
+
+  if (productsPromise.status === 'rejected') {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
@@ -73,27 +75,42 @@ export default async function ProductsPage({
     );
   }
 
+  const result = productsPromise.value;
   const { items: products, totalItems, currentPage, totalPages } = result;
   const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(currentPage * pageSize, totalItems);
 
-  // Fetch real aggregated stats from /api/products/stats so the sidebar shows
-  // actual DB counts. Replaced the previous hardcoded dummy constants that
-  // caused "Nam (150)" to be displayed while the API returned 177.
   let stats = {
     targetGroup: {} as Record<string, number>,
     productType: {} as Record<string, number>,
-    sizes: { adult: ['S', 'M', 'L', 'XL'] as string[], kids: ['100', '110', '120'] as string[] }
+    sizes: { adult: [] as string[], kids: [] as string[] }
   };
-  try {
-    const apiStats = await ProductService.getStats();
+  if (statsPromise.status === 'fulfilled') {
+    const apiStats = statsPromise.value;
+    
+    // Sort sizes logically
+    const adultOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    const sortedAdult = (apiStats.sizes?.adult || []).sort((a, b) => {
+      const ia = adultOrder.indexOf(a);
+      const ib = adultOrder.indexOf(b);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return a.localeCompare(b);
+    });
+    
+    const sortedKids = (apiStats.sizes?.kids || []).sort((a, b) => {
+      const numA = parseInt(a);
+      const numB = parseInt(b);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.localeCompare(b);
+    });
+
     stats = {
       targetGroup: apiStats.targetGroup || {},
       productType: apiStats.productType || {},
-      sizes: { adult: ['S', 'M', 'L', 'XL'], kids: ['100', '110', '120'] }
+      sizes: { adult: sortedAdult, kids: sortedKids }
     };
-  } catch (statsErr) {
-    console.warn('Failed to load product stats, sidebar will show empty counts.', statsErr);
   }
   
   const titleMap: Record<string, string> = {
@@ -101,6 +118,7 @@ export default async function ProductsPage({
     men: 'Nam',
     kids: 'Trẻ em',
     baby: 'Em bé',
+    family: 'Gia đình',
   };
   
   let pageTitle = 'Tất cả sản phẩm';
@@ -122,15 +140,27 @@ export default async function ProductsPage({
     'accessory': 'Phụ kiện', 'accessories': 'Phụ kiện', 'homewear': 'Đồ mặc nhà',
     'set': 'Set đồ', 'family-set': 'Set gia đình',
   };
+  const tgMap: Record<string, string> = {
+    men: 'Nam', women: 'Nữ', boys: 'Bé trai', girls: 'Bé gái', family: 'Gia đình', baby: 'Em bé'
+  };
+
   const activeFilters = [];
-  if (productType) activeFilters.push({ key: 'productType', label: typeMap[productType] || productType });
+  if (targetGroup) {
+    const tgs = targetGroup.split(',').map(t => tgMap[t.trim()] || t.trim());
+    activeFilters.push({ key: 'targetGroup', label: `Danh mục: ${tgs.join(', ')}` });
+  }
+  if (productType) {
+    const types = productType.split(',').map(t => typeMap[t.trim()] || t.trim());
+    activeFilters.push({ key: 'productType', label: `Loại SP: ${types.join(', ')}` });
+  }
   if (search) activeFilters.push({ key: 'search', label: `Tìm kiếm: "${search}"` });
   if (adultSize) activeFilters.push({ key: 'adultSize', label: `Size người lớn: ${adultSize}` });
   if (kidsSize) activeFilters.push({ key: 'kidsSize', label: `Size trẻ em: ${kidsSize}` });
   if (accessorySize) activeFilters.push({ key: 'accessorySize', label: `Size phụ kiện: ${accessorySize}` });
   if (status) {
     const stMap: Record<string, string> = { sale: 'Đang giảm giá', new: 'Hàng mới', best: 'Bán chạy' };
-    activeFilters.push({ key: 'status', label: stMap[status] || status });
+    const sts = status.split(',').map(s => stMap[s.trim()] || s.trim());
+    activeFilters.push({ key: 'status', label: `Trạng thái: ${sts.join(', ')}` });
   }
   if (minPrice || maxPrice) {
     let priceLabel = '';
@@ -175,8 +205,8 @@ export default async function ProductsPage({
                   </p>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Suspense fallback={<div className="w-32 h-8 bg-gray-100 animate-pulse"></div>}>
+                <div className="flex items-center">
+                  <Suspense fallback={<div className="w-48 h-8 bg-gray-100 rounded-full animate-pulse"></div>}>
                     <SortDropdown />
                   </Suspense>
                 </div>
@@ -184,15 +214,15 @@ export default async function ProductsPage({
 
               {/* Active Filters */}
               {activeFilters.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 mb-6">
+                <div className="flex flex-wrap items-center gap-2 mb-8">
                   <span className="text-sm text-gray-500 mr-2">Đang lọc theo:</span>
                   {activeFilters.map(filter => (
-                    <div key={filter.key} className="bg-gray-100 text-slate-900 px-3 py-1.5 rounded text-[13px] font-bold flex items-center gap-2">
+                    <div key={filter.key} className="bg-white border border-gray-300 text-black px-3 py-1 text-[13px] font-bold flex items-center gap-2">
                       {filter.label}
                     </div>
                   ))}
-                  <Link href={`/products${targetGroup ? `?targetGroup=${targetGroup}` : ''}`} className="text-[13px] text-gray-500 hover:text-[#e50027] hover:underline font-bold ml-2">
-                    XÓA BỘ LỌC
+                  <Link href={`/products${targetGroup ? `?targetGroup=${targetGroup}` : ''}`} className="text-[13px] text-gray-500 hover:text-black underline font-bold ml-2">
+                    Xóa tất cả
                   </Link>
                 </div>
               )}
@@ -225,7 +255,7 @@ export default async function ProductsPage({
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-10 w-full mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8 gap-y-12 w-full mb-16">
                       {products.map(product => (
                         <ProductCard
                           key={product.id}

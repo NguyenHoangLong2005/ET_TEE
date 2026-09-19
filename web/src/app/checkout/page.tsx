@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { getAuthHeaders } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
 import { toast } from 'sonner';
+
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -37,7 +39,7 @@ export default function CheckoutPage() {
     setVoucherLoading(true);
     setVoucherError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081'}/api/marketing/vouchers/validate`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/marketing/vouchers/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() as Record<string, string> },
         body: JSON.stringify({ code: formData.voucherCode.trim().toUpperCase(), subtotal: calculateSubtotal() }),
@@ -84,7 +86,7 @@ export default function CheckoutPage() {
     // Fetch bank config if BANK_TRANSFER is selected or just pre-fetch it
     const fetchBankConfig = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081'}/api/payment-methods/bank-transfer`);
+        const res = await fetch(`${getApiBaseUrl()}/api/payment-methods/bank-transfer`);
         const json = await res.json();
         if (json.success) {
           setBankConfig(json.data);
@@ -129,7 +131,7 @@ export default function CheckoutPage() {
     try {
       const headers = getAuthHeaders(true);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081'}/api/orders/checkout`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/orders/checkout`, {
         method: 'POST',
         headers,
         body: JSON.stringify(formData)

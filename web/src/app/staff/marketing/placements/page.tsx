@@ -14,6 +14,8 @@ import {
   marketingService,
   type ProductPlacement,
 } from '@/lib/services/marketingService';
+import { getApiBaseUrl } from '@/lib/api-config';
+
 
 const KEY_OPTIONS = [
   { value: 'HOME_NEW',            label: 'Trang chủ - Hàng mới về' },
@@ -281,7 +283,9 @@ function PlacementForm({ open, placement, onClose, onSubmit }: PlacementFormProp
     }
     setSearching(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+      const API = getApiBaseUrl();
+
+
       const res = await fetch(`${API}/api/products?search=${encodeURIComponent(q)}&pageSize=8`);
       if (res.ok) {
         const data = await res.json();

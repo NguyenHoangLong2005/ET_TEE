@@ -1,12 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
-export default function ProductGallery({ images }: { images: { imageUrl: string }[] }) {
+export default function ProductGallery({ images }: { images: { imageUrl: string, colorCode?: string, colorHex?: string, isPrimary?: boolean }[] }) {
+  const searchParams = useSearchParams();
+  const urlColor = searchParams.get('color');
+
   const [mainImage, setMainImage] = useState(images && images.length > 0 ? images[0].imageUrl : '/images/products/placeholder.webp');
+  const [fadeKey, setFadeKey] = useState(mainImage);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (urlColor && images) {
+      const match = images.find(img => 
+        img.colorCode === urlColor || 
+        (img.colorHex && img.colorHex.replace('#', '').toLowerCase() === urlColor.toLowerCase())
+      );
+      if (match) {
+        setMainImage(match.imageUrl);
+        setFadeKey(match.imageUrl);
+      }
+    }
+  }, [urlColor, images]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isZoomed) return;
@@ -26,7 +44,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string 
         {displayImages.map((img, idx) => (
           <button
             key={idx}
-            onClick={() => setMainImage(img)}
+            onClick={() => { setMainImage(img); setFadeKey(img); }}
             className={`relative w-16 h-20 shrink-0 border-2 transition-all ${
               mainImage === img ? 'border-[#18181B]' : 'border-transparent hover:border-gray-300'
             }`}
@@ -49,10 +67,11 @@ export default function ProductGallery({ images }: { images: { imageUrl: string 
         onMouseMove={handleMouseMove}
       >
         <Image
+          key={fadeKey}
           src={mainImage || displayImages[0]}
           alt="Product Main Image"
           fill
-          className={`object-cover transition-transform duration-200 ${isZoomed ? 'scale-150 opacity-0' : 'scale-100 opacity-100'}`}
+          className={`object-cover transition-all duration-200 animate-in fade-in ${isZoomed ? 'scale-150 opacity-0' : 'scale-100 opacity-100'}`}
           priority
         />
         

@@ -13,11 +13,13 @@ public class SalesOrderService {
     private final OrderRepository orders;
     private final OrderNoteRepository notes;
     private final StockReservationRepository reservations;
+    private final ProductRepository productRepository;
 
-    public SalesOrderService(OrderRepository orders, OrderNoteRepository notes, StockReservationRepository reservations) {
+    public SalesOrderService(OrderRepository orders, OrderNoteRepository notes, StockReservationRepository reservations, ProductRepository productRepository) {
         this.orders = orders;
         this.notes = notes;
         this.reservations = reservations;
+        this.productRepository = productRepository;
     }
 
     // Đơn chờ nhân viên bán hàng xử lý: khách vừa gửi nhưng chưa xác nhận.
@@ -62,6 +64,18 @@ public class SalesOrderService {
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelReason(reason);
         order.setUpdatedAt(LocalDateTime.now());
+        
+        // Decrement sold count
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                if (product != null) {
+                    product.setSoldCount(Math.max(0, (product.getSoldCount() != null ? product.getSoldCount() : 0) - item.getQuantity()));
+                    productRepository.save(product);
+                }
+            }
+        }
+        
         return orders.save(order);
     }
 

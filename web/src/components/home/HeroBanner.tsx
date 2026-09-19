@@ -1,63 +1,98 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { marketingService, type Banner } from '@/lib/services/marketingService';
+import { useEffect, useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 
-const FALLBACK_SLIDES: { bg: string; href: string }[] = [
-  { bg: '/images/banners/home/banner-1.webp', href: '/products' },
-  { bg: '/images/banners/home/banner-2.webp', href: '/products' },
-  { bg: '/images/banners/home/banner-3.webp', href: '/products?category=family' },
-];
+const HERO_SLIDES = [
+  { 
+    id: 'b1', 
+    bg: '/images/banners/home/banner-1.webp', 
+    href: '/products',
+    badge: 'NEW COLLECTION 2026',
+    title: 'BỘ SƯU TẬP THU ĐÔNG',
+    subtitle: 'Đẳng cấp & phong cách xu hướng thời trang hiện đại',
+    cta: 'Khám Phá Ngay',
+  },
+  { 
+    id: 'b2', 
+    bg: '/images/banners/home/banner-2.webp', 
+    href: '/products?sort=best-seller',
+    badge: 'HOT TRENDING',
+    title: 'BEST SELLERS 2026',
+    subtitle: 'Những trang phục được săn đón và lựa chọn nhiều nhất',
+    cta: 'Sắm Ngay',
+  },
+  { 
+    id: 'b3', 
+    bg: '/images/banners/home/banner-3.webp', 
+    href: '/products?targetGroup=family',
+    badge: 'FAMILY SET',
+    title: 'ĐỒNG PHỤC GIA ĐÌNH',
+    subtitle: 'Gắn kết tình thân với thiết kế mặc đồng điệu cả nhà',
+    cta: 'Xem Bộ Sưu Tập',
+  },
+  { 
+    id: 'b4', 
+    bg: '/images/banners/home/banner-4.webp', 
+    href: '/products?targetGroup=women',
+    badge: 'WOMEN COLLECTION',
+    title: 'THỜI TRANG NỮ CAO CẤP',
+    subtitle: 'Thanh lịch - Quyến rũ - Tinh tế trong từng đường nét',
+    cta: 'Mua Sản Phẩm Nữ',
+  },
+  { 
+    id: 'b5', 
+    bg: '/images/banners/home/banner-5.webp', 
+    href: '/products?targetGroup=men',
+    badge: 'MEN COLLECTION',
+    title: 'THỜI TRANG NAM HIỆN ĐẠI',
+    subtitle: 'Phong cách nam tính, năng động và lịch lãm',
+    cta: 'Mua Sản Phẩm Nam',
+  },
+  { 
+    id: 'b6', 
+    bg: '/images/banners/home/banner-6.webp', 
+    href: '/products?targetGroup=kids',
+    badge: 'KIDS FASHION',
+    title: 'BỘ SƯU TẬP TRẺ EM',
+    subtitle: 'Chất liệu hữu cơ siêu mềm mại, an toàn tuyệt đối cho bé',
+    cta: 'Khám Phá Đồ Bé',
+  },
+  { 
+    id: 'b7', 
+    bg: '/images/banners/home/banner-7.webp', 
+    href: '/products?sale=true',
+    badge: 'MEGA SALE UNTIL 50%',
+    title: 'ƯU ĐÃI ĐẶC BIỆT',
+    subtitle: 'Săn deal giảm giá trực tiếp - Số lượng sản phẩm có hạn',
+    cta: 'Săn Sale Ngay',
+  },
+  { 
+    id: 'b8', 
+    bg: '/images/banners/home/banner-8.webp', 
+    href: '/products',
+    badge: 'ET.TEE STUDIO',
+    title: 'ĐỊNH HÌNH PHONG CÁCH',
+    subtitle: 'Phối đồ cá nhân hóa nâng tầm gu thời trang của riêng bạn',
+    cta: 'Khám Phá Ngay',
+  },
+] as const;
 
-const AUTO_PLAY_INTERVAL = 5000;
-
-type Slide = { id: string | number; bg: string; href: string; title?: string };
+const AUTO_PLAY_INTERVAL = 6000;
+const TOTAL = HERO_SLIDES.length;
 
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [apiSlides, setApiSlides] = useState<Banner[] | null>(null);
-  const [impressionSent, setImpressionSent] = useState<Set<string>>(new Set());
-
-  // Fetch public banners; if API returns empty / fails, fall back to local images.
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await marketingService.getPublicBanners('HOME_HERO');
-        if (mounted && Array.isArray(res.data) && res.data.length > 0) {
-          setApiSlides(res.data);
-        }
-      } catch {
-        // silent: keep fallback
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
-  const slides: Slide[] = useMemo(() => {
-    if (apiSlides && apiSlides.length > 0) {
-      return apiSlides
-        .filter((b) => !!b.imageUrl)
-        .map((b) => ({
-          id: b.id ?? Math.random(),
-          bg: b.imageUrl!,
-          href: b.linkUrl || '/products',
-          title: b.title,
-        }));
-    }
-    return FALLBACK_SLIDES.map((s, i) => ({ id: `fallback-${i}`, ...s }));
-  }, [apiSlides]);
 
   const goNext = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
+    setCurrent((prev) => (prev + 1) % TOTAL);
+  }, []);
 
   const goPrev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  }, [slides.length]);
+    setCurrent((prev) => (prev - 1 + TOTAL) % TOTAL);
+  }, []);
 
   useEffect(() => {
     if (paused) return;
@@ -65,98 +100,79 @@ export default function HeroBanner() {
     return () => clearInterval(timer);
   }, [paused, goNext]);
 
-  // Fire IMPRESSION once per slide (best-effort, only for API banners)
-  useEffect(() => {
-    const s = slides[current];
-    if (!s || !apiSlides) return;
-    const id = String(s.id);
-    if (impressionSent.has(id)) return;
-    setImpressionSent((prev) => new Set(prev).add(id));
-    const banner = apiSlides.find((b) => String(b.id ?? '') === id);
-    if (!banner?.id) return;
-    const sessionId = (() => {
-      try {
-        let sid = sessionStorage.getItem('mkt_session');
-        if (!sid) {
-          sid = Math.random().toString(36).slice(2);
-          sessionStorage.setItem('mkt_session', sid);
-        }
-        return sid;
-      } catch { return undefined; }
-    })();
-    marketingService
-      .trackEvent({ eventType: 'IMPRESSION', bannerId: banner.id, sessionId })
-      .catch(() => {});
-  }, [current, slides, apiSlides, impressionSent]);
-
-  const handleClick = (s: Slide) => {
-    const banner = apiSlides?.find((b) => String(b.id ?? '') === String(s.id));
-    if (banner?.id) {
-      marketingService
-        .trackEvent({ eventType: 'CLICK', bannerId: banner.id })
-        .catch(() => {});
-    }
-  };
-
   return (
     <section
-      className="relative w-full overflow-hidden bg-gray-100"
-      style={{ aspectRatio: '3 / 1', maxHeight: '560px' }}
+      className="relative w-full overflow-hidden bg-slate-900 group aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-700 ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-        >
-          <Link
-            href={slide.href}
-            onClick={() => handleClick(slide)}
-            className="block w-full h-full cursor-pointer"
+      {HERO_SLIDES.map((slide, index) => {
+        const isActive = index === current;
+        return (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+            }`}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.bg}
-              alt={slide.title || `Banner ${index + 1}`}
-              className="w-full h-full object-cover object-center"
-              loading={index === 0 ? 'eager' : 'lazy'}
-            />
-          </Link>
-        </div>
-      ))}
-
-      {slides.length > 1 ? (
-        <>
-          <button
-            onClick={goPrev}
-            className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-800 hover:bg-white shadow-md transition"
-            aria-label="Banner trước"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={goNext}
-            className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-800 hover:bg-white shadow-md transition"
-            aria-label="Banner tiếp theo"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrent(index)}
-                aria-label={`Slide ${index + 1}`}
-                className={`rounded-full transition-all duration-300 ${
-                  index === current ? 'w-6 h-2 bg-slate-900' : 'w-2 h-2 bg-white/70 hover:bg-white'
+            <Link href={slide.href} className="block w-full h-full relative cursor-pointer group">
+              {/* Background Image */}
+              <img
+                src={slide.bg}
+                alt={slide.title}
+                className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
+                  isActive ? 'scale-105' : 'scale-100'
                 }`}
+                loading={index === 0 ? 'eager' : 'lazy'}
               />
-            ))}
+            </Link>
           </div>
-        </>
-      ) : null}
+        );
+      })}
+
+      {/* Navigation Buttons */}
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); goPrev(); }}
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-black hover:text-white text-black flex items-center justify-center transition-colors duration-300 opacity-0 group-hover:opacity-100"
+        aria-label="Banner trước"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); goNext(); }}
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-black hover:text-white text-black flex items-center justify-center transition-colors duration-300 opacity-0 group-hover:opacity-100"
+        aria-label="Banner tiếp theo"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+
+      {/* Slide Indicators & Counter */}
+      <div className="absolute bottom-6 right-8 z-30 hidden md:flex items-center gap-4 text-white text-sm font-bold uppercase tracking-wider">
+        <span>{String(current + 1).padStart(2, '0')}</span>
+        <div className="w-16 h-[2px] bg-white/30">
+          <div 
+            className="h-full bg-white transition-all duration-300" 
+            style={{ width: `${((current + 1) / TOTAL) * 100}%` }}
+          />
+        </div>
+        <span className="text-white/60">{String(TOTAL).padStart(2, '0')}</span>
+      </div>
+
+      {/* Indicator dots for mobile/tablet */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 md:hidden">
+        {HERO_SLIDES.map((_, index) => (
+          <button
+            key={index}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(index); }}
+            aria-label={`Slide ${index + 1}`}
+            className={`transition-all duration-300 h-1 ${
+              index === current ? 'w-8 bg-white' : 'w-4 bg-white/50 hover:bg-white/80'
+            }`}
+          />
+        ))}
+      </div>
     </section>
   );
 }
+

@@ -1,8 +1,10 @@
 'use client';
 
 import { getAuthHeaders, getAuthToken } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+const getApi = () => getApiBaseUrl();
+
 
 // ─────────────────────────────────────────────────────────────────────────
 // Types
@@ -128,7 +130,7 @@ export interface BannerAnalytics {
 // Fetch helpers
 // ─────────────────────────────────────────────────────────────────────────
 async function admin(path: string, options: RequestInit = {}) {
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${getApi()}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -148,7 +150,7 @@ async function admin(path: string, options: RequestInit = {}) {
 }
 
 async function publicFetch(path: string) {
-  const res = await fetch(`${API}${path}`, { headers: { 'Content-Type': 'application/json' } });
+  const res = await fetch(`${getApi()}${path}`, { headers: { 'Content-Type': 'application/json' } });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
     try {
@@ -161,7 +163,7 @@ async function publicFetch(path: string) {
 }
 
 async function publicPost(path: string, body: unknown) {
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${getApi()}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -68,6 +68,7 @@ public class CartDto {
         private String productImage;
         private String color;
         private String colorHex;
+        private String colorCode;
         private String size;
         private BigDecimal price;
         private BigDecimal salePrice;
@@ -77,7 +78,7 @@ public class CartDto {
 
         public CartItemResponse() {}
 
-        public CartItemResponse(Long id, Long variantId, String productSlug, String productName, String productImage, String color, String colorHex, String size, BigDecimal price, BigDecimal salePrice, Integer quantity, Integer availableQuantity, BigDecimal itemTotal) {
+        public CartItemResponse(Long id, Long variantId, String productSlug, String productName, String productImage, String color, String colorHex, String colorCode, String size, BigDecimal price, BigDecimal salePrice, Integer quantity, Integer availableQuantity, BigDecimal itemTotal) {
             this.id = id;
             this.variantId = variantId;
             this.productSlug = productSlug;
@@ -85,6 +86,7 @@ public class CartDto {
             this.productImage = productImage;
             this.color = color;
             this.colorHex = colorHex;
+            this.colorCode = colorCode;
             this.size = size;
             this.price = price;
             this.salePrice = salePrice;
@@ -107,6 +109,8 @@ public class CartDto {
         public void setColor(String color) { this.color = color; }
         public String getColorHex() { return colorHex; }
         public void setColorHex(String colorHex) { this.colorHex = colorHex; }
+        public String getColorCode() { return colorCode; }
+        public void setColorCode(String colorCode) { this.colorCode = colorCode; }
         public String getSize() { return size; }
         public void setSize(String size) { this.size = size; }
         public BigDecimal getPrice() { return price; }

@@ -54,26 +54,45 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String collection,
-            @RequestParam(defaultValue = "newest") String sort) {
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "default") String sort) {
 
-        Sort sortOrder = Sort.by(Sort.Direction.DESC, "createdAt");
-        if ("price-asc".equals(sort)) {
-            sortOrder = Sort.by(Sort.Direction.ASC, "price");
-        } else if ("price-desc".equals(sort)) {
-            sortOrder = Sort.by(Sort.Direction.DESC, "price");
-        } else if ("best-seller".equals(sort)) {
-            // Ideally sort by sales count, using id for mock
+        // Multi-sort: split by comma (e.g. "newest,price-asc") and chain Sort criteria in order
+        Sort sortOrder = null;
+        String[] sortKeys = sort.split(",");
+        for (String key : sortKeys) {
+            Sort part = buildSortForKey(key.trim());
+            sortOrder = (sortOrder == null) ? part : sortOrder.and(part);
+        }
+        if (sortOrder == null) {
             sortOrder = Sort.by(Sort.Direction.DESC, "id");
         }
 
         Pageable pageable = PageRequest.of(Math.max(0, page - 1), pageSize, sortOrder);
 
         PaginatedResponseDto<ProductDto> result = productService.getProducts(
-                q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice, pageable
+                q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice, status, pageable
         );
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
+
+    /** Maps a single sort key string to a Spring Sort object. */
+    private Sort buildSortForKey(String key) {
+        return switch (key) {
+            case "price-asc"  -> Sort.by(Sort.Direction.ASC,  "price");
+            case "price-desc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "best-seller", "bestseller", "best" ->
+                    Sort.by(Sort.Direction.DESC, "isBestSeller").and(Sort.by(Sort.Direction.DESC, "id"));
+            case "discount-desc" ->
+                    Sort.by(Sort.Direction.ASC,  "salePrice").and(Sort.by(Sort.Direction.DESC, "price"));
+            case "newest" ->
+                    Sort.by(Sort.Direction.DESC, "isNew").and(Sort.by(Sort.Direction.DESC, "id"));
+            default -> Sort.by(Sort.Direction.DESC, "id");
+        };
+    }
+
+
 
     @GetMapping("/{slug}")
     public ResponseEntity<ApiResponse<ProductDto>> getProductBySlug(@PathVariable String slug) {

@@ -1,9 +1,11 @@
 package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "categories")
+@BatchSize(size = 30)
 public class Category {
 
     @Id

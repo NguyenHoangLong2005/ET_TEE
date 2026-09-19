@@ -4,30 +4,48 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Save, AlertCircle } from 'lucide-react';
 import { getAuthHeaders } from '@/lib/auth';
+import { getApiBaseUrl } from '@/lib/api-config';
 import { toast } from 'sonner';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+const getApiBase = () => getApiBaseUrl();
 
 function ProfileSkeleton() {
   return (
-    <div className="space-y-6 max-w-2xl animate-pulse">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <div className="h-4 w-24 bg-gray-200 rounded"></div>
-            <div className="h-12 bg-gray-100 rounded-lg"></div>
-          </div>
-        ))}
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <div className="h-4 w-20 bg-gray-200 rounded"></div>
-            <div className="h-12 bg-gray-100 rounded-lg"></div>
-          </div>
-        ))}
+    <div className="space-y-8 max-w-3xl animate-pulse">
+      <div className="flex items-center gap-6 mb-8">
+        <div className="w-20 h-20 bg-gray-200 rounded-full"></div>
+        <div className="space-y-3">
+          <div className="h-6 w-48 bg-gray-200 rounded"></div>
+          <div className="h-4 w-32 bg-gray-100 rounded"></div>
+        </div>
       </div>
-      <div className="space-y-2">
-        <div className="h-4 w-32 bg-gray-200 rounded"></div>
-        <div className="h-24 bg-gray-100 rounded-lg"></div>
+      
+      <div className="space-y-6">
+        <div className="h-6 w-32 bg-gray-200 rounded mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-4 w-24 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-100 rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-6 pt-6 border-t border-gray-100">
+        <div className="h-6 w-32 bg-gray-200 rounded mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={`c-${i}`} className="space-y-2">
+              <div className="h-4 w-24 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-100 rounded-lg"></div>
+            </div>
+          ))}
+          <div className="space-y-2 md:col-span-2">
+            <div className="h-4 w-32 bg-gray-200 rounded"></div>
+            <div className="h-24 bg-gray-100 rounded-lg"></div>
+          </div>
+        </div>
       </div>
       <div className="h-12 w-40 bg-gray-200 rounded-lg"></div>
     </div>
@@ -39,7 +57,6 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [originalData, setOriginalData] = useState<any>(null);
 
   const [formData, setFormData] = useState({
@@ -47,9 +64,10 @@ export default function ProfilePage() {
     phone: '',
     gender: '',
     dateOfBirth: '',
-    avatarUrl: '',
     defaultShippingAddress: ''
   });
+
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,7 +75,7 @@ export default function ProfilePage() {
       setError(null);
       try {
         const headers = getAuthHeaders();
-        const res = await fetch(`${API_BASE}/api/account/profile`, {
+        const res = await fetch(`${getApiBase()}/api/account/profile`, {
           headers: headers as Record<string, string>
         });
         const json = await res.json();
@@ -68,7 +86,6 @@ export default function ProfilePage() {
             phone: d.phone || '',
             gender: d.gender || '',
             dateOfBirth: d.dateOfBirth || '',
-            avatarUrl: d.avatarUrl || '',
             defaultShippingAddress: d.defaultShippingAddress || ''
           };
           setFormData(data);
@@ -87,26 +104,42 @@ export default function ProfilePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'phone') {
+      // Basic VN phone validation: 10 digits starting with 0
+      const phoneRegex = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
+      if (value && !phoneRegex.test(value)) {
+        setPhoneError('Số điện thoại không hợp lệ (vd: 0912345678)');
+      } else {
+        setPhoneError('');
+      }
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
-    setIsEditing(true);
   };
 
   const handleCancel = () => {
     if (originalData) {
       setFormData(originalData);
+      setPhoneError('');
     }
-    setIsEditing(false);
-    setError(null);
   };
+
+  const isEditing = JSON.stringify(formData) !== JSON.stringify(originalData);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Client-side validation
+    if (phoneError) {
+      toast.error('Vui lòng sửa các lỗi trên form trước khi lưu.');
+      return;
+    }
+
     if (!formData.fullName || !formData.fullName.trim()) {
       toast.error('Họ tên không được để trống.');
       return;
     }
+    
     if (formData.dateOfBirth) {
       const dob = new Date(formData.dateOfBirth);
       if (dob > new Date()) {
@@ -118,13 +151,16 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${API_BASE}/api/account/profile`, {
+      // Keep avatarUrl in payload if it was there before, or just send what we have
+      const payload = { ...formData };
+      
+      const res = await fetch(`${getApiBase()}/api/account/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...(headers as Record<string, string>)
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const json = await res.json();
@@ -134,13 +170,17 @@ export default function ProfilePage() {
 
       toast.success('Đã cập nhật hồ sơ thành công!');
       setOriginalData(formData);
-      setIsEditing(false);
+      
+      // Optionally trigger a context refresh here if needed to update the sidebar name immediately
     } catch (err: any) {
       toast.error(err.message || 'Đã xảy ra lỗi khi cập nhật hồ sơ.');
     } finally {
       setIsSaving(false);
     }
   };
+
+  const getInitials = (name: string) => 
+    name ? name.trim().split(' ').map(w => w[0]).slice(-2).join('').toUpperCase() : 'U';
 
   if (isLoading) {
     return (
@@ -155,7 +195,7 @@ export default function ProfilePage() {
     return (
       <div>
         <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center space-y-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center space-y-4 max-w-3xl">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
           <p className="text-red-600 font-medium">{error}</p>
           <button
@@ -173,98 +213,127 @@ export default function ProfilePage() {
     <div>
       <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Họ và tên <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              name="fullName"
-              required
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-            />
+      <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
+        
+        {/* Avatar Display */}
+        <div className="flex items-center gap-6 mb-8">
+          <div className="w-20 h-20 flex-shrink-0 rounded-full bg-black text-white flex items-center justify-center font-bold text-2xl uppercase overflow-hidden border border-gray-100 shadow-sm">
+            {(user as any)?.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img 
+                src={(user as any).avatarUrl} 
+                alt={user?.fullName || ''} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              getInitials(user?.fullName || '')
+            )}
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Email (Không thể sửa)</label>
-            <input
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full p-3 border border-gray-200 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Số điện thoại</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="0xxx xxx xxx"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Giới tính</label>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-            >
-              <option value="">Chọn giới tính</option>
-              <option value="MALE">Nam</option>
-              <option value="FEMALE">Nữ</option>
-              <option value="OTHER">Khác</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Ngày sinh</label>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              max={new Date().toISOString().split('T')[0]}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700">Ảnh đại diện (URL)</label>
-            <input
-              type="text"
-              name="avatarUrl"
-              placeholder="https://..."
-              value={formData.avatarUrl}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow"
-            />
+          <div>
+            <h3 className="font-bold text-xl text-gray-900">{user?.fullName}</h3>
+            <p className="text-gray-500">{user?.email}</p>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700">Địa chỉ giao hàng mặc định</label>
-          <textarea
-            name="defaultShippingAddress"
-            rows={3}
-            value={formData.defaultShippingAddress}
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow resize-none"
-            placeholder="Ví dụ: 123 Nguyễn Trãi, Quận 1, TP.HCM"
-          ></textarea>
+        {/* Section 1: Thông tin cá nhân */}
+        <div>
+          <h3 className="text-lg font-bold mb-4 text-gray-900">Thông tin cá nhân</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-600">Họ và tên <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-600">Giới tính</label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
+              >
+                <option value="">Chưa xác định</option>
+                <option value="MALE">Nam</option>
+                <option value="FEMALE">Nữ</option>
+                <option value="OTHER">Khác</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-600">Ngày sinh</label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* Section 2: Thông tin liên hệ */}
+        <div className="pt-6 border-t border-gray-100">
+          <h3 className="text-lg font-bold mb-4 text-gray-900">Thông tin liên hệ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="flex items-center justify-between text-sm font-semibold text-gray-600">
+                Email
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Không thể sửa</span>
+              </label>
+              <input
+                type="email"
+                value={user?.email || ''}
+                disabled
+                className="w-full p-3 border border-gray-200 bg-gray-50 text-gray-500 rounded-lg cursor-not-allowed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-600">Số điện thoại</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="0912 345 678"
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 ${
+                  phoneError ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-600">Địa chỉ giao hàng mặc định</label>
+              <textarea
+                name="defaultShippingAddress"
+                rows={3}
+                value={formData.defaultShippingAddress}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 resize-none"
+                placeholder="Ví dụ: 123 Nguyễn Trãi, Quận 1, TP.HCM"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             type="submit"
-            disabled={isSaving || !isEditing}
+            disabled={isSaving || !isEditing || !!phoneError}
             className="flex items-center justify-center gap-2 px-8 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (

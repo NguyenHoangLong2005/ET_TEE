@@ -21,6 +21,8 @@ import com.nguyenhoanglong.repository.PasswordResetTokenRepository;
 import com.nguyenhoanglong.entity.PasswordResetToken;
 import com.nguyenhoanglong.exception.ApiException;
 import org.springframework.http.HttpStatus;
+import com.nguyenhoanglong.entity.LoginAttempt;
+import com.nguyenhoanglong.repository.LoginAttemptRepository;
 
 @Service
 public class AuthService {
@@ -33,6 +35,7 @@ public class AuthService {
     private final EmailService emailService;
     private final WishlistService wishlistService;
     private final CartService cartService;
+    private final LoginAttemptRepository loginAttemptRepository;
 
     public AuthService(UserRepository userRepository,
                        EmailVerificationCodeRepository codeRepository,
@@ -41,7 +44,8 @@ public class AuthService {
                        JwtService jwtService,
                        EmailService emailService,
                        WishlistService wishlistService,
-                       CartService cartService) {
+                       CartService cartService,
+                       LoginAttemptRepository loginAttemptRepository) {
         this.userRepository = userRepository;
         this.codeRepository = codeRepository;
         this.resetTokenRepository = resetTokenRepository;
@@ -50,6 +54,7 @@ public class AuthService {
         this.emailService = emailService;
         this.wishlistService = wishlistService;
         this.cartService = cartService;
+        this.loginAttemptRepository = loginAttemptRepository;
     }
 
     @Transactional
@@ -62,6 +67,9 @@ public class AuthService {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+        if (request.getAddress() != null && !request.getAddress().trim().isEmpty()) {
+            user.setDefaultShippingAddress(request.getAddress());
+        }
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setEmailVerified(false);
         user.setStatus("PENDING_VERIFICATION");
@@ -186,13 +194,30 @@ public class AuthService {
         generateAndSendOtp(user);
     }
 
-    public AuthDto.AuthResponse login(AuthDto.LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+    public AuthDto.AuthResponse login(AuthDto.LoginRequest request, String ipAddress) {
+        // TODO: Create a scheduled task to clean up old login_attempts records (e.g. > 90 days) using loginAttemptRepository.deleteOldAttempts()
+        
+        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isEmpty()) {
+            logAttempt(request.getEmail(), ipAddress, false);
             throw new RuntimeException("Email hoặc mật khẩu không đúng");
         }
+        User user = userOpt.get();
+
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+            logAttempt(request.getEmail(), ipAddress, false);
+            throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Tài khoản bị tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            logAttempt(request.getEmail(), ipAddress, false);
+            userRepository.incrementFailedLoginAttempts(user.getId());
+            throw new RuntimeException("Email hoặc mật khẩu không đúng");
+        }
+
+        // Đăng nhập thành công -> reset lockout
+        userRepository.resetFailedLoginAttempts(user.getId());
+        logAttempt(request.getEmail(), ipAddress, true);
 
         if (!user.isEmailVerified()) {
             throw new RuntimeException("UNVERIFIED");
@@ -221,6 +246,14 @@ public class AuthService {
             return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus());
         }
         return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus(), cartWarnings);
+    }
+
+    private void logAttempt(String email, String ipAddress, boolean success) {
+        LoginAttempt attempt = new LoginAttempt();
+        attempt.setEmail(email);
+        attempt.setIpAddress(ipAddress);
+        attempt.setSuccess(success);
+        loginAttemptRepository.save(attempt);
     }
 
     public AuthDto.AuthResponse me(String email) {

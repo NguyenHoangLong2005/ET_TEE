@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import CartDrawer from "@/components/cart/CartDrawer";
+import GlobalGuard from "@/components/layout/GlobalGuard";
 import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin", "vietnamese"] });
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`${inter.className} min-h-screen flex flex-col bg-white`}>
         <AuthProvider>
+          <GlobalGuard />
           <CartProvider>
             <WishlistProvider>
               <Header />

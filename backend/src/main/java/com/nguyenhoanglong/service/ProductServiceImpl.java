@@ -41,10 +41,10 @@ public class ProductServiceImpl implements ProductService {
     public PaginatedResponseDto<ProductDto> getProducts(
             String q, String targetGroup, String gender, String productType, String category, String collection,
             String color, String adultSize, String kidsSize, String accessorySize,
-            BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+            BigDecimal minPrice, BigDecimal maxPrice, String status, Pageable pageable) {
 
         Specification<Product> spec = ProductSpecification.filter(
-                q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice
+                q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice, status
         );
 
         Page<Product> page = productRepository.findAll(spec, pageable);
@@ -150,6 +150,7 @@ public class ProductServiceImpl implements ProductService {
                             .sku(v.getSku())
                             .color(v.getColor())
                             .colorHex(v.getColorHex())
+                            .colorCode(v.getColorCode())
                             .size(v.getSize())
                             .price(v.getPrice())
                             .salePrice(v.getSalePrice())
@@ -167,6 +168,8 @@ public class ProductServiceImpl implements ProductService {
                 imgDto.put("alt", img.getAlt());
                 imgDto.put("isPrimary", img.getIsPrimary());
                 imgDto.put("sortOrder", img.getSortOrder());
+                imgDto.put("colorCode", img.getColorCode());
+                imgDto.put("colorHex", img.getColorHex());
                 imageDtos.add(imgDto);
             }
         }
@@ -196,6 +199,9 @@ public class ProductServiceImpl implements ProductService {
                 .recommendationTags(product.getRecommendationTags() != null ? product.getRecommendationTags() : new ArrayList<>())
                 .variants(variantDtos)
                 .images(imageDtos)
+                .averageRating(product.getAverageRating() != null ? Math.round(product.getAverageRating() * 10.0) / 10.0 : 0.0)
+                .totalReviews(product.getTotalReviews() != null ? product.getTotalReviews() : 0)
+                .soldCount(product.getSoldCount() != null ? product.getSoldCount() : 0)
                 .build();
                 
         return dto;

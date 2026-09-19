@@ -15,7 +15,7 @@ type Order = {
   total: number;
 };
 
-const API_URL = "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 // confirmed -> picking -> packed: các bước kho cần thao tác.
 const STATUS_ACTIONS: Record<string, { label: string; path: string }> = {

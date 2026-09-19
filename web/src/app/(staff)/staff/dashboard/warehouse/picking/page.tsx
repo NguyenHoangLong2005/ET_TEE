@@ -1,213 +1,64 @@
 "use client";
-
-import Link from "next/link";
-import { useEffect, useState } from "react";
-
-const API_URL =
-  "";
-
-type Order = {
-  orderId: number;
-  id?: number;
-  orderCode: string;
-  customerName: string;
-  shippingAddress: string;
-  status: string;
-};
+import React from 'react';
+import { FileText, CheckCircle } from 'lucide-react';
+import { useMockOrders } from '@/hooks/useMockOrders';
 
 export default function WarehousePickingPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [error, setError] = useState("");
+  const { orders, updateOrderStatus } = useMockOrders();
+  const pickingOrders = orders.filter(o => o.status === 'CONFIRMED');
 
-  const loadOrders = () => {
-    fetch(`${API_URL}/api/staff/warehouse/orders`, {
-      cache: "no-store",
-    })
-      .then(async (response) => {
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            result.message ??
-              "Không thể tải danh sách lấy hàng"
-          );
-        }
-
-        const all: Order[] = (Array.isArray(result) ? result : result.data ?? []).map((o: Order) => ({ ...o, orderId: o.orderId ?? o.id }));
-
-        setOrders(
-          all.filter(
-            (order) =>
-              order.status === "CONFIRMED" ||
-              order.status === "PICKING"
-          )
-        );
-      })
-      .catch((err: unknown) =>
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Không thể kết nối backend"
-        )
-      );
-  };
-
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  const run = async (
-    orderId: number,
-    path: string
-  ) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/staff/warehouse/orders/${orderId}/${path}`,
-        {
-          method: "POST",
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response
-          .json()
-          .catch(() => ({}));
-
-        throw new Error(
-          data.message ?? "Thao tác thất bại"
-        );
-      }
-
-      loadOrders();
-    } catch (err) {
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Có lỗi xảy ra"
-      );
-    }
+  const handlePick = (id: string) => {
+    updateOrderStatus(id, 'PACKED'); // Skip PACKING state for simplicity, straight to PACKED
   };
 
   return (
-    <PickingView
-      orders={orders}
-      error={error}
-      onRun={run}
-    />
-  );
-}
-
-function PickingView({
-  orders,
-  error,
-  onRun,
-}: {
-  orders: Order[];
-  error: string;
-  onRun: (
-    orderId: number,
-    path: string
-  ) => void;
-}) {
-  return (
-    <main className="min-h-screen bg-[#15100f] px-5 py-8 text-slate-100">
-      <div className="mx-auto max-w-5xl space-y-6">
-
-        <Link
-          href="/staff/dashboard/warehouse"
-          className="text-xs text-orange-300"
-        >
-          ← Về dữ liệu kho
-        </Link>
-        <nav className="flex flex-wrap gap-2 text-sm mt-3">
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/dashboard">Tổng quan</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/orders">Đơn cần xử lý</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/receiving">Nhập kho</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/inventory">Tồn kho</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/adjustments">Duyệt chênh lệch</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/reservations">Giữ hàng</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/stock-count">Kiểm kê</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/packing">Đóng gói</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/shipments">Bàn giao</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/replenishment">Đề xuất nhập thêm</Link>
-        </nav>
-
-        <h1 className="text-3xl font-black text-white">
-          Lấy hàng
-        </h1>
-
-        {error && (
-          <p className="rounded border-red-900 bg-red-950/40 p-3 text-sm text-red-300">
-            {error}
-          </p>
-        )}
-
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <article
-              key={order.orderId}
-              className="flex flex-col gap-3 rounded-xl border-slate-800 bg-slate-900 p-5 md:flex-row md:items-center md:justify-between"
-            >
-              <div>
-                <p className="text-xs text-slate-500">
-                  {order.orderCode ??
-                    `#${order.orderId}`}
-                </p>
-
-                <p className="mt-1 font-semibold text-white">
-                  {order.customerName ??
-                    "Khách chưa đặt tên"}
-                </p>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  {order.shippingAddress ??
-                    "Chưa có địa chỉ"}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-orange-300">
-                  {order.status}
-                </span>
-
-                {order.status === "CONFIRMED" && (
-                  <button
-                    onClick={() =>
-                      onRun(
-                        order.orderId,
-                        "picking"
-                      )
-                    }
-                    className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Bắt đầu lấy hàng
-                  </button>
-                )}
-
-                {order.status === "PICKING" && (
-                  <button
-                    onClick={() =>
-                      onRun(
-                        order.orderId,
-                        "picking/complete"
-                      )
-                    }
-                    className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Hoàn tất lấy hàng
-                  </button>
-                )}
-              </div>
-            </article>
-          ))}
-
-          {orders.length === 0 && (
-            <p className="rounded-xl border-slate-800 bg-slate-900 p-6 text-sm text-slate-400">
-              Không có đơn nào cần lấy hàng.
-            </p>
-          )}
-        </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Danh Sách Nhặt Hàng (Picking)</h1>
       </div>
-    </main>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3">Mã Đơn</th>
+              <th className="px-6 py-3">Ngày Đặt</th>
+              <th className="px-6 py-3">Trạng Thái Hiện Tại</th>
+              <th className="px-6 py-3 text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {pickingOrders.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <FileText className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                  Không có yêu cầu nhặt hàng nào.
+                </td>
+              </tr>
+            ) : (
+              pickingOrders.map(order => (
+                <tr key={order.id} className="hover:bg-gray-50/50 transition">
+                  <td className="px-6 py-4 font-bold text-gray-900">{order.id}</td>
+                  <td className="px-6 py-4 text-gray-700">{new Date(order.createdAt).toLocaleString('vi-VN')}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                      Chờ nhặt hàng
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={() => handlePick(order.id)}
+                      className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg transition text-xs flex items-center gap-2 ml-auto"
+                    >
+                      <CheckCircle className="w-4 h-4" /> Đã nhặt xong
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

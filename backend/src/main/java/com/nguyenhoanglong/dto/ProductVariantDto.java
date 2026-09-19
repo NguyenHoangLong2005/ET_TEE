@@ -14,6 +14,7 @@ public class ProductVariantDto {
     
     private String color;
     private String colorHex;
+    private String colorCode;
     private String size;
     private BigDecimal price;
     private BigDecimal salePrice;
@@ -34,6 +35,8 @@ public class ProductVariantDto {
     public void setColor(String color) { this.color = color; }
     public String getColorHex() { return colorHex; }
     public void setColorHex(String colorHex) { this.colorHex = colorHex; }
+    public String getColorCode() { return colorCode; }
+    public void setColorCode(String colorCode) { this.colorCode = colorCode; }
     public String getSize() { return size; }
     public void setSize(String size) { this.size = size; }
     public BigDecimal getPrice() { return price; }
@@ -56,6 +59,7 @@ public class ProductVariantDto {
         public ProductVariantDtoBuilder sku(String sku) { dto.setSku(sku); return this; }
         public ProductVariantDtoBuilder color(String color) { dto.setColor(color); return this; }
         public ProductVariantDtoBuilder colorHex(String colorHex) { dto.setColorHex(colorHex); return this; }
+        public ProductVariantDtoBuilder colorCode(String colorCode) { dto.setColorCode(colorCode); return this; }
         public ProductVariantDtoBuilder size(String size) { dto.setSize(size); return this; }
         public ProductVariantDtoBuilder price(BigDecimal price) { dto.setPrice(price); return this; }
         public ProductVariantDtoBuilder salePrice(BigDecimal salePrice) { dto.setSalePrice(salePrice); return this; }

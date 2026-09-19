@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { getValidProductImage } from '@/lib/utils/imageUtils';
 
 interface ProductCardProps {
   id: string;        // slug – used for URL links only
@@ -15,9 +15,10 @@ interface ProductCardProps {
   originalPrice?: number;
   image: string;
   hoverImage?: string;
-  category: string;
+  category?: string | { id?: number | string; name?: string };
   isNew?: boolean;
-  colors?: ({ hex: string; name: string } | string)[];
+  colors?: ({ hex: string; code?: string; name: string } | string)[];
+  images?: { imageUrl: string; colorCode?: string; isPrimary?: boolean }[];
   sizes?: string[];
 }
 
@@ -29,14 +30,22 @@ export default function ProductCard({
   originalPrice,
   image,
   hoverImage,
+  category,
   isNew,
   colors,
+  images,
   sizes = [],
 }: ProductCardProps) {
+  const [hoverColorCode, setHoverColorCode] = useState<string | null>(null);
+  const displayCategory = typeof category === 'string' 
+    ? category 
+    : (category?.name || 'Thời trang');
+
   const isSale = originalPrice && originalPrice > price;
+  const discountPercent = isSale ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [isLoading, setIsLoading] = useState(false);
-  // Use numeric productId for wishlist; Number(slug) would produce NaN
   const numericId = productId ?? NaN;
   const inWishlist = !isNaN(numericId) && isInWishlist(numericId);
 
@@ -65,28 +74,37 @@ export default function ProductCard({
         }
       }
     } catch {
-      // Fallback guard – addToWishlist/removeFromWishlist should never throw,
-      // but this ensures we never get an unhandled rejection.
       toast.error('Có lỗi xảy ra, vui lòng thử lại');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getDisplayImage = () => {
+    if (hoverColorCode && images) {
+      const match = images.find(img => img.colorCode === hoverColorCode);
+      if (match) return match.imageUrl;
+    }
+    return getValidProductImage({ image, name, category: displayCategory, productId }, 0);
+  };
+
+  const validImage = getDisplayImage();
+  const validHoverImage = hoverImage && hoverImage !== validImage && !hoverColorCode ? hoverImage : undefined;
+
   return (
-    <div className="group flex flex-col w-full h-full text-slate-900">
+    <div className="group flex flex-col w-full h-full bg-white transition-all duration-300">
       {/* Image container */}
-      <Link href={`/products/${id}`} className="relative aspect-[3/4] bg-gray-50 overflow-hidden mb-3">
+      <Link href={`/products/${id}`} className="relative aspect-[3/4] bg-slate-50 block">
         {/* Badges */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
           {isNew && (
-            <span className="bg-white text-slate-900 text-[10px] font-bold tracking-widest uppercase px-2 py-1 shadow-sm">
+            <span className="bg-black text-white text-[10px] font-bold tracking-wider uppercase px-2 py-1">
               MỚI
             </span>
           )}
           {isSale && (
-            <span className="bg-[#e50027] text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 shadow-sm">
-              SALE
+            <span className="bg-red-600 text-white text-[10px] font-bold tracking-wider uppercase px-2 py-1">
+              -{discountPercent}%
             </span>
           )}
         </div>
@@ -95,80 +113,95 @@ export default function ProductCard({
         <button 
           onClick={handleWishlistToggle}
           disabled={isLoading}
-          className={`absolute top-2 right-2 z-10 p-2 bg-white rounded-full transition-all shadow-sm ${inWishlist ? 'text-[#e50027] opacity-100 translate-y-0' : 'text-slate-400 hover:text-[#e50027] opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0'}`}
+          className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-opacity duration-300 ${
+            inWishlist 
+              ? 'bg-white text-black opacity-100' 
+              : 'bg-white text-gray-400 hover:text-black opacity-0 group-hover:opacity-100'
+          }`}
+          aria-label="Yêu thích"
         >
-          <Heart className={`w-4 h-4 ${inWishlist ? 'fill-[#e50027]' : ''}`} />
+          <Heart className={`w-4 h-4 transition-transform duration-200 ${inWishlist ? 'fill-black stroke-none' : ''}`} />
         </button>
 
         {/* Primary Image */}
-        <Image
-          src={image}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={validImage}
           alt={name}
-          fill
-          className={`object-cover object-center transition-opacity duration-500 ${hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'}`}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`w-full h-full object-cover object-center transition-opacity duration-500 ease-out ${
+            validHoverImage ? 'group-hover:opacity-0' : ''
+          }`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/images/men/tshirt/ao-phong-nam-cotton-usa-basic-co-tron-sw001.webp';
+          }}
         />
 
         {/* Hover Image */}
-        {hoverImage && (
-          <Image
-            src={hoverImage}
+        {validHoverImage && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={validHoverImage}
             alt={`${name} - alternate view`}
-            fill
-            className="object-cover object-center absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-100 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="w-full h-full object-cover object-center absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
-        )}
-
-        {/* Quick Add overlay */}
-        {sizes.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20">
-            <div className="bg-white/90 backdrop-blur-sm p-2 shadow-sm flex flex-wrap justify-center gap-1.5">
-              {sizes.slice(0, 5).map((size, idx) => (
-                <button key={idx} className="w-8 h-8 flex items-center justify-center text-[11px] font-bold border border-gray-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-colors">
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
         )}
       </Link>
 
       {/* Info container */}
-      <div className="flex flex-col flex-1 px-1">
-        {/* Colors */}
-        {colors && colors.length > 1 && (
-          <div className="flex items-center gap-1 mb-2">
-            {colors.slice(0, 4).map((c, i) => {
-              // Support both old (string hex) and new ({hex,name}) shape.
+      <div className="flex flex-col flex-1 py-3 bg-white">
+        {/* Colors swatches */}
+        {colors && colors.length > 0 && (
+          <div className="flex items-center gap-1.5 mb-2">
+            {colors.slice(0, 5).map((c, i) => {
               const hex = typeof c === 'string' ? c : c.hex;
               const title = typeof c === 'string' ? undefined : c.name;
+              const code = typeof c === 'string' ? undefined : c.code;
               return (
                 <div
                   key={i}
                   title={title}
-                  className="w-3 h-3 rounded-[2px] border border-gray-300"
+                  onMouseEnter={() => code && setHoverColorCode(code)}
+                  onMouseLeave={() => setHoverColorCode(null)}
+                  className={`w-3 h-3 rounded-full border transition-all cursor-pointer ${
+                    hoverColorCode === code ? 'border-black ring-1 ring-black ring-offset-1' : 'border-gray-300'
+                  }`}
                   style={{ backgroundColor: hex }}
                 />
               );
             })}
-            {colors.length > 4 && <span className="text-[10px] text-gray-400 ml-1">+{colors.length - 4}</span>}
+            {colors.length > 5 && (
+              <span className="text-[10px] font-medium text-slate-400 ml-0.5">
+                +{colors.length - 5}
+              </span>
+            )}
           </div>
         )}
 
+        {/* Category tag */}
+        <div className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">
+          {displayCategory}
+        </div>
+
         {/* Name */}
-        <Link href={`/products/${id}`} className="text-xs md:text-[13px] font-semibold text-slate-800 leading-tight mb-2 hover:underline line-clamp-2">
+        <Link 
+          href={`/products/${id}`} 
+          className="text-xs md:text-sm font-semibold text-slate-900 leading-snug hover:text-red-600 transition-colors line-clamp-2 mb-3"
+        >
           {name}
         </Link>
 
+
         {/* Price */}
-        <div className="mt-auto flex items-baseline gap-2">
-          <span className={`font-black tracking-tight ${isSale ? 'text-[#e50027] text-sm md:text-base' : 'text-slate-900 text-sm md:text-base'}`}>
-            {price.toLocaleString('vi-VN')}₫
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className={`text-sm md:text-base font-bold ${discountPercent > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+            {(Math.round(price / 1000) * 1000).toLocaleString('vi-VN')}₫
           </span>
-          {isSale && (
-            <span className="text-[11px] md:text-xs text-slate-400 line-through">
-              {originalPrice.toLocaleString('vi-VN')}₫
+          {originalPrice && (
+            <span className="text-xs text-slate-400 line-through">
+              {(Math.round(originalPrice / 1000) * 1000).toLocaleString('vi-VN')}₫
             </span>
           )}
         </div>
@@ -176,3 +209,4 @@ export default function ProductCard({
     </div>
   );
 }
+

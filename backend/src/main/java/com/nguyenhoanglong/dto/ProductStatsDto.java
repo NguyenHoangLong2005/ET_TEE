@@ -10,6 +10,8 @@ public class ProductStatsDto {
     private Map<String, Long> productType = new LinkedHashMap<>();
     /** Counts per category slug. */
     private Map<String, Long> category = new LinkedHashMap<>();
+    /** All available sizes grouped by adult/kids. */
+    private Map<String, java.util.List<String>> sizes = new LinkedHashMap<>();
     /** Total active products. */
     private long totalActive;
 
@@ -19,6 +21,8 @@ public class ProductStatsDto {
     public void setProductType(Map<String, Long> productType) { this.productType = productType; }
     public Map<String, Long> getCategory() { return category; }
     public void setCategory(Map<String, Long> category) { this.category = category; }
+    public Map<String, java.util.List<String>> getSizes() { return sizes; }
+    public void setSizes(Map<String, java.util.List<String>> sizes) { this.sizes = sizes; }
     public long getTotalActive() { return totalActive; }
     public void setTotalActive(long totalActive) { this.totalActive = totalActive; }
 }

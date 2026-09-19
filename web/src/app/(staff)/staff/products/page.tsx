@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SearchInput from "@/components/shared/SearchInput";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -551,12 +552,9 @@ export default function StaffProductsPage() {
             </div>
 
             <div className="p-4 border-b border-slate-800 flex flex-col md:flex-row gap-3">
-              <input
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Tìm sản phẩm"
-                className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
-              />
+              <div className="w-full md:w-64">
+                <SearchInput value={keyword} onChange={setKeyword} placeholder="Tìm sản phẩm" />
+              </div>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}

@@ -27,7 +27,7 @@ type InventoryItem = {
 };
 
 function getAuthHeaders(): HeadersInit {
-  const token = typeof window !== "undefined" ? localStorage.getItem("ettee_access_token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -48,6 +48,24 @@ export default function StaffDashboardPage() {
   const [lowStock, setLowStock] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Redirect logic for specific staff roles who land on the general dashboard
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+        
+        if (role === 'MARKETING_STAFF') window.location.href = '/staff/dashboard/marketing';
+        if (role === 'SALES_STAFF') window.location.href = '/staff/dashboard/sales';
+        if (role === 'WAREHOUSE_STAFF') window.location.href = '/staff/dashboard/warehouse';
+        if (role === 'SHIPPING_STAFF') window.location.href = '/staff/dashboard/shipping';
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
 
   useEffect(() => {
     async function loadDashboard() {

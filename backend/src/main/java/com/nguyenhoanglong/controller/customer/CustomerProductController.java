@@ -24,7 +24,7 @@ public class CustomerProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<com.nguyenhoanglong.dto.PaginatedResponseDto<ProductDto>>> getAllProductsForCustomer() {
         PaginatedResponseDto<ProductDto> result = productService.getProducts(
-                null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null,
                 PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
         );
         return ResponseEntity.ok(ApiResponse.success(result));

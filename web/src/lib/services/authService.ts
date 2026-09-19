@@ -1,7 +1,10 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8081';
+import { getApiBaseUrl } from '@/lib/api-config';
+
+const getBaseUrl = () => getApiBaseUrl();
 const GUEST_TOKEN_STORAGE_KEY = 'guest_cart_token';
 const AUTH_TOKEN_STORAGE_KEY = 'auth_token';
 const CART_MERGE_WARNING_KEY = 'cart_merge_warnings';
+
 
 function readGuestToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -31,7 +34,7 @@ function rememberMergeWarnings(warnings: string[] | null | undefined) {
 export const authService = {
   async register(data: any) {
     const payload = { ...data, guestToken: data?.guestToken ?? readGuestToken() };
-    const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -43,9 +46,20 @@ export const authService = {
     return res.json();
   },
 
+  async checkEmail(email: string) {
+    const res = await fetch(`${getBaseUrl()}/api/auth/check-email?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+      return { available: false }; // fallback
+    }
+    return res.json();
+  },
+
   async verifyEmail(data: any) {
     const payload = { ...data, guestToken: data?.guestToken ?? readGuestToken() };
-    const res = await fetch(`${API_BASE_URL}/api/auth/verify-email`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/verify-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -60,7 +74,7 @@ export const authService = {
   },
 
   async resendCode(data: any) {
-    const res = await fetch(`${API_BASE_URL}/api/auth/resend-code`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/resend-code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -75,8 +89,8 @@ export const authService = {
   async login(data: any) {
     let res;
     try {
-      console.log('Attempting login to URL:', `${API_BASE_URL}/api/auth/login`);
-      res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      console.log('Attempting login to URL:', `${getBaseUrl()}/api/auth/login`);
+      res = await fetch(`${getBaseUrl()}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, guestToken: data?.guestToken ?? readGuestToken() }),
@@ -102,6 +116,10 @@ export const authService = {
     if (typeof window !== 'undefined' && body?.token) {
       window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, body.token);
       rememberMergeWarnings(body?.cartWarnings);
+      try {
+        const payload = JSON.parse(atob(body.token.split('.')[1]));
+        body.role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+      } catch (e) {}
     }
 
     return body;
@@ -117,7 +135,7 @@ export const authService = {
   },
 
   async getMe(token: string) {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -128,11 +146,20 @@ export const authService = {
       throw new Error('Unauthorized');
     }
     const data = await res.json();
+    
+    let role = data.role;
+    if (!role && token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+      } catch (e) {}
+    }
+    
     return {
       id: data.userId || data.id,
       email: data.email,
       fullName: data.fullName,
-      role: data.role || 'USER',
+      role: role || 'USER',
       phone: data.phone || '',
       isEmailVerified: data.status === 'ACTIVE' || data.isEmailVerified,
       status: data.status
@@ -140,7 +167,7 @@ export const authService = {
   },
 
   async forgotPassword(data: any) {
-    const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -153,7 +180,7 @@ export const authService = {
   },
 
   async resendPasswordResetCode(data: any) {
-    const res = await fetch(`${API_BASE_URL}/api/auth/resend-password-reset-code`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/resend-password-reset-code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -166,7 +193,7 @@ export const authService = {
   },
 
   async resetPassword(data: any) {
-    const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+    const res = await fetch(`${getBaseUrl()}/api/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

@@ -1,0 +1,134 @@
+{
+  "generatedAt": "2026-09-09T02:32:52.280Z",
+  "totalProducts": 128,
+  "validProducts": 110,
+  "totalErrors": 18,
+  "errors": [
+    {
+      "id": 24,
+      "name": "Áo Thun Nam Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 25,
+      "name": "Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 26,
+      "name": "Áo Sơ Mi Nam Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 27,
+      "name": "Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 28,
+      "name": "Đen",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 29,
+      "name": "Quần Dài Nam Đen",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 31,
+      "name": "Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 32,
+      "name": "Đen",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 33,
+      "name": "Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 34,
+      "name": "Outfit Nam Navy",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 36,
+      "name": "Váy Bé Gái Màu Hồng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 37,
+      "name": "Hồng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 38,
+      "name": "Trắng",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 97,
+      "name": "Sản phẩm women mới 44",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 98,
+      "name": "Mặc định",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 99,
+      "name": "Sản phẩm women mới 45",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 100,
+      "name": "Mặc định",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    },
+    {
+      "id": 101,
+      "name": "Sản phẩm women mới 46",
+      "severity": "CRITICAL",
+      "field": "sizes",
+      "msg": "Kids has adult sizes: M, L"
+    }
+  ]
+}

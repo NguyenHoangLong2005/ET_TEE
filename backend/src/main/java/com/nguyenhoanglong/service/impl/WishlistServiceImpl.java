@@ -160,6 +160,7 @@ public class WishlistServiceImpl implements WishlistService {
                             .sku(v.getSku())
                             .color(v.getColor())
                             .colorHex(v.getColorHex())
+                            .colorCode(v.getColorCode())
                             .size(v.getSize())
                             .price(v.getPrice())
                             .salePrice(v.getSalePrice())
@@ -177,6 +178,8 @@ public class WishlistServiceImpl implements WishlistService {
                 imgDto.put("alt", img.getAlt());
                 imgDto.put("isPrimary", img.getIsPrimary());
                 imgDto.put("sortOrder", img.getSortOrder());
+                imgDto.put("colorCode", img.getColorCode());
+                imgDto.put("colorHex", img.getColorHex());
                 imageDtos.add(imgDto);
             }
         }

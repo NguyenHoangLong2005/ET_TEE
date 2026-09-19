@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '@/lib/services/authService';
-import { getAuthToken } from '@/lib/auth';
+import { getAuthToken, setAuthSession, clearAuthSession } from '@/lib/auth';
 
 interface User {
   id: string | number;
@@ -16,7 +16,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  login: (token: string, remember?: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -38,10 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const userData = await authService.getMe(token);
           setUser(userData);
+          setAuthSession({ ...userData, roles: [userData.role], accessToken: token });
         } catch (error) {
           console.error('Failed to fetch user', error);
-          localStorage.removeItem('auth_token');
+          clearAuthSession();
         }
+      } else {
+        clearAuthSession();
       }
       setIsLoading(false);
     };
@@ -49,10 +52,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (token: string) => {
-    localStorage.setItem('auth_token', token);
+  const login = async (token: string, remember: boolean = true) => {
+    if (remember) {
+      localStorage.setItem('auth_token', token);
+      sessionStorage.removeItem('auth_token');
+    } else {
+      sessionStorage.setItem('auth_token', token);
+      localStorage.removeItem('auth_token');
+    }
     const userData = await authService.getMe(token);
     setUser(userData);
+    setAuthSession({ ...userData, roles: [userData.role], accessToken: token });
     
     // Attempt to merge guest cart into user cart
     import('@/lib/services/cartService').then(({ CartService }) => {
@@ -61,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
+    clearAuthSession();
     setUser(null);
   };
 

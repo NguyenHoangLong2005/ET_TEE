@@ -26,6 +26,12 @@ public class ProductImage {
     @Column(name = "is_primary")
     private Boolean isPrimary = false;
 
+    @Column(name = "color_code", length = 30)
+    private String colorCode;
+
+    @Column(name = "color_hex", length = 50)
+    private String colorHex;
+
     public ProductImage() {}
 
     public ProductImage(Product product, String imageUrl, String alt, Integer sortOrder, Boolean isPrimary) {
@@ -49,4 +55,8 @@ public class ProductImage {
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
     public Boolean getIsPrimary() { return isPrimary; }
     public void setIsPrimary(Boolean isPrimary) { this.isPrimary = isPrimary; }
+    public String getColorCode() { return colorCode; }
+    public void setColorCode(String colorCode) { this.colorCode = colorCode; }
+    public String getColorHex() { return colorHex; }
+    public void setColorHex(String colorHex) { this.colorHex = colorHex; }
 }

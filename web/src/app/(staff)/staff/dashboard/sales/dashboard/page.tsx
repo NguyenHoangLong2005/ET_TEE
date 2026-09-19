@@ -8,7 +8,7 @@ interface Order {
   status: string;
 }
 
-const API_URL = "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const NEW_STATUSES = ["PENDING_PAYMENT", "PENDING_CONFIRMATION"];
 const DONE_STATUSES = ["DELIVERED", "RETURNED", "REFUNDED"];

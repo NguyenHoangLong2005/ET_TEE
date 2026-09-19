@@ -55,7 +55,7 @@ public class Order {
     @Column(name = "discount_total", nullable = false)
     private Double discountTotal = 0.0;
 
-    @Column(name = "shipping_discount")
+    @Transient
     private Double shippingDiscount = 0.0;
 
     @Column(name = "total_amount", nullable = false)
