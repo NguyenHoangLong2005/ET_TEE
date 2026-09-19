@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ET.TEE — Nhân viên kho</title>
+  <script src="../assets/auth-guard.js" data-required-role="warehouse_staff"></script>
+  <link rel="stylesheet" href="../assets/staff.css">
+</head>
+<body data-staff-role="warehouse">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Điều hướng nhân viên">
+      <a class="brand" href="../index.html" aria-label="ET.TEE Trang nội bộ">
+        <span class="brand-mark">E.</span><span><b>ET.TEE</b><small>STAFF WORKSPACE</small></span>
+      </a>
+      <div><p class="sidebar-caption" id="sidebar-title">NHÂN VIÊN KHO</p><nav class="nav" id="nav" aria-label="Chức năng"></nav></div>
+      <div class="sidebar-bottom"><p>Đăng nhập bằng tài khoản đã được quản trị viên cấp quyền.</p><button id="logout" type="button">↩ Đăng xuất</button></div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><p class="crumb">ET.TEE / Nhân viên / <strong id="role-name">Kho hàng</strong></p><div class="top-actions"><span class="user-chip"><span class="avatar" id="avatar">E</span><span id="user-name">Nhân viên kho</span></span></div></div>
+      <header class="hero">
+        <div>
+          <div class="eyebrow">ET.TEE / KHU VỰC KHO</div>
+          <h1 id="heading">Vận hành kho hàng</h1>
+          <p id="description">Nhập kho; kiểm đếm; quản lý vị trí hàng; điều chỉnh chênh lệch có phê duyệt; giữ hàng cho đơn; picking, packing, in tem; bàn giao hãng vận chuyển; kiểm kê; đề xuất nhập thêm.</p>
+        </div>
+        <div class="hero-right"><a href="../index.html" class="button secondary">← Về cổng nội bộ</a></div>
+      </header>
+      <section aria-label="Số liệu vận hành" class="metrics" id="metrics"><div class="metric">Đang tải số liệu từ API...</div></section>
+      <p id="status" class="notice" role="status" hidden></p>
+      <section id="overview">
+        <div class="section-head"><div><h2>Việc cần xử lý</h2><p>Chọn nhóm công việc để xem dữ liệu và thực hiện nghiệp vụ.</p></div></div>
+        <div class="task-grid" id="task-grid">
+          <div class="task-card" data-function="nhap-kho"><span class="task-index">01</span><p class="task-name">Nhập kho</p><p class="task-desc">Tiếp nhận hàng, kiểm tra chất lượng, ghi nhận tồn kho</p></div>
+          <div class="task-card" data-function="kiam-diem"><span class="task-index">02</span><p class="task-name">Kiểm đếm</p><p class="task-desc">Kiểm đếm hàng khi nhập kho hoặc theo yêu cầu</p></div>
+          <div class="task-card" data-function="quan-ly-vi-tri"><span class="task-index">03</span><p class="task-name">Quản lý vị trí hàng</p><p class="task-desc">Cập nhật vị trí lưu trữ cho từng SKU</p></div>
+          <div class="task-card" data-function="dieu-chinh-chenh-lech"><span class="task-index">04</span><p class="task-name">Điều chỉnh chênh lệch có phê duyệt</p><p class="task-desc">Yêu cầu điều chỉnh tồn kho với quy trình duyệt</p></div>
+          <div class="task-card" data-function="giu-hang"><span class="task-index">05</span><p class="task-name">Giữ hàng cho đơn</p><p class="task-desc">Duyệt hoặc từ chối yêu cầu giữ hàng</p></div>
+          <div class="task-card" data-function="picking"><span class="task-index">06</span><p class="task-name">Picking</p><p class="task-desc">Lấy hàng theo đơn, xác nhận hoàn tất</p></div>
+          <div class="task-card" data-function="packing"><span class="task-index">07</span><p class="task-name">Packing</p><p class="task-desc">Đóng gói kiện hàng, in tem vận đơn</p></div>
+          <div class="task-card" data-function="in-tem"><span class="task-index">08</span><p class="task-name">In tem</p><p class="task-desc">In nhãn vận đơn, tem kiện hàng</p></div>
+          <div class="task-card" data-function="ban-giao"><span class="task-index">09</span><p class="task-name">Bàn giao hãng vận chuyển</p><p class="task-desc">Bàn giao kiện hàng đã đóng gói cho hãng vận chuyển</p></div>
+          <div class="task-card" data-function="kiam-ke"><span class="task-index">10</span><p class="task-name">Kiểm kê</p><p class="task-desc">Tạo phiếu kiểm kê, ghi nhận kết quả đối chiếu</p></div>
+          <div class="task-card" data-function="de-xuat-nhap-them"><span class="task-index">11</span><p class="task-name">Đề xuất nhập thêm</p><p class="task-desc">Đề xuất đặt hàng bổ sung khi tồn kho thấp</p></div>
+        </div>
+        <div class="section-head"><div><h2>Quy trình làm việc</h2><p>Hoạt động của bộ phận được điều phối theo trạng thái đơn hàng.</p></div></div>
+        <div class="notice">Đơn mới → Xác nhận → Picking → Packing → In tem → Bàn giao vận chuyển. Kiểm đếm và điều chỉnh chênh lệch được thực hiện có phê duyệt. Đề xuất nhập thêm dựa trên mức tồn kho thấp.</div>
+      </section>
+      <section id="data-panel" class="panel" hidden aria-live="polite"><div class="panel-head"><div><h2 id="panel-title">Danh sách</h2><p id="panel-subtitle" class="desc"></p></div><div id="panel-tools" class="top-actions"></div></div><div class="table-scroll"><table id="table"><tbody><tr><td>Đang tải dữ liệu...</td></tr></tbody></table></div></section>
+      <p class="helper">Dữ liệu được lấy từ API. Các thao tác ghi nhận trực tiếp trên backend nếu máy chủ hoạt động; giao diện không sử dụng số liệu minh họa.</p>
+    </main>
+  </div>
+  <div id="toast" hidden role="alert"></div>
+  <div id="modal" hidden role="dialog" aria-modal="true"><div class="modal-box"><h3 id="dialog-title"></h3><div id="dialog-body"></div><button id="dialog-close" type="button">Đóng</button></div></div>
+<script>
+  function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, duration);
+  }
+  function showModal(title, content) {
+    const modal = document.getElementById('modal');
+    document.getElementById('dialog-title').textContent = title;
+    document.getElementById('dialog-body').innerHTML = content;
+    modal.hidden = false;
+  }
+</script>
+</body>
+</html>

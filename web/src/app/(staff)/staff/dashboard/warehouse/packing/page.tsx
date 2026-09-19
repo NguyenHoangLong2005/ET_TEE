@@ -40,7 +40,7 @@ export default function PackingPage() {
   return <main className="min-h-screen bg-slate-950 p-6 text-slate-100 md:p-10 print:bg-white print:p-0 print:text-black"><div className="mx-auto max-w-6xl space-y-6">
     <div className="flex flex-wrap justify-between gap-4 print:hidden"><div><Link href="/staff/dashboard/warehouse" className="text-sm text-orange-300">← Bộ phận kho</Link><h1 className="mt-3 text-3xl font-bold">Đóng gói và in tem</h1></div><button className="rounded bg-orange-600 px-4 py-2" onClick={() => void load()}>Làm mới</button></div>
     <nav className="flex flex-wrap gap-2 text-sm mt-3 print:hidden">
-      <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/dashboard">Tổng quan</Link>
+      <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse">Tổng quan</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/orders">Đơn cần xử lý</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/receiving">Nhập kho</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/inventory">Tồn kho</Link>

@@ -2,14 +2,15 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "proof_of_delivery")
 public class ProofOfDelivery {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "proof_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "proof_id", nullable = false, updatable = false)
+    private UUID id;
 
     @OneToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "shipment_id", nullable = false, unique = true)
@@ -27,8 +28,8 @@ public class ProofOfDelivery {
     @Column(name = "delivered_at", nullable = false)
     private LocalDateTime deliveredAt = LocalDateTime.now();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Shipment getShipment() { return shipment; }
     public void setShipment(Shipment shipment) { this.shipment = shipment; }
     public String getReceiverName() { return receiverName; }

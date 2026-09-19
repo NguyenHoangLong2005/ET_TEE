@@ -5,10 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffAction, staffList } from "@/lib/staff-api";
 
 type Inventory = {
-  id: number;
-  productId: number;
-  productName: string;
-  warehouseLocation: string | null;
+  id: string;
+  variantId: string;
+  locationId: string | null;
   quantityOnHand: number;
   quantityReserved: number;
   reorderLevel: number;
@@ -19,7 +18,7 @@ export default function WarehouseInventoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [busy, setBusy] = useState<number | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const load = useCallback(async (signal?: AbortSignal) => {
     setError(""); setLoading(true);
     try { setItems(await staffList<Inventory>("/api/staff/warehouse/inventory", signal)); }
@@ -33,18 +32,18 @@ export default function WarehouseInventoryPage() {
   }, [load]);
 
   const updateLocation = async (item: Inventory) => {
-    const location = window.prompt("Vị trí kho mới:", item.warehouseLocation || "");
+    const location = window.prompt("Vị trí kho mới:", item.locationId || "");
     if (location === null || !location.trim()) return;
     setBusy(item.id); setNotice(""); setError("");
     try {
       await staffAction(`/api/staff/warehouse/inventory/${item.id}/location`, "PUT", { location: location.trim() });
-      setNotice(`Đã cập nhật vị trí cho ${item.productName}.`);
+      setNotice(`Đã cập nhật vị trí cho ${item.variantId}.`);
       await load();
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(null); }
   };
   const requestAdjustment = async (item: Inventory) => {
-    const raw = window.prompt(`Chênh lệch cần điều chỉnh cho ${item.productName} (ví dụ -2 hoặc 5):`);
+    const raw = window.prompt(`Chênh lệch cần điều chỉnh cho ${item.variantId} (ví dụ -2 hoặc 5):`);
     if (raw === null) return;
     const difference = Number(raw);
     if (!raw.trim() || !Number.isInteger(difference) || difference === 0) { setError("Chênh lệch phải là số nguyên khác 0."); return; }
@@ -71,7 +70,7 @@ export default function WarehouseInventoryPage() {
           <button type="button" onClick={() => void load()} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Làm mới</button>
         </header>
         <nav className="flex flex-wrap gap-2 text-sm">
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/dashboard">Tổng quan</Link>
+          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse">Tổng quan</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/orders">Đơn cần xử lý</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/receiving">Nhập kho</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/stock-count">Kiểm kê</Link>
@@ -91,8 +90,8 @@ export default function WarehouseInventoryPage() {
               <thead className="bg-slate-800 text-left text-slate-300"><tr>{["Sản phẩm / ID", "Vị trí", "Tồn thực tế", "Đã giữ", "Khả dụng", "Mức nhập lại", "Thao tác"].map((label) => <th scope="col" key={label} className="p-3">{label}</th>)}</tr></thead>
               <tbody>
                 {items.map((item) => <tr key={item.id} className="border-t border-slate-800 align-top">
-                  <td className="p-3 font-medium">{item.productName}<div className="text-xs text-slate-500">SP #{item.productId} · tồn #{item.id}</div></td>
-                  <td className="p-3">{item.warehouseLocation || "Chưa gán"}</td>
+                  <td className="p-3 font-medium">{item.variantId}<div className="text-xs text-slate-500">SP #{item.variantId} · tồn #{item.id}</div></td>
+                  <td className="p-3">{item.locationId || "Chưa gán"}</td>
                   <td className="p-3">{item.quantityOnHand}</td>
                   <td className="p-3">{item.quantityReserved}</td>
                   <td className="p-3">{item.quantityOnHand - item.quantityReserved}</td>

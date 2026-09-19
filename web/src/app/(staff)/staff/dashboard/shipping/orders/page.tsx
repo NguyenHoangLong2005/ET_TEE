@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Order = {
   orderId: number;
@@ -15,31 +16,30 @@ type Order = {
   total: number;
 };
 
-const API_URL = "";
-
 export default function ShippingOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const loadOrders = () => {
-    fetch(`${API_URL}/api/staff/shipping/orders`, { cache: "no-store" })
-      .then(async (response) => {
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message ?? "Không thể tải đơn vận chuyển");
-        setOrders((Array.isArray(result) ? result : result.data ?? []).map((o: Order) => ({ ...o, orderId: o.orderId ?? o.id })));
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Không thể kết nối backend"));
+  const loadOrders = async () => {
+    setLoading(true); setError("");
+    try {
+      const result = await staffList<Order>("/api/staff/shipping/orders");
+      setOrders(result.map((o) => ({ ...o, orderId: o.orderId ?? o.id })));
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
+  useEffect(() => { void loadOrders(); }, []);
 
   return (
     <main className="p-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <nav className="flex flex-wrap gap-2 text-sm">
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/dashboard">Tổng quan</Link>
+          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping">Tổng quan</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/orders">Đơn chờ giao</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/shipments">Kiện hàng</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/exceptions">Ngoại lệ</Link>
@@ -51,21 +51,21 @@ export default function ShippingOrdersPage() {
         </button>
       </div>
 
-      {error && <p className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">{error}</p>}
+      {loading && <p className="mb-4 text-sm text-slate-400">Đang tải...</p>}
 
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-xl border bg-slate-900">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-800">
             <tr>
-              <th className="p-3 text-left">Mã đơn</th>
-              <th className="p-3 text-left">Khách hàng</th>
-              <th className="p-3 text-left">SĐT</th>
-              <th className="p-3 text-left">Địa chỉ</th>
-              <th className="p-3 text-left">Trạng thái</th>
-              <th className="p-3 text-right">COD / Tổng</th>
+              <th className="p-3 text-left text-slate-300">Mã đơn</th>
+              <th className="p-3 text-left text-slate-300">Khách hàng</th>
+              <th className="p-3 text-left text-slate-300">SĐT</th>
+              <th className="p-3 text-left text-slate-300">Địa chỉ</th>
+              <th className="p-3 text-left text-slate-300">Trạng thái</th>
+              <th className="p-3 text-right text-slate-300">COD / Tổng</th>
             </tr>
           </thead>
-
           <tbody>
             {orders.map((order) => (
               <tr key={order.orderId} className="border-t align-top">
@@ -77,10 +77,9 @@ export default function ShippingOrdersPage() {
                 <td className="p-3 text-right">{Number(order.total ?? 0).toLocaleString("vi-VN")} ₫</td>
               </tr>
             ))}
-
             {orders.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-gray-500">
+                <td colSpan={6} className="p-8 text-center text-slate-400">
                   Không có đơn nào chờ vận chuyển
                 </td>
               </tr>
@@ -89,8 +88,8 @@ export default function ShippingOrdersPage() {
         </table>
       </div>
 
-      <p className="mt-4 text-sm text-gray-500">
-        Tạo kiện hàng cho các đơn đã bàn giao tại mục “Kiện hàng”.
+      <p className="mt-4 text-sm text-slate-500">
+        Tạo kiện hàng cho các đơn đã bàn giao tại mục "Kiện hàng".
       </p>
     </main>
   );

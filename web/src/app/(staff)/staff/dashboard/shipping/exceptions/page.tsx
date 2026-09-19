@@ -44,7 +44,7 @@ export default function ShippingExceptionsPage() {
   return <main className="min-h-screen bg-slate-950 p-6 text-slate-100 md:p-10"><div className="mx-auto max-w-6xl space-y-6">
     <Link href="/staff/dashboard/shipping" className="text-sm text-sky-300">← Bộ phận vận chuyển</Link>
     <nav className="flex flex-wrap gap-2 text-sm mt-3">
-      <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/dashboard">Tổng quan</Link>
+      <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping">Tổng quan</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/orders">Đơn chờ giao</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/shipments">Kiện hàng</Link>
       <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/shipping/exceptions">Ngoại lệ</Link>

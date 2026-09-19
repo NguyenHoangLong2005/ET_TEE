@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Order = {
   orderId: number;
@@ -15,9 +16,6 @@ type Order = {
   total: number;
 };
 
-const API_URL = "";
-
-// confirmed -> picking -> packed: các bước kho cần thao tác.
 const STATUS_ACTIONS: Record<string, { label: string; path: string }> = {
   CONFIRMED: { label: "Bắt đầu lấy hàng", path: "picking" },
   PICKING: { label: "Hoàn tất lấy hàng", path: "picking/complete" },
@@ -27,36 +25,28 @@ const STATUS_ACTIONS: Record<string, { label: string; path: string }> = {
 export default function WarehouseOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const loadOrders = () => {
-    fetch(`${API_URL}/api/staff/warehouse/orders`, { cache: "no-store" })
-      .then(async (response) => {
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message ?? "Không thể tải đơn kho");
-        // Backend trả về mảng Order trực tiếp.
-        setOrders((Array.isArray(result) ? result : result.data ?? []).map((o: Order) => ({ ...o, orderId: o.orderId ?? o.id })));
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Không thể kết nối backend"));
+  const loadOrders = async () => {
+    setLoading(true); setError("");
+    try {
+      const result = await staffList<Order>("/api/staff/warehouse/orders");
+      setOrders(result.map((o) => ({ ...o, orderId: o.orderId ?? o.id })));
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
+  useEffect(() => { void loadOrders(); }, []);
 
   const runAction = async (orderId: number, path: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/staff/warehouse/orders/${orderId}/${path}`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message ?? "Thao tác thất bại");
-      }
-
-      loadOrders();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      await staffAction(`/api/staff/warehouse/orders/${orderId}/${path}`, "POST");
+      await loadOrders();
+    } catch (cause) {
+      alert(errorMessage(cause));
     }
   };
 
@@ -64,7 +54,7 @@ export default function WarehouseOrdersPage() {
     <main className="p-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <nav className="flex flex-wrap gap-2 text-sm">
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/dashboard">Tổng quan</Link>
+          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse">Tổng quan</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/receiving">Nhập kho</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/stock-count">Kiểm kê</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/inventory">Tồn kho</Link>
@@ -81,26 +71,25 @@ export default function WarehouseOrdersPage() {
         </button>
       </div>
 
-      {error && <p className="mb-4 rounded bg-red-100 p-3 text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">{error}</p>}
+      {loading && <p className="mb-4 text-sm text-slate-400">Đang tải...</p>}
 
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-800">
             <tr>
-              <th className="p-3 text-left">Mã đơn</th>
-              <th className="p-3 text-left">Khách hàng</th>
-              <th className="p-3 text-left">SĐT</th>
-              <th className="p-3 text-left">Địa chỉ</th>
-              <th className="p-3 text-left">Trạng thái</th>
-              <th className="p-3 text-right">Tổng tiền</th>
-              <th className="p-3 text-left">Thao tác</th>
+              <th className="p-3 text-left text-slate-300">Mã đơn</th>
+              <th className="p-3 text-left text-slate-300">Khách hàng</th>
+              <th className="p-3 text-left text-slate-300">SĐT</th>
+              <th className="p-3 text-left text-slate-300">Địa chỉ</th>
+              <th className="p-3 text-left text-slate-300">Trạng thái</th>
+              <th className="p-3 text-right text-slate-300">Tổng tiền</th>
+              <th className="p-3 text-left text-slate-300">Thao tác</th>
             </tr>
           </thead>
-
           <tbody>
             {orders.map((order) => {
               const action = STATUS_ACTIONS[order.status];
-
               return (
                 <tr key={order.orderId} className="border-t align-top">
                   <td className="p-3 font-semibold">{order.orderCode ?? `#${order.orderId}`}</td>
@@ -118,16 +107,15 @@ export default function WarehouseOrdersPage() {
                         {action.label}
                       </button>
                     ) : (
-                      <span className="text-xs text-gray-400">Không có thao tác</span>
+                      <span className="text-xs text-slate-500">Không có thao tác</span>
                     )}
                   </td>
                 </tr>
               );
             })}
-
             {orders.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-500">
+                <td colSpan={7} className="p-8 text-center text-slate-400">
                   Không có đơn nào cần xử lý
                 </td>
               </tr>

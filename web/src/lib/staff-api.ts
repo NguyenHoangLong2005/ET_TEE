@@ -1,4 +1,4 @@
-/** All staff requests use Next's same-origin proxy; do not call localhost:8080 from LAN clients. */
+/** All staff requests use Next's same-origin proxy; do not call localhost:8081 from LAN clients. */
 export async function staffRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -18,7 +18,7 @@ export async function staffRequest<T>(
   if (!response.ok || data?.success === false) {
     const errorText = typeof data?.message === "string" ? data.message : undefined;
     throw new Error(errorText || (response.status === 502 || response.status === 503
-      ? "Không thể kết nối Spring Boot. Kiểm tra backend cổng 8080."
+      ? "Không thể kết nối Spring Boot. Kiểm tra backend cổng 8081."
       : `Yêu cầu API thất bại (HTTP ${response.status}).`));
   }
   return (data && "data" in data ? data.data : body) as T;

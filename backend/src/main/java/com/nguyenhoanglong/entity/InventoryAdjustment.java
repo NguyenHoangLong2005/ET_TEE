@@ -2,14 +2,15 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "inventory_adjustments")
 public class InventoryAdjustment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "adjustment_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "adjustment_id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "inventory_id", nullable = false)
@@ -22,10 +23,10 @@ public class InventoryAdjustment {
     private String reason;
 
     @Column(name = "requested_by")
-    private Long requestedBy;
+    private UUID requestedBy;
 
     @Column(name = "approved_by")
-    private Long approvedBy;
+    private UUID approvedBy;
 
     @Column(name = "status", nullable = false, length = 30)
     private String status = "PENDING";
@@ -33,18 +34,18 @@ public class InventoryAdjustment {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Inventory getInventory() { return inventory; }
     public void setInventory(Inventory inventory) { this.inventory = inventory; }
     public Integer getDifference() { return difference; }
     public void setDifference(Integer difference) { this.difference = difference; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
-    public Long getRequestedBy() { return requestedBy; }
-    public void setRequestedBy(Long requestedBy) { this.requestedBy = requestedBy; }
-    public Long getApprovedBy() { return approvedBy; }
-    public void setApprovedBy(Long approvedBy) { this.approvedBy = approvedBy; }
+    public UUID getRequestedBy() { return requestedBy; }
+    public void setRequestedBy(UUID requestedBy) { this.requestedBy = requestedBy; }
+    public UUID getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(UUID approvedBy) { this.approvedBy = approvedBy; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

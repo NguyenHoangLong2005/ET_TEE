@@ -2,14 +2,15 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "shipping_exceptions")
 public class ShippingException {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "exception_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "exception_id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "shipment_id", nullable = false)
@@ -30,8 +31,8 @@ public class ShippingException {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public Shipment getShipment() { return shipment; }
     public void setShipment(Shipment shipment) { this.shipment = shipment; }
     public String getExceptionType() { return exceptionType; }

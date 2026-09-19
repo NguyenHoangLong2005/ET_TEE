@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ET.TEE — Nhân viên bán hàng</title>
+  <script src="../assets/auth-guard.js" data-required-role="sales_staff"></script>
+  <link rel="stylesheet" href="../assets/staff.css">
+</head>
+<body data-staff-role="sales">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Điều hướng nhân viên">
+      <a class="brand" href="../index.html" aria-label="ET.TEE Trang nội bộ">
+        <span class="brand-mark">E.</span><span><b>ET.TEE</b><small>STAFF WORKSPACE</small></span>
+      </a>
+      <div><p class="sidebar-caption" id="sidebar-title">NHÂN VIÊN BÁN HÀNG</p><nav class="nav" id="nav" aria-label="Chức năng"></nav></div>
+      <div class="sidebar-bottom"><p>Đăng nhập bằng tài khoản đã được quản trị viên cấp quyền.</p><button id="logout" type="button">↩ Đăng xuất</button></div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><p class="crumb">ET.TEE / Nhân viên / <strong id="role-name">Bán hàng</strong></p><div class="top-actions"><span class="user-chip"><span class="avatar" id="avatar">E</span><span id="user-name">Nhân viên bán hàng</span></span></div></div>
+      <header class="hero"><div><div class="eyebrow">ET.TEE / KHU VỰC BÁN HÀNG</div><h1 id="heading">Trung tâm bán hàng</h1><p id="description">Kiểm tra đơn mới, xác minh thông tin nhận hàng, xác nhận hoặc hủy đơn, ghi chú xử lý, tạo yêu cầu giữ hàng, theo dõi SLA đơn hàng.</p></div><div class="hero-right"><a href="../index.html" class="button secondary">← Về cổng nội bộ</a></div></header>
+      <section aria-label="Số liệu vận hành" class="metrics" id="metrics"><div class="metric">Đang tải số liệu từ API...</div></section>
+      <p id="status" class="notice" role="status" hidden></p>
+      <section id="overview"><div class="section-head"><div><h2>Việc cần xử lý</h2><p>Chọn nhóm công việc để xem dữ liệu và thực hiện nghiệp vụ.</p></div></div><div class="task-grid" id="task-grid">
+          <div class="task-card" data-function="kiem-tra-don-moi"><span class="task-index">01</span><p class="task-name">Kiểm tra đơn mới</p><p class="task-desc">Xem và đánh giá đơn hàng mới (PENDING_PAYMENT, PENDING_CONFIRMATION)</p></div>
+          <div class="task-card" data-function="xac-minh-thong-tin"><span class="task-index">02</span><p class="task-name">Xác minh thông tin nhận hàng</p><p class="task-desc">Kiểm tra và cập nhật tên, số điện thoại, địa chỉ người nhận</p></div>
+          <div class="task-card" data-function="xac-nhan-huy-don"><span class="task-index">03</span><p class="task-name">Xác nhận hoặc hủy đơn</p><p class="task-desc">Xác nhận đơn để chuyển sang kho hoặc hủy đơn</p></div>
+          <div class="task-card" data-function="ghi-chu-xu-ly"><span class="task-index">04</span><p class="task-name">Ghi chú xử lý</p><p class="task-desc">Thêm ghi chú xử lý vào đơn hàng</p></div>
+          <div class="task-card" data-function="giu-hang"><span class="task-index">05</span><p class="task-name">Tạo yêu cầu giữ hàng</p><p class="task-desc">Yêu cầu giữ sản phẩm cho đơn đã xác nhận</p></div>
+          <div class="task-card" data-function="theo-doi-sla"><span class="task-index">06</span><p class="task-name">Theo dõi SLA đơn hàng</p><p class="task-desc">Theo dõi thời hạn cam kết giao hàng</p></div>
+        </div>
+        <div class="section-head"><div><h2>Quy trình làm việc</h2><p>Hoạt động của bộ phận được điều phối theo trạng thái đơn hàng.</p></div></div><div class="notice">Đơn mới → Xác minh → Xác nhận/Hủy → Ghi chú → Yêu cầu giữ hàng → Chuyển sang kho. SLA được theo dõi trong suốt quá trình.</div></section>
+      <section id="data-panel" class="panel" hidden aria-live="polite"><div class="panel-head"><div><h2 id="panel-title">Danh sách</h2><p id="panel-subtitle" class="desc"></p></div><div id="panel-tools" class="top-actions"></div></div><div class="table-scroll"><table id="table"><tbody><tr><td>Đang tải dữ liệu...</td></tr></tbody></table></div></section>
+        <p class="helper">Dữ liệu được lấy từ API. Các thao tác ghi nhận trực tiếp trên backend nếu máy chủ hoạt động; giao diện không sử dụng số liệu minh họa.</p>
+    </main>
+  </div>
+  <div id="toast" hidden role="alert"></div>
+  <div id="modal" hidden role="dialog" aria-modal="true"><div class="modal-box"><h3 id="dialog-title"></h3><div id="dialog-body"></div><button id="dialog-close" type="button">Đóng</button></div></div>
+<script>
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.hidden = false;
+      setTimeout(() => {
+        toast.hidden = true;
+      }, duration);
+    }
+    function showModal(title, content) {
+      const modal = document.getElementById('modal');
+      const dialogTitle = document.getElementById('dialog-title');
+      const dialogBody = document.getElementById('dialog-body');
+      dialogTitle.textContent = title;
+      dialogBody.innerHTML = content;
+      modal.hidden = false;
+    }
+</script>
+</body>
+</html>

@@ -1,17 +1,17 @@
 package com.nguyenhoanglong.repository;
 
 import com.nguyenhoanglong.entity.ProofOfDelivery;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface ProofOfDeliveryRepository
-        extends JpaRepository<ProofOfDelivery, Long> {
+@Repository
+public interface ProofOfDeliveryRepository extends JpaRepository<ProofOfDelivery, UUID> {
 
-    // Tim bang chung giao hang theo ID don hang
     @Query(
         value = """
             SELECT p.*
@@ -22,11 +22,8 @@ public interface ProofOfDeliveryRepository
             """,
         nativeQuery = true
     )
-    List<ProofOfDelivery> findByOrderId(
-        @Param("orderId") Long orderId
-    );
+    List<ProofOfDelivery> findByOrderId(@Param("orderId") UUID orderId);
 
-    // Tim bang chung theo don hang va trang thai van chuyen
     @Query(
         value = """
             SELECT p.*
@@ -38,8 +35,5 @@ public interface ProofOfDeliveryRepository
             """,
         nativeQuery = true
     )
-    List<ProofOfDelivery> findByOrderIdAndStatus(
-        @Param("orderId") Long orderId,
-        @Param("status") String status
-    );
+    List<ProofOfDelivery> findByOrderIdAndStatus(@Param("orderId") UUID orderId, @Param("status") String status);
 }

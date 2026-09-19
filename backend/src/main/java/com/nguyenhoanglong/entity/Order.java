@@ -3,37 +3,39 @@ package com.nguyenhoanglong.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "orders")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id")
-    private Long orderid;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
-    @Column(name = "order_code", unique = true, length = 30)
+    @Column(name = "order_code", unique = true, length = 30, nullable = false)
     private String orderCode;
 
-    @Column(name = "customer_name", length = 150)
+    @Column(name = "customer_name", length = 150, nullable = false)
     private String customerName;
+
+    @Column(name = "customer_phone", length = 20, nullable = false)
+    private String customerPhone;
 
     @Column(name = "customer_email", length = 255)
     private String customerEmail;
 
-    @Column(name = "phone", length = 30)
-    private String phone;
-
-    @Column(name = "shipping_address", length = 500)
+    @Column(name = "shipping_address", nullable = false)
     private String shippingAddress;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private OrderStatus status = OrderStatus.DRAFT;
+    private OrderStatus status = OrderStatus.draft;
 
-    @Column(name = "payment_method", length = 30)
+    @Column(name = "payment_method", length = 30, nullable = false)
     private String paymentMethod = "cod";
 
-    @Column(name = "payment_status", length = 30)
+    @Column(name = "payment_status", length = 30, nullable = false)
     private String paymentStatus = "unpaid";
 
     @Column(name = "subtotal", precision = 15, scale = 2)
@@ -51,7 +53,7 @@ public class Order {
     @Column(name = "total", precision = 15, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
-    @Column(name = "cancel_reason", length = 500)
+    @Column(name = "cancelled_reason", length = 500)
     private String cancelReason;
 
     @Column(name = "sla_deadline")
@@ -63,16 +65,16 @@ public class Order {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public Long getId() { return orderid; }
-    public void setId(Long id) { this.orderid = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
     public String getOrderCode() { return orderCode; }
     public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public String getCustomerPhone() { return customerPhone; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
     public String getCustomerEmail() { return customerEmail; }
     public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
     public String getShippingAddress() { return shippingAddress; }
     public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
     public OrderStatus getStatus() { return status; }

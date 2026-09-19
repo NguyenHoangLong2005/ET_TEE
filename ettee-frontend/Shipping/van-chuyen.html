@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ET.TEE — Nhân viên vận chuyển</title>
+  <script src="../assets/auth-guard.js" data-required-role="shipping_staff"></script>
+  <link rel="stylesheet" href="../assets/staff.css">    
+</head>
+<body data-staff-role="shipping">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Điều hướng nhân viên">
+      <a class="brand" href="../index.html" aria-label="ET.TEE Trang nội bộ">
+        <span class="brand-mark">E.</span><span><b>ET.TEE</b><small>STAFF WORKSPACE</small></span>
+      </a>
+      <div><p class="sidebar-caption" id="sidebar-title">NHÂN VIÊN VẬN CHUYỂN</p><nav class="nav" id="nav" aria-label="Chức năng"></nav></div>
+      <div class="sidebar-bottom"><p>Đăng nhập bằng tài khoản đã được quản trị viên cấp quyền.</p><button id="logout" type="button">↩ Đăng xuất</button></div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><p class="crumb">ET.TEE / Nhân viên / <strong id="role-name">Vận chuyển</strong></p><div class="top-actions"><span class="user-chip"><span class="avatar" id="avatar">E</span><span id="user-name">Nhân viên vận chuyển</span></span></div></div>
+      <header class="hero"><div><div class="eyebrow">ET.TEE / KHU VỰC VẬN CHUYỂN</div><h1 id="heading">Trung tâm vận chuyển</h1><p id="description">Nhận danh sách kiện đã đóng gói, tạo hoặc gắn mã vận đơn, xác nhận bàn giao, cập nhật ngoại lệ giao hàng, đính kèm bằng chứng giao hàng, đối soát COD nếu có.</p></div><div class="hero-right"><a href="../index.html" class="button secondary">← Về cổng nội bộ</a></div></header>
+      <section aria-label="Số liệu vận hành" class="metrics" id="metrics"><div class="metric">Đang tải số liệu từ API...</div></section>
+      <p id="status" class="notice" role="status" hidden></p>
+      <section id="overview"><div class="section-head"><div><h2>Việc cần xử lý</h2><p>Chọn nhóm công việc để xem dữ liệu và thực hiện nghiệp vụ.</p></div></div><div class="task-grid" id="task-grid">
+          <div class="task-card" data-function="nhan-kiện"><span class="task-index">01</span><p class="task-name">Nhận danh sách kiện đã đóng gói</p><p class="task-desc">Nhận danh sách kiện từ kho chuyển giao</p></div>
+          <div class="task-card" data-function="tạo-van-don"><span class="task-index">02</span><p class="task-name">Tạo hoặc gắn mã vận đơn</p><p class="task-desc">Tạo vận đơn hoặc gắn mã vận đơn vào kiện hàng</p></div>
+          <div class="task-card" data-function="xac-nhan-ban-giao"><span class="task-index">03</span><p class="task-name">Xác nhận bàn giao</p><p class="task-desc">Xác nhận bàn giao kiện hàng cho hãng vận chuyển</p></div>
+          <div class="task-card" data-function="ngoai-le"><span class="task-index">04</span><p class="task-name">Cập nhật ngoại lệ giao hàng</p><p class="task-desc">Ghi nhận và xử lý ngoại lệ giao hàng</p></div>
+          <div class="task-card" data-function="bang-chung-minh"><span class="task-index">05</span><p class="task-name">Đính kèm bằng chứng giao hàng</p><p class="task-desc">Đính kèm ảnh, chữ ký hoặc bằng chứng giao hàng</p></div>
+          <div class="task-card" data-function="doi-soat-cod"><span class="task-index">06</span><p class="task-name">Đối soát COD nếu có</p><p class="task-desc">Đối soát tiền COD sau khi giao hàng thành công</p></div>
+        </div>
+        <div class="section-head"><div><h2>Quy trình làm việc</h2><p>Hoạt động của bộ phận được điều phối theo trạng thái đơn hàng.</p></div></div><div class="notice">Đơn đóng gói → Nhận kiện → Tạo vận đơn → Bàn giao → Giao hàng → Đối soát COD. Ngoại lệ và bằng chứng giao hàng được ghi nhận trong suốt quá trình.</div></section>
+      <section id="data-panel" class="panel" hidden aria-live="polite"><div class="panel-head"><div><h2 id="panel-title">Danh sách</h2><p id="panel-subtitle" class="desc"></p></div><div id="panel-tools" class="top-actions"></div></div><div class="table-scroll"><table id="table"><tbody><tr><td>Đang tải dữ liệu...</td></tr></tbody></table></div></section>
+      <p class="helper">Dữ liệu được lấy từ API. Các thao tác ghi nhận trực tiếp trên backend nếu máy chủ hoạt động; giao diện không sử dụng số liệu minh họa.</p>
+    </main>
+  </div>
+  <div id="toast" hidden role="alert"></div>
+  <div id="modal" hidden role="dialog" aria-modal="true"><div class="modal-box"><h3 id="dialog-title"></h3><div id="dialog-body"></div><button id="dialog-close" type="button">Đóng</button></div></div>
+<script>
+  function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, duration);
+  }
+  function showModal(title, content) {
+    const modal = document.getElementById('modal');
+    document.getElementById('dialog-title').textContent = title;
+    document.getElementById('dialog-body').innerHTML = content;
+    modal.hidden = false;
+  }
+</script>
+</body>
+</html>

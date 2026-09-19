@@ -1,23 +1,21 @@
 package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 
 @Entity
-@Table(name = "inventories")
+@Table(name = "inventory")
 public class Inventory {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "inventory_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "inventory_id", nullable = false, updatable = false)
+    private UUID id;
 
-    @Column(name = "product_id", nullable = false, unique = true)
-    private Long productId;
+    @Column(name = "variant_id", nullable = false, unique = true)
+    private UUID variantId;
 
-    @Column(name = "product_name", nullable = false, length = 200)
-    private String productName;
-
-    @Column(name = "warehouse_location", length = 100)
-    private String warehouseLocation;
+    @Column(name = "location_id", nullable = false)
+    private UUID locationId;
 
     @Column(name = "quantity_on_hand", nullable = false)
     private Integer quantityOnHand = 0;
@@ -28,14 +26,12 @@ public class Inventory {
     @Column(name = "reorder_level", nullable = false)
     private Integer reorderLevel = 10;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
-    public String getWarehouseLocation() { return warehouseLocation; }
-    public void setWarehouseLocation(String warehouseLocation) { this.warehouseLocation = warehouseLocation; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public UUID getVariantId() { return variantId; }
+    public void setVariantId(UUID variantId) { this.variantId = variantId; }
+    public UUID getLocationId() { return locationId; }
+    public void setLocationId(UUID locationId) { this.locationId = locationId; }
     public Integer getQuantityOnHand() { return quantityOnHand; }
     public void setQuantityOnHand(Integer quantityOnHand) { this.quantityOnHand = quantityOnHand; }
     public Integer getQuantityReserved() { return quantityReserved; }
