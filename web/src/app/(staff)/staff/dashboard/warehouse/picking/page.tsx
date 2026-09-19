@@ -5,12 +5,7 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Order = {
-  orderId: number;
-  id?: number;
-  orderCode: string;
-  customerName: string;
-  shippingAddress: string;
-  status: string;
+  id?: string; orderCode: string; customerName: string; shippingAddress: string; status: string;
 };
 
 export default function WarehousePickingPage() {
@@ -22,8 +17,7 @@ export default function WarehousePickingPage() {
     setLoading(true); setError("");
     try {
       const result = await staffList<Order>("/api/staff/warehouse/orders");
-      const all: Order[] = result.map((o) => ({ ...o, orderId: o.orderId ?? o.id }));
-      setOrders(all.filter((order) => order.status === "CONFIRMED" || order.status === "PICKING"));
+      setOrders(result.filter((o) => o.status === "confirmed" || o.status === "picking"));
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -33,9 +27,9 @@ export default function WarehousePickingPage() {
 
   useEffect(() => { void loadOrders(); }, []);
 
-  const run = async (orderId: number, path: string) => {
+  const run = async (id: string, path: string) => {
     try {
-      await staffAction(`/api/staff/warehouse/orders/${orderId}/${path}`, "POST");
+      await staffAction(`/api/staff/warehouse/orders/${id}/${path}`, "POST");
       await loadOrders();
     } catch (cause) {
       alert(errorMessage(cause));
@@ -48,15 +42,9 @@ export default function WarehousePickingPage() {
 }
 
 function PickingView({
-  orders,
-  error,
-  loading,
-  onRun,
+  orders, error, loading, onRun,
 }: {
-  orders: Order[];
-  error: string;
-  loading: boolean;
-  onRun: (orderId: number, path: string) => void;
+  orders: Order[]; error: string; loading: boolean; onRun: (id: string, path: string) => void;
 }) {
   return (
     <main className="min-h-screen bg-[#15100f] px-5 py-8 text-slate-100">
@@ -69,32 +57,31 @@ function PickingView({
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/inventory">Tồn kho</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/adjustments">Duyệt chênh lệch</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/reservations">Giữ hàng</Link>
-          <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/stock-count">Kiểm kê</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/packing">Đóng gói</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/shipments">Bàn giao</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/replenishment">Đề xuất nhập thêm</Link>
         </nav>
 
-        <h1 className="text-3xl font-black text-white">Lấy hàng</h1>
+        <h1 className="text-3xl font-black text-white mt-3">Lấy hàng</h1>
 
         {error && <p className="rounded border-red-900 bg-red-950/40 p-3 text-sm text-red-300">{error}</p>}
         {loading && <p className="text-sm text-slate-400">Đang tải đơn hàng...</p>}
 
         <div className="space-y-3">
           {orders.map((order) => (
-            <article key={order.orderId} className="flex flex-col gap-3 rounded-xl border-slate-800 bg-slate-900 p-5 md:flex-row md:items-center md:justify-between">
+            <article key={order.id} className="flex flex-col gap-3 rounded-xl border-slate-800 bg-slate-900 p-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs text-slate-500">{order.orderCode ?? `#${order.orderId}`}</p>
+                <p className="text-xs text-slate-500">{order.orderCode}</p>
                 <p className="mt-1 font-semibold text-white">{order.customerName ?? "Khách chưa đặt tên"}</p>
                 <p className="mt-1 text-xs text-slate-400">{order.shippingAddress ?? "Chưa có địa chỉ"}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-orange-300">{order.status}</span>
-                {order.status === "CONFIRMED" && (
-                  <button onClick={() => onRun(order.orderId, "picking")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bắt đầu lấy hàng</button>
+                {order.status === "confirmed" && (
+                  <button onClick={() => order.id && onRun(order.id, "picking")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bắt đầu lấy hàng</button>
                 )}
-                {order.status === "PICKING" && (
-                  <button onClick={() => onRun(order.orderId, "picking/complete")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoàn tất lấy hàng</button>
+                {order.status === "picking" && (
+                  <button onClick={() => order.id && onRun(order.id, "picking/complete")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoàn tất lấy hàng</button>
                 )}
               </div>
             </article>

@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Order = {
-  orderId: number;
-  id?: number;
+  id?: string;
   orderCode: string;
   customerName: string;
   phone: string;
@@ -25,7 +24,7 @@ export default function ShippingOrdersPage() {
     setLoading(true); setError("");
     try {
       const result = await staffList<Order>("/api/staff/shipping/orders");
-      setOrders(result.map((o) => ({ ...o, orderId: o.orderId ?? o.id })));
+      setOrders(result);
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -68,8 +67,8 @@ export default function ShippingOrdersPage() {
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.orderId} className="border-t align-top">
-                <td className="p-3 font-semibold">{order.orderCode ?? `#${order.orderId}`}</td>
+              <tr key={order.id} className="border-t align-top">
+                <td className="p-3 font-semibold">{order.orderCode}</td>
                 <td className="p-3">{order.customerName ?? "-"}</td>
                 <td className="p-3">{order.phone ?? "-"}</td>
                 <td className="p-3 max-w-xs text-sm">{order.shippingAddress ?? "Chưa có địa chỉ"}</td>

@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Shipment = {
-  id: number;
-  carrierName?: string;
+  id: string;
+  carrier?: string;
   trackingCode?: string;
   status: string;
   codAmount?: number;
@@ -18,20 +18,20 @@ type Shipment = {
 };
 
 type ShipmentException = {
-  exceptionId: number;
+  id: string;
   exceptionType?: string;
   description?: string;
   status: string;
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING: "Chờ nhận",
-  HANDED_OVER: "Đã bàn giao",
-  IN_TRANSIT: "Đang giao",
-  DELIVERED: "Đã giao",
-  FAILED: "Giao thất bại",
-  RETURNED: "Hoàn trả",
-  CANCELLED: "Đã hủy",
+  pending: "Chờ nhận",
+  handed_over: "Đã bàn giao",
+  in_transit: "Đang giao",
+  delivered: "Đã giao",
+  exception: "Giao thất bại",
+  returned: "Hoàn trả",
+  cancelled: "Đã hủy",
 };
 
 export default function ShippingDashboardPage() {
@@ -61,11 +61,11 @@ export default function ShippingDashboardPage() {
     return () => controller.abort();
   }, [load, refresh]);
 
-  const pending = shipments.filter(
-    (s) => s.status === "PENDING" || s.status === "HANDED_OVER"
+    const pending = shipments.filter(
+    (s) => s.status === "pending" || s.status === "handed_over"
   ).length;
-  const inTransit = shipments.filter((s) => s.status === "IN_TRANSIT").length;
-  const openExceptions = exceptions.filter((e) => e.status === "OPEN").length;
+  const inTransit = shipments.filter((s) => s.status === "in_transit").length;
+  const openExceptions = exceptions.filter((e) => e.status === "open").length;
   const pendingCod = shipments.filter(
     (s) => s.status === "DELIVERED" && Number(s.codAmount ?? 0) > 0 && !s.codReconciled
   ).length;

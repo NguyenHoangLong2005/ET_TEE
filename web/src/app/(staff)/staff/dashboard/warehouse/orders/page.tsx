@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Order = {
-  orderId: number;
-  id?: number;
+  id?: string;
   orderCode: string;
   customerName: string;
   phone: string;
@@ -17,9 +16,9 @@ type Order = {
 };
 
 const STATUS_ACTIONS: Record<string, { label: string; path: string }> = {
-  CONFIRMED: { label: "Bắt đầu lấy hàng", path: "picking" },
-  PICKING: { label: "Hoàn tất lấy hàng", path: "picking/complete" },
-  PACKED: { label: "Bàn giao vận chuyển", path: "handover" },
+  confirmed: { label: "Bắt đầu lấy hàng", path: "picking" },
+  picking: { label: "Hoàn tất lấy hàng", path: "picking/complete" },
+  packed: { label: "Bàn giao vận chuyển", path: "handover" },
 };
 
 export default function WarehouseOrdersPage() {
@@ -30,8 +29,8 @@ export default function WarehouseOrdersPage() {
   const loadOrders = async () => {
     setLoading(true); setError("");
     try {
-      const result = await staffList<Order>("/api/staff/warehouse/orders");
-      setOrders(result.map((o) => ({ ...o, orderId: o.orderId ?? o.id })));
+        const result = await staffList<Order>("/api/staff/warehouse/orders");
+      setOrders(result.map((o) => ({ ...o, orderId: o.id })));
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -41,7 +40,7 @@ export default function WarehouseOrdersPage() {
 
   useEffect(() => { void loadOrders(); }, []);
 
-  const runAction = async (orderId: number, path: string) => {
+  const runAction = async (orderId: string, path: string) => {
     try {
       await staffAction(`/api/staff/warehouse/orders/${orderId}/${path}`, "POST");
       await loadOrders();
@@ -91,8 +90,8 @@ export default function WarehouseOrdersPage() {
             {orders.map((order) => {
               const action = STATUS_ACTIONS[order.status];
               return (
-                <tr key={order.orderId} className="border-t align-top">
-                  <td className="p-3 font-semibold">{order.orderCode ?? `#${order.orderId}`}</td>
+                <tr key={order.id} className="border-t align-top">
+                  <td className="p-3 font-semibold">{order.orderCode ?? `#${order.id}`}</td>
                   <td className="p-3">{order.customerName ?? "-"}</td>
                   <td className="p-3">{order.phone ?? "-"}</td>
                   <td className="p-3 max-w-xs text-sm">{order.shippingAddress ?? "Chưa có địa chỉ"}</td>
@@ -101,7 +100,7 @@ export default function WarehouseOrdersPage() {
                   <td className="p-3">
                     {action ? (
                       <button
-                        onClick={() => runAction(order.orderId, action.path)}
+                        onClick={() => order.id && runAction(order.id, action.path)}
                         className="rounded bg-orange-600 px-3 py-1 text-white"
                       >
                         {action.label}

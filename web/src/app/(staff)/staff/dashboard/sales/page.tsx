@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { errorMessage, staffRequest } from "@/lib/staff-api";
 
-type SalesOrder = { id?: number; customerName?: string; status?: string; totalAmount?: number };
-type Product = { id?: number; name?: string; brand?: string; variants?: { sku?: string }[] };
+type SalesOrder = { id?: string; customerName?: string; status?: string; totalAmount?: number };
+type Product = { id?: string; name?: string; brand?: string; variants?: { sku?: string }[] };
 
 export default function StaffSalesPage() {
   const [products, setProducts] = useState<Product[]>([]);

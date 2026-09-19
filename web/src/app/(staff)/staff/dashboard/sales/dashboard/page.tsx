@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 interface Order {
-  orderId: number;
-  status: string;
+  id?: string; status: string;
 }
 
-const NEW_STATUSES = ["PENDING_PAYMENT", "PENDING_CONFIRMATION"];
-const DONE_STATUSES = ["DELIVERED", "RETURNED", "REFUNDED"];
+const NEW_STATUSES = ["pending_payment", "pending_confirmation"];
+const DONE_STATUSES = ["delivered", "returned", "refunded"];
 
 export default function SalesDashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -45,9 +44,9 @@ export default function SalesDashboardPage() {
   }, [refreshKey]);
 
   const newOrders = orders.filter((order) => NEW_STATUSES.includes(order.status)).length;
-  const confirmed = orders.filter((order) => order.status === "CONFIRMED").length;
-  const processing = orders.filter((order) => !NEW_STATUSES.includes(order.status) && order.status !== "CONFIRMED" && order.status !== "CANCELLED" && !DONE_STATUSES.includes(order.status)).length;
-  const cancelled = orders.filter((order) => order.status === "CANCELLED").length;
+  const confirmed = orders.filter((order) => order.status === "confirmed").length;
+  const processing = orders.filter((order) => !NEW_STATUSES.includes(order.status) && order.status !== "confirmed" && order.status !== "cancelled" && !DONE_STATUSES.includes(order.status)).length;
+  const cancelled = orders.filter((order) => order.status === "cancelled").length;
   const showValue = (value: number) => (loading || error ? "—" : value);
 
   return (

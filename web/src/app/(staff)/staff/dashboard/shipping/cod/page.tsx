@@ -5,18 +5,17 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 interface Shipment {
-  id: number;
+  id: string;
   trackingCode: string;
-  carrierName: string;
+  carrier?: string;
   status: string;
   codAmount: number;
   codReconciled: boolean;
   order?: {
-    orderId?: number;
-    id?: number;
-    orderCode: string;
+    orderCode?: string;
+    id?: string;
     customerName: string;
-    customerEmail: string;
+    customerEmail?: string;
   };
 }
 
@@ -36,7 +35,7 @@ export default function CodPage() {
 
   useEffect(() => { void loadCod(); }, []);
 
-  const reconcile = async (shipmentId: number) => {
+  const reconcile = async (shipmentId: string) => {
     try {
       await staffAction(`/api/staff/shipping/cod/${shipmentId}/reconcile`, "POST");
       await loadCod();
@@ -77,10 +76,10 @@ export default function CodPage() {
               <tr key={shipment.id} className="border-t">
                 <td className="p-3">{shipment.trackingCode ?? "-"}</td>
                 <td className="p-3">
-                  <div className="font-semibold">{shipment.order?.orderCode ?? `#${shipment.order?.orderId ?? shipment.order?.id ?? shipment.id}`}</div>
+                  <div className="font-semibold">{shipment.order?.orderCode ?? `#${shipment.order?.id ?? shipment.id}`}</div>
                   <div className="text-xs text-slate-400">{shipment.order?.customerName ?? shipment.order?.customerEmail ?? "-"}</div>
                 </td>
-                <td className="p-3 text-xs">{shipment.carrierName ?? "-"}</td>
+                <td className="p-3 text-xs">{shipment.carrier ?? "-"}</td>
                 <td className="p-3 text-right">{Number(shipment.codAmount ?? 0).toLocaleString("vi-VN")} ₫</td>
                 <td className="p-3 text-center">
                   <button onClick={() => reconcile(shipment.id)} className="rounded bg-green-600 px-3 py-2 text-white">Xác nhận đối soát</button>
