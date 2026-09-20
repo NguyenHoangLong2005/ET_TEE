@@ -25,9 +25,11 @@ function StaffRolePage({ title, eyebrow, description, links, products, error }: 
   return <main className="min-h-screen bg-[#111313] px-5 py-8 text-stone-100 md:px-10">
     <div className="mx-auto max-w-7xl space-y-8">
       <header className="relative overflow-hidden rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-400/15 via-stone-900 to-[#111313] p-7 md:p-10">
-        <div className="relative z-10">
-          <Link href="/staff/dashboard" className="rounded-lg bg-sky-300/10 px-4 py-2 text-sm font-semibold text-sky-200 transition hover:bg-sky-300/20">Về trang tổng quan</Link>
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-amber-300">ET.TEE / {eyebrow}</p>
+        <div className="relative z-10 flex flex-col">
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-amber-300">ET.TEE / {eyebrow}</p>
+            <Link href="/staff/dashboard" className="rounded-lg bg-sky-300/10 px-4 py-2 text-sm font-semibold text-sky-200 transition hover:bg-sky-300/20">Về trang tổng quan</Link>
+          </div>
           <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight text-white md:text-6xl">Trung tâm {title.toLowerCase()}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-300">{description}</p>
           <nav className="mt-7 flex flex-wrap gap-3">{links.map((link) => (
