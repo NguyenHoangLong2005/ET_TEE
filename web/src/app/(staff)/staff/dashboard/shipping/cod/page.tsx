@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 interface Shipment {
-  id: string;
+  shipmentId: number;
+  id?: string;
   trackingCode: string;
   carrier?: string;
   status: string;
@@ -13,6 +14,7 @@ interface Shipment {
   codReconciled: boolean;
   order?: {
     orderCode?: string;
+    orderId?: number;
     id?: string;
     customerName: string;
     customerEmail?: string;
@@ -35,7 +37,7 @@ export default function CodPage() {
 
   useEffect(() => { void loadCod(); }, []);
 
-  const reconcile = async (shipmentId: string) => {
+  const reconcile = async (shipmentId: number) => {
     try {
       await staffAction(`/api/staff/shipping/cod/${shipmentId}/reconcile`, "POST");
       await loadCod();
@@ -73,16 +75,16 @@ export default function CodPage() {
           </thead>
           <tbody>
             {shipments.map((shipment) => (
-              <tr key={shipment.id} className="border-t">
+              <tr key={shipment.shipmentId} className="border-t">
                 <td className="p-3">{shipment.trackingCode ?? "-"}</td>
                 <td className="p-3">
-                  <div className="font-semibold">{shipment.order?.orderCode ?? `#${shipment.order?.id ?? shipment.id}`}</div>
+                  <div className="font-semibold">{shipment.order?.orderCode ?? `#${shipment.order?.orderId ?? shipment.shipmentId}`}</div>
                   <div className="text-xs text-slate-400">{shipment.order?.customerName ?? shipment.order?.customerEmail ?? "-"}</div>
                 </td>
                 <td className="p-3 text-xs">{shipment.carrier ?? "-"}</td>
                 <td className="p-3 text-right">{Number(shipment.codAmount ?? 0).toLocaleString("vi-VN")} ₫</td>
                 <td className="p-3 text-center">
-                  <button onClick={() => reconcile(shipment.id)} className="rounded bg-green-600 px-3 py-2 text-white">Xác nhận đối soát</button>
+                  <button onClick={() => reconcile(shipment.shipmentId)} className="rounded bg-green-600 px-3 py-2 text-white">Xác nhận đối soát</button>
                 </td>
               </tr>
             ))}

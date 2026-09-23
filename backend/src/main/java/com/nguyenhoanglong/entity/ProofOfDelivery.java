@@ -2,19 +2,17 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "proof_of_delivery")
 public class ProofOfDelivery {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "proof_id", nullable = false, updatable = false)
-    private UUID id;
+    private Long proofId;
 
-    @OneToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "shipment_id", nullable = false, unique = true)
-    private Shipment shipment;
+    @Column(name = "shipment_id", nullable = false, unique = true)
+    private Long shipmentId;
 
     @Column(name = "receiver_name", nullable = false, length = 150)
     private String receiverName;
@@ -28,10 +26,10 @@ public class ProofOfDelivery {
     @Column(name = "delivered_at", nullable = false)
     private LocalDateTime deliveredAt = LocalDateTime.now();
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public Shipment getShipment() { return shipment; }
-    public void setShipment(Shipment shipment) { this.shipment = shipment; }
+    public Long getProofId() { return proofId; }
+    public void setProofId(Long proofId) { this.proofId = proofId; }
+    public Long getShipmentId() { return shipmentId; }
+    public void setShipmentId(Long shipmentId) { this.shipmentId = shipmentId; }
     public String getReceiverName() { return receiverName; }
     public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
     public String getImageUrl() { return imageUrl; }

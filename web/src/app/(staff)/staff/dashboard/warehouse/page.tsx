@@ -48,17 +48,17 @@ export default function WarehouseStaffPage() {
     <main className="min-h-screen bg-[#15100f] px-5 py-8 text-slate-100 md:px-10">
       <div className="mx-auto max-w-7xl space-y-8">
         <header className="relative overflow-hidden rounded-3xl border border-orange-300/20 bg-gradient-to-br from-orange-400/15 via-stone-900 to-[#15100f] p-7 md:p-10">
-          <div className="relative z-10">
-            <div className="flex justify-end">
-              <Link href="/staff/dashboard" className="rounded-lg bg-orange-300/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-300/20">Về trang tổng quan</Link>
-            </div>
+        <div className="relative z-10 flex flex-col">
+          <div className="flex items-start justify-between gap-4">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-orange-300">ET.TEE / NHÂN VIÊN KHO</p>
-            <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight text-white md:text-6xl">Vận hành kho hàng</h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-300">Nhập kho; kiểm đếm; quản lý vị trí hàng; điều chỉnh chênh lệch có phê duyệt; giữ hàng cho đơn; picking, packing, in tem; bàn giao hãng vận chuyển; kiểm kê; đề xuất nhập thêm.</p>
-            <nav className="mt-7 flex flex-wrap gap-3">{links.map((item) => (
-              <Link key={item.href} href={item.href} className="border border-orange-300/30 bg-orange-300/10 px-4 py-2.5 text-sm font-semibold text-orange-200 transition hover:bg-orange-300/20">{item.label}</Link>
-            ))}</nav>
+            <Link href="/staff/dashboard" className="rounded-lg bg-orange-300/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-300/20">Về trang tổng quan</Link>
           </div>
+          <h1 className="mt-4 max-w-2xl text-4xl font-black tracking-tight text-white md:text-6xl">Vận hành kho hàng</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-300">Nhập kho; kiểm đếm; quản lý vị trí hàng; điều chỉnh chênh lệch có phê duyệt; giữ hàng cho đơn; picking, packing, in tem; bàn giao hãng vận chuyển; kiểm kê; đề xuất nhập thêm.</p>
+          <nav className="mt-7 flex flex-wrap gap-3">{links.map((item) => (
+            <Link key={item.href} href={item.href} className="border border-orange-300/30 bg-orange-300/10 px-4 py-2.5 text-sm font-semibold text-orange-200 transition hover:bg-orange-300/20">{item.label}</Link>
+          ))}</nav>
+        </div>
         </header>
         <section className="grid gap-4 md:grid-cols-4">
           <Stat label="Sản phẩm đang quản lý" value={String(products.length)} note="Dữ liệu trực tiếp" />

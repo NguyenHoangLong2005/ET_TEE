@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Shipment = {
-  id: string;
+  shipmentId: number;
+  id?: string;
   carrier?: string;
   trackingCode?: string;
   status: string;
@@ -13,12 +14,15 @@ type Shipment = {
   codReconciled?: boolean;
   order?: {
     orderCode?: string;
+    orderId?: number;
+    id?: string;
     customerName?: string;
   };
 };
 
 type ShipmentException = {
-  id: string;
+  exceptionId: number;
+  id?: string;
   exceptionType?: string;
   description?: string;
   status: string;
@@ -66,8 +70,8 @@ export default function ShippingDashboardPage() {
   ).length;
   const inTransit = shipments.filter((s) => s.status === "in_transit").length;
   const openExceptions = exceptions.filter((e) => e.status === "open").length;
-  const pendingCod = shipments.filter(
-    (s) => s.status === "DELIVERED" && Number(s.codAmount ?? 0) > 0 && !s.codReconciled
+const pendingCod = shipments.filter(
+    (s) => s.status === "delivered" && Number(s.codAmount ?? 0) > 0 && !s.codReconciled
   ).length;
 
   const distribution = Object.entries(
@@ -140,10 +144,10 @@ export default function ShippingDashboardPage() {
         <section className="border border-slate-800 bg-slate-900 p-6">
           <h2 className="text-lg font-bold text-white">Kiện hàng gần đây</h2>
           <div className="mt-4 divide-y divide-slate-800">
-            {shipments.slice(0, 10).map((shipment) => (
-              <div key={shipment.id} className="flex items-center justify-between gap-4 py-3">
+             {shipments.slice(0, 10).map((shipment) => (
+              <div key={shipment.shipmentId} className="flex items-center justify-between gap-4 py-3">
                 <span className="text-sm text-white">
-                  {shipment.order?.orderCode ?? `#${shipment.id}`}
+                  {shipment.order?.orderCode ?? `#${shipment.order?.orderId ?? shipment.shipmentId}`}
                   {" · "}
                   {shipment.trackingCode ?? "chưa có vận đơn"}
                 </span>

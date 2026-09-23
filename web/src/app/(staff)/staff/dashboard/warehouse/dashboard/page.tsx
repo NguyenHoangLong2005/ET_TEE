@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Inventory = { id: string; variantId: string };
-type Order = { id: string; status: string };
+type Order = { orderId: number; id?: string; status: string };
 
 export default function WarehouseDashboardPage() {
   const [inventory, setInventory] = useState<Inventory[] | null>(null);
@@ -25,7 +25,7 @@ export default function WarehouseDashboardPage() {
     if (failures.length) setError(failures.map(result => errorMessage(result.reason)).join(" · "));
   }, []);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load, refresh]);
-  const packed = orders?.filter(order => order.status === "PACKED").length;
+  const packed = orders?.filter(order => order.status === "packed").length;
   return <main className="min-h-screen bg-slate-950 px-5 py-8 text-slate-100 md:px-10"><div className="mx-auto max-w-6xl space-y-7">
     <header className="flex flex-wrap items-center justify-between gap-3"><div><Link href="/staff/dashboard/warehouse" className="text-xs font-bold uppercase text-orange-300">← Về bộ phận kho</Link><h1 className="mt-3 text-3xl font-bold">Tổng quan kho</h1><p className="mt-2 text-sm text-slate-400">Dữ liệu từ API; khi lỗi hiển thị dấu — thay vì số 0.</p></div><button onClick={() => setRefresh(n => n + 1)} className="rounded bg-orange-600 px-4 py-2">Tải lại</button></header>
     {error && <p role="alert" className="rounded border border-red-800 bg-red-950 p-4 text-sm text-red-200">{error}</p>}

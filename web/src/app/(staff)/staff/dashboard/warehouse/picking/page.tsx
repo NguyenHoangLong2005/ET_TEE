@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Order = {
-  id?: string; orderCode: string; customerName: string; shippingAddress: string; status: string;
+  orderId?: number;
+  id?: string;
+  orderCode: string;
+  customerName: string;
+  shippingAddress: string;
+  status: string;
 };
 
 export default function WarehousePickingPage() {
@@ -17,7 +22,7 @@ export default function WarehousePickingPage() {
     setLoading(true); setError("");
     try {
       const result = await staffList<Order>("/api/staff/warehouse/orders");
-      setOrders(result.filter((o) => o.status === "confirmed" || o.status === "picking"));
+      setOrders(result.filter((o) => o.status.toUpperCase() === "CONFIRMED" || o.status.toUpperCase() === "PICKING"));
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -27,7 +32,7 @@ export default function WarehousePickingPage() {
 
   useEffect(() => { void loadOrders(); }, []);
 
-  const run = async (id: string, path: string) => {
+  const run = async (id: number | string, path: string) => {
     try {
       await staffAction(`/api/staff/warehouse/orders/${id}/${path}`, "POST");
       await loadOrders();
@@ -43,8 +48,8 @@ export default function WarehousePickingPage() {
 
 function PickingView({
   orders, error, loading, onRun,
-}: {
-  orders: Order[]; error: string; loading: boolean; onRun: (id: string, path: string) => void;
+  }: {
+  orders: Order[]; error: string; loading: boolean; onRun: (id: number | string, path: string) => void;
 }) {
   return (
     <main className="min-h-screen bg-[#15100f] px-5 py-8 text-slate-100">
@@ -69,19 +74,19 @@ function PickingView({
 
         <div className="space-y-3">
           {orders.map((order) => (
-            <article key={order.id} className="flex flex-col gap-3 rounded-xl border-slate-800 bg-slate-900 p-5 md:flex-row md:items-center md:justify-between">
+            <article key={order.orderId ?? order.orderCode} className="flex flex-col gap-3 rounded-xl border-slate-800 bg-slate-900 p-5 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs text-slate-500">{order.orderCode}</p>
-                <p className="mt-1 font-semibold text-white">{order.customerName ?? "Khách chưa đặt tên"}</p>
-                <p className="mt-1 text-xs text-slate-400">{order.shippingAddress ?? "Chưa có địa chỉ"}</p>
+                <p className="mt-1 font-semibold text-white">{order.customerName ?? "Khach chua dat ten"}</p>
+                <p className="mt-1 text-xs text-slate-400">{order.shippingAddress ?? "Chua co dia chi"}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-orange-300">{order.status}</span>
-                {order.status === "confirmed" && (
-                  <button onClick={() => order.id && onRun(order.id, "picking")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bắt đầu lấy hàng</button>
+                {order.status.toUpperCase() === "CONFIRMED" && (
+                  <button onClick={() => order.orderId && onRun(order.orderId, "picking")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bat dau lay hang</button>
                 )}
-                {order.status === "picking" && (
-                  <button onClick={() => order.id && onRun(order.id, "picking/complete")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoàn tất lấy hàng</button>
+                {order.status.toUpperCase() === "PICKING" && (
+                  <button onClick={() => order.orderId && onRun(order.orderId, "picking/complete")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoan tat lay hang</button>
                 )}
               </div>
             </article>

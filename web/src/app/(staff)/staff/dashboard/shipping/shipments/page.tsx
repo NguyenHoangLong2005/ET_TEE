@@ -5,7 +5,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Shipment = {
-  id: string;
+  shipmentId: number;
+  id?: string;
   carrier?: string;
   trackingCode: string;
   status: string;
@@ -13,6 +14,7 @@ type Shipment = {
   codReconciled: boolean;
   order?: {
     orderCode?: string;
+    orderId?: number;
     id?: string;
     customerName: string;
     phone: string;
@@ -44,7 +46,7 @@ export default function ShippingShipmentsPage() {
     event.preventDefault();
     try {
       await staffAction("/api/staff/shipping/shipments", "POST", {
-        orderId: form.orderId,
+        orderId: Number(form.orderId),
         carrierName: form.carrierName,
         trackingCode: form.trackingCode,
         codAmount: form.codAmount ? Number(form.codAmount) : 0,
@@ -56,18 +58,18 @@ export default function ShippingShipmentsPage() {
     }
   };
 
-  const runAction = async (id: string, path: string, method: "POST" | "PUT", body?: unknown) => {
+  const runAction = async (shipmentId: number, path: string, method: "POST" | "PUT", body?: unknown) => {
     try {
-      await staffAction(`/api/staff/shipping/shipments/${id}/${path}`, method, body);
+      await staffAction(`/api/staff/shipping/shipments/${shipmentId}/${path}`, method, body);
       await loadShipments();
     } catch (cause) {
       alert(errorMessage(cause));
     }
   };
 
-  const updateTrackingCode = (id: string, current: string) => {
+  const updateTrackingCode = (shipmentId: number, current: string) => {
     const next = window.prompt("Nhập mã vận đơn mới:", current ?? "");
-    if (next) runAction(id, "tracking-code", "PUT", { trackingCode: next });
+    if (next) runAction(shipmentId, "tracking-code", "PUT", { trackingCode: next });
   };
 
   return (
@@ -108,34 +110,34 @@ export default function ShippingShipmentsPage() {
             </thead>
             <tbody>
               {shipments.map((shipment) => (
-                <tr key={shipment.id} className="border-t border-slate-800 align-top">
-                  <td className="p-3">
-                    <div className="font-semibold text-white">{shipment.order?.orderCode ?? `#${shipment.order?.id ?? shipment.id}`}</div>
-                    <div className="text-xs text-slate-500">{shipment.order?.customerName ?? "-"}</div>
-                  </td>
-                  <td className="p-3"><div>{shipment.carrier ?? "-"}</div><div className="text-xs text-slate-500">{shipment.trackingCode ?? "Chưa có"}</div></td>
-                  <td className="p-3 text-xs font-bold text-sky-300">{shipment.status}</td>
-                  <td className="p-3 text-right">{Number(shipment.codAmount ?? 0).toLocaleString("vi-VN")} ₫ {shipment.codReconciled && <div className="text-xs text-emerald-400">Đã đối soát</div>}</td>
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-2">
-                      {(shipment.status === "pending" || shipment.status === "handed_over") && (
-                        <button onClick={() => updateTrackingCode(shipment.id, shipment.trackingCode)} className="rounded border-sky-500/40 px-3 py-1 text-xs text-sky-200">Sửa vận đơn</button>
-                      )}
-                      {shipment.status === "pending" && (
-                        <button onClick={() => runAction(shipment.id, "handover", "POST")} className="rounded bg-sky-600 px-3 py-1 text-xs text-white">Bàn giao</button>
-                      )}
-                      {shipment.status === "handed_over" && (
-                        <button onClick={() => runAction(shipment.id, "shipping", "POST")} className="rounded bg-indigo-600 px-3 py-1 text-xs text-white">Bắt đầu giao</button>
-                      )}
-                      {["handed_over", "in_transit"].includes(shipment.status) && (
-                        <button onClick={() => {
-                          const receiverName = window.prompt("Tên người nhận:") ?? "";
-                          const imageUrl = window.prompt("URL ảnh bằng chứng đã lưu:") ?? undefined;
-                          if (receiverName) runAction(shipment.id, "proof", "POST", { receiverName, imageUrl, note: window.prompt("Ghi chú giao hàng:") ?? "" });
-                        }} className="rounded bg-emerald-600 px-3 py-1 text-xs text-white">Giao thành công</button>
-                      )}
-                    </div>
-                  </td>
+                <tr key={shipment.shipmentId} className="border-t border-slate-800 align-top">
+                   <td className="p-3">
+                     <div className="font-semibold text-white">{shipment.order?.orderCode ?? `#${shipment.order?.orderId ?? shipment.shipmentId}`}</div>
+                     <div className="text-xs text-slate-500">{shipment.order?.customerName ?? "-"}</div>
+                   </td>
+                   <td className="p-3"><div>{shipment.carrier ?? "-"}</div><div className="text-xs text-slate-500">{shipment.trackingCode ?? "Chưa có"}</div></td>
+                   <td className="p-3 text-xs font-bold text-sky-300">{shipment.status}</td>
+                   <td className="p-3 text-right">{Number(shipment.codAmount ?? 0).toLocaleString("vi-VN")} ₫ {shipment.codReconciled && <div className="text-xs text-emerald-400">Đã đối soát</div>}</td>
+                   <td className="p-3">
+                     <div className="flex flex-wrap gap-2">
+                       {(shipment.status === "pending" || shipment.status === "handed_over") && (
+                         <button onClick={() => updateTrackingCode(shipment.shipmentId, shipment.trackingCode)} className="rounded border-sky-500/40 px-3 py-1 text-xs text-sky-200">Sửa vận đơn</button>
+                       )}
+                       {shipment.status === "pending" && (
+                         <button onClick={() => runAction(shipment.shipmentId, "handover", "POST")} className="rounded bg-sky-600 px-3 py-1 text-xs text-white">Bàn giao</button>
+                       )}
+                       {shipment.status === "handed_over" && (
+                         <button onClick={() => runAction(shipment.shipmentId, "shipping", "POST")} className="rounded bg-indigo-600 px-3 py-1 text-xs text-white">Bắt đầu giao</button>
+                       )}
+                       {["handed_over", "in_transit"].includes(shipment.status) && (
+                         <button onClick={() => {
+                           const receiverName = window.prompt("Tên người nhận:") ?? "";
+                           const imageUrl = window.prompt("URL ảnh bằng chứng đã lưu:") ?? undefined;
+                           if (receiverName) runAction(shipment.shipmentId, "proof", "POST", { receiverName, imageUrl, note: window.prompt("Ghi chú giao hàng:") ?? "" });
+                         }} className="rounded bg-emerald-600 px-3 py-1 text-xs text-white">Giao thành công</button>
+                       )}
+                     </div>
+                   </td>
                 </tr>
               ))}
               {shipments.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-400">Chưa có kiện hàng nào.</td></tr>}

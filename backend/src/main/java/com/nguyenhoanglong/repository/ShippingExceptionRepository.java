@@ -4,9 +4,8 @@ import com.nguyenhoanglong.entity.ShippingException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
-public interface ShippingExceptionRepository extends JpaRepository<ShippingException, UUID> {
+public interface ShippingExceptionRepository extends JpaRepository<ShippingException, Long> {
     List<ShippingException> findAllByOrderByCreatedAtDesc();
 }

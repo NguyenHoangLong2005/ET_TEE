@@ -9,15 +9,20 @@ import java.util.UUID;
 @Table(name = "shipments")
 public class Shipment {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "shipment_id", nullable = false, updatable = false)
+    private Long shipmentId;
+
+    @Column(name = "id", nullable = false)
     private UUID id;
 
-    @OneToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
-    private Order order;
+    @Column(name = "order_id", nullable = false, unique = true)
+    private Long orderId;
 
     @Column(name = "carrier", nullable = false, length = 150)
+    private String carrier;
+
+    @Column(name = "carrier_name", nullable = false, length = 150)
     private String carrierName;
 
     @Column(name = "tracking_code", unique = true, length = 100)
@@ -25,7 +30,7 @@ public class Shipment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private ShipmentStatus status = ShipmentStatus.pending;
+    private ShipmentStatus status = ShipmentStatus.PENDING;
 
     @Column(name = "handover_at")
     private LocalDateTime handoverAt;
@@ -42,10 +47,14 @@ public class Shipment {
     @Column(name = "cod_reconciled", nullable = false)
     private Boolean codReconciled = false;
 
+    public Long getShipmentId() { return shipmentId; }
+    public void setShipmentId(Long shipmentId) { this.shipmentId = shipmentId; }
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public String getCarrier() { return carrier; }
+    public void setCarrier(String carrier) { this.carrier = carrier; }
     public String getCarrierName() { return carrierName; }
     public void setCarrierName(String carrierName) { this.carrierName = carrierName; }
     public String getTrackingCode() { return trackingCode; }

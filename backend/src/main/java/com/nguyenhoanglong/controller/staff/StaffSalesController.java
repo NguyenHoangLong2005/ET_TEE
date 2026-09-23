@@ -1,11 +1,15 @@
 package com.nguyenhoanglong.controller.staff;
 
+import com.nguyenhoanglong.dto.ApiResponse;
+import com.nguyenhoanglong.entity.Order;
+import com.nguyenhoanglong.entity.OrderNote;
+import com.nguyenhoanglong.entity.StockReservation;
 import com.nguyenhoanglong.service.SalesOrderService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff/sales")
@@ -17,62 +21,62 @@ public class StaffSalesController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<?> allOrders() {
-        return ResponseEntity.ok(service.getAllOrders());
+    public ResponseEntity<ApiResponse<List<Order>>> allOrders() {
+        return ResponseEntity.ok(ApiResponse.success(service.getAllOrders()));
     }
 
     @GetMapping("/orders/new")
-    public ResponseEntity<?> newOrders() {
-        return ResponseEntity.ok(service.getNewOrders());
+    public ResponseEntity<ApiResponse<List<Order>>> newOrders() {
+        return ResponseEntity.ok(ApiResponse.success(service.getNewOrders()));
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<?> orderDetail(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.getOrder(id));
+    public ResponseEntity<ApiResponse<Order>> orderDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.getOrder(id)));
     }
 
     @GetMapping("/orders/{id}/notes")
-    public ResponseEntity<?> orderNotes(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.getOrderNotes(id));
+    public ResponseEntity<ApiResponse<List<OrderNote>>> orderNotes(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.getOrderNotes(id)));
     }
 
     @PutMapping("/orders/{id}/verify")
-    public ResponseEntity<?> verifyOrder(@PathVariable UUID id, @RequestBody VerifyRequest request) {
-        return ResponseEntity.ok(service.verifyOrder(
+    public ResponseEntity<ApiResponse<Order>> verifyOrder(@PathVariable Long id, @RequestBody VerifyRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(service.verifyOrder(
                 id,
                 request.customerName(),
                 request.phone(),
                 request.shippingAddress()
-        ));
+        )));
     }
 
     @PostMapping("/orders/{id}/confirm")
-    public ResponseEntity<?> confirmOrder(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.confirmOrder(id));
+    public ResponseEntity<ApiResponse<Order>> confirmOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(service.confirmOrder(id)));
     }
 
     @PostMapping("/orders/{id}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable UUID id, @RequestBody(required = false) CancelRequest request) {
-        return ResponseEntity.ok(service.cancelOrder(id, request == null ? null : request.reason()));
+    public ResponseEntity<ApiResponse<Order>> cancelOrder(@PathVariable Long id, @RequestBody(required = false) CancelRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(service.cancelOrder(id, request == null ? null : request.reason())));
     }
 
     @PostMapping("/orders/{id}/notes")
-    public ResponseEntity<?> addNote(@PathVariable UUID id, @RequestBody NoteRequest request) {
-        return ResponseEntity.ok(service.addNote(id, request.content(), request.userId()));
+    public ResponseEntity<ApiResponse<OrderNote>> addNote(@PathVariable Long id, @RequestBody NoteRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(service.addNote(id, request.content(), request.userId())));
     }
 
     @PostMapping("/orders/{id}/reservations")
-    public ResponseEntity<?> requestReservation(@PathVariable UUID id, @RequestBody ReservationRequest request) {
-        return ResponseEntity.ok(service.requestReservation(id, request.productId(), request.quantity()));
+    public ResponseEntity<ApiResponse<StockReservation>> requestReservation(@PathVariable Long id, @RequestBody ReservationRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(service.requestReservation(id, request.productId(), request.quantity())));
     }
 
     @GetMapping("/sla")
-    public ResponseEntity<?> slaWarnings() {
-        return ResponseEntity.ok(service.getNewOrders());
+    public ResponseEntity<ApiResponse<List<Order>>> slaWarnings() {
+        return ResponseEntity.ok(ApiResponse.success(service.getNewOrders()));
     }
 
     public record VerifyRequest(String customerName, String phone, String shippingAddress) {}
     public record CancelRequest(String reason) {}
-    public record NoteRequest(String content, UUID userId) {}
-    public record ReservationRequest(UUID productId, Integer quantity) {}
+    public record NoteRequest(String content, Long userId) {}
+    public record ReservationRequest(Long productId, Integer quantity) {}
 }

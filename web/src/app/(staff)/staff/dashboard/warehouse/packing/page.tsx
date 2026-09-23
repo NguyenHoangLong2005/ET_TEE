@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffAction, staffList, staffRequest } from "@/lib/staff-api";
 
-type Order = { id?: string; orderCode?: string; customerName?: string; customerEmail?: string; phone?: string; shippingAddress?: string; status: string };
+type Order = { orderId?: number; id?: string; orderCode?: string; customerName?: string; customerEmail?: string; phone?: string; shippingAddress?: string; status: string };
 type Label = { orderId?: string; orderCode?: string; receiver?: string; phone?: string; address?: string; codAmount?: number };
-const orderId = (order: Order) => order.id;
+const orderId = (order: Order) => order.orderId ?? order.id;
+const orderKey = (order: Order, fallback: string) => order.orderCode ?? fallback;
 export default function PackingPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [label, setLabel] = useState<Label | null>(null);
@@ -21,17 +22,17 @@ export default function PackingPage() {
     finally { if (!signal?.aborted) setLoading(false); }
   }, []);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
-  const completePacking = async (id: string) => {
+  const completePacking = async (id: number | string) => {
     if (!window.confirm(`Xác nhận đơn #${id} đã lấy đủ và đóng gói xong?`)) return;
-    setBusy(id); setError(""); setNotice("");
+    setBusy(String(id)); setError(""); setNotice("");
     try {
       await staffAction(`/api/staff/warehouse/orders/${id}/packing`, "POST");
       setNotice(`Đã hoàn tất đóng gói đơn #${id}.`); await load();
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(null); }
   };
-  const openLabel = async (id: string) => {
-    setBusy(id); setError("");
+  const openLabel = async (id: number | string) => {
+    setBusy(String(id)); setError("");
     try { setLabel(await staffRequest<Label>(`/api/staff/warehouse/orders/${id}/label`)); }
     catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(null); }

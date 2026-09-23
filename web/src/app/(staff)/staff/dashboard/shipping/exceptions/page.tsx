@@ -5,8 +5,12 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { errorMessage, staffAction, staffList } from "@/lib/staff-api";
 
 type ShippingException = {
-  id: string; exceptionType: string; description: string; status: string;
-  shipment?: { id: string; trackingCode?: string };
+  exceptionId: number;
+  id?: string;
+  exceptionType: string;
+  description: string;
+  status: string;
+  shipment?: { shipmentId: number; id?: string; trackingCode?: string };
   resolutionNote?: string;
 };
 export default function ShippingExceptionsPage() {
@@ -29,16 +33,16 @@ export default function ShippingExceptionsPage() {
     if (!shipmentId || !form.type.trim() || !form.description.trim()) { setError("Nhập ID kiện hợp lệ, loại và mô tả ngoại lệ."); return; }
     setBusy(true); setError(""); setNotice("");
     try {
-      await staffAction("/api/staff/shipping/exceptions", "POST", { shipmentId, type: form.type.trim(), description: form.description.trim() });
+      await staffAction("/api/staff/shipping/exceptions", "POST", { shipmentId: Number(form.shipmentId), type: form.type.trim(), description: form.description.trim() });
       setForm({ shipmentId: "", type: "", description: "" }); setNotice("Đã ghi nhận ngoại lệ."); await load();
     } catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); }
   };
-  const resolve = async (id: string) => {
+  const resolve = async (exceptionId: number) => {
     const note=window.prompt("Nội dung xử lý ngoại lệ:");
     if (note === null) return;
     if (!note.trim()) { setError("Cần ghi rõ nội dung xử lý."); return; }
     setBusy(true); setError(""); setNotice("");
-    try { await staffAction(`/api/staff/shipping/exceptions/${id}/resolve`, "PUT", { note: note.trim() }); setNotice(`Đã xử lý ngoại lệ #${id}.`); await load(); }
+    try { await staffAction(`/api/staff/shipping/exceptions/${exceptionId}/resolve`, "PUT", { note: note.trim() }); setNotice(`Đã xử lý ngoại lệ #${exceptionId}.`); await load(); }
     catch (cause) { setError(errorMessage(cause)); } finally { setBusy(false); }
   };
   return <main className="min-h-screen bg-slate-950 p-6 text-slate-100 md:p-10"><div className="mx-auto max-w-6xl space-y-6">
@@ -58,6 +62,6 @@ export default function ShippingExceptionsPage() {
       <input required value={form.description} onChange={e => setForm(v => ({ ...v, description:e.target.value }))} placeholder="Mô tả sự cố" aria-label="Mô tả sự cố" className="rounded border border-slate-700 bg-slate-950 px-3 py-2" />
       <button type="submit" disabled={busy} className="rounded bg-sky-700 px-4 py-2 font-semibold disabled:opacity-50">Ghi nhận ngoại lệ</button>
     </form>
-    {loading ? <p>Đang tải ngoại lệ...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[700px] text-sm"><thead className="bg-slate-800"><tr>{["ID", "Mã vận đơn", "Loại", "Mô tả", "Trạng thái", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{items.map(item => <tr key={item.id} className="border-t border-slate-800"><td className="p-3">#{item.id}</td><td className="p-3">{item.shipment?.trackingCode || `Kiện #${item.shipment?.id ?? "?"}`}</td><td className="p-3">{item.exceptionType}</td><td className="p-3">{item.description}</td><td className="p-3">{item.status}</td><td className="p-3">{item.status === "open" ? <button disabled={busy} onClick={() => void resolve(item.id)} className="rounded bg-emerald-700 px-3 py-2 disabled:opacity-50">Đánh dấu xử lý</button> : (item.resolutionNote || "Đã xử lý")}</td></tr>)}{!items.length && <tr><td colSpan={6} className="p-6 text-center text-slate-400">Không có ngoại lệ.</td></tr>}</tbody></table></div>}
+    {loading ? <p>Đang tải ngoại lệ...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[700px] text-sm"><thead className="bg-slate-800"><tr>{["ID", "Mã vận đơn", "Loại", "Mô tả", "Trạng thái", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{items.map(item => <tr key={item.exceptionId} className="border-t border-slate-800"><td className="p-3">#{item.exceptionId}</td><td className="p-3">{item.shipment?.trackingCode || `Kiện #${item.shipment?.shipmentId ?? "?"}`}</td><td className="p-3">{item.exceptionType}</td><td className="p-3">{item.description}</td><td className="p-3">{item.status}</td><td className="p-3">{item.status === "OPEN" ? <button disabled={busy} onClick={() => void resolve(item.exceptionId)} className="rounded bg-emerald-700 px-3 py-2 disabled:opacity-50">Đánh dấu xử lý</button> : (item.resolutionNote || "Đã xử lý")}</td></tr>)}{!items.length && <tr><td colSpan={6} className="p-6 text-center text-slate-400">Không có ngoại lệ.</td></tr>}</tbody></table></div>}
   </div></main>;
 }

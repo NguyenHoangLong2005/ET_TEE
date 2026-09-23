@@ -8,23 +8,22 @@ import java.util.UUID;
 @Table(name = "stock_reservations")
 public class StockReservation {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "reservation_id", nullable = false, updatable = false)
-    private UUID id;
+    private Long reservationId;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @Column(name = "order_id", nullable = false)
+    private Long orderId;
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private Long productId;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private ReservationStatus status = ReservationStatus.pending;
+    private ReservationStatus status = ReservationStatus.PENDING;
 
     @Column(name = "reject_reason", length = 500)
     private String rejectReason;
@@ -32,12 +31,12 @@ public class StockReservation {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
-    public UUID getProductId() { return productId; }
-    public void setProductId(UUID productId) { this.productId = productId; }
+    public Long getReservationId() { return reservationId; }
+    public void setReservationId(Long reservationId) { this.reservationId = reservationId; }
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public Long getProductId() { return productId; }
+    public void setProductId(Long productId) { this.productId = productId; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public ReservationStatus getStatus() { return status; }

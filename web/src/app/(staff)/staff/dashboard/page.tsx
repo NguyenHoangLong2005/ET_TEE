@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
 type DashboardSummary = {
   revenue: number;

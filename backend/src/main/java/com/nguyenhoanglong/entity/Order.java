@@ -9,8 +9,11 @@ import java.util.UUID;
 @Table(name = "orders")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id", nullable = false, updatable = false)
+    private Long orderId;
+
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(name = "order_code", unique = true, length = 30, nullable = false)
@@ -30,7 +33,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private OrderStatus status = OrderStatus.draft;
+    private OrderStatus status = OrderStatus.DRAFT;
 
     @Column(name = "payment_method", length = 30, nullable = false)
     private String paymentMethod = "cod";
@@ -53,7 +56,7 @@ public class Order {
     @Column(name = "total", precision = 15, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
-    @Column(name = "cancelled_reason", length = 500)
+    @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
     @Column(name = "sla_deadline")
@@ -65,6 +68,8 @@ public class Order {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
     public String getOrderCode() { return orderCode; }

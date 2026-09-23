@@ -8,13 +8,12 @@ import java.util.UUID;
 @Table(name = "inventory_adjustments")
 public class InventoryAdjustment {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "adjustment_id", nullable = false, updatable = false)
-    private UUID id;
+    private Long adjustmentId;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "inventory_id", nullable = false)
-    private Inventory inventory;
+    @Column(name = "inventory_id", nullable = false)
+    private UUID inventoryId;
 
     @Column(name = "difference", nullable = false)
     private Integer difference;
@@ -23,10 +22,10 @@ public class InventoryAdjustment {
     private String reason;
 
     @Column(name = "requested_by")
-    private UUID requestedBy;
+    private Long requestedBy;
 
     @Column(name = "approved_by")
-    private UUID approvedBy;
+    private Long approvedBy;
 
     @Column(name = "status", nullable = false, length = 30)
     private String status = "PENDING";
@@ -34,18 +33,18 @@ public class InventoryAdjustment {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public Inventory getInventory() { return inventory; }
-    public void setInventory(Inventory inventory) { this.inventory = inventory; }
+    public Long getAdjustmentId() { return adjustmentId; }
+    public void setAdjustmentId(Long adjustmentId) { this.adjustmentId = adjustmentId; }
+    public UUID getInventoryId() { return inventoryId; }
+    public void setInventoryId(UUID inventoryId) { this.inventoryId = inventoryId; }
     public Integer getDifference() { return difference; }
     public void setDifference(Integer difference) { this.difference = difference; }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
-    public UUID getRequestedBy() { return requestedBy; }
-    public void setRequestedBy(UUID requestedBy) { this.requestedBy = requestedBy; }
-    public UUID getApprovedBy() { return approvedBy; }
-    public void setApprovedBy(UUID approvedBy) { this.approvedBy = approvedBy; }
+    public Long getRequestedBy() { return requestedBy; }
+    public void setRequestedBy(Long requestedBy) { this.requestedBy = requestedBy; }
+    public Long getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(Long approvedBy) { this.approvedBy = approvedBy; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

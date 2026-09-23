@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { errorMessage, staffList } from "@/lib/staff-api";
 
 type Order = {
+  orderId: number;
   id?: string;
   orderCode: string;
   customerName: string;
@@ -67,7 +68,7 @@ export default function ShippingOrdersPage() {
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} className="border-t align-top">
+              <tr key={order.orderId} className="border-t align-top">
                 <td className="p-3 font-semibold">{order.orderCode}</td>
                 <td className="p-3">{order.customerName ?? "-"}</td>
                 <td className="p-3">{order.phone ?? "-"}</td>

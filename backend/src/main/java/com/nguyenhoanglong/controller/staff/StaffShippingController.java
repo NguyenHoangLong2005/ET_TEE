@@ -21,7 +21,6 @@ public class StaffShippingController {
         return ResponseEntity.ok(service.getReadyOrders());
     }
 
-    // Alias cho frontend trang "Đơn cần xử lý vận chuyển".
     @GetMapping("/orders")
     public ResponseEntity<?> readyOrdersAlias() {
         return ResponseEntity.ok(service.getReadyOrders());
@@ -33,7 +32,7 @@ public class StaffShippingController {
     }
 
     @GetMapping("/shipments/{id}")
-    public ResponseEntity<?> shipment(@PathVariable UUID id) {
+    public ResponseEntity<?> shipment(@PathVariable Long id) {
         return ResponseEntity.ok(service.getShipment(id));
     }
 
@@ -45,17 +44,17 @@ public class StaffShippingController {
     }
 
     @PutMapping("/shipments/{id}/tracking-code")
-    public ResponseEntity<?> updateTrackingCode(@PathVariable UUID id, @RequestBody TrackingRequest request) {
+    public ResponseEntity<?> updateTrackingCode(@PathVariable Long id, @RequestBody TrackingRequest request) {
         return ResponseEntity.ok(service.updateTrackingCode(id, request.trackingCode()));
     }
 
     @PostMapping("/shipments/{id}/handover")
-    public ResponseEntity<?> handover(@PathVariable UUID id) {
+    public ResponseEntity<?> handover(@PathVariable Long id) {
         return ResponseEntity.ok(service.handover(id));
     }
 
     @PostMapping("/shipments/{id}/shipping")
-    public ResponseEntity<?> startShipping(@PathVariable UUID id) {
+    public ResponseEntity<?> startShipping(@PathVariable Long id) {
         return ResponseEntity.ok(service.startShipping(id));
     }
 
@@ -72,12 +71,12 @@ public class StaffShippingController {
     }
 
     @PutMapping("/exceptions/{id}/resolve")
-    public ResponseEntity<?> resolveException(@PathVariable UUID id, @RequestBody ResolveRequest request) {
+    public ResponseEntity<?> resolveException(@PathVariable Long id, @RequestBody ResolveRequest request) {
         return ResponseEntity.ok(service.resolveException(id, request.note()));
     }
 
     @PostMapping("/shipments/{id}/proof")
-    public ResponseEntity<?> proofOfDelivery(@PathVariable UUID id, @RequestBody ProofRequest request) {
+    public ResponseEntity<?> proofOfDelivery(@PathVariable Long id, @RequestBody ProofRequest request) {
         return ResponseEntity.ok(service.delivered(
                 id, request.receiverName(), request.imageUrl(), request.note()
         ));
@@ -89,13 +88,13 @@ public class StaffShippingController {
     }
 
     @PostMapping("/cod/{id}/reconcile")
-    public ResponseEntity<?> reconcileCod(@PathVariable UUID id) {
+    public ResponseEntity<?> reconcileCod(@PathVariable Long id) {
         return ResponseEntity.ok(service.reconcileCod(id));
     }
 
-    public record ShipmentRequest(UUID orderId, String carrierName, String trackingCode, BigDecimal codAmount) {}
+    public record ShipmentRequest(Long orderId, String carrierName, String trackingCode, BigDecimal codAmount) {}
     public record TrackingRequest(String trackingCode) {}
-    public record ExceptionRequest(UUID shipmentId, String type, String description) {}
+    public record ExceptionRequest(Long shipmentId, String type, String description) {}
     public record ResolveRequest(String note) {}
     public record ProofRequest(String receiverName, String imageUrl, String note) {}
 }

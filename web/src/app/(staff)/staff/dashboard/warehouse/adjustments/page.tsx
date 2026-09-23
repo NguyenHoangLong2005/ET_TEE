@@ -5,8 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffAction, staffList } from "@/lib/staff-api";
 
 type Adjustment = {
-  id: string;
-  inventory: { id: string; variantId: string };
+  adjustmentId: number;
+  id?: string;
+  inventory: { inventoryId?: string; id?: string; variantId: string };
   difference: number;
   reason: string;
   status: string;
@@ -19,7 +20,7 @@ export default function WarehouseAdjustmentsPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<number | null>(null);
   const load = useCallback(async (signal?: AbortSignal) => {
     setError(""); setLoading(true);
     try { setItems(await staffList<Adjustment>("/api/staff/warehouse/adjustments", signal)); }
@@ -32,11 +33,11 @@ export default function WarehouseAdjustmentsPage() {
     if (raw === null) return;
     const approvedBy = Number(raw);
     if (!Number.isSafeInteger(approvedBy) || approvedBy <= 0) { setError("ID phê duyệt phải là số nguyên dương."); return; }
-    if (!window.confirm(`Xác nhận duyệt chênh lệch ${item.difference} cho ${item.inventory?.variantId ?? item.inventory?.id}?`)) return;
-    setBusy(item.id); setError(""); setNotice("");
+    if (!window.confirm(`Xác nhận duyệt chênh lệch ${item.difference} cho ${item.inventory?.variantId ?? item.inventory?.inventoryId ?? item.inventory?.id}?`)) return;
+    setBusy(item.adjustmentId); setError(""); setNotice("");
     try {
-      await staffAction(`/api/staff/warehouse/adjustments/${item.id}/approve`, "POST", { approvedBy });
-      setNotice(`Đã duyệt phiếu #${item.id}.`); await load();
+      await staffAction(`/api/staff/warehouse/adjustments/${item.adjustmentId}/approve`, "POST", { approvedBy });
+      setNotice(`Đã duyệt phiếu #${item.adjustmentId}.`); await load();
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(null); }
   };
@@ -57,6 +58,6 @@ export default function WarehouseAdjustmentsPage() {
     <div className="flex items-center justify-between gap-3"><h1 className="text-3xl font-bold">Phiếu điều chỉnh tồn kho</h1><button onClick={() => void load()} className="rounded bg-orange-600 px-4 py-2">Làm mới</button></div>
     <p className="text-sm text-amber-200">Lưu ý: nhập ID trong bản demo không thay cho đăng nhập/phân quyền. Chỉ cấp quyền duyệt trên backend sau khi triển khai xác thực.</p>
     {error && <p role="alert" className="rounded border border-red-700 bg-red-950 p-3">{error}</p>}{notice && <p role="status" className="rounded border border-emerald-700 bg-emerald-950 p-3">{notice}</p>}
-    {loading ? <p>Đang tải phiếu...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[700px] text-sm"><thead className="bg-slate-800"><tr>{["Phiếu", "Sản phẩm", "Chênh lệch", "Lý do", "Trạng thái", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{items.map(item => <tr key={item.id} className="border-t border-slate-800"><td className="p-3">#{item.id}</td><td className="p-3">{item.inventory?.variantId ?? `Tồn #${item.inventory?.id}`}</td><td className="p-3">{item.difference}</td><td className="p-3">{item.reason}</td><td className="p-3">{item.status}</td>                  <td className="p-3">{item.status === "approved" ? <button disabled={busy !== null} onClick={() => void approve(item)} className="rounded bg-emerald-700 px-3 py-2 disabled:opacity-50">Duyệt</button> : "Đã xử lý"}</td></tr>)}{!items.length && <tr><td colSpan={6} className="p-5 text-center text-slate-400">Chưa có phiếu điều chỉnh.</td></tr>}</tbody></table></div>}
+        {loading ? <p>Đang tải phiếu...</p> : <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900"><table className="w-full min-w-[700px] text-sm"><thead className="bg-slate-800"><tr>{["Phiếu", "Sản phẩm", "Chênh lệch", "Lý do", "Trạng thái", "Thao tác"].map(x => <th key={x} className="p-3 text-left">{x}</th>)}</tr></thead><tbody>{items.map(item => <tr key={item.adjustmentId} className="border-t border-slate-800"><td className="p-3">#{item.adjustmentId}</td><td className="p-3">{item.inventory?.variantId ?? `Tồn #${item.inventory?.inventoryId ?? item.inventory?.id}`}</td><td className="p-3">{item.difference}</td><td className="p-3">{item.reason}</td><td className="p-3">{item.status}</td><td className="p-3">{item.status === "APPROVED" ? <button disabled={busy !== null} onClick={() => void approve(item)} className="rounded bg-emerald-700 px-3 py-2 disabled:opacity-50">Duyệt</button> : "Đã xử lý"}</td></tr>)}{!items.length && <tr><td colSpan={6} className="p-5 text-center text-slate-400">Chưa có phiếu điều chỉnh.</td></tr>}</tbody></table></div>}
   </div></main>;
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
-type Order = { id?: string; orderCode: string; customerName: string; status: string };
+type Order = { orderId?: number; id?: string; orderCode: string; customerName: string; status: string };
 export default function WarehouseHandoverPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,11 +18,11 @@ export default function WarehouseHandoverPage() {
     finally { if (!signal?.aborted) setLoading(false); }
   }, []);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
-  const handover = async (id: string | undefined) => {
-    if (!id) return;
-    if (!window.confirm(`Xác nhận bàn giao đơn #${id} sang bộ phận vận chuyển?`)) return;
-    setBusy(id); setError(""); setNotice("");
-    try { await staffAction(`/api/staff/warehouse/orders/${id}/handover`, "POST"); setNotice(`Đã bàn giao đơn #${id}.`); await load(); }
+  const handover = async (orderId: number | undefined) => {
+    if (!orderId) return;
+    if (!window.confirm(`Xác nhận bàn giao đơn #${orderId} sang bộ phận vận chuyển?`)) return;
+    setBusy(String(orderId)); setError(""); setNotice("");
+    try { await staffAction(`/api/staff/warehouse/orders/${orderId}/handover`, "POST"); setNotice(`Đã bàn giao đơn #${orderId}.`); await load(); }
     catch (cause) { setError(errorMessage(cause)); } finally { setBusy(null); }
   };
   const packed = orders.filter(o => o.status === "packed");
@@ -48,12 +48,12 @@ export default function WarehouseHandoverPage() {
         {loading && <p className="text-sm text-slate-400">Đang tải...</p>}
         <div className="space-y-3">
           {packed.map((order) => (
-            <article key={order.id} className="flex items-center justify-between gap-4 rounded-xl border-slate-800 bg-slate-900 p-5">
+            <article key={order.orderId ?? order.orderCode} className="flex items-center justify-between gap-4 rounded-xl border-slate-800 bg-slate-900 p-5">
               <div>
                 <p className="font-semibold text-white">{order.orderCode}</p>
                 <p className="text-xs text-slate-400">{order.customerName}</p>
               </div>
-                  <button disabled={order.id == null} onClick={() => handover(order.id)} className="rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Bàn giao</button>
+                <button disabled={order.orderId == null} onClick={() => handover(order.orderId)} className="rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Bàn giao</button>
             </article>
           ))}
           {packed.length === 0 && !loading && <p className="rounded-xl border-slate-800 bg-slate-900 p-6 text-sm text-slate-400">Không có đơn nào sẵn sàng bàn giao.</p>}

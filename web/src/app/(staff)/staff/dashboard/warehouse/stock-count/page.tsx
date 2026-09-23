@@ -5,7 +5,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { errorMessage, staffList, staffAction } from "@/lib/staff-api";
 
 type Stocktake = {
-  id: string;
+  stocktakeId: number;
+  id?: string;
   warehouseLocation: string;
   actualQuantity: number | null;
   status: string;
@@ -40,11 +41,11 @@ export default function WarehouseStockCountPage() {
     }
   };
 
-    const recordCount = async (id: string) => {
+    const recordCount = async (stocktakeId: number) => {
     const input = window.prompt("Nhập số lượng kiểm đếm thực tế:");
     if (!input) return;
     try {
-      await staffAction(`/api/staff/warehouse/stocktakes/${id}`, "PUT", { actualQuantity: Number(input) });
+      await staffAction(`/api/staff/warehouse/stocktakes/${stocktakeId}`, "PUT", { actualQuantity: Number(input) });
       await loadStocktakes();
     } catch (cause) {
       alert(errorMessage(cause));
@@ -78,15 +79,15 @@ export default function WarehouseStockCountPage() {
         </form>
 
         <div className="space-y-3">
-          {stocktakes.map((item) => (
-            <article key={item.id} className="flex items-center justify-between gap-4 rounded-xl border-slate-800 bg-slate-900 p-5">
-              <div>
-                <p className="font-semibold text-white">Phiếu #{item.id} · {item.warehouseLocation ?? "-"}</p>
-                <p className="mt-1 text-xs text-slate-400">Thực tế: {item.actualQuantity ?? "chưa ghi nhận"} · Trạng thái: {item.status}</p>
-              </div>
-              <button onClick={() => recordCount(item.id)} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Ghi nhận kiểm đếm</button>
-            </article>
-          ))}
+           {stocktakes.map((item) => (
+             <article key={item.stocktakeId} className="flex items-center justify-between gap-4 rounded-xl border-slate-800 bg-slate-900 p-5">
+               <div>
+                 <p className="font-semibold text-white">Phiếu #{item.stocktakeId} · {item.warehouseLocation ?? "-"}</p>
+                 <p className="mt-1 text-xs text-slate-400">Thực tế: {item.actualQuantity ?? "chưa ghi nhận"} · Trạng thái: {item.status}</p>
+               </div>
+               <button onClick={() => recordCount(item.stocktakeId)} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Ghi nhận kiểm đếm</button>
+             </article>
+           ))}
           {stocktakes.length === 0 && !loading && <p className="rounded-xl border-slate-800 bg-slate-900 p-6 text-sm text-slate-400">Chưa có phiếu kiểm kê nào.</p>}
         </div>
       </div>
