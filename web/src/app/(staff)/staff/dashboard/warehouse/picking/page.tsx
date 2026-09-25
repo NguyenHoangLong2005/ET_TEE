@@ -32,9 +32,13 @@ export default function WarehousePickingPage() {
 
   useEffect(() => { void loadOrders(); }, []);
 
-  const run = async (id: number | string, path: string) => {
+  const run = async (id: number | string, path: string, method: "GET" | "POST" = "POST") => {
     try {
-      await staffAction(`/api/staff/warehouse/orders/${id}/${path}`, "POST");
+      if (method === "GET") {
+        await staffList(`/api/staff/warehouse/orders/${id}/${path}`);
+      } else {
+        await staffAction(`/api/staff/warehouse/orders/${id}/${path}`, "POST");
+      }
       await loadOrders();
     } catch (cause) {
       alert(errorMessage(cause));
@@ -49,7 +53,7 @@ export default function WarehousePickingPage() {
 function PickingView({
   orders, error, loading, onRun,
   }: {
-  orders: Order[]; error: string; loading: boolean; onRun: (id: number | string, path: string) => void;
+  orders: Order[]; error: string; loading: boolean; onRun: (id: number | string, path: string, method?: "GET" | "POST") => void;
 }) {
   return (
     <main className="min-h-screen bg-[#15100f] px-5 py-8 text-slate-100">
@@ -83,10 +87,10 @@ function PickingView({
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-orange-300">{order.status}</span>
                 {order.status.toUpperCase() === "CONFIRMED" && (
-                  <button onClick={() => order.orderId && onRun(order.orderId, "picking")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bat dau lay hang</button>
+                  <button onClick={() => order.orderId && onRun(order.orderId, "picking", "GET")} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white">Bat dau lay hang</button>
                 )}
                 {order.status.toUpperCase() === "PICKING" && (
-                  <button onClick={() => order.orderId && onRun(order.orderId, "picking/complete")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoan tat lay hang</button>
+                  <button onClick={() => order.orderId && onRun(order.orderId, "picking/complete", "POST")} className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Hoan tat lay hang</button>
                 )}
               </div>
             </article>
