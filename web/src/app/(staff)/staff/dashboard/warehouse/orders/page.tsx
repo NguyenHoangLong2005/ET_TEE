@@ -51,8 +51,10 @@ export default function WarehouseOrdersPage() {
   };
 
   return (
-    <main className="p-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <main className="min-h-screen bg-slate-950 px-5 py-8 text-slate-100 md:px-10">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <Link href="/staff/dashboard/warehouse" className="text-sm text-orange-300">← Về trang kho</Link>
+
         <nav className="flex flex-wrap gap-2 text-sm">
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse">Tổng quan</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/receiving">Nhập kho</Link>
@@ -65,63 +67,81 @@ export default function WarehouseOrdersPage() {
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/shipments">Bàn giao</Link>
           <Link className="rounded-lg border border-slate-700 px-3 py-2" href="/staff/dashboard/warehouse/replenishment">Đề xuất nhập thêm</Link>
         </nav>
-        <h1 className="text-3xl font-bold">Đơn cần xử lý</h1>
-        <button onClick={loadOrders} className="rounded-lg bg-orange-600 px-4 py-2 text-white">
-          Làm mới
-        </button>
-      </div>
 
-      {error && <p className="mb-4 rounded-lg border border-red-800 bg-red-950 p-3 text-sm text-red-300">{error}</p>}
-      {loading && <p className="mb-4 text-sm text-slate-400">Đang tải...</p>}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Đơn cần xử lý</h1>
+            <p className="mt-2 text-sm text-slate-400">Danh sách đơn hàng đã xác nhận, đang lấy hàng hoặc đã đóng gói.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadOrders()}
+            className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+          >
+            Làm mới
+          </button>
+        </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
-        <table className="w-full">
-          <thead className="bg-slate-800">
-            <tr>
-              <th className="p-3 text-left text-slate-300">Mã đơn</th>
-              <th className="p-3 text-left text-slate-300">Khách hàng</th>
-              <th className="p-3 text-left text-slate-300">SĐT</th>
-              <th className="p-3 text-left text-slate-300">Địa chỉ</th>
-              <th className="p-3 text-left text-slate-300">Trạng thái</th>
-              <th className="p-3 text-right text-slate-300">Tổng tiền</th>
-              <th className="p-3 text-left text-slate-300">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => {
-              const action = STATUS_ACTIONS[order.status.toUpperCase()];
-              return (
-                   <tr key={order.orderId ?? order.orderCode} className="border-t align-top">
-                   <td className="p-3 font-semibold">{order.orderCode ?? `#${order.orderId ?? order.id}`}</td>
-                   <td className="p-3">{order.customerName ?? "-"}</td>
-                   <td className="p-3">{order.phone ?? "-"}</td>
-                   <td className="p-3 max-w-xs text-sm">{order.shippingAddress ?? "Chưa có địa chỉ"}</td>
-                   <td className="p-3">{order.status}</td>
-                   <td className="p-3 text-right">{Number(order.total ?? 0).toLocaleString("vi-VN")} ₫</td>
-                   <td className="p-3">
-                     {action ? (
-                       <button
-                         onClick={() => order.orderId != null && runAction(order.orderId, action.path)}
-                         className="rounded bg-orange-600 px-3 py-1 text-white"
-                       >
-                        {action.label}
-                      </button>
-                    ) : (
-                      <span className="text-xs text-slate-500">Không có thao tác</span>
-                    )}
-                  </td>
+        {error && <p role="alert" className="rounded-lg border border-red-800 bg-red-950/50 p-3 text-sm text-red-200">{error}</p>}
+        {loading && <p role="status" className="text-sm text-slate-400">Đang tải đơn hàng...</p>}
+
+        {!loading && (
+          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead className="bg-slate-800 text-left text-slate-300">
+                <tr>
+                  <th scope="col" className="p-3">Mã đơn</th>
+                  <th scope="col" className="p-3">Khách hàng</th>
+                  <th scope="col" className="p-3">SĐT</th>
+                  <th scope="col" className="p-3">Địa chỉ</th>
+                  <th scope="col" className="p-3">Trạng thái</th>
+                  <th scope="col" className="p-3 text-right">Tổng tiền</th>
+                  <th scope="col" className="p-3">Thao tác</th>
                 </tr>
-              );
-            })}
-            {orders.length === 0 && (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-400">
-                  Không có đơn nào cần xử lý
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {orders.map((order) => {
+                  const action = STATUS_ACTIONS[order.status.toUpperCase()];
+                  return (
+                    <tr key={order.orderId ?? order.orderCode} className="border-t border-slate-800 align-top">
+                      <td className="p-3 font-semibold text-white">{order.orderCode ?? `#${order.orderId ?? order.id}`}</td>
+                      <td className="p-3">{order.customerName ?? "-"}</td>
+                      <td className="p-3">{order.phone ?? "-"}</td>
+                      <td className="p-3 max-w-xs text-sm text-slate-400">{order.shippingAddress ?? "Chưa có địa chỉ"}</td>
+                      <td className="p-3">
+                        <span className="inline-flex items-center rounded-full bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-300">
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-medium text-white">{Number(order.total ?? 0).toLocaleString("vi-VN")} ₫</td>
+                      <td className="p-3">
+                        {action ? (
+                          <button
+                            type="button"
+                            disabled={order.orderId == null}
+                            onClick={() => order.orderId != null && runAction(order.orderId, action.path)}
+                            className="rounded bg-orange-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                          >
+                            {action.label}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-500">Không có thao tác</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {orders.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-slate-400">
+                      Không có đơn nào cần xử lý
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </main>
   );
