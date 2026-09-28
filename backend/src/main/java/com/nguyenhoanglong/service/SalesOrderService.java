@@ -251,16 +251,20 @@ public class SalesOrderService {
     }
 
     @Transactional
+    @SuppressWarnings("unchecked")
     public Order createSalesOrder(java.util.Map<String, Object> payload) {
         String customerName = (String) payload.get("customerName");
         String customerEmail = (String) payload.get("customerEmail");
         String phone = (String) payload.get("phone");
         String shippingAddress = (String) payload.get("shippingAddress");
         String paymentMethod = (String) payload.get("paymentMethod");
-        Number total = (Number) payload.get("total");
+        Object rawItems = payload.get("items");
 
         if (customerName == null || customerName.trim().isEmpty() || phone == null || phone.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên khách hàng và số điện thoại không được để trống");
+        }
+        if (!(rawItems instanceof List) || ((List<?>) rawItems).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng phải có ít nhất 1 sản phẩm (variantId, quantity)");
         }
 
         Order order = new Order();
@@ -274,10 +278,57 @@ public class SalesOrderService {
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.CONFIRMED);
         order.setOrderStatus(OrderStatus.CONFIRMED.name());
-        order.setTotalAmount(total != null ? total.doubleValue() : 0.0);
         order.setShopId(resolveShopId() != null ? resolveShopId() : 1L);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
+
+        List<OrderItem> items = new ArrayList<>();
+        double total = 0.0;
+        for (Object rawItem : (List<Object>) rawItems) {
+            if (!(rawItem instanceof java.util.Map)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dữ liệu sản phẩm không hợp lệ");
+            }
+            java.util.Map<String, Object> itemMap = (java.util.Map<String, Object>) rawItem;
+            Number variantIdNum = (Number) itemMap.get("variantId");
+            Number quantityNum = (Number) itemMap.get("quantity");
+            if (variantIdNum == null || quantityNum == null || quantityNum.intValue() <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mỗi sản phẩm cần variantId và quantity > 0");
+            }
+            int quantity = quantityNum.intValue();
+
+            ProductVariant variant = variantRepository.findByIdWithPessimisticLock(variantIdNum.longValue())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Không tìm thấy biến thể sản phẩm id=" + variantIdNum));
+
+            if (variant.getAvailableQuantity() == null || variant.getAvailableQuantity() < quantity) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sản phẩm '" + variant.getProduct().getName() + "' không đủ hàng. Còn lại: "
+                                + (variant.getAvailableQuantity() != null ? variant.getAvailableQuantity() : 0));
+            }
+
+            variant.setStock(variant.getStock() - quantity);
+            variant.setAvailableQuantity(variant.getAvailableQuantity() - quantity);
+            variantRepository.save(variant);
+
+            java.math.BigDecimal unitPriceBd = variant.getSalePrice() != null ? variant.getSalePrice() : variant.getPrice();
+            double unitPrice = unitPriceBd != null ? unitPriceBd.doubleValue() : 0.0;
+
+            OrderItem item = new OrderItem();
+            item.setOrder(order);
+            item.setProduct(variant.getProduct());
+            item.setVariantId(variant.getId());
+            item.setProductNameSnapshot(variant.getProduct().getName());
+            item.setColorSnapshot(variant.getColor());
+            item.setSizeSnapshot(variant.getSize());
+            item.setUnitPrice(variant.getPrice() != null ? variant.getPrice().doubleValue() : unitPrice);
+            item.setSalePrice(variant.getSalePrice() != null ? variant.getSalePrice().doubleValue() : null);
+            item.setQuantity(quantity);
+            item.setTotalPrice(unitPrice * quantity);
+            items.add(item);
+            total += unitPrice * quantity;
+        }
+        order.setItems(items);
+        order.setTotalAmount(total);
 
         Order saved = orders.save(order);
         saveStatusHistory(saved.getId(), null, OrderStatus.CONFIRMED, resolveUserId(), "Tạo đơn hàng tại quầy (POS)");

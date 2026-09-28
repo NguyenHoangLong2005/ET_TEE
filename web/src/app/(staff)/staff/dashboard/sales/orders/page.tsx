@@ -18,10 +18,11 @@ import { Button } from "@/components/ui/Button";
 
 type OrderItem = {
   id?: number;
-  productName: string;
+  variantId: number | "";
+  productName?: string;
   variantInfo?: string;
   quantity: number;
-  price: number;
+  price?: number;
   imageUrl?: string;
 };
 
@@ -102,12 +103,8 @@ export default function SalesOrdersPage() {
   });
 
   const [createItems, setCreateItems] = useState<OrderItem[]>([
-    { id: 1, productName: "Áo Thun Cotton Premium ET.TEE", variantInfo: "Size L / Đen", quantity: 1, price: 250000 }
+    { id: 1, variantId: "", quantity: 1 }
   ]);
-
-  const calculatedCreateTotal = useMemo(() => {
-    return createItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
-  }, [createItems]);
 
   const openCreateModal = () => {
     setCreateOrderData({
@@ -119,7 +116,7 @@ export default function SalesOrdersPage() {
       note: "",
     });
     setCreateItems([
-      { id: Date.now(), productName: "Áo Thun Cotton Premium ET.TEE", variantInfo: "Size L / Đen", quantity: 1, price: 250000 }
+      { id: Date.now(), variantId: "", quantity: 1 }
     ]);
     setActiveModal("create");
   };
@@ -127,7 +124,7 @@ export default function SalesOrdersPage() {
   const handleAddCreateItem = () => {
     setCreateItems(prev => [
       ...prev,
-      { id: Date.now(), productName: "Quần Khaki Slimfit ET.TEE", variantInfo: "Size M / Be", quantity: 1, price: 350000 }
+      { id: Date.now(), variantId: "", quantity: 1 }
     ]);
   };
 
@@ -145,8 +142,8 @@ export default function SalesOrdersPage() {
       setError("Vui lòng nhập tên khách hàng và số điện thoại.");
       return;
     }
-    if (createItems.length === 0) {
-      setError("Đơn hàng phải có ít nhất 1 sản phẩm.");
+    if (createItems.length === 0 || createItems.some(i => !i.variantId || Number(i.quantity) <= 0)) {
+      setError("Mỗi dòng sản phẩm cần nhập Mã biến thể (Variant ID) hợp lệ và số lượng > 0.");
       return;
     }
 
@@ -156,7 +153,7 @@ export default function SalesOrdersPage() {
       phone: createOrderData.phone.trim(),
       shippingAddress: createOrderData.shippingAddress.trim() || "Thanh toán & nhận tại cửa hàng (POS)",
       paymentMethod: createOrderData.paymentMethod,
-      total: calculatedCreateTotal,
+      items: createItems.map(i => ({ variantId: Number(i.variantId), quantity: Number(i.quantity) })),
       note: createOrderData.note.trim() || undefined,
     };
 
@@ -172,9 +169,9 @@ export default function SalesOrdersPage() {
         status: (saved?.status as any) ?? "CONFIRMED",
         paymentStatus: saved?.paymentStatus ?? "Đã thanh toán",
         paymentMethod: saved?.paymentMethod ?? payload.paymentMethod,
-        total: saved?.totalAmount ?? calculatedCreateTotal,
+        total: saved?.totalAmount ?? 0,
         createdAt: saved?.createdAt ?? new Date().toISOString(),
-        items: createItems,
+        items: saved?.items ?? [],
         notes: createOrderData.note.trim() ? [
           { id: Date.now(), content: createOrderData.note.trim(), createdAt: new Date().toISOString(), createdBy: "NV Sales (Tạo mới)" }
         ] : []
@@ -753,8 +750,8 @@ export default function SalesOrdersPage() {
                             <td className="p-3 font-semibold text-slate-900">{item.productName}</td>
                             <td className="p-3 text-slate-500">{item.variantInfo || "-"}</td>
                             <td className="p-3 text-center font-mono font-bold">{item.quantity}</td>
-                            <td className="p-3 text-right font-mono">{Number(item.price).toLocaleString("vi-VN")} ₫</td>
-                            <td className="p-3 text-right font-mono font-bold text-emerald-600">{Number(item.price * item.quantity).toLocaleString("vi-VN")} ₫</td>
+                            <td className="p-3 text-right font-mono">{Number(item.price || 0).toLocaleString("vi-VN")} ₫</td>
+                            <td className="p-3 text-right font-mono font-bold text-emerald-600">{Number((item.price || 0) * item.quantity).toLocaleString("vi-VN")} ₫</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1117,27 +1114,19 @@ export default function SalesOrdersPage() {
                   <div className="space-y-2">
                     {createItems.map((item, idx) => (
                       <div key={idx} className="bg-slate-50 p-3 rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center text-xs">
-                        <div className="col-span-5">
-                          <label className="block text-[10px] text-slate-500 mb-1">Tên sản phẩm</label>
+                        <div className="col-span-8">
+                          <label className="block text-[10px] text-slate-500 mb-1">Mã biến thể (Variant ID)</label>
                           <input
-                            type="text"
+                            type="number"
+                            min="1"
                             required
-                            value={item.productName}
-                            onChange={(e) => handleUpdateCreateItem(idx, "productName", e.target.value)}
-                            className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-900 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            value={item.variantId}
+                            onChange={(e) => handleUpdateCreateItem(idx, "variantId", e.target.value ? Number(e.target.value) : "")}
+                            placeholder="Nhập variantId từ trang sản phẩm"
+                            className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-900 font-mono font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                         <div className="col-span-3">
-                          <label className="block text-[10px] text-slate-500 mb-1">Phân loại (Size/Màu)</label>
-                          <input
-                            type="text"
-                            value={item.variantInfo || ""}
-                            onChange={(e) => handleUpdateCreateItem(idx, "variantInfo", e.target.value)}
-                            placeholder="Size M / Đen"
-                            className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                        </div>
-                        <div className="col-span-1">
                           <label className="block text-[10px] text-slate-500 mb-1 text-center">SL</label>
                           <input
                             type="number"
@@ -1146,17 +1135,6 @@ export default function SalesOrdersPage() {
                             value={item.quantity}
                             onChange={(e) => handleUpdateCreateItem(idx, "quantity", Number(e.target.value))}
                             className="w-full bg-white border border-slate-300 rounded-lg p-2 text-center text-slate-900 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className="block text-[10px] text-slate-500 mb-1 text-right">Đơn giá (₫)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            required
-                            value={item.price}
-                            onChange={(e) => handleUpdateCreateItem(idx, "price", Number(e.target.value))}
-                            className="w-full bg-white border border-slate-300 rounded-lg p-2 text-right text-emerald-700 font-mono font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                         <div className="col-span-1 text-center pt-4">
@@ -1189,11 +1167,8 @@ export default function SalesOrdersPage() {
                     />
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
-                    <span className="font-bold text-slate-700 text-sm">Tổng thanh toán:</span>
-                    <span className="text-xl font-black text-emerald-700 font-mono">
-                      {calculatedCreateTotal.toLocaleString("vi-VN")} ₫
-                    </span>
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-600">
+                    Tổng tiền và giá từng sản phẩm sẽ được hệ thống tính theo giá bán hiện tại của biến thể, sau khi tạo đơn thành công.
                   </div>
                 </div>
 
