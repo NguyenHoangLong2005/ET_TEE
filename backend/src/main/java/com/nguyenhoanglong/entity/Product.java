@@ -2,12 +2,23 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Xoa mem tai su dung cot status thay vi them deleted_at rieng: moi truy van
+ * hien tai (danh sach khach hang, thong ke, bao cao) da loc "status = 'ACTIVE'"
+ * mot cach tuong minh o khap noi, nen mot san pham voi status='DELETED' tu
+ * dong bien mat khoi cac truy van do ma khong phai sua gi them. Neu them ca
+ * mot cot deleted_at song song se tao ra hai co che roi nhau: mot ban ghi co
+ * the "active" theo status nhung "deleted" theo deleted_at hoac nguoc lai.
+ * @SQLRestriction o day la lop chan chung o tang entity, ke ca cho cac truy
+ * van (con it) chua tu loc status.
+ */
 @Entity
 @Table(name = "products", indexes = {
     @Index(name = "idx_products_status_tg", columnList = "status, target_group"),
@@ -20,6 +31,7 @@ import java.util.List;
     @Index(name = "idx_products_status_isbest", columnList = "status, is_best_seller")
 })
 @BatchSize(size = 30)
+@SQLRestriction("status <> 'DELETED'")
 public class Product {
 
     @Id
@@ -89,6 +101,12 @@ public class Product {
 
     @Column(name = "sold_count")
     private Integer soldCount = 0;
+
+    @Column(name = "created_by", length = 255)
+    private String createdBy;
+
+    @Column(name = "updated_by", length = 255)
+    private String updatedBy;
 
     @ElementCollection
     @CollectionTable(name = "product_style_tags", joinColumns = @JoinColumn(name = "product_id"))
@@ -182,6 +200,12 @@ public class Product {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCreatedBy() { return createdBy; }
+    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    public String getUpdatedBy() { return updatedBy; }
+    public void setUpdatedBy(String updatedBy) { this.updatedBy = updatedBy; }
     public List<String> getStyleTags() { return styleTags; }
     public void setStyleTags(List<String> styleTags) { this.styleTags = styleTags; }
     public List<String> getRecommendationTags() { return recommendationTags; }
