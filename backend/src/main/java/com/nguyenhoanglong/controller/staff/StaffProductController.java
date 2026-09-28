@@ -36,7 +36,7 @@ public class StaffProductController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductDto>> createInventoryProduct(@Valid @RequestBody ProductDto productDto) {
         ProductDto createdProduct = productService.createProduct(productDto);
@@ -44,7 +44,7 @@ public class StaffProductController {
                 .body(ApiResponse.success("Staff: Product created in inventory successfully", createdProduct));
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductDto>> updateInventoryProduct(
             @PathVariable Long id,
@@ -53,7 +53,7 @@ public class StaffProductController {
         return ResponseEntity.ok(ApiResponse.success("Staff: Product updated in inventory successfully", updatedProduct));
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteInventoryProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

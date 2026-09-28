@@ -117,14 +117,81 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto createProduct(ProductDto productDto) {
-        // Basic impl for now
-        return null;
+        Product product = new Product();
+        applyDtoToProduct(productDto, product);
+        Product saved = productRepository.save(product);
+        return mapToDto(saved);
     }
 
     @Override
     public ProductDto updateProduct(Long id, ProductDto productDto) {
-        // Basic impl for now
-        return null;
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
+        applyDtoToProduct(productDto, product);
+        Product saved = productRepository.save(product);
+        return mapToDto(saved);
+    }
+
+    private void applyDtoToProduct(ProductDto dto, Product product) {
+        if (dto.getName() != null) product.setName(dto.getName());
+        if (dto.getSlug() != null) product.setSlug(dto.getSlug());
+        if (dto.getDescription() != null) product.setDescription(dto.getDescription());
+        if (dto.getBrand() != null) product.setBrand(dto.getBrand());
+        if (dto.getPrice() != null) product.setPrice(dto.getPrice());
+        if (dto.getSalePrice() != null) product.setSalePrice(dto.getSalePrice());
+        if (dto.getGender() != null) product.setGender(dto.getGender());
+        if (dto.getTargetGroup() != null) product.setTargetGroup(dto.getTargetGroup());
+        if (dto.getProductType() != null) product.setProductType(dto.getProductType());
+        if (dto.getMaterial() != null) product.setMaterial(dto.getMaterial());
+        if (dto.getStyle() != null) product.setStyle(dto.getStyle());
+        product.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
+        if (dto.getIsNew() != null) product.setIsNew(dto.getIsNew());
+        if (dto.getIsBestSeller() != null) product.setIsBestSeller(dto.getIsBestSeller());
+        if (dto.getIsSale() != null) product.setIsSale(dto.getIsSale());
+
+        Long categoryId = dto.getCategoryId() != null ? dto.getCategoryId()
+                : (dto.getCategory() != null ? dto.getCategory().getId() : null);
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với id: " + categoryId));
+            product.setCategory(category);
+        }
+
+        if (dto.getStyleTags() != null) product.setStyleTags(new ArrayList<>(dto.getStyleTags()));
+        if (dto.getRecommendationTags() != null) product.setRecommendationTags(new ArrayList<>(dto.getRecommendationTags()));
+
+        if (dto.getVariants() != null) {
+            product.getVariants().clear();
+            for (ProductVariantDto vDto : dto.getVariants()) {
+                ProductVariant variant = new ProductVariant();
+                variant.setSku(vDto.getSku());
+                variant.setColor(vDto.getColor());
+                variant.setColorHex(vDto.getColorHex());
+                variant.setColorCode(vDto.getColorCode());
+                variant.setSize(vDto.getSize());
+                variant.setPrice(vDto.getPrice() != null ? vDto.getPrice() : product.getPrice());
+                variant.setSalePrice(vDto.getSalePrice() != null ? vDto.getSalePrice() : product.getSalePrice());
+                variant.setStock(vDto.getStock() != null ? vDto.getStock() : 0);
+                variant.setAvailableQuantity(vDto.getAvailableQuantity() != null ? vDto.getAvailableQuantity() : variant.getStock());
+                product.addVariant(variant);
+            }
+        }
+
+        if (dto.getImages() != null) {
+            product.getImages().clear();
+            for (Map<String, Object> imgMap : dto.getImages()) {
+                com.nguyenhoanglong.entity.ProductImage img = new com.nguyenhoanglong.entity.ProductImage();
+                img.setImageUrl((String) imgMap.get("imageUrl"));
+                img.setAlt((String) imgMap.getOrDefault("alt", ""));
+                Object isPrimary = imgMap.get("isPrimary");
+                img.setIsPrimary(isPrimary instanceof Boolean ? (Boolean) isPrimary : Boolean.FALSE);
+                Object sortOrder = imgMap.get("sortOrder");
+                img.setSortOrder(sortOrder instanceof Number ? ((Number) sortOrder).intValue() : 0);
+                img.setColorCode((String) imgMap.get("colorCode"));
+                img.setColorHex((String) imgMap.get("colorHex"));
+                product.addImage(img);
+            }
+        }
     }
 
     @Override
