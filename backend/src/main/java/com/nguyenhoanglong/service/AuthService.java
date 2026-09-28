@@ -266,7 +266,7 @@ public class AuthService {
             throw new RuntimeException("UNVERIFIED");
         }
 
-        if ("BANNED".equals(user.getStatus())) {
+        if ("BANNED".equals(user.getStatus()) || "LOCKED".equals(user.getStatus())) {
             throw new RuntimeException("Tài khoản đã bị khóa");
         }
 

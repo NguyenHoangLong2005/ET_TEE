@@ -2,6 +2,7 @@ package com.nguyenhoanglong.config;
 
 import com.nguyenhoanglong.constant.PermissionConstants;
 import com.nguyenhoanglong.entity.RolePermissionEntity;
+import com.nguyenhoanglong.repository.UserRepository;
 import com.nguyenhoanglong.service.RolePermissionService;
 import com.nguyenhoanglong.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -65,10 +66,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final RolePermissionService rolePermissionService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, RolePermissionService rolePermissionService) {
+    public JwtAuthenticationFilter(JwtService jwtService, RolePermissionService rolePermissionService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.rolePermissionService = rolePermissionService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -91,6 +94,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             userEmail = jwtService.extractUsername(jwt);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt, userEmail)) {
+                    String status = userRepository.findStatusByEmail(userEmail).orElse(null);
+                    if ("BANNED".equals(status) || "LOCKED".equals(status)) {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
                     String role = jwtService.extractRole(jwt);
                     if (role == null) {
                         role = "USER";
