@@ -86,4 +86,28 @@ public interface CampaignAnalyticsRepository extends JpaRepository<CampaignAnaly
            "WHERE ca.campaignId IS NOT NULL " +
            "GROUP BY ca.campaignId ORDER BY COUNT(ca) DESC")
     List<Object[]> topCampaigns();
+
+    @Query("SELECT COUNT(ca) FROM CampaignAnalytics ca WHERE ca.bannerId = :bannerId AND ca.eventType = :eventType AND ca.createdAt >= :since")
+    long countByBannerIdAndEventTypeSince(@Param("bannerId") Long bannerId, @Param("eventType") String eventType, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(ca) FROM CampaignAnalytics ca WHERE ca.bannerId = :bannerId AND ca.eventType = :eventType")
+    long countByBannerIdAndEventType(@Param("bannerId") Long bannerId, @Param("eventType") String eventType);
+
+    @Query("SELECT COUNT(ca) FROM CampaignAnalytics ca WHERE ca.campaignId = :campaignId AND ca.eventType = :eventType AND ca.createdAt >= :since")
+    long countByCampaignIdAndEventTypeSince(@Param("campaignId") Long campaignId, @Param("eventType") String eventType, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COALESCE(SUM(ca.revenue), 0) FROM CampaignAnalytics ca WHERE ca.campaignId = :campaignId AND ca.eventType = 'CONVERSION' AND ca.createdAt >= :since")
+    BigDecimal sumRevenueByCampaignSince(@Param("campaignId") Long campaignId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(ca) FROM CampaignAnalytics ca WHERE ca.voucherId = :voucherId AND ca.eventType = 'CONVERSION' AND ca.createdAt >= :since")
+    long countVoucherConversionsSince(@Param("voucherId") Long voucherId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(ca) FROM CampaignAnalytics ca WHERE ca.voucherId = :voucherId AND ca.eventType = 'CONVERSION'")
+    long countVoucherConversions(@Param("voucherId") Long voucherId);
+
+    @Query("SELECT ca.voucherId, COUNT(ca) FROM CampaignAnalytics ca WHERE ca.voucherId IS NOT NULL AND ca.eventType = 'CONVERSION' AND ca.createdAt >= :since GROUP BY ca.voucherId ORDER BY COUNT(ca) DESC")
+    List<Object[]> topVouchersSince(@Param("since") LocalDateTime since);
+
+    @Query("SELECT ca.voucherId, COUNT(ca) FROM CampaignAnalytics ca WHERE ca.voucherId IS NOT NULL AND ca.eventType = 'CONVERSION' GROUP BY ca.voucherId ORDER BY COUNT(ca) DESC")
+    List<Object[]> topVouchers();
 }

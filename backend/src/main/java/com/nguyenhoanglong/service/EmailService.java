@@ -10,6 +10,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.nguyenhoanglong.entity.EmailLog;
+import com.nguyenhoanglong.repository.EmailLogRepository;
+import java.time.LocalDateTime;
+
 @Service
 public class EmailService {
 
@@ -23,15 +27,22 @@ public class EmailService {
     private boolean failSoft;
 
     private final JavaMailSender mailSender;
+    private final EmailLogRepository emailLogRepository;
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, EmailLogRepository emailLogRepository) {
         this.mailSender = mailSender;
+        this.emailLogRepository = emailLogRepository;
     }
 
-    @Value("${app.mail.from}")
+    @Value("${app.mail.from:noreply@ettee.com}")
     private String fromEmail;
 
     private void sendOrLog(String toEmail, String subject, String html, String code, String flow) {
+        EmailLog logEntry = new EmailLog();
+        logEntry.setRecipient(toEmail);
+        logEntry.setSubject(subject);
+        logEntry.setCreatedAt(LocalDateTime.now());
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -40,11 +51,21 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(message);
+
+            logEntry.setStatus("SENT");
+            emailLogRepository.save(logEntry);
         } catch (MessagingException | MailException e) {
-            // Log the OTP at INFO level so the developer can complete the flow manually
-            // when SMTP is unavailable. The code is also persisted in DB.
             log.warn("[{}] Email send failed for {} ({}): {}. OTP={}",
                     flow, toEmail, e.getClass().getSimpleName(), e.getMessage(), code);
+
+            logEntry.setStatus("FAILED");
+            logEntry.setErrorMessage(e.getMessage());
+            try {
+                emailLogRepository.save(logEntry);
+            } catch (Exception ex) {
+                log.error("Failed to save email log to DB", ex);
+            }
+
             if (!failSoft) {
                 throw new RuntimeException("Không thể gửi email. Vui lòng thử lại sau.");
             }

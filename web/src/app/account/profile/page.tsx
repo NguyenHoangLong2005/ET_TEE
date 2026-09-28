@@ -13,41 +13,41 @@ function ProfileSkeleton() {
   return (
     <div className="space-y-8 max-w-3xl animate-pulse">
       <div className="flex items-center gap-6 mb-8">
-        <div className="w-20 h-20 bg-gray-200 rounded-full"></div>
+        <div className="w-20 h-20 bg-slate-200 rounded-full"></div>
         <div className="space-y-3">
-          <div className="h-6 w-48 bg-gray-200 rounded"></div>
-          <div className="h-4 w-32 bg-gray-100 rounded"></div>
+          <div className="h-6 w-48 bg-slate-200 rounded"></div>
+          <div className="h-4 w-32 bg-slate-100 rounded"></div>
         </div>
       </div>
       
       <div className="space-y-6">
-        <div className="h-6 w-32 bg-gray-200 rounded mb-4"></div>
+        <div className="h-6 w-32 bg-slate-200 rounded mb-4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="space-y-2">
-              <div className="h-4 w-24 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-100 rounded-lg"></div>
+              <div className="h-4 w-24 bg-slate-200 rounded"></div>
+              <div className="h-12 bg-slate-100 rounded-xl"></div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="space-y-6 pt-6 border-t border-gray-100">
-        <div className="h-6 w-32 bg-gray-200 rounded mb-4"></div>
+      <div className="space-y-6 pt-6 border-t border-slate-100">
+        <div className="h-6 w-32 bg-slate-200 rounded mb-4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(2)].map((_, i) => (
             <div key={`c-${i}`} className="space-y-2">
-              <div className="h-4 w-24 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-100 rounded-lg"></div>
+              <div className="h-4 w-24 bg-slate-200 rounded"></div>
+              <div className="h-12 bg-slate-100 rounded-xl"></div>
             </div>
           ))}
           <div className="space-y-2 md:col-span-2">
-            <div className="h-4 w-32 bg-gray-200 rounded"></div>
-            <div className="h-24 bg-gray-100 rounded-lg"></div>
+            <div className="h-4 w-32 bg-slate-200 rounded"></div>
+            <div className="h-24 bg-slate-100 rounded-xl"></div>
           </div>
         </div>
       </div>
-      <div className="h-12 w-40 bg-gray-200 rounded-lg"></div>
+      <div className="h-12 w-40 bg-slate-200 rounded-full"></div>
     </div>
   );
 }
@@ -106,7 +106,6 @@ export default function ProfilePage() {
     const { name, value } = e.target;
     
     if (name === 'phone') {
-      // Basic VN phone validation: 10 digits starting with 0
       const phoneRegex = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
       if (value && !phoneRegex.test(value)) {
         setPhoneError('Số điện thoại không hợp lệ (vd: 0912345678)');
@@ -151,7 +150,6 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       const headers = getAuthHeaders();
-      // Keep avatarUrl in payload if it was there before, or just send what we have
       const payload = { ...formData };
       
       const res = await fetch(`${getApiBase()}/api/account/profile`, {
@@ -170,8 +168,6 @@ export default function ProfilePage() {
 
       toast.success('Đã cập nhật hồ sơ thành công!');
       setOriginalData(formData);
-      
-      // Optionally trigger a context refresh here if needed to update the sidebar name immediately
     } catch (err: any) {
       toast.error(err.message || 'Đã xảy ra lỗi khi cập nhật hồ sơ.');
     } finally {
@@ -185,7 +181,9 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div>
-        <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
+        <h2 className="text-2xl font-black uppercase text-slate-900 tracking-tight mb-6 pb-4 border-b border-slate-100">
+          Hồ sơ cá nhân
+        </h2>
         <ProfileSkeleton />
       </div>
     );
@@ -194,13 +192,15 @@ export default function ProfilePage() {
   if (error) {
     return (
       <div>
-        <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center space-y-4 max-w-3xl">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <p className="text-red-600 font-medium">{error}</p>
+        <h2 className="text-2xl font-black uppercase text-slate-900 tracking-tight mb-6 pb-4 border-b border-slate-100">
+          Hồ sơ cá nhân
+        </h2>
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center space-y-4 max-w-3xl">
+          <AlertCircle className="w-12 h-12 text-primary mx-auto" />
+          <p className="text-primary font-bold text-sm">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+            className="px-6 py-2.5 bg-primary text-white font-bold rounded-full text-xs uppercase tracking-wider hover:bg-primary/90 transition-colors shadow-md"
           >
             Thử lại
           </button>
@@ -211,13 +211,15 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
+      <h2 className="text-2xl font-black uppercase text-slate-900 tracking-tight mb-6 pb-4 border-b border-slate-100">
+        Hồ sơ cá nhân
+      </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
+      <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl text-slate-900">
         
         {/* Avatar Display */}
         <div className="flex items-center gap-6 mb-8">
-          <div className="w-20 h-20 flex-shrink-0 rounded-full bg-black text-white flex items-center justify-center font-bold text-2xl uppercase overflow-hidden border border-gray-100 shadow-sm">
+          <div className="w-20 h-20 flex-shrink-0 rounded-full bg-primary text-white flex items-center justify-center font-black text-2xl uppercase overflow-hidden border border-slate-200/80 shadow-md">
             {(user as any)?.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img 
@@ -233,34 +235,34 @@ export default function ProfilePage() {
             )}
           </div>
           <div>
-            <h3 className="font-bold text-xl text-gray-900">{user?.fullName}</h3>
-            <p className="text-gray-500">{user?.email}</p>
+            <h3 className="font-bold text-xl text-slate-900">{user?.fullName}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{user?.email}</p>
           </div>
         </div>
 
         {/* Section 1: Thông tin cá nhân */}
         <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-900">Thông tin cá nhân</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">Thông tin cá nhân</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-600">Họ và tên <span className="text-red-500">*</span></label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Họ và tên <span className="text-primary">*</span></label>
               <input
                 type="text"
                 name="fullName"
                 required
                 value={formData.fullName}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                className="w-full p-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-900 text-sm bg-white"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-600">Giới tính</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Giới tính</label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
+                className="w-full p-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-900 text-sm bg-white"
               >
                 <option value="">Chưa xác định</option>
                 <option value="MALE">Nam</option>
@@ -269,60 +271,60 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-600">Ngày sinh</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Ngày sinh</label>
               <input
                 type="date"
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                className="w-full p-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-900 text-sm bg-white"
               />
             </div>
           </div>
         </div>
 
         {/* Section 2: Thông tin liên hệ */}
-        <div className="pt-6 border-t border-gray-100">
-          <h3 className="text-lg font-bold mb-4 text-gray-900">Thông tin liên hệ</h3>
+        <div className="pt-6 border-t border-slate-100">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">Thông tin liên hệ</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="flex items-center justify-between text-sm font-semibold text-gray-600">
+            <div className="space-y-1.5">
+              <label className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700">
                 Email
-                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Không thể sửa</span>
+                <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Không thể sửa</span>
               </label>
               <input
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="w-full p-3 border border-gray-200 bg-gray-50 text-gray-500 rounded-lg cursor-not-allowed"
+                className="w-full p-3.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-xl cursor-not-allowed text-sm"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-600">Số điện thoại</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Số điện thoại</label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="0912 345 678"
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 ${
-                  phoneError ? 'border-red-500' : 'border-gray-300'
+                className={`w-full p-3.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-900 text-sm ${
+                  phoneError ? 'border-primary' : 'border-slate-300'
                 }`}
               />
-              {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
+              {phoneError && <p className="text-xs text-primary font-medium mt-1">{phoneError}</p>}
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-600">Địa chỉ giao hàng mặc định</label>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Địa chỉ giao hàng mặc định</label>
               <textarea
                 name="defaultShippingAddress"
                 rows={3}
                 value={formData.defaultShippingAddress}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 resize-none"
+                className="w-full p-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-900 text-sm resize-none"
                 placeholder="Ví dụ: 123 Nguyễn Trãi, Quận 1, TP.HCM"
               ></textarea>
             </div>
@@ -334,23 +336,23 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSaving || !isEditing || !!phoneError}
-            className="flex items-center justify-center gap-2 px-8 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-white font-black rounded-full uppercase text-xs tracking-wider hover:bg-primary/90 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md hover:scale-105 active:scale-95 cursor-pointer"
           >
             {isSaving ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <Save className="w-5 h-5" />
+              <Save className="w-4 h-4" />
             )}
-            LƯU THAY ĐỔI
+            <span>Lưu thay đổi</span>
           </button>
 
           {isEditing && (
             <button
               type="button"
               onClick={handleCancel}
-              className="px-8 py-3 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-8 py-3.5 border border-slate-300 text-slate-700 font-bold rounded-full uppercase text-xs tracking-wider hover:bg-slate-50 transition-all cursor-pointer"
             >
-              HỦY
+              Hủy
             </button>
           )}
         </div>

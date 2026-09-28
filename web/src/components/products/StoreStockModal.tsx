@@ -91,33 +91,33 @@ export default function StoreStockModal({
       />
 
       {/* Main Box */}
-      <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[85vh] border border-gray-100 my-auto">
+      <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[85vh] border border-slate-100 my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-20">
           <div>
             <h2 className="text-base sm:text-lg font-black uppercase text-slate-900">Xem Cửa Hàng Còn Hàng</h2>
-            <p className="text-xs text-gray-500 font-medium">
+            <p className="text-xs text-slate-500 font-medium">
               Sản phẩm: <span className="text-slate-900 font-bold">{productName}</span> 
               {selectedSize && <span> • Size: <strong>{selectedSize}</strong></span>}
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-slate-900 hover:text-white text-slate-500 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-500 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Filter Row: Select Province & Search */}
-        <div className="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row gap-3">
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-3">
           <div className="w-full sm:w-1/2">
-            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Chọn Tỉnh / Thành phố</label>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Chọn Tỉnh / Thành phố</label>
             <select
               value={selectedProvince}
               onChange={(e) => setSelectedProvince(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-amber-500"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-amber-500"
             >
               {PROVINCES.map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -126,15 +126,15 @@ export default function StoreStockModal({
           </div>
 
           <div className="w-full sm:w-1/2">
-            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm theo tên/địa chỉ</label>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm theo tên/địa chỉ</label>
             <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Nhập tên quận/huyện..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-xl text-xs text-slate-900 outline-none focus:border-amber-500"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 outline-none focus:border-amber-500"
               />
             </div>
           </div>
@@ -143,12 +143,12 @@ export default function StoreStockModal({
         {/* Stores List */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {filteredStores.length === 0 ? (
-            <div className="py-12 text-center text-gray-500 text-xs">
+            <div className="py-12 text-center text-slate-500 text-xs">
               Không tìm thấy cửa hàng ET.TEE nào có sẵn sản phẩm tại khu vực này.
             </div>
           ) : (
             filteredStores.map((store, idx) => (
-              <div key={idx} className="p-4 rounded-2xl border border-gray-200 hover:border-amber-400 transition-colors bg-white shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div key={idx} className="p-4 rounded-2xl border border-slate-200 hover:border-amber-400 transition-colors bg-white shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-slate-900 text-sm">{store.name}</h3>
@@ -163,20 +163,20 @@ export default function StoreStockModal({
                     )}
                   </div>
 
-                  <p className="text-xs text-gray-600 flex items-start gap-1.5 leading-relaxed">
+                  <p className="text-xs text-slate-600 flex items-start gap-1.5 leading-relaxed">
                     <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                     <span>{store.address}</span>
                   </p>
 
-                  <div className="flex items-center gap-4 text-[11px] text-gray-500 pt-1">
-                    <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-gray-400" /> {store.phone}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-gray-400" /> {store.hours}</span>
+                  <div className="flex items-center gap-4 text-[11px] text-slate-500 pt-1">
+                    <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> {store.phone}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-slate-400" /> {store.hours}</span>
                   </div>
 
                   <div className="pt-2 flex items-center gap-1 text-[11px]">
-                    <span className="text-gray-400">Các size còn:</span>
+                    <span className="text-slate-400">Các size còn:</span>
                     {store.sizesAvailable.map(sz => (
-                      <span key={sz} className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${sz === selectedSize ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                      <span key={sz} className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${sz === selectedSize ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}>
                         {sz}
                       </span>
                     ))}
@@ -194,7 +194,7 @@ export default function StoreStockModal({
                     href={`https://maps.google.com/?q=${encodeURIComponent(store.address)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 sm:flex-initial px-4 py-2 border border-gray-300 hover:border-slate-900 text-slate-800 font-bold text-xs rounded-xl text-center transition-colors"
+                    className="flex-1 sm:flex-initial px-4 py-2 border border-slate-300 hover:border-slate-900 text-slate-800 font-bold text-xs rounded-xl text-center transition-colors"
                   >
                     Chỉ Đường
                   </a>
@@ -205,7 +205,7 @@ export default function StoreStockModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 text-xs text-gray-500 text-center font-medium">
+        <div className="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 text-center font-medium">
           Hotline hỗ trợ giữ hàng tại showroom: <strong>1900 1234</strong> (8:00 - 22:00)
         </div>
 
@@ -215,3 +215,4 @@ export default function StoreStockModal({
 
   return createPortal(modalContent, document.body);
 }
+

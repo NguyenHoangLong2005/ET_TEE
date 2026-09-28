@@ -12,6 +12,7 @@ public class Shipment {
     @Column(name = "shipment_id")
     private Long id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"items", "user"})
     @OneToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;

@@ -43,7 +43,7 @@ export default function PolicyOverviewPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Chính sách chung</span>
@@ -85,12 +85,12 @@ export default function PolicyOverviewPage() {
                     {p.title}
                   </h3>
 
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-slate-500 leading-relaxed">
                     {p.desc}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                <div className="pt-4 border-t border-slate-100 flex items-center gap-1.5 text-xs font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
                   <span>Xem chi tiết điều khoản</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -103,3 +103,4 @@ export default function PolicyOverviewPage() {
     </main>
   );
 }
+

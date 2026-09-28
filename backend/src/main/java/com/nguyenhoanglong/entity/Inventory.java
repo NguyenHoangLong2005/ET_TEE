@@ -25,8 +25,14 @@ public class Inventory {
     @Column(name = "quantity_reserved", nullable = false)
     private Integer quantityReserved = 0;
 
+    @Column(name = "shop_id")
+    private Long shopId;
+
     @Column(name = "reorder_level", nullable = false)
     private Integer reorderLevel = 10;
+
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

@@ -35,9 +35,10 @@ export default function ProductInfo({ product }: { product: Product }) {
   const [selectedColor, setSelectedColor] = useState<string>(initialColor);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const { user } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, closeDrawer } = useCart();
   const pathname = usePathname();
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
@@ -48,7 +49,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   );
   const variantStock = selectedVariant ? Math.max(selectedVariant.stock ?? 0, selectedVariant.availableQuantity ?? 0) : 0;
   const stock = variantStock;
-  const isOutOfStock = selectedColor && selectedSize && stock === 0;
+  const isOutOfStock = Boolean(selectedColor && selectedSize && stock === 0);
 
   const colorHasStock = (hex: string): boolean => {
     for (const size of availableSizes) {
@@ -60,34 +61,44 @@ export default function ProductInfo({ product }: { product: Product }) {
     return (stockMap.get(`${colorHex}__${size}`) ?? 0) > 0;
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (): Promise<boolean> => {
+    if (isSubmitting) return false;
     if (!selectedColor && availableColors.length > 0) {
       toast.error('Vui lòng chọn màu sắc.');
-      return;
+      return false;
     }
     if (!selectedSize && availableSizes.length > 0) {
       toast.error('Vui lòng chọn kích cỡ.');
-      return;
+      return false;
     }
     if (isOutOfStock) {
       toast.error('Sản phẩm tạm hết hàng cho phân loại này.');
-      return;
+      return false;
     }
     if (!selectedVariant && product.variants && product.variants.length > 0) {
       toast.error('Phân loại không hợp lệ.');
-      return;
+      return false;
     }
 
     const targetVariantId = selectedVariant ? selectedVariant.id : product.variants?.[0]?.id;
     if (!targetVariantId) {
       toast.error('Không tìm thấy biến thể phù hợp');
-      return;
+      return false;
     }
 
+    const safeQuantity = stock > 0 ? Math.min(quantity, stock) : quantity;
+    if (safeQuantity !== quantity) {
+      setQuantity(safeQuantity);
+    }
+
+    setIsSubmitting(true);
     try {
-      await addToCart(targetVariantId as number, quantity);
-    } catch (err: any) {
-      toast.error(err.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+      await addToCart(targetVariantId as number, safeQuantity);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -102,16 +113,16 @@ export default function ProductInfo({ product }: { product: Product }) {
         {/* Category & Badges */}
         <div className="flex items-center gap-2 mb-2">
           {product.isNew && (
-            <span className="bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
+            <span className="bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
               MỚI
             </span>
           )}
           {discountPercent > 0 && (
-            <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider flex items-center gap-1">
+            <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
               -{discountPercent}%
             </span>
           )}
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-auto">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-auto">
             {product.category?.name || 'THỜI TRANG'}
           </span>
         </div>
@@ -122,34 +133,34 @@ export default function ProductInfo({ product }: { product: Product }) {
         </h1>
 
         {/* Rating & Social Proof summary */}
-        <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200 text-xs">
-          <div className="flex items-center text-black">
+        <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100 text-xs">
+          <div className="flex items-center text-amber-500">
             {'★'.repeat(Math.round(product.averageRating || 0))}
-            {'☆'.repeat(5 - Math.round(product.averageRating || 0))}
+            <span className="text-slate-200">{'★'.repeat(5 - Math.round(product.averageRating || 0))}</span>
           </div>
-          <span className="font-bold text-black">{product.averageRating?.toFixed(1) || '0.0'}/5</span>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-500">{product.totalReviews || 0} đánh giá</span>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-500">Đã bán {product.soldCount || 0}</span>
+          <span className="font-bold text-slate-900">{product.averageRating?.toFixed(1) || '0.0'}/5</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-500">{product.totalReviews || 0} đánh giá</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-500">Đã bán {product.soldCount || 0}</span>
         </div>
 
         {/* Price display */}
         <div className="mb-6 flex items-baseline gap-3">
-          <span className={`text-2xl md:text-3xl font-bold tracking-tight ${discountPercent > 0 ? 'text-red-600' : 'text-black'}`}>
-            {(Math.round(currentPrice / 1000) * 1000).toLocaleString('vi-VN')}₫
+          <span className={`text-2xl md:text-3xl font-black tracking-tight ${discountPercent > 0 ? 'text-primary' : 'text-slate-900'}`}>
+            {currentPrice.toLocaleString('vi-VN')}₫
           </span>
           {originalPrice && (
-            <span className="text-base text-gray-400 line-through">
-              {(Math.round(originalPrice / 1000) * 1000).toLocaleString('vi-VN')}₫
+            <span className="text-base text-slate-400 line-through font-medium">
+              {originalPrice.toLocaleString('vi-VN')}₫
             </span>
           )}
         </div>
 
         {/* Free Shipping Alert Banner */}
-        <div className="border border-gray-200 bg-gray-50 p-3 mb-6 flex items-center gap-2.5 text-xs text-black">
-          <Truck className="w-4 h-4 shrink-0" />
-          <span>Freeship toàn quốc cho đơn hàng từ <strong>499.000đ</strong></span>
+        <div className="border border-slate-200 bg-slate-50/70 rounded-2xl p-3.5 mb-6 flex items-center gap-2.5 text-xs text-slate-800">
+          <Truck className="w-4 h-4 shrink-0 text-primary" />
+          <span>Freeship toàn quốc cho đơn hàng từ <strong className="font-black text-slate-900">499.000₫</strong></span>
         </div>
 
         {/* Color Picker */}
@@ -166,6 +177,7 @@ export default function ProductInfo({ product }: { product: Product }) {
                 return (
                   <button
                     key={idx}
+                    type="button"
                     disabled={!hasStock}
                     title={hasStock ? color.name : `${color.name} - Hết hàng`}
                     onClick={() => {
@@ -180,16 +192,16 @@ export default function ProductInfo({ product }: { product: Product }) {
                         router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
                       }
                     }}
-                    className={`w-8 h-8 rounded-full border p-0.5 transition-all ${
+                    className={`w-9 h-9 rounded-full border-2 p-0.5 transition-all ${
                       selectedColor === color.hex
-                        ? 'border-black'
+                        ? 'border-slate-900 scale-105 shadow-sm'
                         : hasStock
-                          ? 'border-transparent hover:border-gray-300'
+                          ? 'border-transparent hover:border-slate-300'
                           : 'border-transparent opacity-40 cursor-not-allowed'
                     }`}
                   >
                     <span
-                      className="w-full h-full block rounded-full border border-slate-100 shadow-inner"
+                      className="w-full h-full block rounded-full border border-slate-200 shadow-inner"
                       style={{ backgroundColor: color.hex }}
                     />
                   </button>
@@ -207,7 +219,8 @@ export default function ProductInfo({ product }: { product: Product }) {
                 Kích cỡ {selectedSize && <span className="text-slate-500 font-semibold">: {selectedSize}</span>}
               </span>
               <button 
-                className="text-xs font-bold text-slate-500 hover:text-red-600 underline"
+                type="button"
+                className="text-xs font-bold text-slate-500 hover:text-primary underline transition-colors"
                 onClick={() => setShowSizeGuide(true)}
               >
                 Hướng dẫn chọn size
@@ -219,18 +232,23 @@ export default function ProductInfo({ product }: { product: Product }) {
                 return (
                   <button
                     key={size}
+                    type="button"
                     disabled={!hasStock}
                     onClick={() => {
                       if (!hasStock) return;
                       setSelectedSize(size);
                       setError('');
+                      const nextStock = stockMap.get(`${selectedColor}__${size}`) ?? 0;
+                      if (nextStock > 0 && quantity > nextStock) {
+                        setQuantity(nextStock);
+                      }
                     }}
-                    className={`min-w-[3.5rem] h-10 px-4 border text-xs uppercase tracking-wider transition-all duration-200 ${
+                    className={`min-w-[3.5rem] h-10 px-4 border rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                       selectedSize === size
-                        ? 'border-black bg-black text-white font-bold'
+                        ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
                         : !hasStock 
-                          ? 'border-gray-200 text-gray-300 bg-gray-50 cursor-not-allowed opacity-50' 
-                          : 'border-gray-300 text-black hover:border-black bg-white'
+                          ? 'border-slate-200 text-slate-300 bg-slate-50 cursor-not-allowed opacity-50' 
+                          : 'border-slate-200 text-slate-800 hover:border-slate-900 bg-white'
                     }`}
                   >
                     {size}
@@ -245,9 +263,9 @@ export default function ProductInfo({ product }: { product: Product }) {
         {selectedColor && selectedSize && (
           <div className="mb-5 text-xs font-semibold">
             {isOutOfStock ? (
-              <span className="text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full">Hết hàng phân loại này</span>
+              <span className="text-primary font-bold bg-red-50 px-3 py-1 rounded-full">Hết hàng phân loại này</span>
             ) : (
-              <span className="text-emerald-600 font-bold bg-emerald-50 px-3 py-1 rounded-full">Còn {stock} sản phẩm sẵn có</span>
+              <span className="text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full">Còn {stock} sản phẩm sẵn có</span>
             )}
           </div>
         )}
@@ -256,63 +274,75 @@ export default function ProductInfo({ product }: { product: Product }) {
         <div className="flex flex-col gap-3 mb-8">
           <div className="flex gap-3">
             {/* Quantity Controls */}
-            <div className="flex items-center border border-gray-300 h-12">
+            <div className="flex items-center border border-slate-200 rounded-xl h-12 bg-slate-50/50">
               <button 
-                className="w-10 h-full flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                type="button"
+                disabled={quantity <= 1}
+                aria-label="Giảm số lượng"
+                className="w-10 h-full flex items-center justify-center text-lg text-slate-600 hover:bg-slate-200/60 rounded-l-xl transition-colors disabled:opacity-30"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
               >-</button>
-              <span className="w-12 text-center text-sm font-bold text-black">{quantity}</span>
+              <span className="w-12 text-center text-sm font-black text-slate-900">{quantity}</span>
               <button 
-                className="w-10 h-full flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                type="button"
+                disabled={stock > 0 ? quantity >= stock : quantity >= 10}
+                aria-label="Tăng số lượng"
+                className="w-10 h-full flex items-center justify-center text-lg text-slate-600 hover:bg-slate-200/60 rounded-r-xl transition-colors disabled:opacity-30"
                 onClick={() => setQuantity(Math.min(stock || 10, quantity + 1))}
               >+</button>
             </div>
 
             {/* Add to Cart Button */}
             <button 
+              type="button"
+              disabled={isSubmitting || isOutOfStock}
               onClick={handleAddToCart}
-              className="flex-1 bg-white border border-black hover:bg-gray-50 text-black font-bold uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-2 h-12"
+              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full font-black uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-2 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>Thêm vào giỏ</span>
+              <span>{isSubmitting ? 'Đang thêm...' : 'Thêm vào giỏ'}</span>
             </button>
           </div>
 
           {/* Quick Buy Button */}
           <button 
-            onClick={() => {
-              handleAddToCart().then(() => {
-                window.location.href = '/cart';
-              });
+            type="button"
+            disabled={isSubmitting || isOutOfStock}
+            onClick={async () => {
+              const success = await handleAddToCart();
+              if (success) {
+                closeDrawer();
+                router.push('/checkout');
+              }
             }}
-            className="w-full bg-black hover:bg-gray-900 text-white font-bold uppercase text-xs tracking-widest transition-all duration-300 h-12"
+            className="w-full bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase text-xs tracking-widest transition-all duration-300 h-12 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Mua ngay
           </button>
         </div>
 
         {/* Value Proposition Guarantees */}
-        <div className="grid grid-cols-3 gap-2 pt-6 border-t border-gray-200 text-center">
+        <div className="grid grid-cols-3 gap-2 pt-6 border-t border-slate-100 text-center">
           <div className="flex flex-col items-center p-2">
-            <Truck className="w-5 h-5 text-black mb-2 stroke-1" />
-            <span className="text-[10px] font-bold text-black uppercase tracking-wider">Freeship từ 499k</span>
+            <Truck className="w-5 h-5 text-slate-800 mb-2 stroke-1" />
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Freeship từ 499k</span>
           </div>
-          <div className="flex flex-col items-center p-2 border-x border-gray-200">
-            <RefreshCcw className="w-5 h-5 text-black mb-2 stroke-1" />
-            <span className="text-[10px] font-bold text-black uppercase tracking-wider">Đổi trả 30 ngày</span>
+          <div className="flex flex-col items-center p-2 border-x border-slate-100">
+            <RefreshCcw className="w-5 h-5 text-slate-800 mb-2 stroke-1" />
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Đổi trả 30 ngày</span>
           </div>
           <div className="flex flex-col items-center p-2">
-            <ShieldCheck className="w-5 h-5 text-black mb-2 stroke-1" />
-            <span className="text-[10px] font-bold text-black uppercase tracking-wider">100% Chính hãng</span>
+            <ShieldCheck className="w-5 h-5 text-slate-800 mb-2 stroke-1" />
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">100% Chính hãng</span>
           </div>
         </div>
 
         {/* Store locator check button */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="mt-4 pt-3 border-t border-slate-100">
           <button 
             type="button"
             onClick={() => setShowStoreModal(true)}
-            className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <MapPin className="w-4 h-4 text-amber-500" />
             <span>Xem cửa hàng còn sản phẩm gần bạn</span>

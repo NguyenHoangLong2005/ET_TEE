@@ -1,0 +1,1 @@
+SELECT role_code, COUNT(*) FROM role_permissions GROUP BY role_code;

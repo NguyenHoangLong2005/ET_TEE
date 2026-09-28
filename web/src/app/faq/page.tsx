@@ -60,7 +60,7 @@ export default function FAQPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Câu hỏi thường gặp (FAQ)</span>
@@ -85,13 +85,13 @@ export default function FAQPage() {
         {/* Search Bar */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-8 space-y-4">
           <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Nhập từ khóa câu hỏi cần tìm (ví dụ: đổi trả, phí ship, chọn size...)"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900"
             />
           </div>
 
@@ -100,7 +100,7 @@ export default function FAQPage() {
             <button
               onClick={() => setActiveCat('all')}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                activeCat === 'all' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                activeCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               Tất cả chủ đề
@@ -110,7 +110,7 @@ export default function FAQPage() {
                 key={cat.cat}
                 onClick={() => setActiveCat(cat.cat)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  activeCat === cat.cat ? 'bg-amber-500 text-slate-950' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  activeCat === cat.cat ? 'bg-amber-500 text-slate-950' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {cat.catName}
@@ -132,7 +132,7 @@ export default function FAQPage() {
 
             return (
               <div key={section.cat} className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                   <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
                     <Icon className="w-4 h-4" />
                   </div>
@@ -154,7 +154,7 @@ export default function FAQPage() {
                             <span className="text-amber-600">Q.</span>
                             {item.q}
                           </span>
-                          {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />}
+                          {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
                         </button>
 
                         {isOpen && (
@@ -175,3 +175,4 @@ export default function FAQPage() {
     </main>
   );
 }
+

@@ -214,7 +214,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
   return (
     <>
       {/* Mobile Filter Toggle */}
-      <div className="lg:hidden w-full flex items-center justify-between mb-4 border-b border-gray-200 pb-4">
+      <div className="lg:hidden w-full flex items-center justify-between mb-4 border-b border-slate-200 pb-4">
         <button 
           onClick={() => setExpanded(prev => ({ ...prev, mobileOpen: !prev.mobileOpen }))}
           className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-slate-900 text-sm font-bold uppercase tracking-widest text-slate-900 hover:bg-slate-50 transition-colors"
@@ -228,11 +228,11 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         
         {/* Reset All Filters Button */}
         {hasActiveSidebarFilters && (
-          <div className="pb-3 border-b border-gray-200 flex justify-between items-center">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bộ lọc đang chọn</span>
+          <div className="pb-3 border-b border-slate-200 flex justify-between items-center">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Bộ lọc đang chọn</span>
             <button
               onClick={resetAllSidebarFilters}
-              className="text-xs text-[#e50027] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              className="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Xóa bộ lọc</span>
@@ -242,7 +242,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
 
         {/* 1. Danh mục (Checkbox multi-select) */}
         {targetGroups.length > 0 && (
-          <div className="border-b border-gray-200 py-4">
+          <div className="border-b border-slate-200 py-4">
             <button 
               onClick={() => toggleSection('targetGroup')}
               className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
@@ -260,10 +260,10 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                         type="checkbox" 
                         checked={isChecked}
                         onChange={() => toggleMultiFilter('targetGroup', item.id)}
-                        className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                        className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
                       />
-                      <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
-                        {item.label} <span className="text-gray-400 font-normal">({item.count})</span>
+                      <span className={`text-[14px] group-hover:text-primary transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                        {item.label} <span className="text-slate-400 font-normal">({item.count})</span>
                       </span>
                     </label>
                   );
@@ -274,7 +274,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         )}
 
         {/* 2. Loại sản phẩm (Checkbox multi-select) */}
-        <div className="border-b border-gray-200 py-4">
+        <div className="border-b border-slate-200 py-4">
           <button 
             onClick={() => toggleSection('productType')}
             className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
@@ -292,10 +292,10 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                       type="checkbox" 
                       checked={isChecked}
                       onChange={() => toggleMultiFilter('productType', key)}
-                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
                     />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
-                      {getProductTypeLabel(key)} <span className="text-gray-400 font-normal">({count})</span>
+                    <span className={`text-[14px] group-hover:text-primary transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                      {getProductTypeLabel(key)} <span className="text-slate-400 font-normal">({count})</span>
                     </span>
                   </label>
                 );
@@ -305,7 +305,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         </div>
 
         {/* 3. Kích cỡ (Multi-select toggles) */}
-        <div className="border-b border-gray-200 py-4">
+        <div className="border-b border-slate-200 py-4">
           <button 
             onClick={() => toggleSection('size')}
             className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
@@ -318,7 +318,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
               {/* Adult sizes */}
               {stats.sizes.adult && stats.sizes.adult.length > 0 && (
                 <div>
-                  <span className="text-[12px] text-gray-500 uppercase font-bold block mb-2">Người lớn</span>
+                  <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">Người lớn</span>
                   <div className="grid grid-cols-3 gap-2">
                     {stats.sizes.adult.map(size => {
                       const isChecked = currentAdultSizeSet.has(size);
@@ -330,7 +330,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                           className={`min-h-[38px] border rounded text-[13px] font-bold transition-all ${
                             isChecked 
                               ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                              : 'border-gray-200 text-gray-700 hover:border-slate-900 bg-white'
+                              : 'border-slate-200 text-slate-700 hover:border-slate-900 bg-white'
                           }`}
                         >
                           {size}
@@ -344,7 +344,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
               {/* Kids sizes */}
               {stats.sizes.kids && stats.sizes.kids.length > 0 && (
                 <div>
-                  <span className="text-[12px] text-gray-500 uppercase font-bold block mb-2">Trẻ em</span>
+                  <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">Trẻ em</span>
                   <div className="grid grid-cols-4 gap-[6px]">
                     {stats.sizes.kids
                       .filter(size => /^\d+$/.test(size))
@@ -358,7 +358,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                             className={`min-h-[34px] border rounded text-[12px] font-bold transition-all ${
                               isChecked 
                                 ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                                : 'border-gray-200 text-gray-700 hover:border-slate-900 bg-white'
+                                : 'border-slate-200 text-slate-700 hover:border-slate-900 bg-white'
                             }`}
                           >
                             {size}
@@ -373,7 +373,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         </div>
 
         {/* 4. Khoảng giá */}
-        <div className="border-b border-gray-200 py-4">
+        <div className="border-b border-slate-200 py-4">
           <button 
             onClick={() => toggleSection('price')}
             className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
@@ -404,9 +404,9 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                           router.push(`/products?${params.toString()}`);
                         });
                       }}
-                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
                     />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${currentPriceIdx === idx ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                    <span className={`text-[14px] group-hover:text-primary transition-colors ${currentPriceIdx === idx ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
                       {range.label}
                     </span>
                   </label>
@@ -414,26 +414,26 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
               </div>
 
               {/* Custom price */}
-              <div className="pt-3 border-t border-gray-100">
-                <span className="text-[12px] text-gray-500 uppercase font-bold block mb-2">Tự nhập khoảng giá</span>
+              <div className="pt-3 border-t border-slate-100">
+                <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">Tự nhập khoảng giá</span>
                 <div className="flex items-center gap-2 mb-2">
                   <input 
                     type="number" 
                     placeholder="Từ (đ)" 
                     value={minPriceInput}
                     onChange={(e) => setMinPriceInput(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
+                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
                   />
-                  <span className="text-gray-400">-</span>
+                  <span className="text-slate-400">-</span>
                   <input 
                     type="number" 
                     placeholder="Đến (đ)" 
                     value={maxPriceInput}
                     onChange={(e) => setMaxPriceInput(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
+                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-900"
                   />
                 </div>
-                {priceError && <p className="text-[#e50027] text-[11px] mb-2 font-medium">{priceError}</p>}
+                {priceError && <p className="text-primary text-[11px] mb-2 font-medium">{priceError}</p>}
                 
                 <div className="flex gap-2">
                   <button 
@@ -446,7 +446,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                   <button 
                     type="button"
                     onClick={clearCustomPrice}
-                    className="flex-1 bg-gray-100 text-slate-900 text-[12px] font-bold py-1.5 rounded hover:bg-gray-200 transition-colors"
+                    className="flex-1 bg-slate-100 text-slate-900 text-[12px] font-bold py-1.5 rounded hover:bg-slate-200 transition-colors"
                   >
                     Xóa
                   </button>
@@ -457,7 +457,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
         </div>
 
         {/* 5. Trạng thái sản phẩm (Checkbox multi-select) */}
-        <div className="border-b border-gray-200 py-4">
+        <div className="border-b border-slate-200 py-4">
           <button 
             onClick={() => toggleSection('status')}
             className="flex items-center justify-between w-full font-bold text-[14px] tracking-wide mb-2"
@@ -479,9 +479,9 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                       type="checkbox" 
                       checked={isChecked}
                       onChange={() => toggleMultiFilter('status', item.id)}
-                      className="w-4 h-4 rounded border-gray-300 text-slate-900 accent-slate-900 cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
                     />
-                    <span className={`text-[14px] group-hover:text-[#e50027] transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                    <span className={`text-[14px] group-hover:text-primary transition-colors ${isChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
                       {item.label}
                     </span>
                   </label>
@@ -495,3 +495,4 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     </>
   );
 }
+

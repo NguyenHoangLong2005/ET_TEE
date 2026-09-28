@@ -94,16 +94,16 @@ export default function ProductCard({
   return (
     <div className="group flex flex-col w-full h-full bg-white transition-all duration-300">
       {/* Image container */}
-      <Link href={`/products/${id}`} className="relative aspect-[3/4] bg-slate-50 block">
+      <Link href={`/products/${id}`} className="relative aspect-[3/4] bg-slate-50/80 rounded-2xl overflow-hidden block">
         {/* Badges */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
+        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
           {isNew && (
-            <span className="bg-black text-white text-[10px] font-bold tracking-wider uppercase px-2 py-1">
+            <span className="bg-slate-900 text-white text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full shadow-2xs">
               MỚI
             </span>
           )}
           {isSale && (
-            <span className="bg-red-600 text-white text-[10px] font-bold tracking-wider uppercase px-2 py-1">
+            <span className="bg-primary text-white text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full shadow-2xs">
               -{discountPercent}%
             </span>
           )}
@@ -111,16 +111,17 @@ export default function ProductCard({
 
         {/* Favorite button */}
         <button 
+          type="button"
           onClick={handleWishlistToggle}
           disabled={isLoading}
-          className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-opacity duration-300 ${
+          className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xs ${
             inWishlist 
-              ? 'bg-white text-black opacity-100' 
-              : 'bg-white text-gray-400 hover:text-black opacity-0 group-hover:opacity-100'
+              ? 'bg-white text-primary opacity-100' 
+              : 'bg-white/90 text-slate-400 hover:text-primary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110'
           }`}
           aria-label="Yêu thích"
         >
-          <Heart className={`w-4 h-4 transition-transform duration-200 ${inWishlist ? 'fill-black stroke-none' : ''}`} />
+          <Heart className={`w-4 h-4 transition-transform duration-200 ${inWishlist ? 'fill-primary stroke-none' : ''}`} />
         </button>
 
         {/* Primary Image */}
@@ -132,7 +133,7 @@ export default function ProductCard({
             validHoverImage ? 'group-hover:opacity-0' : ''
           }`}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/images/men/tshirt/ao-phong-nam-cotton-usa-basic-co-tron-sw001.webp';
+            (e.target as HTMLImageElement).src = '/images/products/placeholder.webp';
           }}
         />
 
@@ -166,7 +167,7 @@ export default function ProductCard({
                   onMouseEnter={() => code && setHoverColorCode(code)}
                   onMouseLeave={() => setHoverColorCode(null)}
                   className={`w-3 h-3 rounded-full border transition-all cursor-pointer ${
-                    hoverColorCode === code ? 'border-black ring-1 ring-black ring-offset-1' : 'border-gray-300'
+                    hoverColorCode === code ? 'border-slate-900 ring-1 ring-slate-900 ring-offset-1' : 'border-slate-300'
                   }`}
                   style={{ backgroundColor: hex }}
                 />
@@ -188,20 +189,19 @@ export default function ProductCard({
         {/* Name */}
         <Link 
           href={`/products/${id}`} 
-          className="text-xs md:text-sm font-semibold text-slate-900 leading-snug hover:text-red-600 transition-colors line-clamp-2 mb-3"
+          className="text-xs md:text-sm font-semibold text-slate-900 leading-snug hover:text-primary transition-colors line-clamp-2 mb-2"
         >
           {name}
         </Link>
 
-
         {/* Price */}
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className={`text-sm md:text-base font-bold ${discountPercent > 0 ? 'text-red-600' : 'text-slate-900'}`}>
-            {(Math.round(price / 1000) * 1000).toLocaleString('vi-VN')}₫
+          <span className={`text-sm md:text-base font-black ${discountPercent > 0 ? 'text-primary' : 'text-slate-900'}`}>
+            {price.toLocaleString('vi-VN')}₫
           </span>
           {originalPrice && (
-            <span className="text-xs text-slate-400 line-through">
-              {(Math.round(originalPrice / 1000) * 1000).toLocaleString('vi-VN')}₫
+            <span className="text-xs text-slate-400 line-through font-medium">
+              {originalPrice.toLocaleString('vi-VN')}₫
             </span>
           )}
         </div>
@@ -209,4 +209,5 @@ export default function ProductCard({
     </div>
   );
 }
+
 

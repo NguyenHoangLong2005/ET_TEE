@@ -24,6 +24,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user: currentUser, logout } = useAuth();
@@ -31,18 +32,19 @@ export default function Header() {
   const { wishlistCount } = useWishlist();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (pathname?.startsWith('/staff') || pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/staff') || pathname?.startsWith('/admin') || pathname?.startsWith('/store-owner')) {
     return null;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.reload();
+    window.location.href = '/';
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -83,7 +85,7 @@ export default function Header() {
       {/* Minimalist Sticky Header */}
       <header className={`sticky top-0 z-40 w-full transition-all duration-300 bg-white border-b ${
         isScrolled 
-          ? 'border-gray-200 py-2 shadow-sm' 
+          ? 'border-slate-200 py-2 shadow-sm' 
           : 'border-transparent py-4'
       }`}>
         
@@ -106,6 +108,7 @@ export default function Header() {
                 src="/images/logo.jpg"
                 alt="ET.TEE"
                 fill
+                sizes="(max-width: 768px) 40px, 44px"
                 className="object-cover"
                 priority
               />
@@ -129,7 +132,7 @@ export default function Header() {
                 className={`px-4 py-2 text-[13px] font-semibold tracking-wide uppercase transition-colors duration-200 relative group ${
                   item.isSale 
                     ? 'text-red-600 hover:text-red-700' 
-                    : 'text-gray-600 hover:text-black'
+                    : 'text-slate-600 hover:text-black'
                 }`}
               >
                 {item.label}
@@ -161,6 +164,7 @@ export default function Header() {
                 onClick={() => setSearchOpen(true)}
                 className="p-2.5 text-slate-700 hover:text-red-600 hover:bg-slate-100 rounded-full transition-colors"
                 title="Tìm kiếm"
+                aria-label="Tìm kiếm sản phẩm"
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -171,6 +175,7 @@ export default function Header() {
               href="/wishlist" 
               className="p-2 text-slate-700 hover:text-black transition-colors relative hidden sm:flex"
               title="Sản phẩm yêu thích"
+              aria-label="Danh sách sản phẩm yêu thích"
             >
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (
@@ -181,7 +186,7 @@ export default function Header() {
             </Link>
 
             {/* Account Icon Dropdown */}
-            {currentUser ? (
+            {mounted && currentUser ? (
               <div className="relative group hidden sm:block">
                 <Link 
                   href="/account/profile" 
@@ -220,6 +225,7 @@ export default function Header() {
                 href="/auth/login" 
                 className="p-2.5 text-slate-700 hover:text-red-600 hover:bg-slate-100 rounded-full transition-colors hidden sm:flex"
                 title="Đăng nhập"
+                aria-label="Đăng nhập tài khoản"
               >
                 <User className="w-5 h-5" />
               </Link>
@@ -256,7 +262,7 @@ export default function Header() {
                 <Image src="/images/logo.jpg" alt="ET.TEE" width={36} height={36} className="h-9 w-9 rounded-full object-cover border border-slate-900" />
                 <span className="font-black text-xl tracking-tight text-slate-900">ET.TEE</span>
               </Link>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-900">
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-900" aria-label="Đóng menu">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -278,7 +284,7 @@ export default function Header() {
             </nav>
 
             <div className="border-t border-slate-100 p-5 space-y-3 bg-slate-50">
-              {currentUser ? (
+              {mounted && currentUser ? (
                 <>
                   <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
                     <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center">
@@ -329,4 +335,5 @@ export default function Header() {
     </>
   );
 }
+
 

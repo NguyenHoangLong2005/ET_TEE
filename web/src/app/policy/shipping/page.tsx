@@ -12,7 +12,7 @@ export default function ShippingPolicyPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-4xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <Link href="/policy" className="hover:underline">Chính sách</Link>
@@ -22,7 +22,7 @@ export default function ShippingPolicyPage() {
 
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
-          <div className="border-b border-gray-100 pb-6">
+          <div className="border-b border-slate-100 pb-6">
             <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               Delivery Policy
             </span>
@@ -44,7 +44,7 @@ export default function ShippingPolicyPage() {
                   <span>Đơn hàng từ 499.000đ trở lên:</span>
                   <span className="text-emerald-600 uppercase">MIỄN PHÍ VẬN CHUYỂN (Freeship)</span>
                 </div>
-                <div className="flex justify-between text-gray-600 border-t border-amber-200/60 pt-2">
+                <div className="flex justify-between text-slate-600 border-t border-amber-200/60 pt-2">
                   <span>Đơn hàng dưới 499.000đ:</span>
                   <span className="font-bold text-slate-900">20.000đ / đơn</span>
                 </div>
@@ -73,7 +73,7 @@ export default function ShippingPolicyPage() {
               <p>
                 Để đảm bảo quyền lợi tối đa cho khách hàng, ET.TEE <strong>cho phép quý khách mở gói hàng kiểm tra số lượng, màu sắc, size sản phẩm</strong> trước khi thanh toán tiền cho nhân viên giao hàng (COD).
               </p>
-              <p className="text-gray-500 text-xs">
+              <p className="text-slate-500 text-xs">
                 Lưu ý: Quý khách kiểm tra ngoại quan sản phẩm, chưa thử trực tiếp trước mặt shipper để đảm bảo vệ sinh. Nếu sản phẩm không đúng mô tả, quý khách có quyền từ chối nhận hàng không mất phí.
               </p>
             </div>
@@ -86,3 +86,4 @@ export default function ShippingPolicyPage() {
     </main>
   );
 }
+

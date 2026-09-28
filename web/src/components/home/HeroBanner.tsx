@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -117,13 +118,15 @@ export default function HeroBanner() {
           >
             <Link href={slide.href} className="block w-full h-full relative cursor-pointer group">
               {/* Background Image */}
-              <img
+              <Image
                 src={slide.bg}
                 alt={slide.title}
+                fill
+                priority={index === 0}
+                sizes="100vw"
                 className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}
-                loading={index === 0 ? 'eager' : 'lazy'}
               />
             </Link>
           </div>

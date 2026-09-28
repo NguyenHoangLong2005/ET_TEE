@@ -1,14 +1,19 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import { isStaffRoute } from '@/lib/utils/is-staff-route';
 import { getAuthHeaders } from '@/lib/auth';
 import { getApiBaseUrl } from '@/lib/api-config';
+import { useAuth } from './AuthContext';
+
+import { Product } from '@/lib/services/productService';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface WishlistContextType {
   wishlistCount: number;
-  wishlistItems: any[];
+  wishlistItems: Product[];
   addToWishlist: (productId: number) => Promise<{ success: boolean; message?: string }>;
   removeFromWishlist: (productId: number) => Promise<{ success: boolean; message?: string }>;
   isInWishlist: (productId: number) => boolean;
@@ -62,14 +67,19 @@ async function safeFetchJson(
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const skipCustomerApis = isStaffRoute(pathname);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
 
   useEffect(() => {
+    // Phan he quan tri khong co wishlist -> bo qua 2 request moi lan load trang.
+    if (skipCustomerApis) return;
     fetchWishlistCount();
     fetchWishlist();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id, skipCustomerApis]);
 
   // ── fetchWishlistCount ──────────────────────────────────────────────────
 

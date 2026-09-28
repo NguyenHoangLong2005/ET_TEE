@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-4xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Chính sách bảo mật</span>
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
 
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
-          <div className="border-b border-gray-100 pb-6">
+          <div className="border-b border-slate-100 pb-6">
             <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               Data Privacy
             </span>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
                 <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 <span>2. Mục Đích Sử Dụng Thông Tin</span>
               </h2>
-              <ul className="space-y-2 pl-4 list-disc text-gray-600">
+              <ul className="space-y-2 pl-4 list-disc text-slate-600">
                 <li>Xử lý và giao đơn hàng tận nơi cho bạn.</li>
                 <li>Gửi thông báo về tình trạng vận chuyển đơn hàng.</li>
                 <li>Tư vấn size số cá nhân hóa và gợi ý sản phẩm phù hợp.</li>
@@ -74,3 +74,4 @@ export default function PrivacyPage() {
     </main>
   );
 }
+

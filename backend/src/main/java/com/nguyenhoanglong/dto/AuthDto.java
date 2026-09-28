@@ -145,5 +145,16 @@ public class AuthDto {
         public String getStatus() { return status; }
         public java.util.List<String> getCartWarnings() { return cartWarnings; }
         public void setCartWarnings(java.util.List<String> cartWarnings) { this.cartWarnings = cartWarnings; }
+
+        private String role;
+        private java.util.List<String> permissions;
+        private Long shopId;
+
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+        public java.util.List<String> getPermissions() { return permissions; }
+        public void setPermissions(java.util.List<String> permissions) { this.permissions = permissions; }
+        public Long getShopId() { return shopId; }
+        public void setShopId(Long shopId) { this.shopId = shopId; }
     }
 }

@@ -13,6 +13,7 @@ import com.nguyenhoanglong.repository.CartRepository;
 import com.nguyenhoanglong.repository.OrderItemRepository;
 import com.nguyenhoanglong.repository.OrderRepository;
 import com.nguyenhoanglong.repository.OrderStatusHistoryRepository;
+import com.nguyenhoanglong.repository.ProductRepository;
 import com.nguyenhoanglong.repository.ProductVariantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,8 @@ class OrderServiceTest {
     @Mock private ProductVariantRepository variantRepository;
     @Mock private MailService mailService;
     @Mock private OrderItemRepository orderItemRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private MarketingService marketingService;
 
     @InjectMocks private OrderService orderService;
 

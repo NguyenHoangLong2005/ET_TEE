@@ -40,7 +40,7 @@ public class User {
     private String gender;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(50) default 'USER'")
     @Builder.Default
     private Role role = Role.USER;
 
@@ -58,17 +58,40 @@ public class User {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(updatable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "failed_login_attempts")
+    @Column(name = "failed_login_attempts", columnDefinition = "integer default 0")
     private Integer failedLoginAttempts = 0;
 
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
+    @Column(name = "employee_code", unique = true, length = 50)
+    private String employeeCode;
+
+    @Column(name = "shop_id")
+    private Long shopId;
+
+    @Column(name = "lock_reason", length = 500)
+    private String lockReason;
+
+    @Column(name = "locked_by")
+    private String lockedBy;
+
+    @Column(name = "locked_at")
+    private LocalDateTime lockedAt;
+
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getEmployeeCode() { return employeeCode; }
+    public void setEmployeeCode(String employeeCode) { this.employeeCode = employeeCode; }
     
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
@@ -114,4 +137,90 @@ public class User {
 
     public LocalDateTime getLockedUntil() { return lockedUntil; }
     public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
+
+    public String getLockReason() { return lockReason; }
+    public void setLockReason(String lockReason) { this.lockReason = lockReason; }
+
+    public String getLockedBy() { return lockedBy; }
+    public void setLockedBy(String lockedBy) { this.lockedBy = lockedBy; }
+
+    public LocalDateTime getLockedAt() { return lockedAt; }
+    public void setLockedAt(LocalDateTime lockedAt) { this.lockedAt = lockedAt; }
+
+    public boolean isMustChangePassword() { return mustChangePassword; }
+    public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
+
+    public static UserBuilder builder() { return new UserBuilder(); }
+
+    public static class UserBuilder {
+        private String id;
+        private String fullName;
+        private String email;
+        private String phone;
+        private String passwordHash;
+        private boolean emailVerified = true;
+        private String status = "ACTIVE";
+        private String gender;
+        private Role role = Role.USER;
+        private java.time.LocalDate dateOfBirth;
+        private String avatarUrl;
+        private String defaultShippingAddress;
+        private Integer failedLoginAttempts = 0;
+        private LocalDateTime lockedUntil;
+        private String employeeCode;
+        private Long shopId;
+        private String lockReason;
+        private String lockedBy;
+        private LocalDateTime lockedAt;
+        private boolean mustChangePassword = false;
+
+        public UserBuilder id(String id) { this.id = id; return this; }
+        public UserBuilder fullName(String fullName) { this.fullName = fullName; return this; }
+        public UserBuilder email(String email) { this.email = email; return this; }
+        public UserBuilder phone(String phone) { this.phone = phone; return this; }
+        public UserBuilder passwordHash(String passwordHash) { this.passwordHash = passwordHash; return this; }
+        public UserBuilder emailVerified(boolean emailVerified) { this.emailVerified = emailVerified; return this; }
+        public UserBuilder status(String status) { this.status = status; return this; }
+        public UserBuilder gender(String gender) { this.gender = gender; return this; }
+        public UserBuilder role(Role role) { this.role = role; return this; }
+        public UserBuilder dateOfBirth(java.time.LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; return this; }
+        public UserBuilder avatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; return this; }
+        public UserBuilder defaultShippingAddress(String defaultShippingAddress) { this.defaultShippingAddress = defaultShippingAddress; return this; }
+        public UserBuilder failedLoginAttempts(Integer failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; return this; }
+        public UserBuilder lockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; return this; }
+        public UserBuilder employeeCode(String employeeCode) { this.employeeCode = employeeCode; return this; }
+        public UserBuilder shopId(Long shopId) { this.shopId = shopId; return this; }
+        public UserBuilder lockReason(String lockReason) { this.lockReason = lockReason; return this; }
+        public UserBuilder lockedBy(String lockedBy) { this.lockedBy = lockedBy; return this; }
+        public UserBuilder lockedAt(LocalDateTime lockedAt) { this.lockedAt = lockedAt; return this; }
+        public UserBuilder mustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; return this; }
+
+        public User build() {
+            User user = new User();
+            user.setId(id);
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPhone(phone);
+            user.setPasswordHash(passwordHash);
+            user.setEmailVerified(emailVerified);
+            user.setStatus(status);
+            user.setGender(gender);
+            user.setRole(role);
+            user.setDateOfBirth(dateOfBirth);
+            user.setAvatarUrl(avatarUrl);
+            user.setDefaultShippingAddress(defaultShippingAddress);
+            user.setFailedLoginAttempts(failedLoginAttempts);
+            user.setLockedUntil(lockedUntil);
+            user.setEmployeeCode(employeeCode);
+            user.setShopId(shopId);
+            user.setLockReason(lockReason);
+            user.setLockedBy(lockedBy);
+            user.setLockedAt(lockedAt);
+            user.setMustChangePassword(mustChangePassword);
+            return user;
+        }
+    }
 }

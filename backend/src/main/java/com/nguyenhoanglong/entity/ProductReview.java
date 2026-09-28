@@ -33,7 +33,7 @@ public class ProductReview {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(50) default 'APPROVED'")
     private String status = "APPROVED"; // PENDING, APPROVED, REJECTED
 
     @Column(name = "customer_name_snapshot")
@@ -45,7 +45,7 @@ public class ProductReview {
     @Column(name = "purchased_color")
     private String purchasedColor;
 
-    @Column(name = "is_verified_purchase", nullable = false)
+    @Column(name = "is_verified_purchase", nullable = false, columnDefinition = "boolean default true")
     private boolean isVerifiedPurchase = true;
 
     @CreationTimestamp

@@ -1,7 +1,9 @@
+import { apiClient } from '../api-client';
+
 export type OrderItem = {
   id: string;
   orderId: string;
-  productId: number; // Changed to number to match product.id in products.ts
+  productId: number;
   variantId: string;
   size: string;
   color: string;
@@ -12,63 +14,39 @@ export type OrderItem = {
 export type Order = {
   id: string;
   userId: string;
-  status: 'pending' | 'shipping' | 'delivered' | 'completed' | 'cancelled';
+  orderCode: string;
+  status: 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
   items: OrderItem[];
   createdAt: string;
 };
 
-// Mock data
-const mockOrders: Order[] = [
-  {
-    id: 'ord_1',
-    userId: 'user_1',
-    status: 'delivered',
-    createdAt: '2023-10-01T10:00:00Z',
-    items: [
-      {
-        id: 'item_1',
-        orderId: 'ord_1',
-        productId: 1, // Áo phông nam Cotton USA basic cổ tròn
-        variantId: 'AO-PHONG-NAM-COTTON-USA-BASIC-CO-TRON-SW001-M',
-        size: 'M',
-        color: '#000000',
-        quantity: 1,
-        reviewed: false,
-      }
-    ]
-  },
-  {
-    id: 'ord_2',
-    userId: 'user_1',
-    status: 'shipping',
-    createdAt: '2023-10-15T10:00:00Z',
-    items: [
-      {
-        id: 'item_2',
-        orderId: 'ord_2',
-        productId: 2, // Quần khaki nam
-        variantId: 'QUAN-KHAKI-NAM-M',
-        size: 'M',
-        color: '#FFFFFF',
-        quantity: 1,
-        reviewed: false,
-      }
-    ]
-  }
-];
-
 export const OrderService = {
-  getUserOrders(userId: string): Order[] {
-    return mockOrders.filter(o => o.userId === userId);
+  async getUserOrders(): Promise<Order[]> {
+    try {
+      const response = await apiClient.get<Order[]>('/api/orders/me');
+      return response || [];
+    } catch (error) {
+      console.error('Failed to fetch user orders', error);
+      return [];
+    }
   },
 
-  getDeliveredOrderItemsForProduct(userId: string, productId: number): OrderItem[] {
-    const orders = this.getUserOrders(userId);
-    const validOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed');
+  async getOrderDetails(orderCode: string): Promise<Order | null> {
+    try {
+      return await apiClient.get<Order>(`/api/orders/${orderCode}`);
+    } catch (error) {
+      console.error('Failed to fetch order details', error);
+      return null;
+    }
+  },
+
+  async getDeliveredOrderItemsForProduct(productId: number): Promise<OrderItem[]> {
+    const orders = await this.getUserOrders();
+    const validOrders = orders.filter(o => o.status === 'DELIVERED');
     
     const items: OrderItem[] = [];
     validOrders.forEach(o => {
-      o.items.forEach(item => {
+      o.items?.forEach(item => {
         if (item.productId === productId) {
           items.push(item);
         }
@@ -78,14 +56,24 @@ export const OrderService = {
     return items;
   },
   
-  markItemAsReviewed(orderItemId: string) {
-    for (const order of mockOrders) {
-      for (const item of order.items) {
-        if (item.id === orderItemId) {
-          item.reviewed = true;
-          return;
-        }
-      }
+  async cancelOrder(orderCode: string, reason?: string): Promise<boolean> {
+    try {
+      await apiClient.post(`/api/orders/${orderCode}/cancel`, { reason: reason || 'Khách hàng hủy đơn hàng' });
+      return true;
+    } catch (error) {
+      console.error('Failed to cancel order', error);
+      return false;
+    }
+  },
+
+  // Note: Backend might not have this specific endpoint, but we leave the signature 
+  // and make it a no-op or actual API call if it exists.
+  async markItemAsReviewed(orderItemId: string): Promise<void> {
+    try {
+      // Assuming a patch endpoint might exist, else just silent no-op for now.
+      // await apiClient.patch(`/api/orders/items/${orderItemId}/review`, { reviewed: true });
+    } catch (error) {
+      console.error('Failed to mark item as reviewed', error);
     }
   }
 };

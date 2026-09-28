@@ -144,14 +144,14 @@ export default function SizeGuideModal({
       <div className="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[88vh] border border-slate-200/80 my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
               <Ruler className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">Bảng kích thước ET.TEE</h2>
-              <p className="text-[11px] text-gray-500">Quy đổi thông số chuẩn vóc dáng người Việt Nam</p>
+              <p className="text-[11px] text-slate-500">Quy đổi thông số chuẩn vóc dáng người Việt Nam</p>
             </div>
           </div>
           <button 
@@ -174,14 +174,14 @@ export default function SizeGuideModal({
         </div>
 
         {/* View Switcher (Table vs Calculator vs Guide) */}
-        <div className="flex items-center justify-between px-6 pt-3 bg-slate-50/70 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 pt-3 bg-slate-50/70 border-b border-slate-100">
           <div className="flex gap-1">
             <button
               onClick={() => setActiveView('table')}
               className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
                 activeView === 'table'
                   ? 'border-amber-500 text-slate-900 bg-white rounded-t-xl shadow-2xs'
-                  : 'border-transparent text-gray-500 hover:text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               <Ruler className="w-3.5 h-3.5" />
@@ -192,7 +192,7 @@ export default function SizeGuideModal({
               className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
                 activeView === 'calculator'
                   ? 'border-amber-500 text-slate-900 bg-white rounded-t-xl shadow-2xs'
-                  : 'border-transparent text-gray-500 hover:text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               <Calculator className="w-3.5 h-3.5 text-amber-600" />
@@ -204,7 +204,7 @@ export default function SizeGuideModal({
               className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
                 activeView === 'guide'
                   ? 'border-amber-500 text-slate-900 bg-white rounded-t-xl shadow-2xs'
-                  : 'border-transparent text-gray-500 hover:text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -214,7 +214,7 @@ export default function SizeGuideModal({
         </div>
 
         {/* Category Pills (Nam, Nữ, Trẻ em, Phụ kiện) */}
-        <div className="px-6 py-3 bg-slate-50/50 border-b border-gray-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-6 py-3 bg-slate-50/50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {(['nam', 'nu', 'tre-em', 'phu-kien'] as MainCategory[]).map((cat) => {
             const labels: Record<MainCategory, string> = {
               nam: 'Áo & Quần Nam',
@@ -232,7 +232,7 @@ export default function SizeGuideModal({
                 className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all whitespace-nowrap shrink-0 ${
                   activeTab === cat
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
                 {labels[cat]}
@@ -253,7 +253,7 @@ export default function SizeGuideModal({
                   <button
                     onClick={() => setSubType('ao')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
-                      subType === 'ao' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-gray-50 text-gray-600 border-gray-200'
+                      subType === 'ao' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
                     Áo Nam (Sơ mi, Polo, Áo thun)
@@ -261,7 +261,7 @@ export default function SizeGuideModal({
                   <button
                     onClick={() => setSubType('quan')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
-                      subType === 'quan' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-gray-50 text-gray-600 border-gray-200'
+                      subType === 'quan' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
                     Quần Nam (Âu, Jeans, Kaki, Short)
@@ -274,7 +274,7 @@ export default function SizeGuideModal({
                   <button
                     onClick={() => setSubType('ao')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
-                      subType === 'ao' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-gray-50 text-gray-600 border-gray-200'
+                      subType === 'ao' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
                     Áo & Sơ Mi Nữ
@@ -282,7 +282,7 @@ export default function SizeGuideModal({
                   <button
                     onClick={() => setSubType('vay')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
-                      subType === 'vay' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-gray-50 text-gray-600 border-gray-200'
+                      subType === 'vay' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
                     Váy Liền & Chân Váy
@@ -290,7 +290,7 @@ export default function SizeGuideModal({
                   <button
                     onClick={() => setSubType('quan')}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
-                      subType === 'quan' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-gray-50 text-gray-600 border-gray-200'
+                      subType === 'quan' ? 'bg-amber-50 border-amber-300 text-amber-950 font-extrabold' : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}
                   >
                     Quần Nữ
@@ -300,7 +300,7 @@ export default function SizeGuideModal({
 
               {/* TABLE content */}
               {activeTab === 'nam' && subType === 'ao' && (
-                <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-2xs">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
                   <table className="w-full text-xs text-center border-collapse">
                     <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                       <tr>
@@ -317,7 +317,7 @@ export default function SizeGuideModal({
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white font-medium text-slate-800">
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Chiều cao (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Chiều cao (cm)</td>
                         <td className="border-r">160–165</td>
                         <td className="border-r">160–165</td>
                         <td className="border-r">166–172</td>
@@ -328,7 +328,7 @@ export default function SizeGuideModal({
                         <td>184–192</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Cân nặng (kg)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Cân nặng (kg)</td>
                         <td className="border-r">50–54</td>
                         <td className="border-r">55–61</td>
                         <td className="border-r">62–68</td>
@@ -339,7 +339,7 @@ export default function SizeGuideModal({
                         <td>99–105</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Rộng vai (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Rộng vai (cm)</td>
                         <td className="border-r">41</td>
                         <td className="border-r">42</td>
                         <td className="border-r">43.5</td>
@@ -350,7 +350,7 @@ export default function SizeGuideModal({
                         <td>50</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Vòng ngực (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Vòng ngực (cm)</td>
                         <td className="border-r">82–86</td>
                         <td className="border-r">86–90</td>
                         <td className="border-r">90–94</td>
@@ -366,7 +366,7 @@ export default function SizeGuideModal({
               )}
 
               {activeTab === 'nam' && subType === 'quan' && (
-                <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-2xs">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
                   <table className="w-full text-xs text-center border-collapse">
                     <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                       <tr>
@@ -381,7 +381,7 @@ export default function SizeGuideModal({
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white font-medium text-slate-800">
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Chiều cao (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Chiều cao (cm)</td>
                         <td className="border-r">160–165</td>
                         <td className="border-r">163–168</td>
                         <td className="border-r">166–172</td>
@@ -390,7 +390,7 @@ export default function SizeGuideModal({
                         <td>178–186</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Cân nặng (kg)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Cân nặng (kg)</td>
                         <td className="border-r">52–56</td>
                         <td className="border-r">57–63</td>
                         <td className="border-r">64–70</td>
@@ -399,7 +399,7 @@ export default function SizeGuideModal({
                         <td>85–92</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Vòng bụng (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Vòng bụng (cm)</td>
                         <td className="border-r">73–75</td>
                         <td className="border-r">76–78</td>
                         <td className="border-r">79–81</td>
@@ -413,7 +413,7 @@ export default function SizeGuideModal({
               )}
 
               {activeTab === 'nu' && (
-                <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-2xs">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
                   <table className="w-full text-xs text-center border-collapse">
                     <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                       <tr>
@@ -427,7 +427,7 @@ export default function SizeGuideModal({
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white font-medium text-slate-800">
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Chiều cao (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Chiều cao (cm)</td>
                         <td className="border-r">150–156</td>
                         <td className="border-r">156–162</td>
                         <td className="border-r">162–166</td>
@@ -435,7 +435,7 @@ export default function SizeGuideModal({
                         <td>168–174</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Cân nặng (kg)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Cân nặng (kg)</td>
                         <td className="border-r">40–47</td>
                         <td className="border-r">48–53</td>
                         <td className="border-r">54–59</td>
@@ -443,7 +443,7 @@ export default function SizeGuideModal({
                         <td>66–72</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Vòng ngực (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Vòng ngực (cm)</td>
                         <td className="border-r">80–84</td>
                         <td className="border-r">84–88</td>
                         <td className="border-r">88–92</td>
@@ -451,7 +451,7 @@ export default function SizeGuideModal({
                         <td>96–100</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Vòng eo (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Vòng eo (cm)</td>
                         <td className="border-r">62–66</td>
                         <td className="border-r">66–70</td>
                         <td className="border-r">70–74</td>
@@ -464,7 +464,7 @@ export default function SizeGuideModal({
               )}
 
               {activeTab === 'tre-em' && (
-                <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-2xs">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
                   <table className="w-full text-xs text-center border-collapse">
                     <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                       <tr>
@@ -479,7 +479,7 @@ export default function SizeGuideModal({
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white font-medium text-slate-800">
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Độ tuổi ước tính</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Độ tuổi ước tính</td>
                         <td className="border-r">2–3 tuổi</td>
                         <td className="border-r">4–5 tuổi</td>
                         <td className="border-r">6–7 tuổi</td>
@@ -488,7 +488,7 @@ export default function SizeGuideModal({
                         <td>12–13 tuổi</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Chiều cao (cm)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Chiều cao (cm)</td>
                         <td className="border-r">90–100</td>
                         <td className="border-r">100–110</td>
                         <td className="border-r">110–120</td>
@@ -497,7 +497,7 @@ export default function SizeGuideModal({
                         <td>140–150</td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-2 font-bold bg-gray-50 text-left border-r">Cân nặng (kg)</td>
+                        <td className="py-3 px-2 font-bold bg-slate-50 text-left border-r">Cân nặng (kg)</td>
                         <td className="border-r">12–15</td>
                         <td className="border-r">15–18</td>
                         <td className="border-r">18–23</td>
@@ -520,7 +520,7 @@ export default function SizeGuideModal({
                 </div>
               )}
 
-              <p className="mt-4 text-[11px] text-gray-500 flex items-center gap-1.5 font-medium">
+              <p className="mt-4 text-[11px] text-slate-500 flex items-center gap-1.5 font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Mẹo ET.TEE: Nếu số đo của bạn nằm ở khoảng giữa 2 size, nên ưu tiên chọn <strong>Size lớn hơn</strong> để thoải mái khi cử động.</span>
               </p>
@@ -546,7 +546,7 @@ export default function SizeGuideModal({
                         max="210"
                         value={height}
                         onChange={(e) => setHeight(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:border-amber-500 outline-none font-bold text-slate-900 bg-white"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:border-amber-500 outline-none font-bold text-slate-900 bg-white"
                         placeholder="Ví dụ: 170"
                         required
                       />
@@ -559,7 +559,7 @@ export default function SizeGuideModal({
                         max="150"
                         value={weight}
                         onChange={(e) => setWeight(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:border-amber-500 outline-none font-bold text-slate-900 bg-white"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:border-amber-500 outline-none font-bold text-slate-900 bg-white"
                         placeholder="Ví dụ: 65"
                         required
                       />
@@ -581,7 +581,7 @@ export default function SizeGuideModal({
                           className={`py-2 px-2 text-center rounded-xl border font-bold transition-all ${
                             fitPreference === pref.id
                               ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                              : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
                           }`}
                         >
                           {pref.label}
@@ -610,7 +610,7 @@ export default function SizeGuideModal({
                   <div className="text-4xl font-black text-amber-400 my-2 tracking-tight">
                     SIZE {calculatedSize}
                   </div>
-                  <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed mb-4">
+                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mb-4">
                     {calculatedReason}
                   </p>
 
@@ -636,42 +636,42 @@ export default function SizeGuideModal({
           {activeView === 'guide' && (
             <div className="space-y-6 py-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                   <div className="flex items-center gap-2 font-bold text-slate-900 text-xs mb-2">
                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">1</span>
                     <span>Đo Vòng Ngực (Chest)</span>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     Dùng thước dây quấn quanh phần nở nhất của ngực (ngang qua 2 núm ngực). Giữ thước thẳng ngang lưng và vừa vặn, không siết quá chặt.
                   </p>
                 </div>
 
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                   <div className="flex items-center gap-2 font-bold text-slate-900 text-xs mb-2">
                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">2</span>
                     <span>Đo Vòng Eo (Waist)</span>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     Vòng dây qua phần nhỏ nhất của thắt lưng (thường nằm trên rốn khoảng 2-3cm). Thở ra tự nhiên khi đọc số đo.
                   </p>
                 </div>
 
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                   <div className="flex items-center gap-2 font-bold text-slate-900 text-xs mb-2">
                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">3</span>
                     <span>Đo Vòng Mông (Hips)</span>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     Đứng chụm hai chân, quấn thước dây qua điểm nhô cao nhất của mông. Đảm bảo dây nằm song song với mặt đất.
                   </p>
                 </div>
 
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                   <div className="flex items-center gap-2 font-bold text-slate-900 text-xs mb-2">
                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">4</span>
                     <span>Đo Rộng Vai (Shoulders)</span>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     Đo từ đỉnh xương vai bên trái kéo thẳng sang đỉnh xương vai bên phải theo đường cong nhẹ phía sau lưng.
                   </p>
                 </div>
@@ -690,8 +690,8 @@ export default function SizeGuideModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
-          <div className="text-[11px] text-gray-500 font-medium hidden sm:block">
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4">
+          <div className="text-[11px] text-slate-500 font-medium hidden sm:block">
             Cần tư vấn thêm? Gọi Hotline <strong>1900 1234</strong> (Miễn phí)
           </div>
           <button
@@ -708,3 +708,4 @@ export default function SizeGuideModal({
 
   return createPortal(modalContent, document.body);
 }
+

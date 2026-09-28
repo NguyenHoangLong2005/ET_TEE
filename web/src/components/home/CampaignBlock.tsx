@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function CampaignBlock() {
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 xl:px-8">
         <div className="bg-slate-900 rounded-3xl overflow-hidden flex flex-col md:flex-row items-center">
           <div className="w-full md:w-1/2 p-10 md:p-16 lg:p-24 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
@@ -14,7 +14,7 @@ export default function CampaignBlock() {
             </p>
             <Link 
               href="/style-quiz"
-              className="inline-block bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-red-700 transition shadow-lg hover:shadow-xl hover:-translate-y-1"
+              className="inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-white font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full transition shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
               Làm Quiz Ngay
             </Link>
@@ -22,7 +22,7 @@ export default function CampaignBlock() {
           <div className="w-full md:w-1/2 h-[400px] md:h-auto relative self-stretch">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-              src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1000&auto=format&fit=crop" 
+              src="/images/family/tshirt/ao-phong-unisex-nguoi-lon-cotton-usa-dang-oversize-sb001.webp" 
               alt="Fashion fitting" 
               className="absolute inset-0 w-full h-full object-cover"
             />

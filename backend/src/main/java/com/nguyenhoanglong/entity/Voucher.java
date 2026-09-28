@@ -61,6 +61,12 @@ public class Voucher {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Column(name = "shop_id")
+    private Long shopId;
+
+    @Column(name = "granted_to_customer_id")
+    private String grantedToCustomerId;
+
     @Column(name = "created_by")
     private String createdBy;
 
@@ -72,6 +78,9 @@ public class Voucher {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public String getGrantedToCustomerId() { return grantedToCustomerId; }
+    public void setGrantedToCustomerId(String grantedToCustomerId) { this.grantedToCustomerId = grantedToCustomerId; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -107,6 +116,8 @@ public class Voucher {
     public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
     public LocalDateTime getEndDate() { return endDate; }
     public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
     public String getUpdatedBy() { return updatedBy; }
@@ -115,4 +126,47 @@ public class Voucher {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    @Transient
+    public String getDiscountType() {
+        if ("FREE_SHIPPING".equalsIgnoreCase(type)) return "FREE_SHIP";
+        if ("PERCENT".equalsIgnoreCase(type)) return "PERCENTAGE";
+        return type;
+    }
+
+    public void setDiscountType(String discountType) {
+        if (discountType != null) {
+            if ("PERCENTAGE".equalsIgnoreCase(discountType)) this.type = "PERCENT";
+            else if ("FREE_SHIP".equalsIgnoreCase(discountType)) {
+                this.type = "FREE_SHIPPING";
+                this.freeShipping = true;
+            } else {
+                this.type = discountType;
+            }
+        }
+    }
+
+    @Transient
+    public BigDecimal getMinOrderValue() { return minOrderAmount; }
+    public void setMinOrderValue(BigDecimal minOrderValue) { this.minOrderAmount = minOrderValue; }
+
+    @Transient
+    public Integer getMaxUsage() { return maxUses; }
+    public void setMaxUsage(Integer maxUsage) { this.maxUses = maxUsage; }
+
+    @Transient
+    public Integer getUsageCount() { return usedCount != null ? usedCount : 0; }
+
+    @Transient
+    public LocalDateTime getExpiresAt() { return endDate; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.endDate = expiresAt; }
+
+    @Transient
+    public Boolean getIsPublic() { return grantedToCustomerId == null; }
+    public void setIsPublic(Boolean isPublic) {
+        // public voucher has no customer restriction
+        if (Boolean.TRUE.equals(isPublic)) {
+            this.grantedToCustomerId = null;
+        }
+    }
 }

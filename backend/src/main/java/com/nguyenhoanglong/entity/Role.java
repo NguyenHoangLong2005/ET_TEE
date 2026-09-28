@@ -7,6 +7,7 @@ public enum Role {
     ADMIN,
     SHOP_OWNER,
     SALES_STAFF,
+    CSKH_STAFF,
     WAREHOUSE_STAFF,
     SHIPPING_STAFF
 }

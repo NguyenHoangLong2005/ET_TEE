@@ -20,13 +20,13 @@ export default function OutfitSection({ products }: OutfitSectionProps) {
           <div>
             <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-black mb-1 inline-block">Styling Guide</span>
             <h2 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight mb-2">Gợi Ý Phối Đồ & Lookbook</h2>
-            <p className="text-gray-500 text-sm max-w-xl">
+            <p className="text-slate-500 text-sm max-w-xl">
               Hết đau đầu với câu hỏi "Hôm nay mặc gì?". Khám phá phong cách thời trang phối đồ tone-sur-tone cực chất.
             </p>
           </div>
           <Link 
             href="/products?category=family" 
-            className="inline-flex items-center gap-1.5 text-sm font-bold uppercase text-gray-500 hover:text-black transition-colors group"
+            className="inline-flex items-center gap-1.5 text-sm font-bold uppercase text-slate-500 hover:text-black transition-colors group"
           >
             <span>Xem tất cả</span>
             <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
@@ -54,3 +54,4 @@ export default function OutfitSection({ products }: OutfitSectionProps) {
     </section>
   );
 }
+

@@ -2,10 +2,13 @@ package com.nguyenhoanglong.service;
 
 import com.nguyenhoanglong.dto.AuthDto;
 import com.nguyenhoanglong.entity.Role;
+import com.nguyenhoanglong.entity.RolePermissionEntity;
 import com.nguyenhoanglong.entity.User;
 import com.nguyenhoanglong.exception.ApiException;
 import com.nguyenhoanglong.repository.EmailVerificationCodeRepository;
+import com.nguyenhoanglong.repository.LoginAttemptRepository;
 import com.nguyenhoanglong.repository.PasswordResetTokenRepository;
+import com.nguyenhoanglong.repository.RolePermissionRepository;
 import com.nguyenhoanglong.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -46,6 +51,9 @@ class AuthServiceTest {
     @Mock private EmailService emailService;
     @Mock private WishlistService wishlistService;
     @Mock private CartService cartService;
+    @Mock private LoginAttemptRepository loginAttemptRepository;
+    @Mock private RolePermissionRepository rolePermissionRepository;
+    @Mock private ActivityLogService activityLogService;
 
     @InjectMocks private AuthService authService;
 
@@ -168,10 +176,12 @@ class AuthServiceTest {
     @Test
     void loginUnverifiedUser_throwsUnverifedAndDoesNotCallJwt() {
         User unverified = new User();
+        unverified.setId("unverified-1");
         unverified.setEmail("u@example.com");
         unverified.setPasswordHash("HASH");
         unverified.setEmailVerified(false);
         unverified.setStatus("PENDING_VERIFICATION");
+        unverified.setRole(Role.USER);
 
         when(userRepository.findByEmail("u@example.com")).thenReturn(Optional.of(unverified));
         when(passwordEncoder.matches("password", "HASH")).thenReturn(true);
@@ -253,5 +263,53 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.resetPassword("u@example.com", "123456", "short"))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Email hoặc mã OTP không hợp lệ");
+    }
+
+    @Test
+    void login_populatesRolePermissionsAndShopId() {
+        activeUser.setRole(Role.SALES_STAFF);
+        activeUser.setShopId(2L);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(activeUser));
+        when(passwordEncoder.matches("password", "HASH")).thenReturn(true);
+        when(jwtService.generateToken(any(Map.class), anyString(), anyString())).thenReturn("jwt-token");
+
+        RolePermissionEntity p1 = new RolePermissionEntity();
+        p1.setRoleCode("SALES_STAFF");
+        p1.setPermission("VIEW_ORDER");
+
+        RolePermissionEntity p2 = new RolePermissionEntity();
+        p2.setRoleCode("SALES_STAFF");
+        p2.setPermission("CONFIRM_ORDER");
+
+        when(rolePermissionRepository.findByRoleCode("SALES_STAFF")).thenReturn(List.of(p1, p2));
+
+        AuthDto.LoginRequest req = new AuthDto.LoginRequest();
+        req.setEmail("user@example.com");
+        req.setPassword("password");
+
+        AuthDto.AuthResponse res = authService.login(req, "127.0.0.1");
+
+        assertThat(res.getRole()).isEqualTo("SALES_STAFF");
+        assertThat(res.getPermissions()).containsExactlyInAnyOrder("VIEW_ORDER", "CONFIRM_ORDER");
+        assertThat(res.getShopId()).isEqualTo(2L);
+    }
+
+    @Test
+    void me_populatesRolePermissionsAndShopId() {
+        activeUser.setRole(Role.SHOP_OWNER);
+        activeUser.setShopId(5L);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(activeUser));
+
+        RolePermissionEntity p1 = new RolePermissionEntity();
+        p1.setRoleCode("SHOP_OWNER");
+        p1.setPermission("MANAGE_SHOP_STAFF");
+
+        when(rolePermissionRepository.findByRoleCode("SHOP_OWNER")).thenReturn(List.of(p1));
+
+        AuthDto.AuthResponse res = authService.me("user@example.com");
+
+        assertThat(res.getRole()).isEqualTo("SHOP_OWNER");
+        assertThat(res.getPermissions()).containsExactly("MANAGE_SHOP_STAFF");
+        assertThat(res.getShopId()).isEqualTo(5L);
     }
 }

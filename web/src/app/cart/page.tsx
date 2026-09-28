@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
 import { toast } from 'sonner';
+import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 
 const FREE_SHIPPING_THRESHOLD = 499000;
 
@@ -15,11 +16,43 @@ export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
   const [voucherCode, setVoucherCode] = useState('');
-  
-  const handleApplyVoucher = (e: React.FormEvent) => {
+  const [voucherInfo, setVoucherInfo] = useState<{ discountAmount: number; finalTotal: number; name: string } | null>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+
+  const handleApplyVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!voucherCode.trim()) return;
-    toast.info('Tính năng mã giảm giá sẽ được hoàn thiện sau.');
+    setVoucherLoading(true);
+    setVoucherError(null);
+    try {
+      const { getApiBaseUrl } = await import('@/lib/api-config');
+      const { getAuthHeaders } = await import('@/lib/auth');
+      const res = await fetch(`${getApiBaseUrl()}/api/marketing/vouchers/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(getAuthHeaders() as Record<string, string>) },
+        body: JSON.stringify({ code: voucherCode.trim().toUpperCase(), subtotal: cart?.subtotal || 0 }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setVoucherInfo({
+          discountAmount: json.data.discountAmount,
+          finalTotal: json.data.finalTotal,
+          name: json.data.name,
+        });
+        toast.success(`Đã áp dụng voucher: ${json.data.name}`);
+      } else {
+        setVoucherInfo(null);
+        setVoucherError(json.message || 'Mã giảm giá không hợp lệ');
+        toast.error(json.message || 'Mã giảm giá không hợp lệ');
+      }
+    } catch {
+      setVoucherInfo(null);
+      setVoucherError('Không thể kiểm tra voucher');
+      toast.error('Không thể kiểm tra voucher');
+    } finally {
+      setVoucherLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -36,17 +69,8 @@ export default function CartPage() {
   const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
   return (
-    <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 text-slate-900">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-slate-500 mb-6">
-        <ol className="flex items-center space-x-2">
-          <li>
-            <Link href="/" className="hover:text-slate-900 transition-colors">Trang chủ</Link>
-          </li>
-          <li><span>/</span></li>
-          <li className="text-slate-900 font-bold">Giỏ hàng của tôi</li>
-        </ol>
-      </nav>
+    <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-12 text-slate-900">
+      <PageBreadcrumb items={[{ label: 'Giỏ hàng của tôi' }]} />
 
       <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-900 mb-8 flex items-center gap-3">
         <span>Giỏ hàng</span>
@@ -58,7 +82,7 @@ export default function CartPage() {
       </h1>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mb-16 text-center">
+        <div className="flex flex-col items-center justify-center py-20 bg-slate-50/60 rounded-3xl border border-dashed border-slate-200 mb-16 text-center">
           <div className="w-20 h-20 bg-white shadow-md rounded-2xl flex items-center justify-center mb-6">
             <ShoppingBag className="w-10 h-10 text-slate-400" />
           </div>
@@ -68,7 +92,7 @@ export default function CartPage() {
           </p>
           <Link 
             href="/products"
-            className="bg-slate-900 text-white px-8 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+            className="bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
           >
             <span>Tiếp tục mua sắm</span>
             <ArrowRight className="w-4 h-4" />
@@ -144,9 +168,44 @@ export default function CartPage() {
                           <span className="font-black text-slate-900">{item.price.toLocaleString('vi-VN')}₫</span>
                         )}
                       </div>
+                      
+                      {/* Mobile Quantity & Actions */}
+                      <div className="sm:hidden flex items-center justify-between gap-3 mt-3 pt-2 border-t border-slate-100">
+                        <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50">
+                          <button 
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-l-xl transition-colors disabled:opacity-30"
+                            disabled={item.quantity <= 1}
+                            aria-label="Giảm số lượng"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="w-8 text-center text-xs font-black text-slate-900">{item.quantity}</span>
+                          <button 
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30"
+                            disabled={item.quantity >= item.availableQuantity}
+                            aria-label="Tăng số lượng"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 transition-colors font-medium"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Xóa
+                        </button>
+                      </div>
+
                       <button 
+                        type="button"
                         onClick={() => removeItem(item.id)}
-                        className="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 mt-2 w-max transition-colors font-medium"
+                        className="hidden sm:flex text-xs text-slate-400 hover:text-red-600 items-center gap-1 mt-2 w-max transition-colors font-medium"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         Xóa
@@ -154,21 +213,25 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Desktop Quantity Controls */}
+                  {/* Tablet/Desktop Quantity Controls */}
                   <div className="hidden sm:flex lg:col-span-3 items-center lg:justify-center">
                     <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50">
                       <button 
+                        type="button"
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-l-xl transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-l-xl transition-colors disabled:opacity-30"
                         disabled={item.quantity <= 1}
+                        aria-label="Giảm số lượng"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
                       <span className="w-10 text-center text-xs font-black text-slate-900">{item.quantity}</span>
                       <button 
+                        type="button"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30"
                         disabled={item.quantity >= item.availableQuantity}
+                        aria-label="Tăng số lượng"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -191,12 +254,12 @@ export default function CartPage() {
 
           {/* Order Summary (Right Card) */}
           <div className="w-full lg:w-[380px] flex-shrink-0">
-            <div className="bg-slate-50 rounded-2xl p-6 lg:p-7 sticky top-24 border border-slate-200 shadow-sm">
-              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider mb-6 pb-3 border-b border-slate-200">
+            <div className="bg-white rounded-3xl p-6 lg:p-7 sticky top-24 border border-slate-200/80 shadow-sm">
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider mb-6 pb-3 border-b border-slate-100">
                 Tóm tắt đơn hàng
               </h2>
               
-              <div className="space-y-3.5 text-xs mb-6 pb-6 border-b border-slate-200">
+              <div className="space-y-3.5 text-xs mb-6 pb-6 border-b border-slate-100">
                 <div className="flex justify-between items-center text-slate-600">
                   <span>Tạm tính ({cart.totalQuantity} sản phẩm)</span>
                   <span className="font-bold text-slate-900">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
@@ -211,6 +274,12 @@ export default function CartPage() {
                     )}
                   </span>
                 </div>
+                {voucherInfo && (
+                  <div className="flex justify-between items-center text-emerald-700 font-bold">
+                    <span>Giảm giá ({voucherInfo.name})</span>
+                    <span>-{voucherInfo.discountAmount.toLocaleString('vi-VN')}₫</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-between items-end mb-8">
@@ -218,7 +287,9 @@ export default function CartPage() {
                   <span className="font-black text-slate-900 uppercase text-xs tracking-wider block">Tổng thanh toán</span>
                   <span className="text-[10px] text-slate-400 font-medium">(Đã bao gồm VAT)</span>
                 </div>
-                <span className="font-black text-2xl text-red-600 tracking-tight">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
+                <span className="font-black text-2xl text-primary tracking-tight">
+                  {(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : cart.subtotal).toLocaleString('vi-VN')}₫
+                </span>
               </div>
 
               {/* Voucher */}
@@ -235,22 +306,30 @@ export default function CartPage() {
                   <button 
                     type="submit"
                     className="h-11 px-5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider disabled:opacity-50 transition-colors"
-                    disabled={!voucherCode.trim()}
+                    disabled={voucherLoading || !voucherCode.trim()}
                   >
-                    Áp dụng
+                    {voucherLoading ? 'Checking...' : 'Áp dụng'}
                   </button>
                 </div>
+                {voucherInfo ? (
+                  <div className="mt-2 text-[12px] text-emerald-700 font-semibold flex items-center justify-between">
+                    <span>✓ Đã giảm {voucherInfo.discountAmount.toLocaleString('vi-VN')}₫</span>
+                    <button type="button" onClick={() => { setVoucherInfo(null); setVoucherCode(''); }} className="text-slate-400 hover:text-slate-700 underline text-[11px]">Bỏ</button>
+                  </div>
+                ) : voucherError ? (
+                  <div className="mt-2 text-[12px] text-primary font-medium">{voucherError}</div>
+                ) : null}
               </form>
 
               <Link 
                 href="/checkout"
-                className="w-full flex items-center justify-center h-13 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-red-600/30 gap-2"
+                className="w-full flex items-center justify-center h-13 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-lg gap-2"
               >
                 <span>Tiến hành thanh toán</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
-              <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>Bảo mật thanh toán 100%</span>
               </div>
@@ -267,6 +346,25 @@ export default function CartPage() {
         </div>
         <CartRecommendations cartItems={cart?.items || []} />
       </div>
+
+      {/* Mobile Sticky Checkout Bar */}
+      {!isEmpty && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-4">
+          <div>
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Tổng thanh toán</span>
+            <span className="text-lg font-black text-primary tracking-tight">
+              {(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : cart.subtotal).toLocaleString('vi-VN')}₫
+            </span>
+          </div>
+          <Link
+            href="/checkout"
+            className="flex-1 max-w-[200px] h-11 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+          >
+            <span>Thanh toán</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -46,13 +46,14 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
             key={idx}
             onClick={() => { setMainImage(img); setFadeKey(img); }}
             className={`relative w-16 h-20 shrink-0 border-2 transition-all ${
-              mainImage === img ? 'border-[#18181B]' : 'border-transparent hover:border-gray-300'
+              mainImage === img ? 'border-[#18181B]' : 'border-transparent hover:border-slate-300'
             }`}
           >
             <Image
               src={img}
               alt={`Thumbnail ${idx + 1}`}
               fill
+              sizes="64px"
               className="object-cover"
             />
           </button>
@@ -61,7 +62,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
 
       {/* Main Image */}
       <div 
-        className="relative aspect-[3/4] w-full order-1 md:order-2 bg-gray-50 overflow-hidden cursor-crosshair group"
+        className="relative aspect-[3/4] w-full order-1 md:order-2 bg-slate-50 overflow-hidden cursor-crosshair group"
         onMouseEnter={() => setIsZoomed(true)}
         onMouseLeave={() => setIsZoomed(false)}
         onMouseMove={handleMouseMove}
@@ -71,6 +72,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
           src={mainImage || displayImages[0]}
           alt="Product Main Image"
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
           className={`object-cover transition-all duration-200 animate-in fade-in ${isZoomed ? 'scale-150 opacity-0' : 'scale-100 opacity-100'}`}
           priority
         />
@@ -90,3 +92,4 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
     </div>
   );
 }
+

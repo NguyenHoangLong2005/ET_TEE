@@ -32,7 +32,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
             key={i}
             onClick={() => handlePageChange(i)}
             className={`w-10 h-10 flex items-center justify-center text-sm font-bold transition-colors ${
-              currentPage === i ? 'bg-[#18181B] text-white' : 'hover:bg-gray-100'
+              currentPage === i ? 'bg-[#18181B] text-white' : 'hover:bg-slate-100'
             }`}
           >
             {i}
@@ -46,7 +46,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
           key={1}
           onClick={() => handlePageChange(1)}
           className={`w-10 h-10 flex items-center justify-center text-sm font-bold transition-colors ${
-            currentPage === 1 ? 'bg-[#18181B] text-white' : 'hover:bg-gray-100'
+            currentPage === 1 ? 'bg-[#18181B] text-white' : 'hover:bg-slate-100'
           }`}
         >
           1
@@ -55,7 +55,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
 
       // Show ellipses or middle pages
       if (currentPage > 3) {
-        pages.push(<span key="ellipsis-1" className="w-10 h-10 flex items-center justify-center text-gray-400">...</span>);
+        pages.push(<span key="ellipsis-1" className="w-10 h-10 flex items-center justify-center text-slate-400">...</span>);
       }
 
       const start = Math.max(2, currentPage - 1);
@@ -67,7 +67,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
             key={i}
             onClick={() => handlePageChange(i)}
             className={`w-10 h-10 flex items-center justify-center text-sm font-bold transition-colors ${
-              currentPage === i ? 'bg-[#18181B] text-white' : 'hover:bg-gray-100'
+              currentPage === i ? 'bg-[#18181B] text-white' : 'hover:bg-slate-100'
             }`}
           >
             {i}
@@ -76,7 +76,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       }
 
       if (currentPage < totalPages - 2) {
-        pages.push(<span key="ellipsis-2" className="w-10 h-10 flex items-center justify-center text-gray-400">...</span>);
+        pages.push(<span key="ellipsis-2" className="w-10 h-10 flex items-center justify-center text-slate-400">...</span>);
       }
 
       // Always show last page
@@ -85,7 +85,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
           key={totalPages}
           onClick={() => handlePageChange(totalPages)}
           className={`w-10 h-10 flex items-center justify-center text-sm font-bold transition-colors ${
-            currentPage === totalPages ? 'bg-[#18181B] text-white' : 'hover:bg-gray-100'
+            currentPage === totalPages ? 'bg-[#18181B] text-white' : 'hover:bg-slate-100'
           }`}
         >
           {totalPages}
@@ -97,11 +97,11 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-12 border-t border-gray-200 pt-8">
+    <div className="flex items-center justify-center gap-2 mt-12 border-t border-slate-200 pt-8">
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-4 h-10 flex items-center justify-center text-sm font-bold hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors uppercase"
+        className="px-4 h-10 flex items-center justify-center text-sm font-bold hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors uppercase"
       >
         Trang trước
       </button>
@@ -118,10 +118,11 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-4 h-10 flex items-center justify-center text-sm font-bold hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors uppercase"
+        className="px-4 h-10 flex items-center justify-center text-sm font-bold hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors uppercase"
       >
         Trang sau
       </button>
     </div>
   );
 }
+

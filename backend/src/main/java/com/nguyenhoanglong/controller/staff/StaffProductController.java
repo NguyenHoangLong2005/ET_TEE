@@ -6,6 +6,7 @@ import com.nguyenhoanglong.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,9 @@ import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/staff/products")
+// PRODUCT_VIEW is a read permission and previously also authorised create,
+// update and delete. Writes now require MANAGE_SHOP_PRODUCT.
+@PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).PRODUCT_VIEW)")
 public class StaffProductController {
 
     private final ProductService productService;
@@ -32,6 +36,7 @@ public class StaffProductController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductDto>> createInventoryProduct(@Valid @RequestBody ProductDto productDto) {
         ProductDto createdProduct = productService.createProduct(productDto);
@@ -39,6 +44,7 @@ public class StaffProductController {
                 .body(ApiResponse.success("Staff: Product created in inventory successfully", createdProduct));
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductDto>> updateInventoryProduct(
             @PathVariable Long id,
@@ -47,9 +53,11 @@ public class StaffProductController {
         return ResponseEntity.ok(ApiResponse.success("Staff: Product updated in inventory successfully", updatedProduct));
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_SHOP_PRODUCT)")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteInventoryProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.success("Staff: Product removed from inventory", null));
     }
 }
+

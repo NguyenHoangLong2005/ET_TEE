@@ -12,7 +12,7 @@ export default function SizeGuidePage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Hướng dẫn chọn size</span>
@@ -28,7 +28,7 @@ export default function SizeGuidePage() {
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">
               Hướng Dẫn Chọn Kích Cỡ Chuẩn Vóc Dáng
             </h1>
-            <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+            <p className="text-sm md:text-base text-slate-300 leading-relaxed">
               Bảng quy đổi kích thước thời trang ET.TEE được nghiên cứu tối ưu riêng cho phom dáng người Việt Nam. 
               Trải nghiệm công cụ tính size tự động và chính sách đổi trả 30 ngày hoàn toàn miễn phí.
             </p>
@@ -42,3 +42,4 @@ export default function SizeGuidePage() {
     </main>
   );
 }
+

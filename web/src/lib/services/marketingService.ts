@@ -150,16 +150,15 @@ async function admin(path: string, options: RequestInit = {}) {
 }
 
 async function publicFetch(path: string) {
-  const res = await fetch(`${getApi()}${path}`, { headers: { 'Content-Type': 'application/json' } });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const err = await res.json();
-      msg = err.message || err.error || msg;
-    } catch {}
-    throw new Error(msg);
+  try {
+    const res = await fetch(`${getApi()}${path}`, { headers: { 'Content-Type': 'application/json' } });
+    if (!res.ok) {
+      return { success: false, data: [] };
+    }
+    return res.json();
+  } catch {
+    return { success: false, data: [] };
   }
-  return res.json();
 }
 
 async function publicPost(path: string, body: unknown) {

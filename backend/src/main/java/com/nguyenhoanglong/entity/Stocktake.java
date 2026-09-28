@@ -17,6 +17,10 @@ public class Stocktake {
     @Column(name = "created_by")
     private Long createdBy;
 
+    /** Branch that owns this count. Required for warehouse shop isolation. */
+    @Column(name = "shop_id")
+    private Long shopId;
+
     @Column(name = "actual_quantity")
     private Integer actualQuantity;
 
@@ -32,6 +36,8 @@ public class Stocktake {
     public void setWarehouseLocation(String warehouseLocation) { this.warehouseLocation = warehouseLocation; }
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
     public Integer getActualQuantity() { return actualQuantity; }
     public void setActualQuantity(Integer actualQuantity) { this.actualQuantity = actualQuantity; }
     public String getStatus() { return status; }

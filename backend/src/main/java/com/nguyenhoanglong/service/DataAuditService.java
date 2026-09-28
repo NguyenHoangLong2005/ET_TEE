@@ -1,8 +1,10 @@
 package com.nguyenhoanglong.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nguyenhoanglong.entity.ActivityLog;
 import com.nguyenhoanglong.entity.Product;
 import com.nguyenhoanglong.entity.ProductVariant;
+import com.nguyenhoanglong.repository.ActivityLogRepository;
 import com.nguyenhoanglong.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +20,11 @@ public class DataAuditService {
 
     private final ProductRepository productRepository;
     private final ObjectMapper objectMapper;
+    private final ActivityLogRepository activityLogRepository;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DataAuditService.class);
 
     // Define colors mapping
+
     private static final Map<String, String> COLOR_MAP = new HashMap<>();
     static {
         COLOR_MAP.put("trắng", "#FFFFFF");
@@ -38,9 +43,27 @@ public class DataAuditService {
         COLOR_MAP.put("tím", "#7E57C2");
     }
 
-    public DataAuditService(ProductRepository productRepository, ObjectMapper objectMapper) {
+    public DataAuditService(ProductRepository productRepository, ObjectMapper objectMapper, ActivityLogRepository activityLogRepository) {
         this.productRepository = productRepository;
         this.objectMapper = objectMapper;
+        this.activityLogRepository = activityLogRepository;
+    }
+
+    public void logAudit(String adminId, String action, String entity, String entityId, String message) {
+        log.info("AUDIT LOG | Admin: {} | Action: {} | Entity: {} | ID: {} | Msg: {}", adminId, action, entity, entityId, message);
+        try {
+            ActivityLog logEntity = new ActivityLog();
+            logEntity.setUserId(adminId != null ? adminId : "ADMIN");
+            logEntity.setAction(action);
+            logEntity.setTargetEntity(entity);
+            logEntity.setTargetId(entityId);
+            logEntity.setDescription(message);
+            logEntity.setIpAddress("127.0.0.1");
+            logEntity.setCreatedAt(LocalDateTime.now());
+            activityLogRepository.save(logEntity);
+        } catch (Exception e) {
+            log.error("Failed to save activity log in DataAuditService", e);
+        }
     }
 
     @Transactional

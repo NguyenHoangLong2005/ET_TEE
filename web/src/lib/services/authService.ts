@@ -47,14 +47,18 @@ export const authService = {
   },
 
   async checkEmail(email: string) {
-    const res = await fetch(`${getBaseUrl()}/api/auth/check-email?email=${encodeURIComponent(email)}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) {
-      return { available: false }; // fallback
+    try {
+      const res = await fetch(`${getBaseUrl()}/api/auth/check-email?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        return { available: false }; // fallback
+      }
+      return res.json();
+    } catch (e) {
+      return { available: false };
     }
-    return res.json();
   },
 
   async verifyEmail(data: any) {
@@ -89,7 +93,6 @@ export const authService = {
   async login(data: any) {
     let res;
     try {
-      console.log('Attempting login to URL:', `${getBaseUrl()}/api/auth/login`);
       res = await fetch(`${getBaseUrl()}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,7 +100,7 @@ export const authService = {
       });
     } catch (e: any) {
       if (e instanceof TypeError) {
-        throw new Error('Không thể kết nối tới máy chủ. Kiểm tra backend đã chạy ở 127.0.0.1:8081 chưa.');
+        throw new Error('Không thể kết nối tới máy chủ. Vui lòng thử lại sau.');
       }
       throw e;
     }
@@ -119,6 +122,7 @@ export const authService = {
       try {
         const payload = JSON.parse(atob(body.token.split('.')[1]));
         body.role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+        body.permissions = payload?.authorities || [];
       } catch (e) {}
     }
 
@@ -135,34 +139,48 @@ export const authService = {
   },
 
   async getMe(token: string) {
-    const res = await fetch(`${getBaseUrl()}/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
+    let res;
+    try {
+      res = await fetch(`${getBaseUrl()}/api/auth/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    } catch (e) {
+      throw new Error('Không thể kết nối tới máy chủ.');
+    }
     if (!res.ok) {
       throw new Error('Unauthorized');
     }
-    const data = await res.json();
+    const raw = await res.json();
+    const data = raw?.data ? raw.data : raw;
     
-    let role = data.role;
-    if (!role && token) {
+    let role = data?.role || (data?.roles && data?.roles.length > 0 ? data.roles[0] : undefined);
+    let permissions: string[] = data?.permissions || data?.authorities || [];
+
+    if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+        if (!role) {
+          role = payload?.role || payload?.authorities?.find((a: any) => a.startsWith('ROLE_'))?.replace('ROLE_', '');
+        }
+        if (permissions.length === 0 && payload?.authorities) {
+          permissions = payload.authorities;
+        }
       } catch (e) {}
     }
     
     return {
-      id: data.userId || data.id,
-      email: data.email,
-      fullName: data.fullName,
+      id: data?.userId || data?.id,
+      email: data?.email,
+      fullName: data?.fullName,
       role: role || 'USER',
-      phone: data.phone || '',
-      isEmailVerified: data.status === 'ACTIVE' || data.isEmailVerified,
-      status: data.status
+      permissions,
+      phone: data?.phone || '',
+      isEmailVerified: data?.status === 'ACTIVE' || data?.isEmailVerified,
+      status: data?.status
     };
   },
 

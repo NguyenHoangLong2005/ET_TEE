@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { isStaffRoute } from '@/lib/utils/is-staff-route';
 import { CartService, CartData } from '@/lib/services/cartService';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
@@ -31,12 +33,14 @@ const CartContext = createContext<CartContextType>({
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const skipCustomerApis = isStaffRoute(pathname);
   const [cart, setCart] = useState<CartData | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCart = async () => {
-    setIsLoading(true);
+    setIsLoading(prev => (cart === null ? true : prev));
     try {
       const data = await CartService.getCart();
       setCart(data || { id: 0, items: [], subtotal: 0, totalQuantity: 0 });
@@ -49,24 +53,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Phan he quan tri khong co gio hang -> bo qua request.
+    if (skipCustomerApis) {
+      setIsLoading(false);
+      return;
+    }
     fetchCart();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, skipCustomerApis]);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
   const addToCart = async (variantId: number, quantity: number) => {
-    const newCart = await CartService.addToCart(variantId, quantity);
-    setCart(newCart);
-    openDrawer();
+    try {
+      const newCart = await CartService.addToCart(variantId, quantity);
+      setCart(newCart);
+      toast.success('Đã thêm sản phẩm vào giỏ hàng!');
+      openDrawer();
+    } catch (err: any) {
+      toast.error(err?.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+      throw err;
+    }
   };
 
   const updateQuantity = async (itemId: number, quantity: number) => {
     try {
       const newCart = await CartService.updateQuantity(itemId, quantity);
       setCart(newCart);
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi cập nhật số lượng');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message || 'Lỗi cập nhật số lượng');
+      } else {
+        toast.error('Lỗi cập nhật số lượng');
+      }
     }
   };
 
@@ -75,8 +95,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const newCart = await CartService.removeItem(itemId);
       setCart(newCart);
       toast.success('Đã xóa sản phẩm khỏi giỏ');
-    } catch (err: any) {
-      toast.error(err.message || 'Lỗi xóa sản phẩm');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message || 'Lỗi xóa sản phẩm');
+      } else {
+        toast.error('Lỗi xóa sản phẩm');
+      }
     }
   };
 

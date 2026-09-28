@@ -11,6 +11,7 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
@@ -19,11 +20,11 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "variant_id", nullable = false)
-    private Long variantId;
+    @Column(name = "variant_id", nullable = false, columnDefinition = "bigint default 0")
+    private Long variantId = 0L;
 
-    @Column(name = "product_name_snapshot", nullable = false)
-    private String productNameSnapshot;
+    @Column(name = "product_name_snapshot", nullable = false, columnDefinition = "varchar(255) default 'Sản phẩm'")
+    private String productNameSnapshot = "Sản phẩm";
 
     @Column(name = "image_snapshot")
     private String imageSnapshot;
@@ -34,19 +35,19 @@ public class OrderItem {
     @Column(name = "size_snapshot")
     private String sizeSnapshot;
 
-    @Column(name = "unit_price", nullable = false)
-    private Double unitPrice;
+    @Column(name = "unit_price", nullable = false, columnDefinition = "double precision default 0")
+    private Double unitPrice = 0.0;
 
     @Column(name = "sale_price")
     private Double salePrice;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @Column(nullable = false, columnDefinition = "integer default 1")
+    private Integer quantity = 1;
 
-    @Column(name = "total_price", nullable = false)
-    private Double totalPrice;
+    @Column(name = "total_price", nullable = false, columnDefinition = "double precision default 0")
+    private Double totalPrice = 0.0;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean reviewed = false;
 
     public OrderItem() {}

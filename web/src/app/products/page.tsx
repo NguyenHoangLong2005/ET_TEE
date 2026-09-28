@@ -20,16 +20,20 @@ export default async function ProductsPage({
   const productType = typeof resolvedSearchParams.productType === 'string' ? resolvedSearchParams.productType : undefined;
   const category = typeof resolvedSearchParams.category === 'string' ? resolvedSearchParams.category : undefined;
   const collection = typeof resolvedSearchParams.collection === 'string' ? resolvedSearchParams.collection : undefined;
-  const minPrice = typeof resolvedSearchParams.minPrice === 'string' ? parseInt(resolvedSearchParams.minPrice, 10) : undefined;
-  const maxPrice = typeof resolvedSearchParams.maxPrice === 'string' ? parseInt(resolvedSearchParams.maxPrice, 10) : undefined;
+  const rawMinPrice = typeof resolvedSearchParams.minPrice === 'string' ? parseInt(resolvedSearchParams.minPrice, 10) : undefined;
+  const minPrice = rawMinPrice !== undefined && !isNaN(rawMinPrice) && rawMinPrice >= 0 ? rawMinPrice : undefined;
+  const rawMaxPrice = typeof resolvedSearchParams.maxPrice === 'string' ? parseInt(resolvedSearchParams.maxPrice, 10) : undefined;
+  const maxPrice = rawMaxPrice !== undefined && !isNaN(rawMaxPrice) && rawMaxPrice >= 0 ? rawMaxPrice : undefined;
   const adultSize = typeof resolvedSearchParams.adultSize === 'string' ? resolvedSearchParams.adultSize : undefined;
   const kidsSize = typeof resolvedSearchParams.kidsSize === 'string' ? resolvedSearchParams.kidsSize : undefined;
   const accessorySize = typeof resolvedSearchParams.accessorySize === 'string' ? resolvedSearchParams.accessorySize : undefined;
   const status = typeof resolvedSearchParams.status === 'string' ? resolvedSearchParams.status : undefined;
   const sort = typeof resolvedSearchParams.sort === 'string' ? resolvedSearchParams.sort : undefined;
   const search = typeof resolvedSearchParams.q === 'string' ? resolvedSearchParams.q : undefined;
-  const page = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page, 10) : 1;
-  const pageSize = typeof resolvedSearchParams.pageSize === 'string' ? parseInt(resolvedSearchParams.pageSize, 10) : 24;
+  const rawPage = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page, 10) : 1;
+  const page = !isNaN(rawPage) && rawPage >= 1 ? rawPage : 1;
+  const rawPageSize = typeof resolvedSearchParams.pageSize === 'string' ? parseInt(resolvedSearchParams.pageSize, 10) : 24;
+  const pageSize = !isNaN(rawPageSize) && rawPageSize >= 1 && rawPageSize <= 100 ? rawPageSize : 24;
 
   // Fetch products and stats in parallel for maximum speed
   const [productsPromise, statsPromise] = await Promise.allSettled([
@@ -56,18 +60,18 @@ export default async function ProductsPage({
   if (productsPromise.status === 'rejected') {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-          <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-6">
+          <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Không thể tải sản phẩm</h1>
-        <p className="text-gray-500 mb-8 text-center max-w-md">
+        <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-2 text-center">Không thể tải sản phẩm</h1>
+        <p className="text-slate-500 text-sm mb-8 text-center max-w-md">
           Vui lòng kiểm tra kết nối máy chủ hoặc thử lại sau.
         </p>
         <Link 
           href="/products"
-          className="bg-black text-white px-8 py-3 rounded-md font-bold uppercase hover:bg-gray-800 transition-colors"
+          className="bg-primary hover:bg-primary/90 text-white px-8 py-3.5 rounded-full font-black uppercase text-xs tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all"
         >
           Thử lại
         </Link>
@@ -172,11 +176,11 @@ export default async function ProductsPage({
 
   return (
     <>
-      <main className="min-h-screen bg-white text-slate-900 pt-3 md:pt-5 pb-20">
-        <div className="container mx-auto px-4 xl:px-8">
+      <main className="min-h-screen bg-slate-50/50 text-slate-900 pt-3 md:pt-5 pb-20">
+        <div className="container mx-auto px-4 xl:px-8 max-w-7xl">
           
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 mb-8">
+          <div className="flex items-center gap-2 text-xs text-slate-500 mb-8">
             <Link href="/" className="hover:underline">Trang chủ</Link>
             <span>/</span>
             <span className="font-bold text-slate-900">{pageTitle}</span>
@@ -184,9 +188,9 @@ export default async function ProductsPage({
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             
-            {/* Sidebar (Desktop) */}
-            <aside className="hidden lg:block w-[240px] shrink-0 sticky top-24">
-              <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse"></div>}>
+            {/* Sidebar (Mobile Toggle + Desktop Sticky) */}
+            <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24">
+              <Suspense fallback={<div className="h-12 lg:h-96 bg-slate-100 rounded-2xl animate-pulse"></div>}>
                 <FilterSidebar stats={stats} />
               </Suspense>
             </aside>
@@ -197,16 +201,16 @@ export default async function ProductsPage({
               {/* Header & Sort */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight uppercase mb-1">
+                  <h1 className="text-2xl font-black tracking-tight uppercase text-slate-900 mb-1">
                     {pageTitle}
                   </h1>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-slate-500">
                     Đang xem {totalItems === 0 ? 0 : startIndex}–{endIndex} trên {totalItems} sản phẩm
                   </p>
                 </div>
                 
                 <div className="flex items-center">
-                  <Suspense fallback={<div className="w-48 h-8 bg-gray-100 rounded-full animate-pulse"></div>}>
+                  <Suspense fallback={<div className="w-48 h-8 bg-slate-100 rounded-full animate-pulse"></div>}>
                     <SortDropdown />
                   </Suspense>
                 </div>
@@ -215,13 +219,13 @@ export default async function ProductsPage({
               {/* Active Filters */}
               {activeFilters.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 mb-8">
-                  <span className="text-sm text-gray-500 mr-2">Đang lọc theo:</span>
+                  <span className="text-xs font-semibold text-slate-500 mr-1">Đang lọc theo:</span>
                   {activeFilters.map(filter => (
-                    <div key={filter.key} className="bg-white border border-gray-300 text-black px-3 py-1 text-[13px] font-bold flex items-center gap-2">
+                    <div key={filter.key} className="bg-slate-100 text-slate-800 border border-slate-200 px-3 py-1 text-xs font-bold rounded-full flex items-center gap-2">
                       {filter.label}
                     </div>
                   ))}
-                  <Link href={`/products${targetGroup ? `?targetGroup=${targetGroup}` : ''}`} className="text-[13px] text-gray-500 hover:text-black underline font-bold ml-2">
+                  <Link href={`/products${targetGroup ? `?targetGroup=${targetGroup}` : ''}`} className="text-xs text-slate-500 hover:text-slate-900 underline font-bold ml-2">
                     Xóa tất cả
                   </Link>
                 </div>
@@ -230,25 +234,25 @@ export default async function ProductsPage({
               {/* Product Grid or Empty State */}
               <div className="flex-1 w-full flex flex-col items-center">
                 {products.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center w-full">
-                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                      <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 12H4M8 16l-4-4 4-4M16 16l4-4-4-4" />
+                  <div className="flex flex-col items-center justify-center py-16 text-center w-full bg-slate-50/60 border border-dashed border-slate-200/80 rounded-3xl p-12">
+                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                      <svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 12H4M8 16l-4-4 4-4M16 16l4-4-4-4" />
                       </svg>
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-3">
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">
                       {targetGroup === 'kids' && gender === 'boy' 
                         ? 'Chưa có sản phẩm bé trai phù hợp'
                         : targetGroup === 'kids' && gender === 'girl'
                           ? 'Chưa có sản phẩm bé gái phù hợp'
                           : 'Không tìm thấy sản phẩm phù hợp'}
                     </h2>
-                    <p className="text-gray-500 mb-8 max-w-md">
+                    <p className="text-slate-500 text-sm mb-6 max-w-md">
                       Hãy thử thay đổi tiêu chí lọc hoặc xóa bộ lọc để xem thêm các sản phẩm khác.
                     </p>
                     <Link 
                       href="/products"
-                      className="bg-slate-900 text-white px-8 py-3 font-bold uppercase tracking-widest text-[13px] hover:bg-slate-800 transition-colors"
+                      className="bg-primary hover:bg-primary/90 text-white px-8 py-3.5 rounded-full font-black uppercase tracking-wider text-xs shadow-md hover:scale-105 active:scale-95 transition-all"
                     >
                       Xóa bộ lọc
                     </Link>

@@ -69,23 +69,36 @@ export const ProductService = {
     
     // Append query params
     Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        searchParams.append(key, String(params[key]));
+      const val = params[key];
+      if (val !== undefined && val !== null && val !== '') {
+        if (Array.isArray(val)) {
+          val.forEach(item => {
+            if (item !== undefined && item !== null && item !== '') {
+              searchParams.append(key, String(item));
+            }
+          });
+        } else {
+          searchParams.append(key, String(val));
+        }
       }
     });
 
     const queryString = searchParams.toString();
     const endpoint = `${getBaseUrl()}/api/products${queryString ? `?${queryString}` : ''}`;
 
-    const res = await fetch(endpoint, {
-      next: { revalidate: 60 } // optional Next.js cache
-    });
+    try {
+      const res = await fetch(endpoint, {
+        next: { revalidate: 60 } // optional Next.js cache
+      });
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch products');
+      if (!res.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const json = await res.json();
+      return json.data;
+    } catch (error) {
+      throw new Error('Không thể tải danh sách sản phẩm');
     }
-    const json = await res.json();
-    return json.data;
   },
 
 
@@ -98,7 +111,6 @@ export const ProductService = {
       const json = await res.json();
       return json.data;
     } catch (e) {
-      console.error(e);
       return undefined;
     }
   },
@@ -147,13 +159,17 @@ export const ProductService = {
   },
 
   async getStats(): Promise<ProductStats> {
-    const res = await fetch(`${getBaseUrl()}/api/products/stats`, {
-      next: { revalidate: 60 }
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch product stats');
+    try {
+      const res = await fetch(`${getBaseUrl()}/api/products/stats`, {
+        next: { revalidate: 60 }
+      });
+      if (!res.ok) {
+        return { targetGroup: {}, productType: {}, category: {}, sizes: { adult: [], kids: [] }, totalActive: 0 };
+      }
+      const json = await res.json();
+      return json.data as ProductStats;
+    } catch {
+      return { targetGroup: {}, productType: {}, category: {}, sizes: { adult: [], kids: [] }, totalActive: 0 };
     }
-    const json = await res.json();
-    return json.data as ProductStats;
   }
 };

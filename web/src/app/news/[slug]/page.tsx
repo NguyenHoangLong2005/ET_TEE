@@ -1,11 +1,36 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Clock, Calendar, ArrowLeft, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
-import { ARTICLES } from '../page';
+import { ARTICLES } from '@/data/articles';
+import { getApiBaseUrl } from '@/lib/api-config';
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = ARTICLES.find(a => a.slug === slug);
+  let article: any = null;
+
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/marketing/posts/${slug}`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      const p = json?.data || json;
+      if (p && p.slug) {
+        article = {
+          slug: p.slug,
+          title: p.title,
+          category: (Array.isArray(p.tags) && p.tags[0]) ? p.tags[0] : (typeof p.tags === 'string' && p.tags.trim() ? p.tags.split(',')[0].trim() : 'Tin tức'),
+          date: new Date(p.publishedAt || p.createdAt || Date.now()).toLocaleDateString('vi-VN'),
+          readTime: '4 phút đọc',
+          summary: p.excerpt || p.title,
+          img: p.coverImageUrl || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop',
+          content: p.content,
+        };
+      }
+    }
+  } catch {}
+
+  if (!article) {
+    article = ARTICLES.find(a => a.slug === slug);
+  }
 
   if (!article) {
     notFound();
@@ -18,21 +43,21 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
       <div className="container mx-auto px-4 xl:px-8 max-w-3xl">
         
         {/* Back Link */}
-        <Link href="/news" className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-slate-900 mb-6 transition-colors">
+        <Link href="/news" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại trang tin tức</span>
         </Link>
 
         {/* Article Container */}
-        <article className="bg-white p-6 md:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <article className="bg-white p-6 md:p-10 rounded-3xl border border-slate-200 shadow-xs space-y-6">
           
           {/* Category & Date Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4 text-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 text-xs">
             <span className="bg-amber-100 text-amber-900 font-bold uppercase tracking-wider px-3 py-1 rounded-full text-[11px] border border-amber-300">
               {article.category}
             </span>
 
-            <div className="flex items-center gap-4 text-gray-400 font-medium">
+            <div className="flex items-center gap-4 text-slate-400 font-medium">
               <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {article.date}</span>
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {article.readTime}</span>
             </div>
@@ -43,12 +68,14 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
             {article.title}
           </h1>
 
-          <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200/80 font-semibold text-slate-800 text-xs leading-relaxed italic">
-            "{article.summary}"
-          </div>
+          {article.summary && (
+            <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200/80 font-semibold text-slate-800 text-xs leading-relaxed italic">
+              "{article.summary}"
+            </div>
+          )}
 
           {/* Featured Image */}
-          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
+          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 shadow-inner">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={article.img}
@@ -58,42 +85,49 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           {/* Article Body Content */}
-          <div className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-gray-100">
-            <p>
-              Khi lựa chọn trang phục thời trang hằng ngày, phom dáng và chất liệu luôn là hai yếu tố hàng đầu quyết định sự tự tin của người mặc. Tại ET.TEE, mỗi đường kim mũi chỉ đều được thiết kế tỉ mỉ dựa trên nghiên cứu vóc dáng thực tế của hơn 100.000 người tiêu dùng Việt Nam.
-            </p>
+          {article.content ? (
+            <div 
+              className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-slate-100 prose max-w-none"
+              dangerouslySetInnerHTML={{ __html: article.content }} 
+            />
+          ) : (
+            <div className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-slate-100">
+              <p>
+                Khi lựa chọn trang phục thời trang hằng ngày, phom dáng và chất liệu luôn là hai yếu tố hàng đầu quyết định sự tự tin của người mặc. Tại ET.TEE, mỗi đường kim mũi chỉ đều được thiết kế tỉ mỉ dựa trên nghiên cứu vóc dáng thực tế của hơn 100.000 người tiêu dùng Việt Nam.
+              </p>
 
-            <h3 className="font-bold text-slate-900 text-base pt-2">1. Hiểu Đúng Về Phom Dáng Dành Cho Bạn</h3>
-            <p>
-              Một chiếc áo vừa vặn là khi rộng vai ôm vừa đỉnh xương vai, độ dài áo vừa qua thắt lưng 5-7cm và nách áo không bị đùn vải. Nếu bạn có thân hình cân đối, phom <strong>Slim Fit</strong> ôm nhẹ sẽ tôn vòng ngực và vòng eo hoàn hảo. Nếu bạn thích sự thoải mái, phom <strong>Regular Fit</strong> là sự lựa chọn an toàn tuyệt đối.
-            </p>
+              <h3 className="font-bold text-slate-900 text-base pt-2">1. Hiểu Đúng Về Phom Dáng Dành Cho Bạn</h3>
+              <p>
+                Một chiếc áo vừa vặn là khi rộng vai ôm vừa đỉnh xương vai, độ dài áo vừa qua thắt lưng 5-7cm và nách áo không bị đùn vải. Nếu bạn có thân hình cân đối, phom <strong>Slim Fit</strong> ôm nhẹ sẽ tôn vòng ngực và vòng eo hoàn hảo. Nếu bạn thích sự thoải mái, phom <strong>Regular Fit</strong> là sự lựa chọn an toàn tuyệt đối.
+              </p>
 
-            <h3 className="font-bold text-slate-900 text-base pt-2">2. Chất Liệu Cao Cấp – Bí Quyết Giữ Phom Bền Lâu</h3>
-            <p>
-              ET.TEE ưu tiên sử dụng dòng chất liệu <strong>Eco-Cotton 95% kết hợp 5% Spandex</strong>. Sự kết hợp này mang lại bề mặt vải mềm mịn, thấm hút mồ hôi vượt trội và co giãn 4 chiều linh hoạt mà không lo biến dạng hay bai gião sau nhiều lần giặt.
-            </p>
+              <h3 className="font-bold text-slate-900 text-base pt-2">2. Chất Liệu Cao Cấp – Bí Quyết Giữ Phom Bền Lâu</h3>
+              <p>
+                ET.TEE ưu tiên sử dụng dòng chất liệu <strong>Eco-Cotton 95% kết hợp 5% Spandex</strong>. Sự kết hợp này mang lại bề mặt vải mềm mịn, thấm hút mồ hôi vượt trội và co giãn 4 chiều linh hoạt mà không lo biến dạng hay bai gião sau nhiều lần giặt.
+              </p>
 
-            <div className="p-5 bg-gray-50 rounded-2xl border border-gray-200 space-y-2 text-xs">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>3 Mẹo Nhỏ Cần Lưu Ý Từ ET.TEE:</span>
-              </span>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>Luôn lộn trái áo khi giặt máy để giữ màu vải luôn tươi mới.</li>
-                <li>Không ngâm sản phẩm với dung dịch tẩy rửa nồng độ cao quá 15 phút.</li>
-                <li>Phơi áo trên móc treo có độ rộng vừa phải để tránh làm vểnh vai áo.</li>
-              </ul>
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>3 Mẹo Nhỏ Cần Lưu Ý Từ ET.TEE:</span>
+                </span>
+                <ul className="list-disc pl-5 space-y-1 text-slate-600">
+                  <li>Luôn lộn trái áo khi giặt máy để giữ màu vải luôn tươi mới.</li>
+                  <li>Không ngâm sản phẩm với dung dịch tẩy rửa nồng độ cao quá 15 phút.</li>
+                  <li>Phơi áo trên móc treo có độ rộng vừa phải để tránh làm vểnh vai áo.</li>
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bottom Share & Nav */}
-          <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+          <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">Chia sẻ bài viết này:</span>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 bg-gray-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
+              <button className="px-3 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
                 Facebook
               </button>
-              <button className="px-3 py-1.5 bg-gray-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
+              <button className="px-3 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
                 Copy Link
               </button>
             </div>
@@ -107,14 +141,14 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {related.map(r => (
               <Link key={r.slug} href={`/news/${r.slug}`} className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-amber-400 transition-all flex gap-4">
-                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={r.img} alt={r.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-amber-600 uppercase">{r.category}</span>
                   <h4 className="font-bold text-slate-900 text-xs line-clamp-2 leading-snug">{r.title}</h4>
-                  <span className="text-[10px] text-gray-400">{r.readTime}</span>
+                  <span className="text-[10px] text-slate-400">{r.readTime}</span>
                 </div>
               </Link>
             ))}

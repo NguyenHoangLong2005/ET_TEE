@@ -1,6 +1,6 @@
 'use client';
 
-import { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
+import { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode, useState } from 'react';
 
 export function FieldLabel({ children, hint, required }: { children: ReactNode; hint?: string; required?: boolean }) {
   return (
@@ -14,56 +14,88 @@ export function FieldLabel({ children, hint, required }: { children: ReactNode; 
   );
 }
 
-export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
+export function TextInput({ onFocus, onBlur, style, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  const [focused, setFocused] = useState(false);
   return (
     <input
       {...props}
+      style={{
+        borderColor: focused ? '#E50027' : undefined,
+        boxShadow: focused ? '0 0 0 3px rgba(229,0,39,0.08)' : undefined,
+        ...style,
+      }}
       className={[
-        'mt-1.5 w-full h-9 px-3 rounded-md border border-slate-300 bg-white text-[13px] text-slate-900',
-        'placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10',
+        'mt-1.5 w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-[13px] text-slate-900',
+        'placeholder:text-slate-400 outline-none transition-shadow',
         props.className || '',
       ].join(' ')}
+      onFocus={e => { setFocused(true); onFocus?.(e); }}
+      onBlur={e => { setFocused(false); onBlur?.(e); }}
     />
   );
 }
 
-export function NumberInput(props: InputHTMLAttributes<HTMLInputElement>) {
+export function NumberInput({ onFocus, onBlur, style, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  const [focused, setFocused] = useState(false);
   return (
     <input
       {...props}
       type="number"
+      style={{
+        borderColor: focused ? '#E50027' : undefined,
+        boxShadow: focused ? '0 0 0 3px rgba(229,0,39,0.08)' : undefined,
+        ...style,
+      }}
       className={[
-        'mt-1.5 w-full h-9 px-3 rounded-md border border-slate-300 bg-white text-[13px] text-slate-900',
-        'placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10',
+        'mt-1.5 w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-[13px] text-slate-900',
+        'placeholder:text-slate-400 outline-none transition-shadow',
         props.className || '',
       ].join(' ')}
+      onFocus={e => { setFocused(true); onFocus?.(e); }}
+      onBlur={e => { setFocused(false); onBlur?.(e); }}
     />
   );
 }
 
-export function SelectInput(props: SelectHTMLAttributes<HTMLSelectElement>) {
+export function SelectInput({ onFocus, onBlur, style, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  const [focused, setFocused] = useState(false);
   return (
     <select
       {...props}
+      style={{
+        borderColor: focused ? '#E50027' : undefined,
+        boxShadow: focused ? '0 0 0 3px rgba(229,0,39,0.08)' : undefined,
+        ...style,
+      }}
       className={[
-        'mt-1.5 w-full h-9 px-3 rounded-md border border-slate-300 bg-white text-[13px] text-slate-900',
-        'focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10',
+        'mt-1.5 w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-[13px] text-slate-900',
+        'outline-none transition-shadow',
         props.className || '',
       ].join(' ')}
+      onFocus={e => { setFocused(true); onFocus?.(e); }}
+      onBlur={e => { setFocused(false); onBlur?.(e); }}
     />
   );
 }
 
-export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({ onFocus, onBlur, style, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const [focused, setFocused] = useState(false);
   return (
     <textarea
       {...props}
+      style={{
+        borderColor: focused ? '#E50027' : undefined,
+        boxShadow: focused ? '0 0 0 3px rgba(229,0,39,0.08)' : undefined,
+        ...style,
+      }}
       className={[
-        'mt-1.5 w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-[13px] text-slate-900',
-        'placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10',
+        'mt-1.5 w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-[13px] text-slate-900',
+        'placeholder:text-slate-400 outline-none transition-shadow',
         'resize-y',
         props.className || '',
       ].join(' ')}
+      onFocus={e => { setFocused(true); onFocus?.(e); }}
+      onBlur={e => { setFocused(false); onBlur?.(e); }}
     />
   );
 }

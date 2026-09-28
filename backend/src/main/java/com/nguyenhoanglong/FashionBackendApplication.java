@@ -28,6 +28,13 @@ public class FashionBackendApplication {
             } catch (Exception e) {
                 System.out.println("Skip or failed product_reviews DDL: " + e.getMessage());
             }
+            try {
+                jdbcTemplate.execute("ALTER TABLE shipments DROP CONSTRAINT IF EXISTS shipments_status_check;");
+                jdbcTemplate.execute("ALTER TABLE shipments ADD CONSTRAINT shipments_status_check CHECK (status IN ('PENDING', 'HANDED_OVER', 'IN_TRANSIT', 'DELIVERED', 'EXCEPTION', 'RETURNED', 'pending', 'handed_over', 'in_transit', 'delivered', 'exception', 'returned'));");
+                System.out.println("Success: ALTER TABLE shipments status check constraint updated;");
+            } catch (Exception e) {
+                System.out.println("Skip or failed shipments DDL: " + e.getMessage());
+            }
         };
     }
 

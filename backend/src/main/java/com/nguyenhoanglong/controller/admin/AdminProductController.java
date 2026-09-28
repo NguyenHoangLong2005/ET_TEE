@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/products")
+@PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_GLOBAL_CATEGORY)")
 public class AdminProductController {
 
     private final DataAuditService dataAuditService;
@@ -32,3 +33,4 @@ public class AdminProductController {
         return ResponseEntity.ok(ApiResponse.success("Product data audit completed.", report));
     }
 }
+

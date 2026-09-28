@@ -68,33 +68,34 @@ function VerifyEmailForm() {
   };
 
   return (
-    <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-      <div className="text-center mb-6">
-        <p className="text-sm text-gray-600">
-          Mã xác thực 6 số đã được gửi tới email <strong>{emailParam}</strong>
+    <div className="bg-white py-8 px-6 shadow-md rounded-3xl sm:px-10 border border-slate-200/80 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="text-center mb-6 relative z-10">
+        <p className="text-sm text-slate-600 leading-relaxed">
+          Mã xác thực 6 số đã được gửi tới email <strong className="text-slate-900">{emailParam}</strong>
         </p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleVerify}>
+      <form className="space-y-6 relative z-10" onSubmit={handleVerify}>
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm text-center">
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-sm text-center font-medium">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm text-center">
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-sm text-center font-medium">
             {success}
           </div>
         )}
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 text-center">Nhập mã xác thực</label>
-          <div className="mt-2 text-center">
+          <label className="block text-sm font-semibold text-slate-700 text-center mb-2">Nhập mã xác thực</label>
+          <div className="text-center">
             <input
               type="text"
               required
               maxLength={6}
-              className="appearance-none block w-full text-center text-2xl tracking-widest px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#e50027] focus:border-[#e50027]"
+              className="appearance-none block w-full text-center text-2xl tracking-widest px-3.5 py-3 border border-slate-300 rounded-xl shadow-2xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary font-mono font-bold text-slate-900 transition-all"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
@@ -106,18 +107,18 @@ function VerifyEmailForm() {
           <button
             type="submit"
             disabled={isLoading || code.length !== 6}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#e50027] hover:bg-[#cc0022] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#e50027] disabled:opacity-50"
+            className="w-full flex justify-center py-3.5 px-6 border border-transparent rounded-full shadow-md text-xs font-black uppercase tracking-wider text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Đang xử lý...' : 'Xác nhận'}
           </button>
         </div>
       </form>
 
-      <div className="mt-6 text-center">
+      <div className="mt-6 text-center relative z-10">
         <button
           onClick={handleResend}
           disabled={countdown > 0 || isLoading}
-          className="text-sm text-gray-500 hover:text-[#e50027] disabled:opacity-50 disabled:hover:text-gray-500"
+          className="text-sm font-bold text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : 'Gửi lại mã xác thực'}
         </button>
@@ -128,18 +129,19 @@ function VerifyEmailForm() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex-1 bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="flex-1 bg-slate-50/50 flex flex-col justify-center py-16 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)]">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <h2 className="mt-4 text-center text-3xl font-black uppercase tracking-tight text-slate-900">
           Xác thực Email
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Suspense fallback={<div className="text-center">Đang tải...</div>}>
+        <Suspense fallback={<div className="text-center text-slate-500">Đang tải...</div>}>
           <VerifyEmailForm />
         </Suspense>
       </div>
     </div>
   );
 }
+

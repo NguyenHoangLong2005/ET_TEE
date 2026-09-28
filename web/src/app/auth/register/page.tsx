@@ -37,9 +37,9 @@ function getPasswordStrength(password: string): PasswordStrength {
 }
 
 const STRENGTH_CONFIG = {
-  weak:   { label: 'Yếu',       color: 'bg-red-400',    text: 'text-red-500',   bars: 1 },
+  weak:   { label: 'Yếu',       color: 'bg-rose-400',    text: 'text-rose-500',   bars: 1 },
   medium: { label: 'Trung bình', color: 'bg-amber-400',  text: 'text-amber-600', bars: 2 },
-  strong: { label: 'Mạnh',      color: 'bg-green-500',  text: 'text-green-600', bars: 3 },
+  strong: { label: 'Mạnh',      color: 'bg-emerald-500',  text: 'text-emerald-600', bars: 3 },
 };
 
 const VN_PHONE_RE = /^(0[3-9][0-9]{8}|\+84[3-9][0-9]{8})$/;
@@ -146,33 +146,34 @@ export default function RegisterPage() {
   const errId = (field: string) => `${uid}-${field}-err`;
 
   const getInputClass = (field: keyof FieldErrors) => {
-    return `appearance-none block w-full px-3 py-2.5 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none text-[15px] ${
+    return `appearance-none block w-full px-3.5 py-3 border rounded-xl shadow-2xs placeholder-slate-400 focus:outline-none text-[15px] transition-all ${
       fieldErrors[field]
-        ? 'border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500'
-        : 'border-gray-300 focus:ring-[#e50027] focus:border-[#e50027]'
+        ? 'border-rose-300 text-rose-900 focus:ring-2 focus:ring-rose-500/40 focus:border-rose-500'
+        : 'border-slate-300 text-slate-900 focus:ring-2 focus:ring-primary/40 focus:border-primary'
     }`;
   };
 
   return (
-    <div className="flex-1 bg-gray-50 flex flex-col pt-10 pb-12 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)]">
-      <div className="sm:mx-auto sm:w-full sm:max-w-xl">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="flex-1 bg-slate-50/50 flex flex-col pt-10 pb-16 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)]">
+      <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
+        <h2 className="mt-4 text-center text-3xl font-black uppercase tracking-tight text-slate-900">
           Tạo tài khoản
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-slate-600">
           Đã có tài khoản?{' '}
-          <Link href="/auth/login" className="font-medium text-[#e50027] hover:text-[#cc0022]">
+          <Link href="/auth/login" className="font-bold text-primary hover:underline">
             Đăng nhập
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+        <div className="bg-white py-8 px-6 shadow-md rounded-3xl sm:px-10 border border-slate-200/80 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+          <form className="space-y-6 relative z-10" onSubmit={handleSubmit} noValidate>
 
             {serverError && (
-              <div role="alert" className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm text-center">
+              <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-sm text-center font-medium">
                 {serverError}
               </div>
             )}
@@ -180,8 +181,8 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Full name */}
               <div>
-                <label htmlFor={`${uid}-fullName`} className="block text-sm font-medium text-gray-700">Họ và tên</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-fullName`} className="block text-sm font-semibold text-slate-700">Họ và tên</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-fullName`}
                     type="text"
@@ -196,7 +197,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 {fieldErrors.fullName && (
-                  <p id={errId('fullName')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('fullName')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.fullName}
                   </p>
                 )}
@@ -204,8 +205,8 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div>
-                <label htmlFor={`${uid}-email`} className="block text-sm font-medium text-gray-700">Email</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-email`} className="block text-sm font-semibold text-slate-700">Email</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-email`}
                     type="email"
@@ -220,7 +221,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 {fieldErrors.email && (
-                  <p id={errId('email')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('email')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.email}
                   </p>
                 )}
@@ -230,8 +231,8 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Phone */}
               <div>
-                <label htmlFor={`${uid}-phone`} className="block text-sm font-medium text-gray-700">Số điện thoại</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-phone`} className="block text-sm font-semibold text-slate-700">Số điện thoại</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-phone`}
                     type="tel"
@@ -246,7 +247,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 {fieldErrors.phone && (
-                  <p id={errId('phone')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('phone')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.phone}
                   </p>
                 )}
@@ -254,8 +255,8 @@ export default function RegisterPage() {
 
               {/* Address */}
               <div>
-                <label htmlFor={`${uid}-address`} className="block text-sm font-medium text-gray-700">Địa chỉ giao hàng</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-address`} className="block text-sm font-semibold text-slate-700">Địa chỉ giao hàng</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-address`}
                     type="text"
@@ -270,7 +271,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 {fieldErrors.address && (
-                  <p id={errId('address')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('address')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.address}
                   </p>
                 )}
@@ -280,8 +281,8 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Password */}
               <div>
-                <label htmlFor={`${uid}-password`} className="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-password`} className="block text-sm font-semibold text-slate-700">Mật khẩu</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-password`}
                     type={showPassword ? 'text' : 'password'}
@@ -298,7 +299,7 @@ export default function RegisterPage() {
                     type="button"
                     aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-900 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -314,7 +315,7 @@ export default function RegisterPage() {
                           className={`h-full flex-1 transition-all duration-300 ${
                             i <= STRENGTH_CONFIG[passwordStrength].bars
                               ? STRENGTH_CONFIG[passwordStrength].color
-                              : 'bg-gray-200'
+                              : 'bg-slate-200'
                           }`}
                         />
                       ))}
@@ -327,7 +328,7 @@ export default function RegisterPage() {
                   </div>
                 )}
                 {fieldErrors.password && (
-                  <p id={errId('password')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('password')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.password}
                   </p>
                 )}
@@ -335,8 +336,8 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor={`${uid}-confirmPassword`} className="block text-sm font-medium text-gray-700">Nhập lại mật khẩu</label>
-                <div className="mt-1 relative">
+                <label htmlFor={`${uid}-confirmPassword`} className="block text-sm font-semibold text-slate-700">Nhập lại mật khẩu</label>
+                <div className="mt-1.5 relative">
                   <input
                     id={`${uid}-confirmPassword`}
                     type={showConfirm ? 'text' : 'password'}
@@ -353,25 +354,25 @@ export default function RegisterPage() {
                     type="button"
                     aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     onClick={() => setShowConfirm(v => !v)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-900 transition-colors"
                     tabIndex={-1}
                   >
                     {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p id={errId('confirmPassword')} role="alert" className="mt-2 text-sm text-red-600">
+                  <p id={errId('confirmPassword')} role="alert" className="mt-1.5 text-xs text-rose-600 font-medium">
                     {fieldErrors.confirmPassword}
                   </p>
                 )}
               </div>
             </div>
 
-            <div>
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-[#e50027] hover:bg-[#cc0022] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#e50027] disabled:opacity-50"
+                className="w-full flex justify-center py-3.5 px-6 rounded-full text-xs font-black uppercase tracking-wider text-white bg-primary hover:bg-primary/90 shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Đang xử lý...' : 'Tạo tài khoản'}
               </button>
@@ -383,3 +384,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

@@ -18,9 +18,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/account")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class AccountController {
 
     private final AccountService accountService;

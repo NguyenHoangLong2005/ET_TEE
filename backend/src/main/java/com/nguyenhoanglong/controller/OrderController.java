@@ -77,4 +77,21 @@ public class OrderController {
         
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{orderCode}/cancel")
+    public ResponseEntity<Map<String, Object>> cancelOrder(
+            @PathVariable String orderCode,
+            @RequestHeader(value = "X-Guest-Cart-Token", required = false) String guestToken,
+            @RequestBody(required = false) Map<String, String> body) {
+        
+        User user = getCurrentUser();
+        String reason = body != null ? body.get("reason") : "Khách hàng hủy đơn hàng";
+        OrderResponse response = orderService.cancelOrder(orderCode, user, guestToken, reason);
+        
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("message", "Hủy đơn hàng thành công");
+        res.put("data", response);
+        return ResponseEntity.ok(res);
+    }
 }

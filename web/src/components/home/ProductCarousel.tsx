@@ -47,11 +47,11 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
     <section className={`py-12 md:py-16 ${bgColor}`}>
       <div className="container mx-auto px-4 xl:px-8">
         {/* Header */}
-        <div className="flex items-end justify-between mb-8 border-b border-gray-200 pb-3">
+        <div className="flex items-end justify-between mb-8 border-b border-slate-200 pb-3">
           <div>
             <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase relative inline-block pb-2">
               {title}
-              <span className="absolute bottom-0 left-0 w-1/2 h-1 bg-[#e50027]"></span>
+              <span className="absolute bottom-0 left-0 w-1/2 h-1 bg-primary"></span>
             </h2>
             {subtitle && <p className="text-sm text-slate-500 font-medium">{subtitle}</p>}
           </div>
@@ -68,7 +68,7 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
                 className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${
-                  canScrollLeft ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-gray-100 text-gray-300'
+                  canScrollLeft ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-slate-100 text-slate-300'
                 }`}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -77,7 +77,7 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
                 className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${
-                  canScrollRight ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-gray-100 text-gray-300'
+                  canScrollRight ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-slate-100 text-slate-300'
                 }`}
               >
                 <ChevronRight className="w-5 h-5" />
@@ -96,6 +96,7 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
             <div key={product.id} className="w-[calc(50%-8px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start">
               <ProductCard 
                 id={product.slug}
+                productId={product.id}
                 name={product.name}
                 price={product.salePrice || product.price}
                 originalPrice={product.salePrice ? product.price : undefined}
@@ -113,3 +114,4 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
     </section>
   );
 }
+

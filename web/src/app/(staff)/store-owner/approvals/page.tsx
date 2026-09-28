@@ -1,73 +1,250 @@
-"use client";
-import React from 'react';
-import { CheckSquare, CheckCircle, XCircle } from 'lucide-react';
-import { useMockApprovals } from '@/hooks/useMockApprovals';
+'use client';
 
-export default function StoreApprovalsPage() {
-  const { approvals, updateApprovalStatus } = useMockApprovals();
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { apiClient } from '@/lib/api-client';
+import PermissionGuard from '@/components/auth/PermissionGuard';
+import PageHeader from '@/components/ui/PageHeader';
+import Button from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
+import DataTable, { Column } from '@/components/ui/DataTable';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { toast } from 'sonner';
+import {
+  PackageCheck, RefreshCw, CheckCircle2, XCircle, Clock,
+  FileCheck, Check, X
+} from 'lucide-react';
+
+interface ApprovalItem {
+  id: string | number;
+  type: string; // VOUCHER / INVENTORY_ADJUSTMENT
+  title: string;
+  requesterName: string;
+  status: string;
+  createdAt: string;
+  targetId?: number;
+}
+
+export default function StoreOwnerApprovalsPage() {
+  const [items, setItems] = useState<ApprovalItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  // Action State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    item: ApprovalItem | null;
+    action: 'APPROVE' | 'REJECT';
+    note: string;
+  }>({
+    isOpen: false,
+    item: null,
+    action: 'APPROVE',
+    note: '',
+  });
+  const [processing, setProcessing] = useState(false);
+
+  const fetchApprovals = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res: any = await apiClient.get('/api/store-owner/approvals/pending');
+      const list = Array.isArray(res) ? res : (res?.items ?? res?.content ?? res?.data ?? []);
+      setItems(Array.isArray(list) ? list : []);
+    } catch (err: any) {
+      toast.error(err?.message || 'Không thể tải danh sách chờ phê duyệt.');
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchApprovals();
+  }, [fetchApprovals]);
+
+  const handleOpenAction = (item: ApprovalItem, action: 'APPROVE' | 'REJECT') => {
+    setConfirmModal({
+      isOpen: true,
+      item,
+      action,
+      note: action === 'APPROVE' ? 'Chủ shop phê duyệt' : '',
+    });
+  };
+
+  const handleExecuteAction = async () => {
+    if (!confirmModal.item || processing) return;
+
+    if (confirmModal.action === 'REJECT' && !confirmModal.note.trim()) {
+      toast.error('Vui lòng nhập lý do từ chối cụ thể');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const payload = {
+        action: confirmModal.action,
+        note: confirmModal.note.trim(),
+      };
+
+      if (confirmModal.item.type === 'VOUCHER' && confirmModal.item.targetId) {
+        await apiClient.put(`/api/store-owner/approvals/vouchers/${confirmModal.item.targetId}`, payload);
+      } else if (confirmModal.item.type === 'INVENTORY_ADJUSTMENT' && confirmModal.item.targetId) {
+        await apiClient.put(`/api/store-owner/approvals/inventory-adjustments/${confirmModal.item.targetId}`, payload);
+      } else {
+        await apiClient.put(`/api/store-owner/approvals/${confirmModal.item.id}`, payload);
+      }
+
+      toast.success(`Đã ${confirmModal.action === 'APPROVE' ? 'phê duyệt' : 'từ chối'} yêu cầu thành công`);
+      setConfirmModal({ isOpen: false, item: null, action: 'APPROVE', note: '' });
+      fetchApprovals();
+    } catch (err: any) {
+      toast.error(err?.message || 'Thao tác phê duyệt thất bại');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const filteredItems = useMemo(() => {
+    return items.filter(item =>
+      !search.trim() ||
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.requesterName.toLowerCase().includes(search.toLowerCase()) ||
+      item.type.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [items, search]);
+
+  const columns: Column<ApprovalItem>[] = [
+    {
+      key: 'type',
+      header: 'Phân loại',
+      render: (item) => (
+        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
+          {item.type}
+        </span>
+      ),
+    },
+    {
+      key: 'title',
+      header: 'Nội dung yêu cầu',
+      render: (item) => (
+        <div>
+          <div className="font-bold text-slate-900 text-sm">{item.title}</div>
+          {item.targetId && (
+            <div className="text-[11px] text-slate-400 font-mono">Ref ID: #{item.targetId}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'requesterName',
+      header: 'Người gửi đề xuất',
+      render: (item) => (
+        <span className="text-slate-800 font-semibold text-xs">{item.requesterName}</span>
+      ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Thời gian',
+      render: (item) => (
+        <span className="text-slate-400 text-xs font-mono whitespace-nowrap">
+          {item.createdAt}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      align: 'right',
+      render: (item) => (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            onClick={() => handleOpenAction(item, 'APPROVE')}
+            icon={<Check className="w-3.5 h-3.5" />}
+          >
+            Phê duyệt
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => handleOpenAction(item, 'REJECT')}
+            icon={<X className="w-3.5 h-3.5" />}
+          >
+            Từ chối
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Phê Duyệt Khuyến Mãi & Chênh Lệch Kho</h1>
-      </div>
+    <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
+      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3">Mã Yêu Cầu</th>
-              <th className="px-6 py-3">Loại Yêu Cầu</th>
-              <th className="px-6 py-3">Nội Dung</th>
-              <th className="px-6 py-3">Trạng Thái</th>
-              <th className="px-6 py-3 text-right">Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {approvals.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  <CheckSquare className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                  Không có yêu cầu phê duyệt nào đang chờ.
-                </td>
-              </tr>
-            ) : (
-              approvals.map(approval => (
-                <tr key={approval.id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-6 py-4 font-bold text-gray-900">{approval.id}</td>
-                  <td className="px-6 py-4 font-medium text-gray-700">
-                    {approval.type === 'VOUCHER' ? 'Mã Giảm Giá' : 'Chênh Lệch Kho'}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700">{approval.description}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border
-                      ${approval.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
-                        approval.status === 'APPROVED' ? 'bg-green-50 text-green-700 border-green-200' : 
-                        'bg-red-50 text-red-700 border-red-200'}`}
-                    >
-                      {approval.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    {approval.status === 'PENDING' ? (
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => updateApprovalStatus(approval.id, 'APPROVED')} className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition" title="Duyệt">
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                        <button onClick={() => updateApprovalStatus(approval.id, 'REJECTED')} className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition" title="Từ chối">
-                          <XCircle className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">Đã xử lý</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        {/* ─── Top Control Bar ─── */}
+        <PageHeader
+          title="Hàng đợi Phê duyệt Chi nhánh"
+          subtitle="Phê duyệt các yêu cầu khuyến mãi và điều chỉnh tồn kho từ nhân viên chi nhánh."
+          badge="CHI NHÁNH"
+          actions={
+            <Button
+              variant="secondary"
+              onClick={fetchApprovals}
+              loading={loading}
+              icon={<RefreshCw className="w-4 h-4" />}
+            >
+              Làm mới
+            </Button>
+          }
+        />
+
+        {/* Table */}
+        <DataTable<ApprovalItem>
+          data={filteredItems}
+          columns={columns}
+          loading={loading}
+          rowKey={(item) => item.id}
+          searchQuery={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Tìm kiếm theo tiêu đề, người gửi..."
+          emptyTitle="Hiện tại không có yêu cầu nào chờ duyệt"
+          emptyMessage="Tất cả đề xuất điều chỉnh tồn kho & mã giảm giá chi nhánh đã được xử lý hoàn tất."
+        />
+
+        {/* Action Confirmation Modal */}
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.action === 'APPROVE' ? 'Phê duyệt yêu cầu' : 'Từ chối yêu cầu'}
+          message={
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                <p className="font-bold text-slate-900">{confirmModal.item?.title}</p>
+                <p className="text-slate-500 mt-0.5">Người đề xuất: {confirmModal.item?.requesterName}</p>
+              </div>
+              <p className="text-xs text-slate-600">
+                {confirmModal.action === 'APPROVE'
+                  ? 'Bạn có chắc chắn muốn phê duyệt áp dụng thay đổi này không?'
+                  : 'Vui lòng cung cấp lý do từ chối để nhân viên nhận được phản hồi:'}
+              </p>
+              {confirmModal.action === 'REJECT' && (
+                <textarea
+                  rows={3}
+                  value={confirmModal.note}
+                  onChange={(e) => setConfirmModal({ ...confirmModal, note: e.target.value })}
+                  placeholder="Nhập lý do từ chối..."
+                  className="w-full border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 resize-none"
+                />
+              )}
+            </div>
+          }
+          confirmText={confirmModal.action === 'APPROVE' ? 'Xác nhận Phê duyệt' : 'Xác nhận Từ chối'}
+          cancelText="Hủy"
+          type={confirmModal.action === 'APPROVE' ? 'info' : 'danger'}
+          isLoading={processing}
+          onConfirm={handleExecuteAction}
+          onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        />
+
       </div>
-    </div>
+    </PermissionGuard>
   );
 }

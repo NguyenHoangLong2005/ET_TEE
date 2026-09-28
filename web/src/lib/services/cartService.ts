@@ -39,54 +39,65 @@ export const CartService = {
       const res = await fetch(`${getBaseUrl()}/api/cart`, {
         headers: getHeaders()
       });
-      if (res.status === 401 || res.status === 403 || res.status === 404) return null;
-      if (!res.ok) throw new Error(await res.text());
+      if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 404) return null;
+      if (!res.ok) return null;
       return await res.json();
-    } catch (error) {
-      console.warn("Cart fetch failed:", error);
+    } catch {
       return null;
     }
   },
 
   async addToCart(variantId: number, quantity: number): Promise<CartData> {
-    const res = await fetch(`${getBaseUrl()}/api/cart/items`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ variantId, quantity })
-    });
+    try {
+      const res = await fetch(`${getBaseUrl()}/api/cart/items`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ variantId, quantity })
+      });
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || error.message || 'Lỗi khi thêm vào giỏ hàng');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || 'Lỗi khi thêm vào giỏ hàng');
+      }
+      return await res.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Không thể kết nối đến server');
     }
-    return await res.json();
   },
 
   async updateQuantity(itemId: number, quantity: number): Promise<CartData> {
-    const res = await fetch(`${getBaseUrl()}/api/cart/items/${itemId}`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ quantity })
-    });
+    try {
+      const res = await fetch(`${getBaseUrl()}/api/cart/items/${itemId}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify({ quantity })
+      });
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || error.message || 'Lỗi cập nhật số lượng');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || 'Lỗi cập nhật số lượng');
+      }
+      return await res.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Không thể kết nối đến server');
     }
-    return await res.json();
   },
 
   async removeItem(itemId: number): Promise<CartData> {
-    const res = await fetch(`${getBaseUrl()}/api/cart/items/${itemId}`, {
-      method: 'DELETE',
-      headers: getHeaders()
-    });
+    try {
+      const res = await fetch(`${getBaseUrl()}/api/cart/items/${itemId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || error.message || 'Lỗi xóa sản phẩm');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || error.message || 'Lỗi xóa sản phẩm');
+      }
+      return await res.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Không thể kết nối đến server');
     }
-    return await res.json();
   },
 
   async mergeCart(): Promise<void> {

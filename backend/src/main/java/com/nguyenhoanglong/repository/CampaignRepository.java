@@ -19,4 +19,6 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
            "AND (c.startDate IS NULL OR c.startDate <= :now) " +
            "AND (c.endDate IS NULL OR c.endDate >= :now)")
     List<Campaign> findAllActive(@Param("now") LocalDateTime now);
+
+    long countByStatus(String status);
 }

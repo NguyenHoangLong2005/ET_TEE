@@ -12,7 +12,7 @@ export default function ReturnPolicyPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-4xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <Link href="/policy" className="hover:underline">Chính sách</Link>
@@ -22,7 +22,7 @@ export default function ReturnPolicyPage() {
 
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
-          <div className="border-b border-gray-100 pb-6">
+          <div className="border-b border-slate-100 pb-6">
             <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               30-Day Guarantee
             </span>
@@ -48,7 +48,7 @@ export default function ReturnPolicyPage() {
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 <span>1. Điều Kiện Đổi Hàng</span>
               </h2>
-              <ul className="space-y-2 pl-4 list-disc text-gray-600">
+              <ul className="space-y-2 pl-4 list-disc text-slate-600">
                 <li>Sản phẩm còn nguyên tem, mác, niêm phong của nhà sản xuất.</li>
                 <li>Sản phẩm chưa qua sử dụng, giặt tẩy, không bị bẩn hay ám mùi lạ.</li>
                 <li>Sản phẩm mua trong thời hạn 30 ngày kể từ ngày hiển thị giao hàng thành công.</li>
@@ -62,13 +62,13 @@ export default function ReturnPolicyPage() {
                 <span>2. Quy Trình 4 Bước Đổi Hàng Đơn Giản</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-1">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="font-bold text-slate-900 text-xs">Cách 1: Đổi Trực Tiếp Tại Showroom</span>
-                  <p className="text-gray-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến bất kỳ cửa hàng nào trong hệ thống 200+ showroom ET.TEE để thử và đổi ngay.</p>
+                  <p className="text-slate-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến bất kỳ cửa hàng nào trong hệ thống 200+ showroom ET.TEE để thử và đổi ngay.</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-1">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="font-bold text-slate-900 text-xs">Cách 2: Đổi Tận Nhà Qua Shipper</span>
-                  <p className="text-gray-500 text-xs">Gọi Hotline 1900 1234, ET.TEE sẽ cho nhân viên giao sản phẩm mới đến tận nhà và thu hồi sản phẩm cũ cùng lúc.</p>
+                  <p className="text-slate-500 text-xs">Gọi Hotline 1900 1234, ET.TEE sẽ cho nhân viên giao sản phẩm mới đến tận nhà và thu hồi sản phẩm cũ cùng lúc.</p>
                 </div>
               </div>
             </div>
@@ -81,3 +81,4 @@ export default function ReturnPolicyPage() {
     </main>
   );
 }
+

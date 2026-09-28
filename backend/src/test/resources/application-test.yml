@@ -21,6 +21,11 @@ spring:
         format_sql: true
 
 app:
+  seed:
+    demo-accounts:
+      # Integration tests log in as the seeded staff accounts.
+      enabled: true
+      password: Test@12345
   jwt:
     secret: 9a6e2e6d1234567890abcdef1234567890abcdef1234567890abcdef12345678
     expiration-ms: 86400000

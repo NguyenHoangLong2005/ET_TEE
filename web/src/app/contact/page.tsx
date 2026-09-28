@@ -24,7 +24,7 @@ export default function ContactPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Liên hệ</span>
@@ -54,7 +54,7 @@ export default function ContactPage() {
             </div>
             <h3 className="font-bold text-slate-900 text-base">Tổng Đài Tư Vấn & Đặt Hàng</h3>
             <p className="text-lg font-black text-amber-700">1900 1234</p>
-            <p className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 8:00 - 22:00 (Tất cả các ngày)</p>
+            <p className="text-xs text-slate-500 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 8:00 - 22:00 (Tất cả các ngày)</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
@@ -63,7 +63,7 @@ export default function ContactPage() {
             </div>
             <h3 className="font-bold text-slate-900 text-base">Email Chăm Sóc Khách Hàng</h3>
             <p className="text-sm font-bold text-slate-900">cskh@ettee.vn</p>
-            <p className="text-xs text-gray-500">Phản hồi trong vòng 2-4 giờ làm việc</p>
+            <p className="text-xs text-slate-500">Phản hồi trong vòng 2-4 giờ làm việc</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
@@ -71,7 +71,7 @@ export default function ContactPage() {
               <MapPin className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">Trụ Sở Chính ET.TEE</h3>
-            <p className="text-xs text-gray-600 leading-relaxed">Tầng 3, Tòa nhà Lotte Center, 54 Liễu Giai, Ba Đình, Hà Nội</p>
+            <p className="text-xs text-slate-600 leading-relaxed">Tầng 3, Tòa nhà Lotte Center, 54 Liễu Giai, Ba Đình, Hà Nội</p>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="space-y-1">
               <h2 className="text-xl font-black uppercase text-slate-900">Gửi Thắc Mắc Trực Tuyến</h2>
-              <p className="text-xs text-gray-500">Điền thông tin bên dưới để bộ phận CSKH hỗ trợ bạn nhanh nhất</p>
+              <p className="text-xs text-slate-500">Điền thông tin bên dưới để bộ phận CSKH hỗ trợ bạn nhanh nhất</p>
             </div>
 
             {submitted ? (
@@ -110,7 +110,7 @@ export default function ContactPage() {
                       placeholder="Nguyễn Văn A"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
                     />
                   </div>
                   <div>
@@ -121,7 +121,7 @@ export default function ContactPage() {
                       placeholder="0987 654 321"
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
                     />
                   </div>
                 </div>
@@ -134,7 +134,7 @@ export default function ContactPage() {
                     placeholder="email@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
                   />
                 </div>
 
@@ -143,7 +143,7 @@ export default function ContactPage() {
                   <select
                     value={topic}
                     onChange={e => setTopic(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-bold"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-bold"
                   >
                     <option value="size">Tư vấn chọn Size / Kích cỡ</option>
                     <option value="order">Tra cứu tình trạng Đơn hàng</option>
@@ -160,7 +160,7 @@ export default function ContactPage() {
                     placeholder="Nhập nội dung bạn cần ET.TEE hỗ trợ..."
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
                   />
                 </div>
 
@@ -179,7 +179,7 @@ export default function ContactPage() {
           <div className="space-y-6 flex flex-col justify-between">
             <div className="space-y-3">
               <h2 className="text-xl font-black uppercase text-slate-900">Trụ Sở Văn Phòng</h2>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 ET.TEE chào đón đối tác, khách hàng ghé thăm văn phòng để trao đổi hợp tác và trải nghiệm văn hóa phục vụ của chúng tôi.
               </p>
             </div>
@@ -189,7 +189,7 @@ export default function ContactPage() {
                 <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div className="text-xs space-y-1">
                   <span className="font-bold text-white block">Địa chỉ văn phòng đại diện:</span>
-                  <span className="text-gray-300">Tầng 3, Tòa nhà Lotte Center, 54 Liễu Giai, P. Cống Vị, Q. Ba Đình, Hà Nội</span>
+                  <span className="text-slate-300">Tầng 3, Tòa nhà Lotte Center, 54 Liễu Giai, P. Cống Vị, Q. Ba Đình, Hà Nội</span>
                 </div>
               </div>
 
@@ -197,7 +197,7 @@ export default function ContactPage() {
                 <Clock className="w-5 h-5 text-amber-400 shrink-0" />
                 <div className="text-xs">
                   <span className="font-bold text-white block">Thời gian làm việc:</span>
-                  <span className="text-gray-300">Thứ 2 - Thứ 7 (8:00 - 17:30)</span>
+                  <span className="text-slate-300">Thứ 2 - Thứ 7 (8:00 - 17:30)</span>
                 </div>
               </div>
             </div>
@@ -213,3 +213,4 @@ export default function ContactPage() {
     </main>
   );
 }
+

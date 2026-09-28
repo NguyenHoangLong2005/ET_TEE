@@ -33,12 +33,42 @@ public class ProductSpecification {
             boolean needsDistinct = false;
 
             if (q != null && !q.trim().isEmpty()) {
-                String searchPattern = "%" + q.trim().toLowerCase() + "%";
-                predicates.add(criteriaBuilder.or(
+                String cleanQ = q.trim().toLowerCase();
+                String searchPattern = "%" + cleanQ + "%";
+                String slugPattern = "%" + cleanQ.replaceAll("[\\s_]+", "-") + "%";
+
+                String[] words = cleanQ.split("\\s+");
+                List<Predicate> wordPredicates = new ArrayList<>();
+                for (String w : words) {
+                    if (!w.isEmpty()) {
+                        String wordPattern = "%" + w + "%";
+                        wordPredicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), wordPattern),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), wordPattern),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("slug")), wordPattern),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("productType")), wordPattern)
+                        ));
+                    }
+                }
+
+                Predicate mainMatch = criteriaBuilder.or(
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchPattern),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), searchPattern)
-                ));
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), searchPattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("slug")), searchPattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("slug")), slugPattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("productType")), searchPattern)
+                );
+
+                if (!wordPredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(
+                            mainMatch,
+                            criteriaBuilder.and(wordPredicates.toArray(new Predicate[0]))
+                    ));
+                } else {
+                    predicates.add(mainMatch);
+                }
             }
+
 
             // Always enforce ACTIVE status so DRAFT/HIDDEN products are not exposed
             predicates.add(criteriaBuilder.equal(root.get("status"), "ACTIVE"));

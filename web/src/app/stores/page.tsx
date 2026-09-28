@@ -47,7 +47,7 @@ export default function StoresPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Danh sách cửa hàng</span>
@@ -76,13 +76,13 @@ export default function StoresPage() {
             
             {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Nhập tên đường, quận huyện hoặc tên cửa hàng..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900 transition-colors"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900 transition-colors"
               />
             </div>
 
@@ -100,11 +100,11 @@ export default function StoresPage() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                       selectedCity === city
                         ? 'bg-slate-900 text-white shadow-md'
-                        : 'bg-gray-100 text-slate-600 hover:bg-gray-200'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
                     <span>{city}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCity === city ? 'bg-amber-500 text-slate-950' : 'bg-gray-200 text-slate-700'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${selectedCity === city ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 text-slate-700'}`}>
                       {count}
                     </span>
                   </button>
@@ -118,8 +118,8 @@ export default function StoresPage() {
         {/* Store Grid Result */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredStores.length === 0 ? (
-            <div className="col-span-2 py-16 bg-white rounded-3xl border border-gray-200 text-center text-gray-500 text-sm space-y-3">
-              <Store className="w-10 h-10 text-gray-300 mx-auto" />
+            <div className="col-span-2 py-16 bg-white rounded-3xl border border-slate-200 text-center text-slate-500 text-sm space-y-3">
+              <Store className="w-10 h-10 text-slate-300 mx-auto" />
               <p>Không tìm thấy cửa hàng ET.TEE nào tại khu vực này.</p>
               <button 
                 onClick={() => { setSelectedCity('Tất cả'); setSearch(''); }} 
@@ -155,14 +155,14 @@ export default function StoresPage() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-4 text-xs">
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4 text-xs">
                   <div className="space-y-1 text-slate-500 text-[11px]">
                     <a href={`tel:${store.phone.replace(/\s/g, '')}`} className="flex items-center gap-1.5 hover:text-amber-600 font-medium">
-                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
                       <span>{store.phone}</span>
                     </a>
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span>{store.hours}</span>
                     </div>
                   </div>
@@ -186,3 +186,4 @@ export default function StoresPage() {
     </main>
   );
 }
+

@@ -8,9 +8,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -61,6 +63,50 @@ public class MarketingController {
     @GetMapping("/banners/{position}")
     public ResponseEntity<Map<String, Object>> getBannersByPosition(@PathVariable String position) {
         return getPublicBanners(position);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // PUBLIC — Trending Product (for TrendingBlock)
+    // ═════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/trending")
+    public ResponseEntity<Map<String, Object>> getTrendingProduct() {
+        List<ProductPlacement> placements = marketingService.getActivePlacementsByKey("HOME_TRENDING");
+        Map<String, Object> response = new HashMap<>();
+        
+        if (placements.isEmpty()) {
+            // Fallback to best seller if no trending placement
+            placements = marketingService.getActivePlacementsByKey("HOME_BEST_SELLER");
+        }
+        
+        if (placements.isEmpty()) {
+            response.put("success", true);
+            response.put("data", null);
+            return ResponseEntity.ok(response);
+        }
+        
+        // Get first active placement's product
+        ProductPlacement placement = placements.get(0);
+        Product product = marketingService.getProductById(placement.getProductId());
+        
+        // Get first image URL from images list
+        String imageUrl = "";
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            imageUrl = product.getImages().get(0).getImageUrl();
+        }
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("productId", product.getId());
+        data.put("name", product.getName());
+        data.put("slug", product.getSlug());
+        data.put("price", product.getPrice());
+        data.put("salePrice", product.getSalePrice());
+        data.put("imageUrl", imageUrl);
+        data.put("productUrl", "/products/" + product.getSlug());
+        
+        response.put("success", true);
+        response.put("data", data);
+        return ResponseEntity.ok(response);
     }
 
     // ═════════════════════════════════════════════════════════════════════
@@ -134,6 +180,31 @@ public class MarketingController {
     }
 
     // ═════════════════════════════════════════════════════════════════════
+    // PUBLIC — Posts (Blog & News)
+    // ═════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/posts")
+    public ResponseEntity<Map<String, Object>> getPublicPosts(
+            @RequestParam(required = false) String search) {
+        List<MarketingPost> posts = marketingService.getAllPosts("PUBLISHED", search);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", posts);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/posts/{slug}")
+    public ResponseEntity<Map<String, Object>> getPublicPostBySlug(@PathVariable String slug) {
+        MarketingPost post = marketingService.getPostBySlug(slug)
+                .filter(p -> "PUBLISHED".equalsIgnoreCase(p.getStatus()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài viết"));
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", post);
+        return ResponseEntity.ok(response);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
     // PUBLIC — Track marketing event (impression/click/conversion)
     // ═════════════════════════════════════════════════════════════════════
 
@@ -170,6 +241,7 @@ public class MarketingController {
     // ADMIN — Banners
     // ═════════════════════════════════════════════════════════════════════
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING)")
     @GetMapping("/admin/banners")
     public ResponseEntity<Map<String, Object>> listBanners() {
         Map<String, Object> response = new HashMap<>();
@@ -178,8 +250,9 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING)")
     @PostMapping("/admin/banners")
-    public ResponseEntity<Map<String, Object>> createBanner(@RequestBody Banner banner) {
+    public ResponseEntity<Map<String, Object>> createBanner(@Valid @RequestBody Banner banner) {
         Banner created = marketingService.createBanner(banner, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -188,8 +261,9 @@ public class MarketingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING)")
     @PutMapping("/admin/banners/{id}")
-    public ResponseEntity<Map<String, Object>> updateBanner(@PathVariable Long id, @RequestBody Banner banner) {
+    public ResponseEntity<Map<String, Object>> updateBanner(@PathVariable Long id, @Valid @RequestBody Banner banner) {
         Banner updated = marketingService.updateBanner(id, banner, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -198,6 +272,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING)")
     @PatchMapping("/admin/banners/{id}/status")
     public ResponseEntity<Map<String, Object>> patchBannerStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Banner updated = marketingService.updateBannerStatus(id, body.get("status"), getCurrentUserIdentifier());
@@ -208,6 +283,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING)")
     @DeleteMapping("/admin/banners/{id}")
     public ResponseEntity<Map<String, Object>> deleteBanner(@PathVariable Long id) {
         marketingService.deleteBanner(id);
@@ -221,6 +297,7 @@ public class MarketingController {
     // ADMIN — Vouchers
     // ═════════════════════════════════════════════════════════════════════
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @GetMapping("/admin/vouchers")
     public ResponseEntity<Map<String, Object>> listVouchers() {
         Map<String, Object> response = new HashMap<>();
@@ -229,8 +306,9 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PostMapping("/admin/vouchers")
-    public ResponseEntity<Map<String, Object>> createVoucher(@RequestBody Voucher voucher) {
+    public ResponseEntity<Map<String, Object>> createVoucher(@Valid @RequestBody Voucher voucher) {
         Voucher created = marketingService.createVoucher(voucher, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -239,8 +317,9 @@ public class MarketingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PutMapping("/admin/vouchers/{id}")
-    public ResponseEntity<Map<String, Object>> updateVoucher(@PathVariable Long id, @RequestBody Voucher voucher) {
+    public ResponseEntity<Map<String, Object>> updateVoucher(@PathVariable Long id, @Valid @RequestBody Voucher voucher) {
         Voucher updated = marketingService.updateVoucher(id, voucher, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -249,6 +328,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PatchMapping("/admin/vouchers/{id}/status")
     public ResponseEntity<Map<String, Object>> patchVoucherStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Voucher updated = marketingService.updateVoucherStatus(id, body.get("status"), getCurrentUserIdentifier());
@@ -259,6 +339,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @DeleteMapping("/admin/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> deleteVoucher(@PathVariable Long id) {
         marketingService.deleteVoucher(id);
@@ -272,6 +353,7 @@ public class MarketingController {
     // ADMIN — Campaigns
     // ═════════════════════════════════════════════════════════════════════
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @GetMapping("/admin/campaigns")
     public ResponseEntity<Map<String, Object>> listCampaigns() {
         Map<String, Object> response = new HashMap<>();
@@ -280,6 +362,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @GetMapping("/admin/campaigns/{id}")
     public ResponseEntity<Map<String, Object>> getCampaign(@PathVariable Long id) {
         Campaign c = marketingService.getCampaign(id)
@@ -290,8 +373,9 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PostMapping("/admin/campaigns")
-    public ResponseEntity<Map<String, Object>> createCampaign(@RequestBody Campaign campaign) {
+    public ResponseEntity<Map<String, Object>> createCampaign(@Valid @RequestBody Campaign campaign) {
         Campaign created = marketingService.createCampaign(campaign, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -300,8 +384,9 @@ public class MarketingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PutMapping("/admin/campaigns/{id}")
-    public ResponseEntity<Map<String, Object>> updateCampaign(@PathVariable Long id, @RequestBody Campaign campaign) {
+    public ResponseEntity<Map<String, Object>> updateCampaign(@PathVariable Long id, @Valid @RequestBody Campaign campaign) {
         Campaign updated = marketingService.updateCampaign(id, campaign, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -310,6 +395,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PatchMapping("/admin/campaigns/{id}/status")
     public ResponseEntity<Map<String, Object>> patchCampaignStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Campaign updated = marketingService.updateCampaignStatus(id, body.get("status"), getCurrentUserIdentifier());
@@ -320,6 +406,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @DeleteMapping("/admin/campaigns/{id}")
     public ResponseEntity<Map<String, Object>> deleteCampaign(@PathVariable Long id) {
         marketingService.deleteCampaign(id);
@@ -333,6 +420,7 @@ public class MarketingController {
     // ADMIN — Placements
     // ═════════════════════════════════════════════════════════════════════
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_PRODUCT_PLACEMENT)")
     @GetMapping("/admin/placements")
     public ResponseEntity<Map<String, Object>> listPlacements() {
         Map<String, Object> response = new HashMap<>();
@@ -341,8 +429,9 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_PRODUCT_PLACEMENT)")
     @PostMapping("/admin/placements")
-    public ResponseEntity<Map<String, Object>> createPlacement(@RequestBody ProductPlacement placement) {
+    public ResponseEntity<Map<String, Object>> createPlacement(@Valid @RequestBody ProductPlacement placement) {
         ProductPlacement created = marketingService.createPlacement(placement, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -351,8 +440,9 @@ public class MarketingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_PRODUCT_PLACEMENT)")
     @PutMapping("/admin/placements/{id}")
-    public ResponseEntity<Map<String, Object>> updatePlacement(@PathVariable Long id, @RequestBody ProductPlacement placement) {
+    public ResponseEntity<Map<String, Object>> updatePlacement(@PathVariable Long id, @Valid @RequestBody ProductPlacement placement) {
         ProductPlacement updated = marketingService.updatePlacement(id, placement, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -361,6 +451,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_PRODUCT_PLACEMENT)")
     @DeleteMapping("/admin/placements/{id}")
     public ResponseEntity<Map<String, Object>> deletePlacement(@PathVariable Long id) {
         marketingService.deletePlacement(id);
@@ -374,6 +465,7 @@ public class MarketingController {
     // ADMIN — Analytics
     // ═════════════════════════════════════════════════════════════════════
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VIEW_CAMPAIGN_ANALYTICS)")
     @GetMapping("/admin/analytics/overview")
     public ResponseEntity<Map<String, Object>> analyticsOverview(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
@@ -384,6 +476,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VIEW_CAMPAIGN_ANALYTICS)")
     @GetMapping("/admin/analytics/campaigns/{id}")
     public ResponseEntity<Map<String, Object>> campaignAnalytics(
             @PathVariable Long id,
@@ -395,6 +488,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VIEW_CAMPAIGN_ANALYTICS)")
     @GetMapping("/admin/analytics/banners/{id}")
     public ResponseEntity<Map<String, Object>> bannerAnalytics(
             @PathVariable Long id,
@@ -406,6 +500,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VIEW_CAMPAIGN_ANALYTICS)")
     @GetMapping("/admin/analytics/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> voucherAnalytics(
             @PathVariable Long id,
@@ -417,6 +512,7 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VIEW_CAMPAIGN_ANALYTICS)")
     @PostMapping("/admin/track")
     public ResponseEntity<Map<String, Object>> adminTrack(@RequestBody Map<String, Object> body) {
         Long campaignId = body.get("campaignId") != null ? Long.parseLong(body.get("campaignId").toString()) : null;
@@ -432,3 +528,4 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 }
+

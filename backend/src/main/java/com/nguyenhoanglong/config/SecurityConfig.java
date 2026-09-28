@@ -1,8 +1,13 @@
 package com.nguyenhoanglong.config;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -10,78 +15,109 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+/**
+ * Security Configuration for ET.TEE Shop
+ * Implements RBAC, CORS, JWT, and security headers
+ */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final RateLimitFilter rateLimitFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.rateLimitFilter = rateLimitFilter;
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self'")))
+            .cors(Customizer.withDefaults())
+            // Disable CSRF for REST API
             .csrf(csrf -> csrf.disable())
+
+            
+            // Session management - stateless for JWT
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Authorization rules
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/verify-email", "/api/auth/resend-code",
-                                 "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/resend-password-reset-code", "/api/auth/check-email").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/*/reviews").permitAll()
-                .requestMatchers("/api/cart/**").permitAll()
-                .requestMatchers("/api/wishlist/**").permitAll()
-                .requestMatchers("/api/orders/checkout").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders/{orderCode}").permitAll()
-                .requestMatchers("/api/payment-methods/**").permitAll()
-                // Marketing public
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketing/banners").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketing/banners/{position}").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketing/vouchers").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/marketing/vouchers/validate").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketing/public/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/marketing/public/**").permitAll()
-                // Marketing staff/admin
-                .requestMatchers("/api/marketing/admin/**").hasAnyRole("MARKETING_STAFF", "STAFF", "ADMIN")
+                // Public endpoints
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/public/**",
+                    "/api/products/**",
+                    "/api/categories/**",
+                    "/api/customer/products/**",
+                    "/api/customer/categories/**",
+                    "/api/customer/banners/**",
+                    "/api/customer/vouchers/**",
+                    "/api/marketing/banners/**",
+                    "/api/marketing/vouchers",
+                    "/api/marketing/vouchers/validate",
+                    "/api/marketing/trending",
+                    "/api/marketing/public/**",
+                    "/api/cart/**",
+                    "/api/orders/checkout",
+                    "/health",
+                    "/actuator/**"
+                ).permitAll()
+                
+                // Staff endpoints require authentication
+                .requestMatchers("/api/staff/**").authenticated()
+                
+                // Admin endpoints require ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/**").hasAnyRole("STAFF", "ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/products/**").hasAnyRole("STAFF", "ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/products/**").hasAnyRole("STAFF", "ADMIN")
-                .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            
+            // Without an explicit entry point Spring answers every unauthenticated
+            // request with 403, so the client cannot tell "session expired" from
+            // "not allowed". A stateless JSON API must answer 401 in the first case.
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) ->
+                    writeError(response, HttpStatus.UNAUTHORIZED,
+                            "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại."))
+                .accessDeniedHandler((request, response, deniedException) ->
+                    writeError(response, HttpStatus.FORBIDDEN,
+                            "Bạn không có quyền thực hiện thao tác này."))
+            )
+
+            // Add JWT filter before UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            
+            // Security headers
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny()) // Prevent clickjacking
+                .contentTypeOptions(content -> {}) // Disable MIME sniffing
+                .cacheControl(cache -> {}) // Cache control
+            );
 
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*", "http://10.0.2.2:*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    /** Same envelope the rest of the API uses, so the client parses errors uniformly. */
+    private static void writeError(HttpServletResponse response, HttpStatus status, String message)
+            throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write(
+                "{\"success\":false,\"message\":\"" + message + "\",\"status\":" + status.value() + "}");
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // BCrypt with strength 12 (default)
         return new BCryptPasswordEncoder(12);
     }
 }

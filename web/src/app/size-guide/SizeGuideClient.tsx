@@ -42,7 +42,7 @@ export default function SizeGuideClient() {
           </div>
           <div>
             <h3 className="font-bold text-slate-900 text-sm">Đổi trả 30 ngày</h3>
-            <p className="text-xs text-gray-500">Đổi size tận nhà hoàn toàn miễn phí</p>
+            <p className="text-xs text-slate-500">Đổi size tận nhà hoàn toàn miễn phí</p>
           </div>
         </div>
 
@@ -52,7 +52,7 @@ export default function SizeGuideClient() {
           </div>
           <div>
             <h3 className="font-bold text-slate-900 text-sm">Chuẩn Form Dáng Việt</h3>
-            <p className="text-xs text-gray-500">Đo đạc thực tế trên 100.000 vóc dáng</p>
+            <p className="text-xs text-slate-500">Đo đạc thực tế trên 100.000 vóc dáng</p>
           </div>
         </div>
 
@@ -62,20 +62,20 @@ export default function SizeGuideClient() {
           </div>
           <div>
             <h3 className="font-bold text-slate-900 text-sm">Hỗ trợ 200+ Cửa hàng</h3>
-            <p className="text-xs text-gray-500">Thử size trực tiếp trên toàn quốc</p>
+            <p className="text-xs text-slate-500">Thử size trực tiếp trên toàn quốc</p>
           </div>
         </div>
       </div>
 
       {/* 2. Interactive Calculator Section */}
       <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
           <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-black">
             <Calculator className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-xl font-black uppercase text-slate-900">Công Cụ Gợi Ý Size Thông Minh</h2>
-            <p className="text-xs text-gray-500">Nhập chiều cao & cân nặng để hệ thống tự động tính toán size phù hợp nhất</p>
+            <p className="text-xs text-slate-500">Nhập chiều cao & cân nặng để hệ thống tự động tính toán size phù hợp nhất</p>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export default function SizeGuideClient() {
               max="210"
               value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
               placeholder="170"
             />
           </div>
@@ -101,7 +101,7 @@ export default function SizeGuideClient() {
               max="150"
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
               placeholder="65"
             />
           </div>
@@ -111,7 +111,7 @@ export default function SizeGuideClient() {
             <select
               value={fit}
               onChange={(e) => setFit(e.target.value as any)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500 bg-white"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500 bg-white"
             >
               <option value="slim">Ôm vừa (Slim Fit)</option>
               <option value="regular">Thoải mái (Regular)</option>
@@ -147,10 +147,10 @@ export default function SizeGuideClient() {
 
       {/* 3. Detailed Category Size Tables */}
       <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-xl font-black uppercase text-slate-900">Bảng Số Đo Chi Tiết Phân Theo Danh Mục</h2>
-            <p className="text-xs text-gray-500">Tra cứu chi tiết các vòng ngực, eo, mông, rộng vai</p>
+            <p className="text-xs text-slate-500">Tra cứu chi tiết các vòng ngực, eo, mông, rộng vai</p>
           </div>
 
           {/* Main Category Tabs */}
@@ -167,7 +167,7 @@ export default function SizeGuideClient() {
                 className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
                   activeTab === cat.id
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {cat.label}
@@ -182,7 +182,7 @@ export default function SizeGuideClient() {
             <button
               onClick={() => setSubType('ao')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-                subType === 'ao' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                subType === 'ao' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               Áo Sơ Mi, Polo, Áo Thun Nam
@@ -190,7 +190,7 @@ export default function SizeGuideClient() {
             <button
               onClick={() => setSubType('quan')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-                subType === 'quan' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                subType === 'quan' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               Quần Tây, Jeans, Short Nam
@@ -200,7 +200,7 @@ export default function SizeGuideClient() {
 
         {/* Tables */}
         {activeTab === 'nam' && subType === 'ao' && (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-xs text-center border-collapse">
               <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                 <tr>
@@ -216,17 +216,17 @@ export default function SizeGuideClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 font-medium text-slate-800">
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">160–165</td><td className="border-r">160–165</td><td className="border-r">166–172</td><td className="border-r">172–177</td><td className="border-r">177–184</td><td className="border-r">184–192</td><td className="border-r">184–192</td><td>184–192</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">50–54</td><td className="border-r">55–61</td><td className="border-r">62–68</td><td className="border-r">69–75</td><td className="border-r">76–84</td><td className="border-r">85–90</td><td className="border-r">90–98</td><td>99–105</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Rộng vai (cm)</td><td className="border-r">41</td><td className="border-r">42</td><td className="border-r">43.5</td><td className="border-r">45</td><td className="border-r">46.5</td><td className="border-r">48</td><td className="border-r">49</td><td>50</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Vòng ngực (cm)</td><td className="border-r">82–86</td><td className="border-r">86–90</td><td className="border-r">90–94</td><td className="border-r">94–98</td><td className="border-r">98–103</td><td className="border-r">103–108</td><td className="border-r">108–113</td><td>114–120</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">160–165</td><td className="border-r">160–165</td><td className="border-r">166–172</td><td className="border-r">172–177</td><td className="border-r">177–184</td><td className="border-r">184–192</td><td className="border-r">184–192</td><td>184–192</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">50–54</td><td className="border-r">55–61</td><td className="border-r">62–68</td><td className="border-r">69–75</td><td className="border-r">76–84</td><td className="border-r">85–90</td><td className="border-r">90–98</td><td>99–105</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Rộng vai (cm)</td><td className="border-r">41</td><td className="border-r">42</td><td className="border-r">43.5</td><td className="border-r">45</td><td className="border-r">46.5</td><td className="border-r">48</td><td className="border-r">49</td><td>50</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Vòng ngực (cm)</td><td className="border-r">82–86</td><td className="border-r">86–90</td><td className="border-r">90–94</td><td className="border-r">94–98</td><td className="border-r">98–103</td><td className="border-r">103–108</td><td className="border-r">108–113</td><td>114–120</td></tr>
               </tbody>
             </table>
           </div>
         )}
 
         {activeTab === 'nam' && subType === 'quan' && (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-xs text-center border-collapse">
               <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                 <tr>
@@ -240,16 +240,16 @@ export default function SizeGuideClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 font-medium text-slate-800">
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">160–165</td><td className="border-r">163–168</td><td className="border-r">166–172</td><td className="border-r">170–176</td><td className="border-r">175–182</td><td>178–186</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">52–56</td><td className="border-r">57–63</td><td className="border-r">64–70</td><td className="border-r">71–77</td><td className="border-r">78–84</td><td>85–92</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Vòng bụng (cm)</td><td className="border-r">73–75</td><td className="border-r">76–78</td><td className="border-r">79–81</td><td className="border-r">82–84</td><td className="border-r">85–88</td><td>89–92</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">160–165</td><td className="border-r">163–168</td><td className="border-r">166–172</td><td className="border-r">170–176</td><td className="border-r">175–182</td><td>178–186</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">52–56</td><td className="border-r">57–63</td><td className="border-r">64–70</td><td className="border-r">71–77</td><td className="border-r">78–84</td><td>85–92</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Vòng bụng (cm)</td><td className="border-r">73–75</td><td className="border-r">76–78</td><td className="border-r">79–81</td><td className="border-r">82–84</td><td className="border-r">85–88</td><td>89–92</td></tr>
               </tbody>
             </table>
           </div>
         )}
 
         {activeTab === 'nu' && (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-xs text-center border-collapse">
               <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                 <tr>
@@ -262,17 +262,17 @@ export default function SizeGuideClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 font-medium text-slate-800">
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">150–156</td><td className="border-r">156–162</td><td className="border-r">162–166</td><td className="border-r">165–170</td><td>168–174</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">40–47</td><td className="border-r">48–53</td><td className="border-r">54–59</td><td className="border-r">60–65</td><td>66–72</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Vòng ngực (cm)</td><td className="border-r">80–84</td><td className="border-r">84–88</td><td className="border-r">88–92</td><td className="border-r">92–96</td><td>96–100</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Vòng eo (cm)</td><td className="border-r">62–66</td><td className="border-r">66–70</td><td className="border-r">70–74</td><td className="border-r">74–78</td><td>78–82</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">150–156</td><td className="border-r">156–162</td><td className="border-r">162–166</td><td className="border-r">165–170</td><td>168–174</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">40–47</td><td className="border-r">48–53</td><td className="border-r">54–59</td><td className="border-r">60–65</td><td>66–72</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Vòng ngực (cm)</td><td className="border-r">80–84</td><td className="border-r">84–88</td><td className="border-r">88–92</td><td className="border-r">92–96</td><td>96–100</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Vòng eo (cm)</td><td className="border-r">62–66</td><td className="border-r">66–70</td><td className="border-r">70–74</td><td className="border-r">74–78</td><td>78–82</td></tr>
               </tbody>
             </table>
           </div>
         )}
 
         {activeTab === 'tre-em' && (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-xs text-center border-collapse">
               <thead className="bg-slate-900 text-white font-bold uppercase tracking-wider">
                 <tr>
@@ -286,9 +286,9 @@ export default function SizeGuideClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 font-medium text-slate-800">
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Ước tính tuổi</td><td className="border-r">2–3 tuổi</td><td className="border-r">4–5 tuổi</td><td className="border-r">6–7 tuổi</td><td className="border-r">8–9 tuổi</td><td className="border-r">10–11 tuổi</td><td>12–13 tuổi</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">90–100</td><td className="border-r">100–110</td><td className="border-r">110–120</td><td className="border-r">120–130</td><td className="border-r">130–140</td><td>140–150</td></tr>
-                <tr><td className="py-3.5 px-3 font-bold bg-gray-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">12–15</td><td className="border-r">15–18</td><td className="border-r">18–23</td><td className="border-r">23–28</td><td className="border-r">28–34</td><td>34–40</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Ước tính tuổi</td><td className="border-r">2–3 tuổi</td><td className="border-r">4–5 tuổi</td><td className="border-r">6–7 tuổi</td><td className="border-r">8–9 tuổi</td><td className="border-r">10–11 tuổi</td><td>12–13 tuổi</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Chiều cao (cm)</td><td className="border-r">90–100</td><td className="border-r">100–110</td><td className="border-r">110–120</td><td className="border-r">120–130</td><td className="border-r">130–140</td><td>140–150</td></tr>
+                <tr><td className="py-3.5 px-3 font-bold bg-slate-50 border-r text-left">Cân nặng (kg)</td><td className="border-r">12–15</td><td className="border-r">15–18</td><td className="border-r">18–23</td><td className="border-r">23–28</td><td className="border-r">28–34</td><td>34–40</td></tr>
               </tbody>
             </table>
           </div>
@@ -297,7 +297,7 @@ export default function SizeGuideClient() {
         {activeTab === 'phu-kien' && (
           <div className="bg-red-50 border border-red-200 p-6 rounded-2xl text-slate-900 text-xs text-center">
             <h3 className="font-bold text-sm mb-2">Phụ Kiện ET.TEE Freesize</h3>
-            <p className="text-gray-600 max-w-lg mx-auto">
+            <p className="text-slate-600 max-w-lg mx-auto">
               Các sản phẩm Mũ nón, Tất vớ, Khăn quàng, Thắt lưng da của ET.TEE được thiết kế Freesize co giãn cao cấp, 
               dễ dàng điều chỉnh vừa vặn với mọi vóc dáng người dùng.
             </p>
@@ -307,13 +307,13 @@ export default function SizeGuideClient() {
 
       {/* 4. FAQs Section */}
       <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
           <HelpCircle className="w-6 h-6 text-red-600" />
           <h2 className="text-xl font-black uppercase text-slate-900">Câu Hỏi Thường Gặp Về Size Số</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed text-gray-600">
-          <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed text-slate-600">
+          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
             <h3 className="font-bold text-slate-900 mb-2">Nếu số đo của tôi ở giữa 2 size thì chọn size nào?</h3>
             <p>
               Nếu số đo của bạn nằm ở mốc giữa 2 size (ví dụ chiều cao vừa M nhưng cân nặng chớm L), 
@@ -321,7 +321,7 @@ export default function SizeGuideClient() {
             </p>
           </div>
 
-          <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
             <h3 className="font-bold text-slate-900 mb-2">Nếu mua về mặc không vừa size có được đổi lại không?</h3>
             <p>
               Hoàn toàn ĐƯỢC! ET.TEE áp dụng chính sách <strong>đổi trả 30 ngày hoàn toàn miễn phí</strong>. 
@@ -334,3 +334,4 @@ export default function SizeGuideClient() {
     </div>
   );
 }
+

@@ -11,29 +11,29 @@ const getApiBase = () => getApiBaseUrl();
 function MeasurementsSkeleton() {
   return (
     <div className="max-w-3xl space-y-8 animate-pulse">
-      <div className="h-8 w-48 bg-gray-200 rounded"></div>
-      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 h-24"></div>
+      <div className="h-8 w-48 bg-slate-200 rounded-lg"></div>
+      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 h-24"></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="h-6 w-32 bg-gray-200 rounded"></div>
+          <div className="h-6 w-32 bg-slate-200 rounded-lg"></div>
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="h-4 w-24 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-100 rounded-lg"></div>
+              <div className="h-4 w-24 bg-slate-200 rounded-lg"></div>
+              <div className="h-12 bg-slate-100 rounded-xl"></div>
             </div>
           </div>
         </div>
         <div className="space-y-6">
-          <div className="h-6 w-32 bg-gray-200 rounded"></div>
+          <div className="h-6 w-32 bg-slate-200 rounded-lg"></div>
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="h-4 w-32 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-100 rounded-lg"></div>
+              <div className="h-4 w-32 bg-slate-200 rounded-lg"></div>
+              <div className="h-12 bg-slate-100 rounded-xl"></div>
             </div>
           </div>
         </div>
       </div>
-      <div className="h-12 w-40 bg-gray-200 rounded-lg"></div>
+      <div className="h-12 w-40 bg-slate-200 rounded-full"></div>
     </div>
   );
 }
@@ -199,8 +199,8 @@ export default function MeasurementsPage() {
   if (isLoading) {
     return (
       <div>
-        <h2 className="text-2xl font-black uppercase mb-2">Số đo & Kích cỡ</h2>
-        <p className="text-gray-500 mb-8 pb-4 border-b border-gray-100">
+        <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-2">Số đo & Kích cỡ</h2>
+        <p className="text-slate-500 mb-8 pb-4 border-b border-slate-200/80 text-sm">
           Lưu số đo để ET.TEE giúp bạn chọn size chuẩn xác nhất.
         </p>
         <MeasurementsSkeleton />
@@ -211,16 +211,16 @@ export default function MeasurementsPage() {
   if (loadError) {
     return (
       <div>
-        <h2 className="text-2xl font-black uppercase mb-2">Số đo & Kích cỡ</h2>
-        <p className="text-gray-500 mb-8 pb-4 border-b border-gray-100">
+        <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-2">Số đo & Kích cỡ</h2>
+        <p className="text-slate-500 mb-8 pb-4 border-b border-slate-200/80 text-sm">
           Lưu số đo để ET.TEE giúp bạn chọn size chuẩn xác nhất.
         </p>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center space-y-4 max-w-3xl">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <p className="text-red-600 font-medium">{loadError}</p>
+        <div className="bg-rose-50/50 border border-rose-200 rounded-3xl p-6 text-center space-y-4 max-w-3xl">
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
+          <p className="text-rose-700 font-medium text-sm">{loadError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+            className="px-6 py-2.5 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-all text-xs uppercase tracking-wider"
           >
             Thử lại
           </button>
@@ -240,30 +240,30 @@ export default function MeasurementsPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-black uppercase mb-2">Số đo & Kích cỡ</h2>
-      <p className="text-gray-500 mb-8 pb-4 border-b border-gray-100">
+      <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-2">Số đo & Kích cỡ</h2>
+      <p className="text-slate-500 mb-8 pb-4 border-b border-slate-200/80 text-sm">
         Lưu số đo để ET.TEE giúp bạn chọn size chuẩn xác nhất.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
 
         {/* Profile Type */}
-        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-          <label className="block text-base font-bold text-gray-900 mb-4">Đối tượng đo <span className="text-red-500">*</span></label>
+        <div className="bg-slate-50/80 p-6 rounded-3xl border border-slate-200/80">
+          <label className="block text-base font-bold text-slate-900 mb-4">Đối tượng đo <span className="text-primary">*</span></label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {MEASUREMENT_PROFILES.map(profile => (
               <button
                 key={profile.id}
                 type="button"
                 onClick={() => handleProfileTypeChange(profile.id)}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
                   formData.measurementProfileType === profile.id
-                    ? 'border-black bg-white shadow-sm'
-                    : 'border-transparent bg-gray-100 hover:bg-gray-200 text-gray-600'
+                    ? 'border-slate-900 bg-white shadow-xs'
+                    : 'border-transparent bg-slate-100 hover:bg-slate-200/80 text-slate-600'
                 }`}
               >
                 <span className="text-3xl mb-2">{profile.icon}</span>
-                <span className={`text-sm font-semibold ${formData.measurementProfileType === profile.id ? 'text-black' : ''}`}>
+                <span className={`text-sm font-semibold ${formData.measurementProfileType === profile.id ? 'text-slate-900' : ''}`}>
                   {profile.label}
                 </span>
               </button>
@@ -274,11 +274,11 @@ export default function MeasurementsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Cân nặng, Chiều cao */}
           <div className="space-y-6">
-            <h3 className="font-bold text-lg text-gray-900">Chỉ số cơ bản</h3>
+            <h3 className="font-bold text-lg text-slate-900">Chỉ số cơ bản</h3>
 
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-600">Chiều cao</label>
+                <label className="text-sm font-semibold text-slate-600">Chiều cao</label>
                 <div className="relative mt-1">
                   <input
                     type="number"
@@ -288,14 +288,14 @@ export default function MeasurementsPage() {
                     onChange={handleChange}
                     min="80"
                     max="230"
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                    className="w-full p-3 pr-12 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900"
                   />
-                  <span className="absolute right-4 top-3 text-gray-500 font-medium">cm</span>
+                  <span className="absolute right-4 top-3 text-slate-400 font-medium text-sm">cm</span>
                 </div>
               </div>
 
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-600">Cân nặng</label>
+                <label className="text-sm font-semibold text-slate-600">Cân nặng</label>
                 <div className="relative mt-1">
                   <input
                     type="number"
@@ -305,9 +305,9 @@ export default function MeasurementsPage() {
                     onChange={handleChange}
                     min="10"
                     max="200"
-                    className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                    className="w-full p-3 pr-12 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900"
                   />
-                  <span className="absolute right-4 top-3 text-gray-500 font-medium">kg</span>
+                  <span className="absolute right-4 top-3 text-slate-400 font-medium text-sm">kg</span>
                 </div>
               </div>
             </div>
@@ -315,17 +315,17 @@ export default function MeasurementsPage() {
 
           {/* Size ưu thích */}
           <div className="space-y-6">
-            <h3 className="font-bold text-lg text-gray-900">Size ưu tiên</h3>
+            <h3 className="font-bold text-lg text-slate-900">Size ưu tiên</h3>
 
             <div className="grid grid-cols-2 gap-4">
               {(formData.measurementProfileType === 'SELF_ADULT' || formData.measurementProfileType === 'OTHER') && (
                 <div>
-                  <label className="text-sm font-semibold text-gray-600">Áo/Quần người lớn</label>
+                  <label className="text-sm font-semibold text-slate-600">Áo/Quần người lớn</label>
                   <select
                     name="preferredAdultSize"
                     value={formData.preferredAdultSize}
                     onChange={handleChange}
-                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
+                    className="w-full mt-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 bg-white"
                   >
                     <option value="">Chọn size...</option>
                     <option value="XS">XS</option>
@@ -340,12 +340,12 @@ export default function MeasurementsPage() {
 
               {(formData.measurementProfileType === 'CHILD' || formData.measurementProfileType === 'OTHER') && (
                 <div>
-                  <label className="text-sm font-semibold text-gray-600">Trẻ em</label>
+                  <label className="text-sm font-semibold text-slate-600">Trẻ em</label>
                   <select
                     name="preferredKidsSize"
                     value={formData.preferredKidsSize}
                     onChange={handleChange}
-                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 bg-white"
+                    className="w-full mt-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 bg-white"
                   >
                     <option value="">Chọn size...</option>
                     <option value="90">90 (1-2T)</option>
@@ -361,14 +361,14 @@ export default function MeasurementsPage() {
               )}
 
               <div className={formData.measurementProfileType === 'OTHER' ? 'col-span-2' : ''}>
-                <label className="text-sm font-semibold text-gray-600">Giày/dép</label>
+                <label className="text-sm font-semibold text-slate-600">Giày/dép</label>
                 <input
                   type="text"
                   name="shoeSize"
                   placeholder="Vd: 40 hoặc 250mm"
                   value={formData.shoeSize}
                   onChange={handleChange}
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900"
+                  className="w-full mt-1 p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900"
                 />
               </div>
             </div>
@@ -376,24 +376,24 @@ export default function MeasurementsPage() {
         </div>
 
         {/* Sở thích mặc đồ */}
-        <div className="pt-6 border-t border-gray-100">
-          <h3 className="font-bold text-lg text-gray-900 mb-4">Sở thích mặc đồ</h3>
+        <div className="pt-6 border-t border-slate-200/80">
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Sở thích mặc đồ</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {FIT_PREFERENCES.map(fit => (
               <button
                 key={fit.id}
                 type="button"
                 onClick={() => handleFitPreferenceChange(fit.id)}
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
                   formData.fitPreference === fit.id
-                    ? 'border-black bg-white shadow-sm'
-                    : 'border-transparent bg-gray-50 hover:bg-gray-100 text-gray-600'
+                    ? 'border-slate-900 bg-white shadow-xs'
+                    : 'border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600'
                 }`}
               >
                 <span className="text-2xl">{fit.icon}</span>
                 <div>
-                  <p className={`font-semibold text-sm ${formData.fitPreference === fit.id ? 'text-black' : ''}`}>{fit.label}</p>
-                  <p className="text-xs text-gray-500">{fit.subLabel}</p>
+                  <p className={`font-semibold text-sm ${formData.fitPreference === fit.id ? 'text-slate-900' : ''}`}>{fit.label}</p>
+                  <p className="text-xs text-slate-500">{fit.subLabel}</p>
                 </div>
               </button>
             ))}
@@ -401,31 +401,31 @@ export default function MeasurementsPage() {
         </div>
 
         {/* Số đo chi tiết */}
-        <div className="pt-6 border-t border-gray-100">
+        <div className="pt-6 border-t border-slate-200/80">
           <div className="mb-6 flex flex-col">
-            <h3 className="font-bold text-lg text-gray-900">Số đo chi tiết (cm)</h3>
-            <span className="text-sm text-gray-500">Giúp hệ thống gợi ý size quần áo chuẩn xác hơn (Không bắt buộc)</span>
+            <h3 className="font-bold text-lg text-slate-900">Số đo chi tiết (cm)</h3>
+            <span className="text-sm text-slate-500">Giúp hệ thống gợi ý size quần áo chuẩn xác hơn (Không bắt buộc)</span>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
             {detailedFields.map(field => (
               <div key={field.name}>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-gray-700 uppercase">{field.label}</label>
+                  <label className="text-xs font-bold text-slate-700 uppercase">{field.label}</label>
                   <div className="relative">
                     <button
                       type="button"
                       onMouseEnter={() => setActiveTooltip(field.name)}
                       onMouseLeave={() => setActiveTooltip(null)}
                       onClick={() => setActiveTooltip(activeTooltip === field.name ? null : field.name)}
-                      className="text-gray-400 hover:text-black"
+                      className="text-slate-400 hover:text-slate-900 transition-colors"
                     >
-                      <Info className="w-3 h-3" />
+                      <Info className="w-3.5 h-3.5" />
                     </button>
                     {activeTooltip === field.name && (
-                      <div className="absolute z-10 w-48 p-2 mt-1 text-xs text-white bg-black rounded-lg shadow-lg -left-24 bottom-full mb-2">
+                      <div className="absolute z-10 w-48 p-2.5 mt-1 text-xs text-white bg-slate-900 rounded-xl shadow-lg -left-24 bottom-full mb-2">
                         {field.desc}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"></div>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                       </div>
                     )}
                   </div>
@@ -437,7 +437,7 @@ export default function MeasurementsPage() {
                   onChange={handleChange} 
                   min="0" 
                   placeholder="--"
-                  className="w-full p-2 border border-gray-300 rounded-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-black text-gray-900 bg-gray-50 hover:bg-white focus:bg-white" 
+                  className="w-full p-2.5 border border-slate-300 rounded-xl transition-shadow focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-slate-900 bg-slate-50/50 hover:bg-white focus:bg-white" 
                 />
               </div>
             ))}
@@ -445,13 +445,13 @@ export default function MeasurementsPage() {
         </div>
 
         <div>
-          <label className="text-sm font-semibold text-gray-600 mb-1 block">Ghi chú thêm</label>
+          <label className="text-sm font-semibold text-slate-700 mb-1 block">Ghi chú thêm</label>
           <textarea
             name="note"
             rows={2}
             value={formData.note}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 resize-none"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 resize-none"
             placeholder="Ví dụ: Đùi to, tay áo thích mặc dài..."
           ></textarea>
         </div>
@@ -460,12 +460,12 @@ export default function MeasurementsPage() {
           <button
             type="submit"
             disabled={isSaving || !hasChanges}
-            className="flex items-center justify-center gap-2 px-8 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
           >
             {isSaving ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <Save className="w-5 h-5" />
+              <Save className="w-4 h-4" />
             )}
             LƯU SỐ ĐO
           </button>
@@ -474,7 +474,7 @@ export default function MeasurementsPage() {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-8 py-3 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-8 py-3.5 border border-slate-300 text-slate-700 font-bold rounded-full hover:bg-slate-50 transition-all text-xs uppercase tracking-wider"
             >
               HỦY
             </button>
@@ -484,3 +484,4 @@ export default function MeasurementsPage() {
     </div>
   );
 }
+

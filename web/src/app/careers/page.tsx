@@ -41,7 +41,7 @@ export default function CareersPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-5xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <span className="font-bold text-slate-900">Tuyển dụng</span>
@@ -109,7 +109,7 @@ export default function CareersPage() {
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                     selectedDept === d.id
                       ? 'bg-amber-500 text-slate-950 shadow-md'
-                      : 'bg-gray-100 text-slate-600 hover:bg-gray-200'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
                   {d.label}
@@ -123,7 +123,7 @@ export default function CareersPage() {
             {filtered.map(job => (
               <div 
                 key={job.id} 
-                className="p-5 rounded-2xl border border-gray-200/80 hover:border-amber-400 transition-all bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs hover:shadow-md"
+                className="p-5 rounded-2xl border border-slate-200/80 hover:border-amber-400 transition-all bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs hover:shadow-md"
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
@@ -159,13 +159,13 @@ export default function CareersPage() {
       {activeJobModal && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-md" onClick={() => setActiveJobModal(null)} />
-          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 z-10 space-y-4 my-auto border border-gray-100">
+          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 z-10 space-y-4 my-auto border border-slate-100">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">Ứng tuyển vị trí</h3>
                 <p className="text-xs text-amber-700 font-bold">{activeJobModal.title}</p>
               </div>
-              <button onClick={() => setActiveJobModal(null)} className="p-2 rounded-full bg-gray-100 text-gray-400 hover:text-slate-900">
+              <button onClick={() => setActiveJobModal(null)} className="p-2 rounded-full bg-slate-100 text-slate-400 hover:text-slate-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -231,3 +231,4 @@ export default function CareersPage() {
     </main>
   );
 }
+

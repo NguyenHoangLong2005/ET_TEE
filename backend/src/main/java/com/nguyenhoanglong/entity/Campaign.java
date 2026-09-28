@@ -31,6 +31,15 @@ public class Campaign {
     @Column(name = "budget")
     private BigDecimal budget = BigDecimal.ZERO;
 
+    @Column(name = "type", length = 50)
+    private String type = "SEASONAL";
+
+    @Column(name = "target_audience", length = 50)
+    private String targetAudience = "ALL";
+
+    @Column(name = "shop_id")
+    private Long shopId;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 
@@ -78,6 +87,12 @@ public class Campaign {
     public void setUpdatedBy(String updatedBy) { this.updatedBy = updatedBy; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+    public String getTargetAudience() { return targetAudience; }
+    public void setTargetAudience(String targetAudience) { this.targetAudience = targetAudience; }
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

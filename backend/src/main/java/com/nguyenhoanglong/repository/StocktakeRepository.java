@@ -18,4 +18,8 @@ public interface StocktakeRepository
             String warehouseLocation,
             String status
     );
+
+    List<Stocktake> findByShopId(Long shopId);
+
+    List<Stocktake> findByShopIdAndStatus(Long shopId, String status);
 }

@@ -40,13 +40,13 @@ export default function MarketingShell({ children, title, subtitle, action }: Ma
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div data-admin-area="true" className="min-h-screen text-slate-900" style={{ background: '#F8FAFC' }}>
       <div className="flex">
         <MarketingSidebar />
         <div className="flex-1 min-w-0">
           {/* Top bar */}
-          <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-            <div className="flex items-center justify-between px-6 lg:px-8 h-14">
+          <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 lg:px-8 h-16">
               <div className="flex items-center gap-3">
                 <Link
                   href="/"
@@ -79,7 +79,7 @@ export default function MarketingShell({ children, title, subtitle, action }: Ma
           {/* Page header */}
           <div className="px-6 lg:px-8 pt-7 pb-4 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-[22px] font-semibold tracking-tight text-slate-900">
+              <h1 className="text-xl font-semibold tracking-tight text-slate-900">
                 {title}
               </h1>
               {subtitle ? (

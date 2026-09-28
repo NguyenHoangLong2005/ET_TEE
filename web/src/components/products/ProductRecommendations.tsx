@@ -10,7 +10,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
       {/* Similar Products */}
       {similarProducts.length > 0 && (
         <section className="mb-16">
-          <h2 className="text-2xl font-bold uppercase text-gray-900 mb-8 text-center">
+          <h2 className="text-2xl font-bold uppercase text-slate-900 mb-8 text-center">
             Sản phẩm tương tự
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -18,6 +18,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
                 <ProductCard
                   key={product.id}
                   id={product.slug}
+                  productId={product.id}
                   name={product.name}
                   price={product.salePrice || product.price}
                   originalPrice={product.salePrice ? product.price : undefined}
@@ -36,7 +37,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
       {/* Outfit Recommendations */}
       {outfitProducts.length > 0 && (
         <section className="mb-16">
-          <h2 className="text-2xl font-bold uppercase text-gray-900 mb-8 text-center">
+          <h2 className="text-2xl font-bold uppercase text-slate-900 mb-8 text-center">
             Gợi ý phối đồ
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -44,6 +45,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
               <div key={product.id}>
                 <ProductCard
                   id={product.slug}
+                  productId={product.id}
                   name={product.name}
                   price={product.salePrice || product.price}
                   originalPrice={product.salePrice ? product.price : undefined}
@@ -54,7 +56,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
                   colors={Array.from(new Set(product.variants?.map(v => v.colorHex).filter(Boolean))) as string[]}
                   sizes={Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean))) as string[]}
                 />
-                <p className="text-center text-xs text-gray-500 font-bold mt-2 uppercase tracking-wide">
+                <p className="text-center text-xs text-slate-500 font-bold mt-2 uppercase tracking-wide">
                   {reason}
                 </p>
               </div>
@@ -65,3 +67,4 @@ export default async function ProductRecommendations({ slug }: { slug: string })
     </div>
   );
 }
+

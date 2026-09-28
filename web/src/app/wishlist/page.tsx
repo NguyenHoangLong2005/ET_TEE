@@ -3,28 +3,34 @@
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
+import PageHero from '@/components/ui/PageHero';
 
 export default function WishlistPage() {
   const { wishlistItems } = useWishlist();
 
   return (
-    <div className="container mx-auto px-4 xl:px-8 py-8 md:py-12">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-8">
-          Mục yêu thích
-        </h1>
+    <main className="min-h-screen bg-slate-50/50 pt-6 pb-20">
+      <div className="container mx-auto px-4 xl:px-8 max-w-6xl">
+        <PageBreadcrumb items={[{ label: 'Trang chủ', href: '/' }, { label: 'Mục yêu thích' }]} />
+
+        <PageHero
+          badgeText="Danh sách lưu trữ"
+          title="Mục yêu thích"
+          subtitle="Những sản phẩm thời trang bạn đã thả tim và lưu lại để xem hoặc mua sau."
+        />
 
         {wishlistItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50 rounded-lg">
-            <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-            <h2 className="text-lg font-semibold text-slate-700 mb-2">Chưa có sản phẩm nào</h2>
-            <p className="text-gray-500 mb-6 max-w-md">
+          <div className="bg-slate-50/60 border border-dashed border-slate-200/80 rounded-3xl p-12 md:p-16 text-center max-w-2xl mx-auto">
+            <Heart className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Chưa có sản phẩm nào</h2>
+            <p className="text-slate-500 text-sm leading-relaxed mb-6 max-w-md mx-auto">
               Bạn chưa lưu sản phẩm nào vào mục yêu thích. Hãy tiếp tục khám phá và lưu lại những món đồ bạn thích nhé.
             </p>
             <Link 
               href="/products" 
-              className="px-8 py-3 bg-slate-900 text-white text-sm font-bold tracking-widest uppercase hover:bg-[#e50027] transition-colors"
+              className="inline-block px-8 py-3.5 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition-all"
             >
               Tiếp tục mua sắm
             </Link>
@@ -32,7 +38,7 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {wishlistItems.map((product) => {
-              const primaryImage = product.images?.find((img: any) => img.isPrimary)?.imageUrl || product.images?.[0]?.imageUrl || '/images/placeholder.jpg';
+              const primaryImage = product.images?.find((img: any) => img.isPrimary)?.imageUrl || product.images?.[0]?.imageUrl || '/images/products/placeholder.webp';
               const hoverImage = product.images?.length > 1 ? product.images[1].imageUrl : undefined;
               
               const allColors = product.variants?.map((v: any) => v.colorHex).filter(Boolean) || [];
@@ -61,6 +67,7 @@ export default function WishlistPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
+

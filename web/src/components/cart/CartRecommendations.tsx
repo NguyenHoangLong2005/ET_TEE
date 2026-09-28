@@ -30,7 +30,7 @@ export default function CartRecommendations({ cartItems }: { cartItems: any[] })
     };
 
     fetchRecommendations();
-  }, [cartItems]);
+  }, [cartItems?.length, cartItems?.[0]?.productSlug]);
 
   if (isLoading || recommendations.length === 0) return null;
 
@@ -40,6 +40,7 @@ export default function CartRecommendations({ cartItems }: { cartItems: any[] })
         <div key={product.id}>
           <ProductCard
             id={product.slug}
+            productId={product.id}
             name={product.name}
             price={product.salePrice || product.price}
             originalPrice={product.salePrice ? product.price : undefined}
@@ -51,7 +52,7 @@ export default function CartRecommendations({ cartItems }: { cartItems: any[] })
             sizes={Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean))) as string[]}
           />
           {reason && (
-            <p className="text-center text-xs text-gray-500 font-bold mt-2 uppercase tracking-wide">
+            <p className="text-center text-xs text-slate-500 font-bold mt-2 uppercase tracking-wide">
               {reason}
             </p>
           )}
@@ -60,3 +61,4 @@ export default function CartRecommendations({ cartItems }: { cartItems: any[] })
     </div>
   );
 }
+

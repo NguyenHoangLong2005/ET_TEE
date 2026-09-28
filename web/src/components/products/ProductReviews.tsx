@@ -116,20 +116,20 @@ export default function ProductReviews({ productId, slug }: { productId: number,
 
   return (
     <div className="mt-16" id="reviews">
-      <h2 className="text-2xl font-bold uppercase text-gray-900 mb-8 border-b pb-4">
+      <h2 className="text-2xl font-bold uppercase text-slate-900 mb-8 border-b pb-4">
         Đánh giá khách hàng
       </h2>
 
       <div className="flex flex-col md:flex-row gap-12 mb-12">
         {/* Summary */}
-        <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-6 bg-gray-50 border border-gray-100 rounded-xl">
-          <div className="text-5xl font-black text-gray-900 mb-2">{averageRating.toFixed(1)}</div>
+        <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-100 rounded-xl">
+          <div className="text-5xl font-black text-slate-900 mb-2">{averageRating.toFixed(1)}</div>
           <div className="flex mb-2">
             {[1, 2, 3, 4, 5].map(star => (
-              <Star key={star} className={`w-5 h-5 ${star <= averageRating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+              <Star key={star} className={`w-5 h-5 ${star <= averageRating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-slate-200'}`} />
             ))}
           </div>
-          <p className="text-sm text-gray-500">{totalReviews} đánh giá</p>
+          <p className="text-sm text-slate-500">{totalReviews} đánh giá</p>
           
           <div className="w-full mt-6 space-y-2">
             {[5, 4, 3, 2, 1].map(star => {
@@ -137,11 +137,11 @@ export default function ProductReviews({ productId, slug }: { productId: number,
               const percent = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={star} className="flex items-center text-sm">
-                  <div className="w-8 flex items-center">{star} <Star className="w-3 h-3 ml-1 fill-gray-400 text-gray-400" /></div>
-                  <div className="flex-1 mx-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-8 flex items-center">{star} <Star className="w-3 h-3 ml-1 fill-gray-400 text-slate-400" /></div>
+                  <div className="flex-1 mx-2 h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div className="h-full bg-black" style={{ width: `${percent}%` }}></div>
                   </div>
-                  <div className="w-8 text-right text-gray-500">{count}</div>
+                  <div className="w-8 text-right text-slate-500">{count}</div>
                 </div>
               );
             })}
@@ -151,7 +151,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
         {/* Review Form Area */}
         <div className="w-full md:w-2/3">
           {eligibility?.canReview ? (
-            <form onSubmit={handleSubmit} className="border border-gray-200 p-6 rounded-xl bg-white shadow-sm">
+            <form onSubmit={handleSubmit} className="border border-slate-200 p-6 rounded-xl bg-white shadow-sm">
               <h3 className="font-bold uppercase mb-4">Viết đánh giá của bạn</h3>
               
               {error && (
@@ -161,7 +161,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
               )}
 
               <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Đánh giá sao</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Đánh giá sao</label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map(star => (
                     <button
@@ -170,56 +170,56 @@ export default function ProductReviews({ productId, slug }: { productId: number,
                       onClick={() => setRating(star)}
                       className="focus:outline-none transition-transform hover:scale-110"
                     >
-                      <Star className={`w-8 h-8 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                      <Star className={`w-8 h-8 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-slate-200'}`} />
                     </button>
                   ))}
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Nhận xét chi tiết</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Nhận xét chi tiết</label>
                 <textarea
                   required
                   rows={4}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
-                  className="w-full border border-gray-300 p-3 text-sm focus:outline-none focus:border-black rounded-lg"
+                  className="w-full border border-slate-300 p-3 text-sm focus:outline-none focus:border-black rounded-lg"
                 />
               </div>
 
-              <div className="text-sm text-gray-500 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100 flex items-start">
+              <div className="text-sm text-slate-500 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-100 flex items-start">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-gray-700">Đơn hàng hợp lệ</p>
-                  <p className="mt-1">Size: {eligibility.purchasedSize} | Màu: <span className="inline-block w-3 h-3 rounded-full border border-gray-300" style={{backgroundColor: eligibility.purchasedColor}}/></p>
+                  <p className="font-medium text-slate-700">Đơn hàng hợp lệ</p>
+                  <p className="mt-1">Size: {eligibility.purchasedSize} | Màu: <span className="inline-block w-3 h-3 rounded-full border border-slate-300" style={{backgroundColor: eligibility.purchasedColor}}/></p>
                 </div>
               </div>
               
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-black text-white px-8 py-3 font-bold text-sm uppercase rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors w-full sm:w-auto"
+                className="bg-black text-white px-8 py-3 font-bold text-sm uppercase rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors w-full sm:w-auto"
               >
                 {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
               </button>
             </form>
           ) : (
-            <div className="h-full flex flex-col justify-center border border-gray-100 bg-gray-50 p-8 rounded-xl text-center text-sm text-gray-600">
+            <div className="h-full flex flex-col justify-center border border-slate-100 bg-slate-50 p-8 rounded-xl text-center text-sm text-slate-600">
               {eligibility?.reason === 'NOT_LOGGED_IN' && (
                 <div>
                   <p className="mb-4 text-base">Vui lòng đăng nhập để đánh giá sản phẩm này.</p>
                   <div className="flex justify-center gap-4">
-                    <Link href={`/auth/login?redirect=/products/${slug}#reviews`} className="inline-block px-6 py-2 bg-black text-white font-bold uppercase rounded hover:bg-gray-800 transition-colors">
+                    <Link href={`/auth/login?redirect=/products/${slug}#reviews`} className="inline-block px-6 py-2 bg-black text-white font-bold uppercase rounded hover:bg-slate-800 transition-colors">
                       Đăng nhập
                     </Link>
                   </div>
                   
-                  <div className="mt-8 border-t border-gray-200 pt-6">
+                  <div className="mt-8 border-t border-slate-200 pt-6">
                     {!showGuestForm ? (
                       <button 
                         onClick={() => setShowGuestForm(true)}
-                        className="text-sm font-bold uppercase text-gray-700 hover:text-black transition-colors underline underline-offset-4"
+                        className="text-sm font-bold uppercase text-slate-700 hover:text-black transition-colors underline underline-offset-4"
                       >
                         Bạn đã mua hàng với tư cách khách vãng lai? Đánh giá bằng mã đơn hàng
                       </button>
@@ -227,39 +227,39 @@ export default function ProductReviews({ productId, slug }: { productId: number,
                       <form onSubmit={handleGuestCheck} className="max-w-sm mx-auto text-left">
                         <p className="text-sm font-bold mb-4 uppercase text-center">Xác minh đơn hàng khách vãng lai</p>
                         <div className="mb-3">
-                          <label className="block text-xs font-bold text-gray-700 mb-1">Mã đơn hàng</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Mã đơn hàng</label>
                           <input 
                             type="text" 
                             required
                             value={guestOrderCode}
                             onChange={(e) => setGuestOrderCode(e.target.value)}
                             placeholder="VD: ORD-ABC123XYZ"
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:border-black focus:ring-1 focus:ring-black outline-none"
+                            className="w-full border border-slate-300 rounded p-2 text-sm focus:border-black focus:ring-1 focus:ring-black outline-none"
                           />
                         </div>
                         <div className="mb-4">
-                          <label className="block text-xs font-bold text-gray-700 mb-1">Email / Số điện thoại</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Email / Số điện thoại</label>
                           <input 
                             type="text" 
                             required
                             value={guestEmail}
                             onChange={(e) => setGuestEmail(e.target.value)}
                             placeholder="Đã dùng khi đặt hàng"
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:border-black focus:ring-1 focus:ring-black outline-none"
+                            className="w-full border border-slate-300 rounded p-2 text-sm focus:border-black focus:ring-1 focus:ring-black outline-none"
                           />
                         </div>
                         <div className="flex gap-2">
                           <button 
                             type="button"
                             onClick={() => setShowGuestForm(false)}
-                            className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded font-bold text-xs uppercase hover:bg-gray-300"
+                            className="flex-1 px-4 py-2 bg-slate-200 text-slate-800 rounded font-bold text-xs uppercase hover:bg-slate-300"
                           >
                             Hủy
                           </button>
                           <button 
                             type="submit"
                             disabled={guestChecking}
-                            className="flex-1 px-4 py-2 bg-black text-white rounded font-bold text-xs uppercase hover:bg-gray-800 disabled:opacity-50"
+                            className="flex-1 px-4 py-2 bg-black text-white rounded font-bold text-xs uppercase hover:bg-slate-800 disabled:opacity-50"
                           >
                             {guestChecking ? 'Đang kiểm tra...' : 'Xác minh'}
                           </button>
@@ -294,14 +294,14 @@ export default function ProductReviews({ productId, slug }: { productId: number,
       <div>
         <h3 className="font-bold uppercase mb-6">{reviews.length} Bình luận</h3>
         {reviews.length === 0 ? (
-          <p className="text-gray-500 italic py-8 text-center bg-gray-50 rounded-xl border border-gray-100">Chưa có đánh giá nào cho sản phẩm này.</p>
+          <p className="text-slate-500 italic py-8 text-center bg-slate-50 rounded-xl border border-slate-100">Chưa có đánh giá nào cho sản phẩm này.</p>
         ) : (
           <div className="space-y-6">
             {reviews.map((review) => (
-              <div key={review.id} className="border-b border-gray-100 pb-6">
+              <div key={review.id} className="border-b border-slate-100 pb-6">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="font-bold text-gray-900">{review.customerNameSnapshot}</p>
+                    <p className="font-bold text-slate-900">{review.customerNameSnapshot}</p>
                     {review.verifiedPurchase && (
                       <span className="flex items-center text-xs text-green-600 mt-1">
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -309,21 +309,21 @@ export default function ProductReviews({ productId, slug }: { productId: number,
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-slate-400">
                     {new Date(review.createdAt).toLocaleDateString('vi-VN')}
                   </span>
                 </div>
                 
                 <div className="flex mb-3">
                   {[1, 2, 3, 4, 5].map(star => (
-                    <Star key={star} className={`w-4 h-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                    <Star key={star} className={`w-4 h-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-slate-200'}`} />
                   ))}
                 </div>
                 
-                <p className="text-gray-700 text-sm leading-relaxed mb-2">{review.content}</p>
+                <p className="text-slate-700 text-sm leading-relaxed mb-2">{review.content}</p>
                 {review.purchasedSize && review.purchasedColor && (
-                  <p className="text-xs text-gray-500">
-                    Phân loại: Size {review.purchasedSize}, <span className="inline-block w-2.5 h-2.5 rounded-full border border-gray-300 align-middle ml-1" style={{backgroundColor: review.purchasedColor}}/>
+                  <p className="text-xs text-slate-500">
+                    Phân loại: Size {review.purchasedSize}, <span className="inline-block w-2.5 h-2.5 rounded-full border border-slate-300 align-middle ml-1" style={{backgroundColor: review.purchasedColor}}/>
                   </p>
                 )}
               </div>
@@ -334,3 +334,4 @@ export default function ProductReviews({ productId, slug }: { productId: number,
     </div>
   );
 }
+

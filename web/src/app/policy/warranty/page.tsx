@@ -12,7 +12,7 @@ export default function WarrantyPolicyPage() {
       <div className="container mx-auto px-4 xl:px-8 max-w-4xl">
         
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:underline">Trang chủ</Link>
           <span>/</span>
           <Link href="/policy" className="hover:underline">Chính sách</Link>
@@ -22,7 +22,7 @@ export default function WarrantyPolicyPage() {
 
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
-          <div className="border-b border-gray-100 pb-6">
+          <div className="border-b border-slate-100 pb-6">
             <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               Product Warranty
             </span>
@@ -46,7 +46,7 @@ export default function WarrantyPolicyPage() {
                 <Wrench className="w-5 h-5 text-amber-600" />
                 <span>1. Danh Mục Sản Phẩm Được Bảo Hành</span>
               </h2>
-              <ul className="space-y-2 pl-4 list-disc text-gray-600">
+              <ul className="space-y-2 pl-4 list-disc text-slate-600">
                 <li><strong>Áo Sơ Mi, Áo Polo, Áo Phông:</strong> Bảo hành đường chỉ may, cúc áo, bác tay và đường cuốn biên.</li>
                 <li><strong>Quần Tây, Quần Jeans, Quần Kaki:</strong> Bảo hành đỉa quần, đường may đũng, khóa kéo mạ đồng.</li>
                 <li><strong>Áo Khoác, Áo Phao, Áo Windbreaker:</strong> Bảo hành khóa kéo chính, cúc bấm, dây rút gấu áo.</li>
@@ -71,3 +71,4 @@ export default function WarrantyPolicyPage() {
     </main>
   );
 }
+

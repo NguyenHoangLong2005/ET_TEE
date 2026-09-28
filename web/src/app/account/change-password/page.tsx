@@ -119,31 +119,35 @@ export default function ChangePasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="max-w-md mx-auto text-center py-12">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
+      <div className="max-w-md mx-auto text-center py-8">
+        <div className="bg-slate-50/80 border border-slate-200/80 rounded-3xl p-8 space-y-6">
+          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
+            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-2">Đổi mật khẩu thành công!</h2>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Mật khẩu của bạn đã được cập nhật an toàn. Vui lòng đăng nhập lại bằng mật khẩu mới.
+            </p>
+          </div>
+          <p className="font-medium text-slate-900 bg-white py-3 rounded-2xl border border-slate-200/80 text-sm shadow-2xs">
+            Tự động đăng xuất sau <span className="text-primary font-bold">{countdown}</span> giây...
+          </p>
         </div>
-        <h2 className="text-2xl font-black uppercase mb-4">Đổi mật khẩu thành công!</h2>
-        <p className="text-gray-500 mb-8">
-          Mật khẩu của bạn đã được cập nhật an toàn. Vui lòng đăng nhập lại bằng mật khẩu mới.
-        </p>
-        <p className="font-medium text-gray-900 bg-gray-50 py-3 rounded-lg border border-gray-200">
-          Tự động đăng xuất sau <span className="text-red-600 font-bold">{countdown}</span> giây...
-        </p>
       </div>
     );
   }
 
   return (
     <div className="max-w-md mx-auto py-2">
-      <h2 className="text-2xl font-black uppercase mb-6 pb-4 border-b border-gray-100 flex items-center justify-center gap-2">
-        <Lock className="w-6 h-6" /> Đổi mật khẩu
+      <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-6 pb-4 border-b border-slate-200/80 flex items-center justify-center gap-2">
+        <Lock className="w-6 h-6 text-primary" /> Đổi mật khẩu
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700">Mật khẩu hiện tại <span className="text-red-500">*</span></label>
+          <label className="text-sm font-semibold text-slate-700">Mật khẩu hiện tại <span className="text-primary">*</span></label>
           <div className="relative">
             <input
               type={showCurrent ? 'text' : 'password'}
@@ -151,23 +155,23 @@ export default function ChangePasswordPage() {
               required
               value={formData.currentPassword}
               onChange={handleChange}
-              className={`w-full p-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 ${fieldErrors['currentPassword'] ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full p-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 ${fieldErrors['currentPassword'] ? 'border-rose-400' : 'border-slate-300'}`}
             />
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-4 top-3 text-gray-400 hover:text-black transition-colors"
+              className="absolute right-4 top-3 text-slate-400 hover:text-slate-900 transition-colors"
             >
               {showCurrent ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {fieldErrors['currentPassword'] && (
-            <p className="text-red-500 text-xs mt-1 font-medium">{fieldErrors['currentPassword']}</p>
+            <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors['currentPassword']}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700">Mật khẩu mới <span className="text-red-500">*</span></label>
+          <label className="text-sm font-semibold text-slate-700">Mật khẩu mới <span className="text-primary">*</span></label>
           <div className="relative">
             <input
               type={showNew ? 'text' : 'password'}
@@ -175,12 +179,12 @@ export default function ChangePasswordPage() {
               required
               value={formData.newPassword}
               onChange={handleChange}
-              className={`w-full p-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 ${fieldErrors['newPassword'] ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full p-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 ${fieldErrors['newPassword'] ? 'border-rose-400' : 'border-slate-300'}`}
             />
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
-              className="absolute right-4 top-3 text-gray-400 hover:text-black transition-colors"
+              className="absolute right-4 top-3 text-slate-400 hover:text-slate-900 transition-colors"
             >
               {showNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -193,8 +197,8 @@ export default function ChangePasswordPage() {
                   key={i} 
                   className={`h-1.5 flex-1 rounded-full ${
                     strength > i * 25 
-                      ? strength > 75 ? 'bg-green-500' : strength > 50 ? 'bg-yellow-500' : 'bg-red-500' 
-                      : 'bg-gray-200'
+                      ? strength > 75 ? 'bg-emerald-500' : strength > 50 ? 'bg-amber-500' : 'bg-rose-500' 
+                      : 'bg-slate-200'
                   }`}
                 />
               ))}
@@ -202,14 +206,14 @@ export default function ChangePasswordPage() {
           )}
 
           {fieldErrors['newPassword'] ? (
-            <p className="text-red-500 text-xs mt-1 font-medium">{fieldErrors['newPassword']}</p>
+            <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors['newPassword']}</p>
           ) : (
-            <p className="text-xs text-gray-500 mt-1">Tối thiểu 8 ký tự, bao gồm chữ cái và số.</p>
+            <p className="text-xs text-slate-500 mt-1">Tối thiểu 8 ký tự, bao gồm chữ cái và số.</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700">Xác nhận mật khẩu mới <span className="text-red-500">*</span></label>
+          <label className="text-sm font-semibold text-slate-700">Xác nhận mật khẩu mới <span className="text-primary">*</span></label>
           <div className="relative">
             <input
               type={showConfirm ? 'text' : 'password'}
@@ -221,30 +225,30 @@ export default function ChangePasswordPage() {
                 e.preventDefault();
                 toast.error('Vui lòng gõ lại mật khẩu để xác nhận.');
               }}
-              className={`w-full p-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-shadow text-gray-900 ${fieldErrors['confirmPassword'] ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full p-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-shadow text-slate-900 ${fieldErrors['confirmPassword'] ? 'border-rose-400' : 'border-slate-300'}`}
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-4 top-3 text-gray-400 hover:text-black transition-colors"
+              className="absolute right-4 top-3 text-slate-400 hover:text-slate-900 transition-colors"
             >
               {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {fieldErrors['confirmPassword'] && (
-            <p className="text-red-500 text-xs mt-1 font-medium">{fieldErrors['confirmPassword']}</p>
+            <p className="text-rose-500 text-xs mt-1 font-medium">{fieldErrors['confirmPassword']}</p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={isSaving}
-          className="flex items-center justify-center gap-2 w-full px-8 py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+          className="flex items-center justify-center gap-2 w-full px-8 py-3.5 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-wider rounded-full shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed mt-4"
         >
           {isSaving ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            <Save className="w-5 h-5" />
+            <Save className="w-4 h-4" />
           )}
           CẬP NHẬT MẬT KHẨU
         </button>
@@ -252,3 +256,4 @@ export default function ChangePasswordPage() {
     </div>
   );
 }
+
