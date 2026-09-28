@@ -19,6 +19,21 @@ mobile/.dart_tool/
 mobile/.pub-cache/
 mobile/build/
 
+# Scratch / one-off dev scripts (never commit these)
+web/test*.py
+web/test*.js
+web/fix_*.py
+web/fix_*.sql
+web/refactor_*.py
+web/remove_*.py
+web/add_portal_target.py
+web/run_sql*.py
+web/check_db.sql
+web/diff_*.txt
+web/corrupted_files.txt
+web/users_page_recovered*.txt
+web/script.js
+
 # IDEs & OS Files
 .idea/
 .vscode/
