@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -112,6 +113,13 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(outfits));
     }
 
+    // San pham goc (ten, mo ta, anh, thuoc tinh, danh muc, thuong hieu) la du
+    // lieu DUNG CHUNG: chi ADMIN duoc them/sua/xoa. Truoc day MANAGE_SHOP_PRODUCT
+    // (quyen cua SHOP_OWNER) cung goi duoc 3 endpoint nay, nghia la SHOP_OWNER
+    // sua/xoa duoc san pham goc cua ca he thong - da bo MANAGE_SHOP_PRODUCT
+    // khoi day. MANAGE_SHOP_PRODUCT gio chi con y nghia cho shop_product_configs
+    // (gia/ton kho tai chi nhanh), khong con dung o day.
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_GLOBAL_CATEGORY)")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductDto>> createProduct(@Valid @RequestBody ProductDto productDto) {
         ProductDto createdProduct = productService.createProduct(productDto);
@@ -119,6 +127,7 @@ public class ProductController {
                 .body(ApiResponse.success("Product created successfully", createdProduct));
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_GLOBAL_CATEGORY)")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductDto>> updateProduct(
             @PathVariable Long id,
@@ -127,9 +136,11 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Product updated successfully", updatedProduct));
     }
 
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_GLOBAL_CATEGORY)")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.success("Product deleted successfully", null));
     }
 }
+

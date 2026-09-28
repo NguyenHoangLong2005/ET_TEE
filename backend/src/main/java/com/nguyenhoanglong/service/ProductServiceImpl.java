@@ -129,7 +129,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        // Xoa mem: doi status='DELETED' thay vi deleteById. Product da co
+        // @SQLRestriction("status <> 'DELETED'") nen san pham nay tu dong bien
+        // mat khoi moi truy van sau khi doi status - don hang/phieu nhap cu
+        // van con tham chieu duoc toi no.
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
+        product.setStatus("DELETED");
+        productRepository.save(product);
     }
 
     private ProductDto mapToDto(Product product) {
