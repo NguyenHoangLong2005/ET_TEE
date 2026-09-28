@@ -702,51 +702,11 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
     // ==========================================
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<UserAdminDto> getShopStaff(Long shopId) {
         List<User> users = userRepository.findByShopId(shopId).stream()
                 .filter(u -> u.getRole() != Role.USER && u.getRole() != Role.ADMIN)
                 .collect(Collectors.toList());
-
-        if (users.isEmpty() && shopId != null && shopId == 1L) {
-            // Seed initial shop staff for demo
-            List<User> demoStaff = List.of(
-                User.builder()
-                    .employeeCode("NV-BANHANG-01")
-                    .fullName("Nguyễn Văn An")
-                    .email("an.nguyen@ettee.com")
-                    .phone("0901234567")
-                    .passwordHash(passwordEncoder.encode("Staff@123456"))
-                    .emailVerified(true)
-                    .status("ACTIVE")
-                    .role(Role.SALES_STAFF)
-                    .shopId(shopId)
-                    .build(),
-                User.builder()
-                    .employeeCode("NV-CSKH-01")
-                    .fullName("Trần Thị Bình")
-                    .email("binh.tran@ettee.com")
-                    .phone("0912345678")
-                    .passwordHash(passwordEncoder.encode("Staff@123456"))
-                    .emailVerified(true)
-                    .status("ACTIVE")
-                    .role(Role.CSKH_STAFF)
-                    .shopId(shopId)
-                    .build(),
-                User.builder()
-                    .employeeCode("NV-KHO-01")
-                    .fullName("Lê Hoàng Cường")
-                    .email("cuong.le@ettee.com")
-                    .phone("0923456789")
-                    .passwordHash(passwordEncoder.encode("Staff@123456"))
-                    .emailVerified(true)
-                    .status("ACTIVE")
-                    .role(Role.WAREHOUSE_STAFF)
-                    .shopId(shopId)
-                    .build()
-            );
-            users = userRepository.saveAll(demoStaff);
-        }
 
         return users.stream().map(this::mapToUserAdminDto).collect(Collectors.toList());
     }
@@ -775,8 +735,11 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
                     "Mã vai trò không hợp lệ: " + createDto.getRoleCode() + ". Vui lòng sử dụng mã vai trò đã được định nghĩa trong hệ thống.");
         }
 
-        if (role == Role.ADMIN || role == Role.SHOP_OWNER) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chủ shop không có quyền tạo tài khoản Admin hoặc Chủ shop khác");
+        boolean shopLevelRole = role == Role.SALES_STAFF || role == Role.CSKH_STAFF
+                || role == Role.WAREHOUSE_STAFF || role == Role.SHIPPING_STAFF;
+        if (!shopLevelRole) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Chủ shop chỉ có thể tạo tài khoản nhân viên cấp chi nhánh (Bán hàng, CSKH, Kho, Vận chuyển)");
         }
 
         String rawPassword = (createDto.getInitialPassword() != null && !createDto.getInitialPassword().trim().isEmpty())
