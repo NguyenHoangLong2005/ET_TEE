@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;LOCK_TIMEOUT=10000
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  # Flyway tat trong test: V1__baseline.sql la DDL rieng cua PostgreSQL
+  # (GENERATED AS IDENTITY, nextval(...)::regclass, kieu character varying...).
+  # Duy tri them mot ban migration tuong thich H2 se phai lam lai cho MOI file
+  # migration ve sau, trong khi test o day chi kiem tra anh xa JPA va nghiep vu.
+  # Schema cho test van do Hibernate sinh tu chinh entity (create-drop).
+  flyway:
+    enabled: false
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  jwt:
+    secret: 9a6e2e6d1234567890abcdef1234567890abcdef1234567890abcdef12345678
+    expiration-ms: 86400000
+
+logging:
+  level:
+    com.nguyenhoanglong: DEBUG
