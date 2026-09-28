@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getApiBaseUrl } from "@/lib/api-config";
+import { staffList, staffAction } from "@/lib/staff-api";
 import { RefreshCw, Play, CheckCircle2, Truck } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable, Column } from "@/components/ui/DataTable";
@@ -40,10 +40,8 @@ export default function WarehouseOrdersPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/staff/warehouse/orders`, { cache: "no-store" });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message ?? "Không thể tải đơn kho");
-      setOrders((Array.isArray(result) ? result : result.data ?? []).map((o: Order) => ({ ...o, orderId: o.orderId ?? o.id ?? 0 })));
+      const result = await staffList<Order>("/api/staff/warehouse/orders");
+      setOrders(result.map((o) => ({ ...o, orderId: o.orderId ?? o.id ?? 0 })));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Không thể kết nối backend";
       setError(msg);
@@ -61,15 +59,7 @@ export default function WarehouseOrdersPage() {
   const runAction = async (orderId: number, path: string) => {
     setBusyOrderId(orderId);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/staff/warehouse/orders/${orderId}/${path}`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message ?? "Thao tác thất bại");
-      }
-
+      await staffAction(`/api/staff/warehouse/orders/${orderId}/${path}`, "POST");
       toast.success("Cập nhật trạng thái đơn kho thành công");
       await loadOrders();
     } catch (err) {
