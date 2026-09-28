@@ -1,5 +1,32 @@
 # Flyway — quản lý schema database
 
+## 🚨 QUY TẮC SỐ 1: version phải lớn hơn `20260908000000`
+
+Database thật đã được đánh dấu baseline tại version **`20260908000000`**. Flyway
+**bỏ qua không thi hành** mọi migration có version nhỏ hơn hoặc bằng mốc này.
+
+Nghĩa là nếu anh đặt tên file `V2__them_bang_shops.sql`, nó sẽ chạy ngon lành trên
+máy dev (database rỗng) rồi **im lặng không làm gì trên production** — không báo lỗi,
+không cảnh báo. Đây là kiểu hỏng nguy hiểm nhất vì nó trông như đã thành công.
+
+**Luôn đặt tên theo timestamp:**
+
+```
+V2026MMDDHHmmss__mo_ta_ngan.sql
+```
+
+Ví dụ hợp lệ: `V20260929143000__them_bang_shops.sql`
+
+Ngoại lệ duy nhất là `V1__baseline.sql` — nó *cố ý* nằm dưới mốc baseline để không
+bao giờ chạm vào production (xem phần dưới).
+
+Kiểm tra nhanh trước khi commit một migration mới:
+
+```bash
+ls backend/src/main/resources/db/migration/
+# Moi file (tru V1__baseline.sql) phai bat dau bang V2026... va lon hon V20260908000000
+```
+
 ## Vì sao có tài liệu này
 
 Trước thay đổi này, dự án **không hề có Flyway trong `pom.xml`**. 21 file trong
@@ -88,6 +115,32 @@ cũ vô tình lọt lại vào `db/migration/` — kiểm tra lại thư mục.
 2. Không sửa file migration đã chạy (Flyway kiểm checksum sẽ báo lỗi).
 3. Không dùng lại `ddl-auto=update` để đổi schema nữa — Hibernate giờ chỉ đối chiếu.
 4. Chạy app hoặc `./mvnw flyway:migrate` với `DB_MIGRATION_URL` đã đặt.
+
+## Kiểm chứng `V1__baseline.sql`
+
+Baseline **chưa từng được thi hành ở đâu**: production bỏ qua nó (version dưới mốc
+baseline), profile test thì tắt Flyway. Nên tính đúng đắn của nó chưa được chứng minh.
+
+Cách kiểm chứng an toàn — dựng PostgreSQL rỗng bằng Docker rồi chạy migrate từ đầu,
+**không đụng gì tới Supabase**:
+
+```bash
+bash scripts/verify-baseline.sh
+```
+
+Script tự làm: tạo container `postgres:17` (cùng major version với Supabase 17.6) →
+chạy `flyway/flyway:10.20.1 migrate` với thư mục `db/migration` mount vào → đếm
+bảng/khoá/index dựng được → xoá sạch container.
+
+Đạt yêu cầu khi bước 2 in `Successfully applied 1 migration` và bước 3 báo **55 bảng**.
+
+Cần Docker Desktop đang chạy. Nếu không có Docker, dùng bất kỳ PostgreSQL 17 rỗng nào
+rồi chạy tay:
+
+```bash
+psql -h <host> -U <user> -d <db_rong> -v ON_ERROR_STOP=1 \
+  -f backend/src/main/resources/db/migration/V1__baseline.sql
+```
 
 ## Test
 
