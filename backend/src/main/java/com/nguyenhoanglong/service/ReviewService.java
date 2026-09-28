@@ -114,7 +114,9 @@ public class ReviewService {
                 return res;
             }
             
-            if (!"DELIVERED".equals(order.getOrderStatus()) && !"COMPLETED".equals(order.getOrderStatus())) {
+            // "COMPLETED" khong ton tai trong OrderStatus va khong tung xuat hien
+            // trong du lieu; dung dung tap trang thai "da ban" (xem SoldCountService).
+            if (!SoldCountService.isSoldStatus(order.getStatus())) {
                 res.setCanReview(false);
                 res.setReason("NOT_DELIVERED");
                 return res;
@@ -191,8 +193,7 @@ public class ReviewService {
             customerName = order.getCustomerName() != null ? order.getCustomerName() : customerName;
         }
 
-        String orderStatus = order.getOrderStatus();
-        if (!"DELIVERED".equals(orderStatus) && !"COMPLETED".equals(orderStatus)) {
+        if (!SoldCountService.isSoldStatus(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_DELIVERED");
         }
 

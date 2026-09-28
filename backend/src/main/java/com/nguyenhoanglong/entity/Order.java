@@ -31,8 +31,14 @@ public class Order {
     @Column(name = "voucher_id")
     private Long voucherId;
 
+    @Column(name = "shop_id")
+    private Long shopId;
+
     @Column(name = "customer_name", nullable = false)
     private String customerName;
+
+    public Long getShopId() { return shopId; }
+    public void setShopId(Long shopId) { this.shopId = shopId; }
 
     @Column(name = "customer_phone")
     private String customerPhone;
@@ -46,33 +52,42 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private String note;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "double precision default 0")
     private Double subtotal = 0.0;
 
-    @Column(name = "shipping_fee", nullable = false)
+    @Column(name = "shipping_fee", nullable = false, columnDefinition = "double precision default 0")
     private Double shippingFee = 0.0;
 
-    @Column(name = "discount_total", nullable = false)
+    @Column(name = "discount_total", nullable = false, columnDefinition = "double precision default 0")
     private Double discountTotal = 0.0;
 
     @Transient
     private Double shippingDiscount = 0.0;
 
-    @Column(name = "total_amount", nullable = false)
+    @Column(name = "total_amount", nullable = false, columnDefinition = "double precision default 0")
     private Double totalAmount = 0.0;
 
-    @Column(name = "payment_method", nullable = false)
+    @Column(name = "payment_method", nullable = false, columnDefinition = "varchar(50) default 'COD'")
     private String paymentMethod = "COD";
 
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status", nullable = false, columnDefinition = "varchar(50) default 'UNPAID'")
     private String paymentStatus = "UNPAID";
 
-    @Column(name = "order_status")
+    @Column(name = "order_status", columnDefinition = "varchar(50) default 'PENDING_CONFIRMATION'")
     private String orderStatus = "PENDING_CONFIRMATION";
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private OrderStatus status = OrderStatus.PENDING_CONFIRMATION;
+
+    /**
+     * Da cong so luong cua don nay vao Product.soldCount hay chua.
+     * Co nay lam cho viec cong/tru tro nen idempotent: cap nhat trang thai lap lai,
+     * webhook goi hai lan, hay duong di DELIVERED -> REFUNDED (khong qua RETURNED)
+     * deu chi tac dong dung mot lan. Xem SoldCountService.
+     */
+    @Column(name = "sold_counted", nullable = false, columnDefinition = "boolean default false")
+    private boolean soldCounted = false;
 
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
@@ -173,6 +188,9 @@ public class Order {
             this.orderStatus = status.name();
         }
     }
+
+    public boolean isSoldCounted() { return soldCounted; }
+    public void setSoldCounted(boolean soldCounted) { this.soldCounted = soldCounted; }
 
     public String getCancelReason() { return cancelReason; }
     public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }

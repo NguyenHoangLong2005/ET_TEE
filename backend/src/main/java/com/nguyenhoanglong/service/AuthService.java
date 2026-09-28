@@ -23,6 +23,7 @@ import com.nguyenhoanglong.exception.ApiException;
 import org.springframework.http.HttpStatus;
 import com.nguyenhoanglong.entity.LoginAttempt;
 import com.nguyenhoanglong.repository.LoginAttemptRepository;
+import com.nguyenhoanglong.repository.RolePermissionRepository;
 
 @Service
 public class AuthService {
@@ -36,6 +37,8 @@ public class AuthService {
     private final WishlistService wishlistService;
     private final CartService cartService;
     private final LoginAttemptRepository loginAttemptRepository;
+    private final RolePermissionRepository rolePermissionRepository;
+    private final ActivityLogService activityLogService;
 
     public AuthService(UserRepository userRepository,
                        EmailVerificationCodeRepository codeRepository,
@@ -45,7 +48,9 @@ public class AuthService {
                        EmailService emailService,
                        WishlistService wishlistService,
                        CartService cartService,
-                       LoginAttemptRepository loginAttemptRepository) {
+                       LoginAttemptRepository loginAttemptRepository,
+                       RolePermissionRepository rolePermissionRepository,
+                       ActivityLogService activityLogService) {
         this.userRepository = userRepository;
         this.codeRepository = codeRepository;
         this.resetTokenRepository = resetTokenRepository;
@@ -55,12 +60,25 @@ public class AuthService {
         this.wishlistService = wishlistService;
         this.cartService = cartService;
         this.loginAttemptRepository = loginAttemptRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.activityLogService = activityLogService;
+    }
+
+    /**
+     * Chuan hoa email ve chu thuong + trim truoc khi tra cuu hoac luu. Thieu buoc
+     * nay thi "Abc@x.com" dang ky duoc nhung khong dang nhap lai bang "abc@x.com"
+     * (findByEmail so khop chinh xac), va rang buoc UNIQUE LOWER(email) tren DB se
+     * chan nhung ban ghi ma ung dung nghi la khac nhau.
+     */
+    private static String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
     }
 
     @Transactional
     public String register(AuthDto.RegisterRequest request) {
+        request.setEmail(normalizeEmail(request.getEmail()));
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã được sử dụng");
+            throw new com.nguyenhoanglong.exception.ApiException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
 
         User user = new User();
@@ -75,6 +93,15 @@ public class AuthService {
         user.setStatus("PENDING_VERIFICATION");
 
         user = userRepository.save(user);
+
+        activityLogService.log(
+                user.getId().toString(),
+                "USER_REGISTER",
+                "User",
+                user.getId().toString(),
+                "Đăng ký tài khoản người dùng mới (" + user.getEmail() + ")",
+                "127.0.0.1"
+        );
 
         generateAndSendOtp(user);
 
@@ -119,6 +146,7 @@ public class AuthService {
 
     @Transactional
     public AuthDto.AuthResponse verifyEmail(AuthDto.VerifyEmailRequest request) {
+        request.setEmail(normalizeEmail(request.getEmail()));
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
@@ -176,14 +204,19 @@ public class AuthService {
             }
         }
 
-        if (cartWarnings.isEmpty()) {
-            return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus());
-        }
-        return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus(), cartWarnings);
+        AuthDto.AuthResponse authResponse = cartWarnings.isEmpty()
+            ? new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus())
+            : new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus(), cartWarnings);
+        String roleName = user.getRole() != null ? user.getRole().name() : "USER";
+        authResponse.setRole(roleName);
+        authResponse.setPermissions(getPermissionsForRole(roleName));
+        authResponse.setShopId(user.getShopId());
+        return authResponse;
     }
 
     @Transactional
     public void resendCode(AuthDto.ResendCodeRequest request) {
+        request.setEmail(normalizeEmail(request.getEmail()));
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
@@ -196,7 +229,8 @@ public class AuthService {
 
     public AuthDto.AuthResponse login(AuthDto.LoginRequest request, String ipAddress) {
         // TODO: Create a scheduled task to clean up old login_attempts records (e.g. > 90 days) using loginAttemptRepository.deleteOldAttempts()
-        
+        request.setEmail(normalizeEmail(request.getEmail()));
+
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isEmpty()) {
             logAttempt(request.getEmail(), ipAddress, false);
@@ -218,6 +252,15 @@ public class AuthService {
         // Đăng nhập thành công -> reset lockout
         userRepository.resetFailedLoginAttempts(user.getId());
         logAttempt(request.getEmail(), ipAddress, true);
+
+        activityLogService.log(
+                user.getId() != null ? user.getId().toString() : "UNKNOWN",
+                "USER_LOGIN",
+                "User",
+                user.getId() != null ? user.getId().toString() : "UNKNOWN",
+                "Đăng nhập hệ thống thành công (Email: " + user.getEmail() + ", Vai trò: " + (user.getRole() != null ? user.getRole().name() : "USER") + ")",
+                ipAddress
+        );
 
         if (!user.isEmailVerified()) {
             throw new RuntimeException("UNVERIFIED");
@@ -242,10 +285,22 @@ public class AuthService {
             }
         }
 
-        if (cartWarnings.isEmpty()) {
-            return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus());
-        }
-        return new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus(), cartWarnings);
+        AuthDto.AuthResponse authResponse = cartWarnings.isEmpty()
+            ? new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus())
+            : new AuthDto.AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getStatus(), cartWarnings);
+        String roleName = user.getRole() != null ? user.getRole().name() : "USER";
+        authResponse.setRole(roleName);
+        authResponse.setPermissions(getPermissionsForRole(roleName));
+        authResponse.setShopId(user.getShopId());
+        return authResponse;
+    }
+
+    private List<String> getPermissionsForRole(String roleCode) {
+        if (roleCode == null) return List.of();
+        return rolePermissionRepository.findByRoleCode(roleCode)
+                .stream()
+                .map(com.nguyenhoanglong.entity.RolePermissionEntity::getPermission)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private void logAttempt(String email, String ipAddress, boolean success) {
@@ -257,13 +312,20 @@ public class AuthService {
     }
 
     public AuthDto.AuthResponse me(String email) {
+        email = normalizeEmail(email);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        return new AuthDto.AuthResponse(null, user.getId(), user.getFullName(), user.getEmail(), user.getStatus());
+        AuthDto.AuthResponse response = new AuthDto.AuthResponse(null, user.getId(), user.getFullName(), user.getEmail(), user.getStatus());
+        String roleName = user.getRole() != null ? user.getRole().name() : "USER";
+        response.setRole(roleName);
+        response.setPermissions(getPermissionsForRole(roleName));
+        response.setShopId(user.getShopId());
+        return response;
     }
 
     @Transactional
     public String forgotPassword(String email) {
+        email = normalizeEmail(email);
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
             return "Nếu email tồn tại trong hệ thống, mã đặt lại mật khẩu đã được gửi.";
@@ -311,6 +373,7 @@ public class AuthService {
 
     @Transactional
     public String resetPassword(String email, String otp, String newPassword) {
+        email = normalizeEmail(email);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Email hoặc mã OTP không hợp lệ"));
 

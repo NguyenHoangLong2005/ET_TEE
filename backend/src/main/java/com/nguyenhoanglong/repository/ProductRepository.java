@@ -21,6 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findByIdWithDetails(Long id);
 
     List<Product> findByCategoryId(Long categoryId);
+    org.springframework.data.domain.Page<Product> findByCategoryId(Long categoryId, org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<Product> findByNameContainingIgnoreCase(String name, org.springframework.data.domain.Pageable pageable);
 
     // Stats: count of active products grouped by targetGroup
     @Query("SELECT p.targetGroup, COUNT(p) FROM Product p WHERE p.status = 'ACTIVE' GROUP BY p.targetGroup")
@@ -48,4 +50,22 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @org.springframework.data.jpa.repository.Modifying
     @Query("UPDATE Product p SET p.totalReviews = (SELECT COUNT(r) FROM ProductReview r WHERE r.product.id = p.id AND r.status = 'APPROVED'), p.averageRating = COALESCE((SELECT CAST(AVG(r.rating) AS Double) FROM ProductReview r WHERE r.product.id = p.id AND r.status = 'APPROVED'), 0.0) WHERE p.id = :productId")
     void recalculateProductRating(@org.springframework.data.repository.query.Param("productId") Long productId);
+
+    /**
+     * Cong so luong da ban, nguyen tu ngay trong DB.
+     * Doc-roi-ghi (getSoldCount() + n rồi save) se mat cap nhat khi hai don cung
+     * hoan tat song song tren cung mot san pham.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE products SET sold_count = COALESCE(sold_count, 0) + :quantity WHERE id = :productId",
+           nativeQuery = true)
+    void incrementSoldCount(@org.springframework.data.repository.query.Param("productId") Long productId,
+                            @org.springframework.data.repository.query.Param("quantity") int quantity);
+
+    /** Tru so luong da ban, chan xuong duoi 0. */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "UPDATE products SET sold_count = GREATEST(COALESCE(sold_count, 0) - :quantity, 0) WHERE id = :productId",
+           nativeQuery = true)
+    void decrementSoldCount(@org.springframework.data.repository.query.Param("productId") Long productId,
+                            @org.springframework.data.repository.query.Param("quantity") int quantity);
 }

@@ -63,6 +63,13 @@ public class OrderService {
         String orderCode = "DH" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
         order.setOrderCode(orderCode);
         
+        // Assign shopId: use user's shop if available, otherwise default to shop 1 (single-shop mode)
+        if (user != null && user.getShopId() != null) {
+            order.setShopId(user.getShopId());
+        } else {
+            order.setShopId(1L); // Default shop for customer/guest orders
+        }
+        
         if (user != null) {
             order.setUser(user);
             order.setCustomerName(user.getFullName() != null && !user.getFullName().isEmpty() ? user.getFullName() : request.getCustomerName());
@@ -116,10 +123,10 @@ public class OrderService {
             variant.setStock(variant.getStock() - cartItem.getQuantity());
             variantRepository.save(variant);
 
-            // Increment sold count
-            Product product = variant.getProduct();
-            product.setSoldCount((product.getSoldCount() != null ? product.getSoldCount() : 0) + cartItem.getQuantity());
-            productRepository.save(product);
+            // sold_count khong con tang o day: no chi thay doi khi don thuc su
+            // giao thanh cong (xem SoldCountService, goi tu OrderTransitionService /
+            // ShippingService.delivered()). Truoc day tang o checkout khien don
+            // chua bao gio giao van duoc tinh la "da ban".
 
             // Create snapshot
             OrderItem orderItem = new OrderItem();
@@ -208,12 +215,19 @@ public class OrderService {
             } catch (Exception ignore) {}
         }
 
-        OrderStatusHistory history = new OrderStatusHistory();
-        history.setOrder(savedOrder);
-        history.setOldStatus(null);
-        history.setNewStatus(savedOrder.getOrderStatus());
-        history.setNote("Tạo đơn hàng mới");
-        historyRepository.save(history);
+        // Record initial order status history
+        try {
+            OrderStatusHistory history = new OrderStatusHistory();
+            history.setOrderId(savedOrder.getId());
+            history.setFromStatus(null);
+            history.setStatus(savedOrder.getStatus().name());
+            history.setChangedBy(user != null ? user.getId() : "GUEST:" + guestToken);
+            history.setReason("Tạo đơn hàng mới");
+            historyRepository.save(history);
+        } catch (Exception e) {
+            // Log but don't fail the order creation
+            org.slf4j.LoggerFactory.getLogger(OrderService.class).warn("Failed to record order status history", e);
+        }
 
         // Clear cart
         cart.getItems().clear();
@@ -254,6 +268,74 @@ public class OrderService {
         }
         
         return mapToResponse(order);
+    }
+
+    @Transactional
+    public OrderResponse cancelOrder(String orderCode, User user, String guestToken, String reason) {
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        if (order.getUser() != null) {
+            if (user == null || !order.getUser().getId().equals(user.getId())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Bạn không có quyền thao tác trên đơn hàng này");
+            }
+        } else {
+            // Guest order
+            if (guestToken == null || guestToken.trim().isEmpty() || !guestToken.equals(order.getGuestToken())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Bạn không có quyền thao tác trên đơn hàng này");
+            }
+        }
+
+        OrderStatus currentStatus = order.getStatus() != null ? order.getStatus() :
+                (order.getOrderStatus() != null ? OrderStatus.valueOf(order.getOrderStatus()) : OrderStatus.PENDING_CONFIRMATION);
+
+        if (currentStatus == OrderStatus.CANCELLED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Đơn hàng đã được hủy trước đó");
+        }
+        if (currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.SHIPPING || currentStatus == OrderStatus.RETURNED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Không thể hủy đơn hàng đang giao hoặc đã hoàn tất");
+        }
+
+        // Restore variant stock deducted at checkout
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                Long variantId = item.getVariantId();
+                if (variantId != null && variantId > 0L) {
+                    int quantity = item.getQuantity() != null ? item.getQuantity() : 0;
+                    if (quantity > 0) {
+                        variantRepository.findByIdWithPessimisticLock(variantId).ifPresent(variant -> {
+                            variant.setStock(variant.getStock() + quantity);
+                            variant.setAvailableQuantity(variant.getAvailableQuantity() + quantity);
+                            variantRepository.save(variant);
+                        });
+                    }
+                }
+            }
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setOrderStatus("CANCELLED");
+        Order savedOrder = orderRepository.save(order);
+
+        // Record history
+        try {
+            OrderStatusHistory history = new OrderStatusHistory();
+            history.setOrderId(savedOrder.getId());
+            history.setFromStatus(currentStatus.name());
+            history.setStatus(OrderStatus.CANCELLED.name());
+            history.setChangedBy(user != null ? user.getEmail() : "GUEST:" + (guestToken != null ? guestToken : ""));
+            history.setReason(reason != null && !reason.trim().isEmpty() ? reason.trim() : "Khách hàng yêu cầu hủy đơn hàng");
+            historyRepository.save(history);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(OrderService.class).warn("Failed to record cancel order history", e);
+        }
+
+        return mapToResponse(savedOrder);
     }
 
     private OrderResponse mapToResponse(Order order) {

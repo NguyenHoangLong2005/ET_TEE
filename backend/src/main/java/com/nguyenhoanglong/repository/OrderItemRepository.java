@@ -11,7 +11,10 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     
-    @Query("SELECT oi FROM OrderItem oi JOIN oi.order o WHERE o.user.id = :userId AND oi.product.id = :productId AND (o.orderStatus = 'DELIVERED' OR o.orderStatus = 'COMPLETED')")
+    // "COMPLETED" khong ton tai trong OrderStatus va khong tung xuat hien trong du
+    // lieu. Dung cot status (enum), khong dung orderStatus (String) vi cot do co
+    // the NULL tren cac ban ghi cu (xem doi chieu du lieu trong docs/flyway.md).
+    @Query("SELECT oi FROM OrderItem oi JOIN oi.order o WHERE o.user.id = :userId AND oi.product.id = :productId AND o.status = com.nguyenhoanglong.entity.OrderStatus.DELIVERED")
     List<OrderItem> findDeliveredItemsByUserAndProduct(@Param("userId") String userId, @Param("productId") Long productId);
 
     @Query("SELECT oi FROM OrderItem oi JOIN oi.order o WHERE o.user.id = :userId AND oi.product.id = :productId")

@@ -128,7 +128,14 @@ public class DataSeederService {
                     variant.setSku(vNode.get("sku").asText());
                     variant.setColor(vNode.has("colorName") ? vNode.get("colorName").asText() : null);
                     variant.setColorHex(vNode.has("colorHex") ? vNode.get("colorHex").asText() : null);
-                    variant.setColorCode(vNode.has("colorCode") ? vNode.get("colorCode").asText() : null);
+                    // Neu file seed khong tu ghi san colorCode thi suy tu colorHex qua
+                    // bang mau chuan (xem ColorPalette), thay vi de NULL nhu truoc day.
+                    if (vNode.has("colorCode")) {
+                        variant.setColorCode(vNode.get("colorCode").asText());
+                    } else {
+                        variant.setColorCode(com.nguyenhoanglong.util.ColorPalette
+                                .fromHex(variant.getColorHex()).orElse(null));
+                    }
                     variant.setSize(vNode.has("size") ? vNode.get("size").asText() : null);
                     variant.setStock(vNode.get("stockQuantity").asInt());
                     variant.setAvailableQuantity(vNode.get("availableQuantity").asInt());

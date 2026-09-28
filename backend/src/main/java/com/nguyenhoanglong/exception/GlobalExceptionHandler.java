@@ -35,7 +35,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        ApiResponse<Void> response = ApiResponse.error("Database constraint error: " + ex.getMostSpecificCause().getMessage());
+        String cause = ex.getMostSpecificCause().getMessage();
+        String causeLower = cause != null ? cause.toLowerCase() : "";
+        String message;
+        // Nhan dien vi pham cac unique index/constraint hay gap thay vi in nguyen
+        // van loi Postgres (lo ten cot, ten constraint noi bo ra ngoai).
+        if (causeLower.contains("idx_users_email_lower") || causeLower.contains("uk6dotkott2kjsp8vw4d0m25fb7")
+                || causeLower.contains("users_email_key") || causeLower.contains("email")) {
+            message = "Email đã được sử dụng";
+        } else if (causeLower.contains("employee_code")) {
+            message = "Mã nhân viên đã tồn tại";
+        } else {
+            message = "Dữ liệu bị trùng hoặc vi phạm ràng buộc, vui lòng kiểm tra lại";
+        }
+        ApiResponse<Void> response = ApiResponse.error(message);
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
@@ -57,6 +70,12 @@ public class GlobalExceptionHandler {
         if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
         ApiResponse<Void> response = ApiResponse.error(ex.getReason() != null ? ex.getReason() : ex.getMessage());
         return new ResponseEntity<>(response, status);
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException ex) {
+        ApiResponse<Void> response = ApiResponse.error("Không có quyền truy cập: " + ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
