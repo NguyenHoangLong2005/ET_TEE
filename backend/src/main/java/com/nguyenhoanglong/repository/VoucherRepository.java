@@ -36,6 +36,11 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
            "WHERE v.id = :id AND (v.maxUses IS NULL OR COALESCE(v.usedCount, 0) < v.maxUses)")
     int incrementUsedCountAtomic(@Param("id") Long id, @Param("now") java.time.LocalDateTime now);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Voucher v SET v.usedCount = CASE WHEN COALESCE(v.usedCount, 0) > 0 THEN COALESCE(v.usedCount, 0) - 1 ELSE 0 END, " +
+           "v.updatedAt = :now WHERE v.id = :id")
+    int decrementUsedCountAtomic(@Param("id") Long id, @Param("now") java.time.LocalDateTime now);
+
     boolean existsByCode(String code);
 
     long countByStatus(String status);

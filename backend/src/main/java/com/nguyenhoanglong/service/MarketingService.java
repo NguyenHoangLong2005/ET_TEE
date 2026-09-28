@@ -405,6 +405,20 @@ public class MarketingService {
         redemptionRepository.save(r);
     }
 
+    /**
+     * Undoes incrementVoucherUsage() for a cancelled order: gives the usage
+     * slot back to the voucher and removes its redemption record, so a
+     * cancelled order doesn't permanently consume a customer's voucher use.
+     */
+    @Transactional
+    public void releaseVoucherUsage(String orderCode) {
+        List<VoucherRedemption> records = redemptionRepository.findByOrderCode(orderCode);
+        for (VoucherRedemption r : records) {
+            voucherRepository.decrementUsedCountAtomic(r.getVoucherId(), LocalDateTime.now());
+        }
+        redemptionRepository.deleteAll(records);
+    }
+
     // ═════════════════════════════════════════════════════════════════════
     // CAMPAIGNS & LIFECYCLE
     // ═════════════════════════════════════════════════════════════════════

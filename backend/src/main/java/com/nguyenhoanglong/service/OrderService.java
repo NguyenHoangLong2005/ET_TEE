@@ -292,13 +292,18 @@ public class OrderService {
         OrderStatus currentStatus = order.getStatus() != null ? order.getStatus() :
                 (order.getOrderStatus() != null ? OrderStatus.valueOf(order.getOrderStatus()) : OrderStatus.PENDING_CONFIRMATION);
 
-        if (currentStatus == OrderStatus.CANCELLED) {
+        // Khách chỉ được tự hủy khi đơn còn nằm trong nội bộ (chưa đóng gói xong
+        // và giao cho hãng vận chuyển). Trước đây chỉ chặn DELIVERED/SHIPPING/
+        // RETURNED, nên khách vẫn hủy được đơn đã PACKED hoặc đã HANDED_TO_CARRIER
+        // - hàng đã rời kho hoặc đã giao cho shipper, không thể thu hồi qua một
+        // API tự phục vụ.
+        java.util.Set<OrderStatus> CUSTOMER_CANCELLABLE = java.util.EnumSet.of(
+                OrderStatus.DRAFT, OrderStatus.PENDING_PAYMENT, OrderStatus.PENDING_CONFIRMATION,
+                OrderStatus.CONFIRMED, OrderStatus.PICKING);
+        if (!CUSTOMER_CANCELLABLE.contains(currentStatus)) {
             throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "Đơn hàng đã được hủy trước đó");
-        }
-        if (currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.SHIPPING || currentStatus == OrderStatus.RETURNED) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "Không thể hủy đơn hàng đang giao hoặc đã hoàn tất");
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Đơn hàng đã được xử lý (đóng gói/giao vận chuyển/đã giao/đã hủy) nên không thể tự hủy. Vui lòng liên hệ CSKH.");
         }
 
         // Restore variant stock deducted at checkout
@@ -321,6 +326,14 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         order.setOrderStatus("CANCELLED");
         Order savedOrder = orderRepository.save(order);
+
+        if (order.getVoucherCode() != null && !order.getVoucherCode().isBlank()) {
+            try {
+                marketingService.releaseVoucherUsage(order.getOrderCode());
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger(OrderService.class).warn("Failed to release voucher usage on cancel for order {}", order.getOrderCode(), e);
+            }
+        }
 
         // Record history
         try {
