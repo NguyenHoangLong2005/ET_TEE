@@ -185,8 +185,8 @@ public class AuthService {
             userRepository.save(user);
             userRepository.flush(); // Force flush to catch SQL exceptions here
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("DB_ERROR: " + e.getMessage() + " | CAUSE: " + (e.getCause() != null ? e.getCause().getMessage() : "null"));
+            org.slf4j.LoggerFactory.getLogger(AuthService.class).error("Failed to persist email verification for user {}", user.getId(), e);
+            throw new RuntimeException("Không thể xác thực email. Vui lòng thử lại sau.");
         }
 
         Map<String, Object> extraClaims = new HashMap<>();

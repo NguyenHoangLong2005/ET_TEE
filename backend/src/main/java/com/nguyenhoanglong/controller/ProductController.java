@@ -69,7 +69,8 @@ public class ProductController {
             sortOrder = Sort.by(Sort.Direction.DESC, "id");
         }
 
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), pageSize, sortOrder);
+        int boundedPageSize = Math.min(Math.max(pageSize, 1), 100);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), boundedPageSize, sortOrder);
 
         PaginatedResponseDto<ProductDto> result = productService.getProducts(
                 q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice, status, pageable

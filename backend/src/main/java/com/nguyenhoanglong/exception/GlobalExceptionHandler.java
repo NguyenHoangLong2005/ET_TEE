@@ -17,6 +17,8 @@ import com.nguyenhoanglong.exception.ApiException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex) {
         ApiResponse<Void> response = ApiResponse.error(ex.getMessage());
@@ -86,7 +88,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
-        ApiResponse<Void> response = ApiResponse.error("An internal server error occurred: " + ex.getMessage());
+        // Loi that (stack trace, thong diep SQL/noi bo) chi ghi log server-side.
+        // Tra nguyen van ex.getMessage() ra client la mot kenh lo thong tin
+        // (ten cot, cau truy van, duong dan noi bo) cho bat ky loi khong luong
+        // truoc nao.
+        log.error("Unhandled exception", ex);
+        ApiResponse<Void> response = ApiResponse.error("Đã có lỗi xảy ra ở máy chủ. Vui lòng thử lại sau.");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
