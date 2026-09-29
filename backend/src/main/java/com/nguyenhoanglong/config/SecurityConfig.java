@@ -64,6 +64,7 @@ public class SecurityConfig {
                     "/api/marketing/vouchers/validate",
                     "/api/marketing/trending",
                     "/api/marketing/public/**",
+                    "/api/shops/active",
                     "/api/cart/**",
                     "/api/orders/checkout",
                     "/health",
