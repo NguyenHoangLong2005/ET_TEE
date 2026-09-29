@@ -61,6 +61,12 @@ export const ADMIN_NAV_GROUPS: NavGroupConfig[] = [
     ]
   },
   {
+    groupName: 'DỮ LIỆU DÙNG CHUNG',
+    items: [
+      { label: 'Danh mục Toàn hệ thống', path: '/admin/categories', icon: Tag, allowedRoles: ['ADMIN'] },
+    ]
+  },
+  {
     groupName: 'AI & TÍNH NĂNG MỚI',
     items: [
       { label: 'AI Models & Cấu hình', path: '/admin/ai-config', icon: Cpu, allowedRoles: ['ADMIN'] },
