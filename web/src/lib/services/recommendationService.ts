@@ -2,21 +2,25 @@ import { Product, ProductService } from './productService';
 
 export type RecommendationItem = {
   product: Product;
-  score: number;
   reason: string;
-  strategy: string;
 };
 
+// score/strategy fields used to sit here too (score: 0.95 - index*0.01,
+// strategy: "Collaborative Filtering DB" / "Cross-Selling Rule-based" /
+// "Content-based Filtering"), fabricated numbers and technique names with
+// no model or ranking behind them - the actual data is just best-sellers
+// (ProductService.getBestSellers) or the simple rule-based product-type/
+// target-group matching in ProductServiceImpl.getOutfits/getSimilarProducts.
+// Nothing in the UI ever rendered score/strategy (grep confirmed only
+// `.product` and `.reason` are read), so they were pure misleading dead
+// weight. `reason` is real, generic display copy and is kept.
 export const RecommendationService = {
   async getPersonalizedRecommendations(limit: number = 8): Promise<RecommendationItem[]> {
-    // For now, we'll fetch random or best sellers from API and wrap them in RecommendationItem
     const valid = await ProductService.getBestSellers(limit);
-    
+
     return valid.map((product, index) => ({
       product,
-      score: 0.95 - (index * 0.01),
       reason: index < 2 ? "Dành riêng cho bạn" : "Đang được yêu thích",
-      strategy: "Collaborative Filtering DB"
     }));
   },
 
@@ -25,9 +29,7 @@ export const RecommendationService = {
 
     return outfit.slice(0, limit).map(product => ({
       product,
-      score: 0.88,
       reason: "Phối cực chuẩn",
-      strategy: "Cross-Selling Rule-based"
     }));
   },
 
@@ -36,9 +38,7 @@ export const RecommendationService = {
 
     return similar.slice(0, limit).map(product => ({
       product,
-      score: 0.90,
       reason: "Sản phẩm tương tự",
-      strategy: "Content-based Filtering"
     }));
   }
 };

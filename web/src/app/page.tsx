@@ -69,11 +69,14 @@ export default async function Home() {
         fallback={newProducts}
       />
 
-      {/* 6. AI Personalized Recommendations */}
+      {/* This section's data (forYouProducts) is fetched server-side with no
+         user/session context - it's the same best-seller list for every
+         visitor, not personalized to anyone. The old copy ("Dành Riêng Cho
+         Bạn" / "cá nhân hóa bởi trợ lý thời trang AI") claimed the opposite. */}
       <MarketingCarousel
         placementKey="HOME_RECOMMENDED"
-        title="Dành Riêng Cho Bạn"
-        subtitle="Gợi ý trang phục cá nhân hóa bởi trợ lý thời trang AI"
+        title="Được Yêu Thích Nhất"
+        subtitle="Những sản phẩm đang bán chạy và được nhiều khách hàng lựa chọn"
         viewAllLink="/products"
         bgColor="bg-slate-50"
         fallback={forYouProducts.length > 0 ? forYouProducts : newProducts}
