@@ -37,7 +37,9 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    // RootLayoutWrapper already renders a <main> around every page's
+    // children, so this used to nest a second <main> landmark inside it.
+    <div className="min-h-screen bg-white">
       {/* 1. High Impact Seasonal Hero Banner */}
       <HeroBanner />
 
@@ -92,6 +94,6 @@ export default async function Home() {
 
       {/* 9. Newsletter & Exclusive Voucher Incentives */}
       <Newsletter />
-    </main>
+    </div>
   );
 }
