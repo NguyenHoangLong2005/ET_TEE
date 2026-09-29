@@ -51,9 +51,14 @@ export default function CskhDashboardPage() {
     setLoading(true);
     try {
       await Promise.allSettled([
-        apiClient.get<any>('/api/staff/cskh/tickets?page=0&size=10')
-          .then(d => {
-            const items: TicketItem[] = Array.isArray(d) ? d : (d?.content ?? d?.items ?? []);
+        // /api/staff/cskh/tickets doesn't exist on the backend - this page
+        // always 404'd and silently fell back to zeros. The real ticket
+        // system (also used by /staff/tickets) lives at
+        // /api/staff/support/tickets.
+        apiClient.get<any>('/api/staff/support/tickets?page=0&size=10')
+          .then(res => {
+            const d = (res as any)?.data ?? res;
+            const items: TicketItem[] = Array.isArray(d) ? d : (d?.items ?? d?.content ?? []);
             setTickets(items.slice(0, 10));
             const open = items.filter(t => !['RESOLVED', 'CLOSED'].includes((t.status || '').toUpperCase())).length;
             const total = d?.totalElements ?? items.length;
