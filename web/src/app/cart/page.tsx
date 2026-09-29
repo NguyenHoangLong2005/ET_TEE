@@ -10,8 +10,6 @@ import CartRecommendations from '@/components/cart/CartRecommendations';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 
-const FREE_SHIPPING_THRESHOLD = 499000;
-
 export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
@@ -65,8 +63,6 @@ export default function CartPage() {
 
   const isEmpty = !cart || !cart.items || cart.items.length === 0;
   const subtotal = cart?.subtotal || 0;
-  const shippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
-  const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
   return (
     <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-12 text-slate-900">
@@ -103,29 +99,21 @@ export default function CartPage() {
           {/* Item List (Left) */}
           <div className="flex-1 w-full">
             
-            {/* Free Shipping Progress Bar Banner */}
-            <div className="bg-gradient-to-r from-red-50 via-rose-50 to-red-50 border border-red-100 p-4 rounded-2xl mb-8">
-              <div className="flex items-center justify-between text-xs font-bold text-red-900 mb-2">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-red-600" />
-                  {amountNeeded > 0 ? (
-                    <span>
-                      Thêm <strong className="text-red-600 font-black">{amountNeeded.toLocaleString('vi-VN')}₫</strong> để được <strong>FREESHIP TOÀN QUỐC</strong>
-                    </span>
-                  ) : (
-                    <span className="text-emerald-700 font-black flex items-center gap-1">
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
-                      Chúc mừng! Bạn đã đạt điều kiện MIỄN PHÍ GIAO HÀNG
-                    </span>
-                  )}
-                </div>
-                <span className="text-slate-500">{shippingProgress}%</span>
-              </div>
-              <div className="w-full bg-red-200/50 h-2 rounded-full overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-red-600 to-rose-500 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${shippingProgress}%` }}
-                />
+            {/* Shipping is unconditionally free right now (OrderService.checkout
+               hardcodes shippingFee=0 for every order - there's no fee model
+               to threshold against). This used to show a "thêm Xđ để được
+               freeship" progress bar toward a 499k threshold that doesn't
+               exist on the backend: checkout always applies free shipping
+               regardless, so the banner both overpromised a condition and
+               then underdelivered the "chúc mừng" moment for orders under
+               it, since they'd also ship free. */}
+            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-8">
+              <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                <Truck className="w-4 h-4 text-emerald-600" />
+                <span className="flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  Miễn phí giao hàng toàn quốc cho mọi đơn hàng
+                </span>
               </div>
             </div>
 
@@ -267,11 +255,7 @@ export default function CartPage() {
                 <div className="flex justify-between items-center text-slate-600">
                   <span>Phí vận chuyển</span>
                   <span className="font-bold text-slate-900">
-                    {subtotal >= FREE_SHIPPING_THRESHOLD ? (
-                      <span className="text-emerald-600 font-black">MIỄN PHÍ</span>
-                    ) : (
-                      'Tính khi thanh toán'
-                    )}
+                    <span className="text-emerald-600 font-black">MIỄN PHÍ</span>
                   </span>
                 </div>
                 {voucherInfo && (
