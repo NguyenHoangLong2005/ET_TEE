@@ -63,9 +63,14 @@ export default function MarketingCarousel({
         const ids = active.map((p) => p.productId).filter(Boolean);
         if (ids.length === 0) return;
         const API = getApiBaseUrl();
+        // /api/products/{slug} takes a slug, not a numeric id - every request
+        // here 404'd (placement.productId is a numeric Product.id), so this
+        // carousel always silently fell back to the hardcoded `fallback`
+        // prop and never actually reflected what marketing configured.
+        // /api/customer/products/{id} is the real by-id lookup.
         const fetches = await Promise.allSettled(
           ids.map((id) =>
-            fetch(`${API}/api/products/${id}`).then((r) => (r.ok ? r.json() : null))
+            fetch(`${API}/api/customer/products/${id}`).then((r) => (r.ok ? r.json() : null))
           )
         );
         if (!mounted) return;

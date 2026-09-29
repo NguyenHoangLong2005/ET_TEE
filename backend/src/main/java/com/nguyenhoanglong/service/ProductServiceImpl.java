@@ -70,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductDto getProductById(Long id) {
         Product product = productRepository.findByIdWithDetails(id)
+                .filter(p -> "ACTIVE".equals(p.getStatus()))
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         return mapToDto(product);
     }
