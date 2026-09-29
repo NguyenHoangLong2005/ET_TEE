@@ -142,8 +142,12 @@ export default function LoginPage() {
 
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');
-      
-      if (redirect) {
+      // Only allow same-site relative paths. A value like "//evil.com" or
+      // "https://evil.com" is protocol-relative/absolute and would send an
+      // authenticated user straight off-site right after login.
+      const isSafeRedirect = !!redirect && redirect.startsWith('/') && !redirect.startsWith('//');
+
+      if (isSafeRedirect) {
         router.push(redirect);
       } else {
         const roleRedirectMap: Record<string, string> = {
