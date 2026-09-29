@@ -65,6 +65,28 @@ export default function OrderSuccessPage() {
 
   const totalAmount = Number(order?.totalAmount ?? order?.finalTotal ?? order?.total ?? 0);
 
+  // This page used to render "Đặt hàng thành công!" unconditionally, even
+  // when the order fetch failed or the orderCode in the URL didn't match any
+  // real order - visiting /order-success/<anything> always claimed success.
+  if (!order) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-black uppercase mb-4 text-slate-900">Không tìm thấy đơn hàng</h1>
+        <p className="text-slate-500 mb-8">
+          Không thể xác nhận đơn hàng với mã <span className="font-bold text-black">{orderCode}</span>. Vui lòng kiểm tra lại đường dẫn hoặc xem lại đơn hàng trong tài khoản của bạn.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link href="/account/orders" className="px-8 py-3 bg-white border border-black text-black font-bold uppercase rounded-full hover:bg-slate-50 transition-colors text-xs tracking-wider">
+            Xem đơn hàng
+          </Link>
+          <Link href="/products" className="px-8 py-3 bg-primary text-white font-bold uppercase rounded-full hover:bg-primary/90 transition-colors text-xs tracking-wider">
+            Tiếp tục mua sắm
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
       <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-100 text-center mb-8">
