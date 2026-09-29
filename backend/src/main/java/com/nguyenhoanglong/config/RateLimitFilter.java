@@ -32,7 +32,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = resolveClientIp(request);
 
         if (uri.equals("/api/auth/login") && request.getMethod().equalsIgnoreCase("POST")) {
             Bucket bucket = loginBuckets.computeIfAbsent(ipAddress, k -> createLoginBucket());
@@ -85,6 +85,26 @@ public class RateLimitFilter extends OncePerRequestFilter {
         // 10 requests per minute
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         return Bucket.builder().addLimit(limit).build();
+    }
+
+    /**
+     * The Next.js server proxies every /api/** request to this backend, so
+     * request.getRemoteAddr() is always the Next server's own address and
+     * every visitor to the site shared one login/register/forgot-password
+     * bucket. Only trust the X-Forwarded-For header when the direct TCP peer
+     * is our own reverse proxy (loopback) - otherwise a direct caller could
+     * spoof the header to dodge the limit entirely.
+     */
+    private String resolveClientIp(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        boolean fromTrustedProxy = "127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr) || "::1".equals(remoteAddr);
+        if (fromTrustedProxy) {
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            if (forwardedFor != null && !forwardedFor.isBlank()) {
+                return forwardedFor.split(",")[0].trim();
+            }
+        }
+        return remoteAddr;
     }
 
     private void sendRateLimitResponse(HttpServletResponse response, String message) throws IOException {
