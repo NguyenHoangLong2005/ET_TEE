@@ -20,6 +20,21 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.variants WHERE p.id = :id")
     Optional<Product> findByIdWithDetails(Long id);
 
+    // "Similar"/"outfit" carousels used to load the entire products table
+    // (findAll()) into memory on every product detail page view, just to
+    // pick 4 rows out of it. Push the filter and the LIMIT 4 to the DB.
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.productType = :productType AND p.id <> :excludeId")
+    List<Product> findSimilarActive(@org.springframework.data.repository.query.Param("productType") String productType,
+                                     @org.springframework.data.repository.query.Param("excludeId") Long excludeId,
+                                     org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.targetGroup = :targetGroup AND p.id <> :excludeId " +
+           "AND (p.productType IS NULL OR :productType IS NULL OR p.productType <> :productType)")
+    List<Product> findOutfitCandidates(@org.springframework.data.repository.query.Param("targetGroup") String targetGroup,
+                                        @org.springframework.data.repository.query.Param("productType") String productType,
+                                        @org.springframework.data.repository.query.Param("excludeId") Long excludeId,
+                                        org.springframework.data.domain.Pageable pageable);
+
     List<Product> findByCategoryId(Long categoryId);
     org.springframework.data.domain.Page<Product> findByCategoryId(Long categoryId, org.springframework.data.domain.Pageable pageable);
     org.springframework.data.domain.Page<Product> findByNameContainingIgnoreCase(String name, org.springframework.data.domain.Pageable pageable);

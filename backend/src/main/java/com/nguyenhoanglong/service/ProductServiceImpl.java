@@ -88,14 +88,15 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> getSimilarProducts(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
-        
+
+        if (product.getProductType() == null) {
+            return List.of();
+        }
+
         // Simple rule based recommendation
-        List<Product> similar = productRepository.findAll().stream()
-                .filter(p -> p.getProductType() != null && p.getProductType().equals(product.getProductType()) 
-                        && !p.getId().equals(product.getId()))
-                .limit(4)
-                .collect(Collectors.toList());
-        
+        List<Product> similar = productRepository.findSimilarActive(
+                product.getProductType(), product.getId(), org.springframework.data.domain.PageRequest.of(0, 4));
+
         return similar.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
@@ -104,14 +105,15 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> getOutfits(String slug) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
-        
+
+        if (product.getTargetGroup() == null) {
+            return List.of();
+        }
+
         // Simple rule based outfit recommendation
-        List<Product> outfits = productRepository.findAll().stream()
-                .filter(p -> p.getTargetGroup() != null && p.getTargetGroup().equals(product.getTargetGroup()) 
-                        && !p.getId().equals(product.getId())
-                        && (p.getProductType() == null || !p.getProductType().equals(product.getProductType())))
-                .limit(4)
-                .collect(Collectors.toList());
+        List<Product> outfits = productRepository.findOutfitCandidates(
+                product.getTargetGroup(), product.getProductType(), product.getId(),
+                org.springframework.data.domain.PageRequest.of(0, 4));
 
         return outfits.stream().map(this::mapToDto).collect(Collectors.toList());
     }
