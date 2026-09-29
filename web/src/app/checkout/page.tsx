@@ -174,10 +174,20 @@ export default function CheckoutPage() {
     try {
       const headers = getAuthHeaders(true);
 
+      // formData.voucherCode used to be sent verbatim even when the user
+      // typed a code but never clicked "Áp dụng" (or it failed validation),
+      // so checkout could apply/reject a code the displayed total never
+      // accounted for. Only send it once it's been validated and voucherInfo
+      // actually reflects the current text in the field.
+      const checkoutPayload = {
+        ...formData,
+        voucherCode: voucherInfo ? formData.voucherCode.trim() : '',
+      };
+
       const res = await fetch(`${getApiBaseUrl()}/api/orders/checkout`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(formData)
+        body: JSON.stringify(checkoutPayload)
       });
       
       const json = await res.json();
@@ -482,7 +492,16 @@ export default function CheckoutPage() {
                   type="text"
                   placeholder="Nhập mã voucher"
                   value={formData.voucherCode}
-                  onChange={(e) => setFormData({ ...formData, voucherCode: e.target.value.toUpperCase() })}
+                  onChange={(e) => {
+                    const next = e.target.value.toUpperCase();
+                    setFormData({ ...formData, voucherCode: next });
+                    // Editing the code after it was applied used to keep showing
+                    // the old "Đã áp dụng X" banner (and the old discount) even
+                    // though it no longer matched what's typed.
+                    if (voucherInfo && next !== formData.voucherCode) {
+                      setVoucherInfo(null);
+                    }
+                  }}
                   className="flex-1 px-3.5 h-11 border border-slate-300 rounded-xl text-sm font-mono uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
                 />
                 <button
