@@ -53,7 +53,18 @@ public class WarehouseService {
         if (isAdmin) return null; // Admin has no restriction
         String name = auth.getName();
         User user = userRepository.findByEmail(name).orElseGet(() -> userRepository.findById(name).orElse(null));
-        return (user != null) ? user.getShopId() : 1L;
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không xác định được người dùng hiện tại");
+        }
+        if (user.getShopId() == null) {
+            // Non-admin staff with no shop assigned: every ownership check in
+            // this class treats a null shopId as "no restriction", the same
+            // sentinel used for ADMIN. Returning null here would let an
+            // unassigned staff account see and operate on every shop's
+            // inventory/orders. Fail closed instead.
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được gán vào chi nhánh nào. Vui lòng liên hệ quản trị viên.");
+        }
+        return user.getShopId();
     }
 
     private String resolveUserId() {
