@@ -102,7 +102,7 @@ export default function WarehouseInventoryPage() {
     setBusy(selectedItem.id); setError("");
     try {
       await staffAction(`/api/staff/warehouse/inventory/${selectedItem.id}/adjustments`, "POST", {
-        difference, reason: reasonInput.trim(), requestedBy: null,
+        difference, reason: reasonInput.trim(),
       });
       toast.success("Đã gửi yêu cầu điều chỉnh tồn kho.");
       setActiveModal(null);

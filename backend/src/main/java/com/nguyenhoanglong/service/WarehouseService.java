@@ -140,19 +140,20 @@ public class WarehouseService {
     // ========== Inventory Adjustment Workflow ==========
 
     @Transactional
-    public InventoryAdjustment createAdjustmentRequest(Long id, Integer difference, String reason, Long requestedBy) {
+    public InventoryAdjustment createAdjustmentRequest(Long id, Integer difference, String reason) {
+        String requesterUserId = resolveUserId();
         InventoryAdjustment a = new InventoryAdjustment();
-        a.setInventory(inventory(id)); 
-        a.setDifference(difference); 
-        a.setReason(reason); 
-        a.setRequestedBy(requestedBy); 
+        a.setInventory(inventory(id));
+        a.setDifference(difference);
+        a.setReason(reason);
         a.setStatus("PENDING");
-        log.info("Inventory adjustment requested: id {} diff {} reason {}", id, difference, reason);
+        log.info("Inventory adjustment requested: id {} diff {} reason {} requestedBy {}", id, difference, reason, requesterUserId);
         return adjustments.save(a);
     }
 
     @Transactional
-    public InventoryAdjustment approveAdjustment(Long id, Long approvedBy) {
+    public InventoryAdjustment approveAdjustment(Long id) {
+        String approverUserId = resolveUserId();
         InventoryAdjustment a = adjustments.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phiếu điều chỉnh"));
 
@@ -175,12 +176,16 @@ public class WarehouseService {
             throw new IllegalArgumentException("Điều chỉnh làm tồn kho âm");
         }
         
-        i.setQuantityOnHand(next); 
+        i.setQuantityOnHand(next);
         inventories.save(i);
-        a.setApprovedBy(approvedBy); 
+        // approvedBy used to come straight from the request body (a client
+        // could stamp anyone's id on the approval). The column is Long while
+        // User.id is a String, so there's no safe id to store here without a
+        // schema change; log the real authenticated approver instead of
+        // trusting client input.
         a.setStatus("APPROVED");
-        
-        log.info("Inventory adjustment approved: id {} new qty {}", id, next);
+
+        log.info("Inventory adjustment approved: id {} new qty {} approvedBy {}", id, next, approverUserId);
         return adjustments.save(a);
     }
 

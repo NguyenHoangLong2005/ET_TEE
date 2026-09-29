@@ -61,7 +61,7 @@ public class StaffWarehouseController {
     @PostMapping("/inventory/{id}/adjustments")
     public ResponseEntity<?> createAdjustment(@PathVariable Long id, @RequestBody AdjustmentRequest request) {
         return ResponseEntity.ok(service.createAdjustmentRequest(
-                id, request.difference(), request.reason(), request.requestedBy()
+                id, request.difference(), request.reason()
         ));
     }
 
@@ -74,8 +74,8 @@ public class StaffWarehouseController {
     // Approval is a shop-owner power (see StoreOwnerController#approvals).
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @PostMapping("/adjustments/{id}/approve")
-    public ResponseEntity<?> approveAdjustment(@PathVariable Long id, @RequestBody ApprovalRequest request) {
-        return ResponseEntity.ok(service.approveAdjustment(id, request.approvedBy()));
+    public ResponseEntity<?> approveAdjustment(@PathVariable Long id) {
+        return ResponseEntity.ok(service.approveAdjustment(id));
     }
 
     @GetMapping("/reservations")
@@ -156,8 +156,7 @@ public class StaffWarehouseController {
     public record InboundRequest(Long productId, String productName, Integer quantity, String location) {}
     public record CountRequest(Integer actualQuantity) {}
     public record LocationRequest(String location) {}
-    public record AdjustmentRequest(Integer difference, String reason, Long requestedBy) {}
-    public record ApprovalRequest(Long approvedBy) {}
+    public record AdjustmentRequest(Integer difference, String reason) {}
     public record RejectRequest(String reason) {}
     public record StocktakeRequest(String warehouseLocation, Long createdBy) {}
     public record StocktakeResultRequest(Integer actualQuantity) {}

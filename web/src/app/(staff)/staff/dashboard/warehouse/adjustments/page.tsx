@@ -50,7 +50,7 @@ export default function WarehouseAdjustmentsPage() {
     setBusy(itemToApprove.id); 
     setError(""); 
     try {
-      await staffAction(`/api/staff/warehouse/adjustments/${itemToApprove.id}/approve`, "POST", { approvedBy: 1 });
+      await staffAction(`/api/staff/warehouse/adjustments/${itemToApprove.id}/approve`, "POST");
       toast.success(`Đã phê duyệt phiếu điều chỉnh #${itemToApprove.id}`);
       setIsConfirmOpen(false);
       setItemToApprove(null);
