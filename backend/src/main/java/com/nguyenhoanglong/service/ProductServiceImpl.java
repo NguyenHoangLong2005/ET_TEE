@@ -78,6 +78,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductDto getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
+                .filter(p -> "ACTIVE".equals(p.getStatus()))
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
         return mapToDto(product);
     }
