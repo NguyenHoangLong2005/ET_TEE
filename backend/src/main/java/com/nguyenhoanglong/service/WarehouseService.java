@@ -94,16 +94,14 @@ public class WarehouseService {
 
     // ========== Inventory Operations ==========
 
-    public List<Inventory> getInventory() { 
+    public List<Inventory> getInventory() {
         Long shopId = resolveShopId();
-        List<Inventory> all = inventories.findAll();
-        return shopId == null ? all : all.stream().filter(i -> shopId.equals(i.getShopId())).toList();
+        return shopId == null ? inventories.findAll() : inventories.findByShopId(shopId);
     }
 
-    public List<InventoryAdjustment> getAdjustments() { 
+    public List<InventoryAdjustment> getAdjustments() {
         Long shopId = resolveShopId();
-        List<InventoryAdjustment> all = adjustments.findAll();
-        return shopId == null ? all : all.stream().filter(a -> a.getInventory() != null && shopId.equals(a.getInventory().getShopId())).toList();
+        return shopId == null ? adjustments.findAll() : adjustments.findByShopId(shopId);
     }
 
     @Transactional

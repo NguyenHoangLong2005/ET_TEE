@@ -12,4 +12,9 @@ public interface InventoryAdjustmentRepository extends JpaRepository<InventoryAd
             + "AND UPPER(COALESCE(a.status, '')) IN ('PENDING', 'PENDING_APPROVAL')")
     java.util.List<InventoryAdjustment> findPendingApprovalByShopId(
             @org.springframework.data.repository.query.Param("shopId") Long shopId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT a FROM InventoryAdjustment a "
+            + "JOIN FETCH a.inventory i WHERE i.shopId = :shopId")
+    java.util.List<InventoryAdjustment> findByShopId(
+            @org.springframework.data.repository.query.Param("shopId") Long shopId);
 }
