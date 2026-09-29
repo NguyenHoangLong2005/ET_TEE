@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.nguyenhoanglong.entity.EmailLog;
@@ -72,6 +73,12 @@ public class EmailService {
         }
     }
 
+    // @EnableAsync was configured (AsyncConfig) but never actually used, so
+    // register/forgot-password stayed blocked on SMTP round-trip time and, on
+    // send failure, rolled back the OTP row that had already been
+    // successfully saved (sendOrLog throws on failure, inside the same
+    // @Transactional method). Sending in the background decouples the two.
+    @Async("taskExecutor")
     public void sendVerificationEmail(String toEmail, String code) {
         String html = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #333;'>Chào mừng bạn đến với ET.TEE!</h2>"
@@ -84,6 +91,7 @@ public class EmailService {
         sendOrLog(toEmail, "Mã xác thực tài khoản ET.TEE", html, code, "verify-email");
     }
 
+    @Async("taskExecutor")
     public void sendPasswordResetEmail(String toEmail, String otp) {
         String html = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #333;'>Yêu cầu đặt lại mật khẩu</h2>"
