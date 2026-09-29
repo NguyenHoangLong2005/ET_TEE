@@ -4,8 +4,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const HERO_SLIDES = [
+type Slide = {
+  id: string;
+  bg: string;
+  href: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+};
+
+const FALLBACK_SLIDES: Slide[] = [
   { 
     id: 'b1', 
     bg: '/images/banners/home/banner-1.webp', 
@@ -78,22 +89,52 @@ const HERO_SLIDES = [
     subtitle: 'Phối đồ cá nhân hóa nâng tầm gu thời trang của riêng bạn',
     cta: 'Khám Phá Ngay',
   },
-] as const;
+];
 
 const AUTO_PLAY_INTERVAL = 6000;
-const TOTAL = HERO_SLIDES.length;
 
 export default function HeroBanner() {
+  const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const total = slides.length;
+
+  // Admin/marketing manages real banners at /admin/marketing (position
+  // HOME_HERO), but this carousel always rendered 8 hardcoded slides and
+  // never fetched them, so nothing configured there ever reached the
+  // homepage. Fetch real banners and use them when any are active; keep the
+  // static slides as a fallback so the hero section is never empty.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${getApiBaseUrl()}/api/marketing/banners/HOME_HERO`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (cancelled) return;
+        const banners = Array.isArray(res?.data) ? res.data : [];
+        const active = banners.filter((b: any) => (b.status || 'ACTIVE') === 'ACTIVE' && b.imageUrl);
+        if (active.length === 0) return;
+        setSlides(active.map((b: any, idx: number) => ({
+          id: `banner-${b.id ?? idx}`,
+          bg: b.imageUrl,
+          href: b.linkUrl || '/products',
+          badge: 'NEW',
+          title: b.title || '',
+          subtitle: b.subtitle || '',
+          cta: 'Khám Phá Ngay',
+        })));
+        setCurrent(0);
+      })
+      .catch(() => { /* keep fallback slides */ });
+    return () => { cancelled = true; };
+  }, []);
 
   const goNext = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % TOTAL);
-  }, []);
+    setCurrent((prev) => (prev + 1) % total);
+  }, [total]);
 
   const goPrev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + TOTAL) % TOTAL);
-  }, []);
+    setCurrent((prev) => (prev - 1 + total) % total);
+  }, [total]);
 
   useEffect(() => {
     if (paused) return;
@@ -107,7 +148,7 @@ export default function HeroBanner() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {HERO_SLIDES.map((slide, index) => {
+      {slides.map((slide, index) => {
         const isActive = index === current;
         return (
           <div
@@ -156,15 +197,15 @@ export default function HeroBanner() {
         <div className="w-16 h-[2px] bg-white/30">
           <div 
             className="h-full bg-white transition-all duration-300" 
-            style={{ width: `${((current + 1) / TOTAL) * 100}%` }}
+            style={{ width: `${((current + 1) / total) * 100}%` }}
           />
         </div>
-        <span className="text-white/60">{String(TOTAL).padStart(2, '0')}</span>
+        <span className="text-white/60">{String(total).padStart(2, '0')}</span>
       </div>
 
       {/* Indicator dots for mobile/tablet */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 md:hidden">
-        {HERO_SLIDES.map((_, index) => (
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(index); }}
