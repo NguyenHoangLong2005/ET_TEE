@@ -81,6 +81,14 @@ public class AdminUserController {
         return ResponseEntity.ok(ApiResponse.success(msg, updated));
     }
 
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String id, Authentication authentication) {
+        String currentAdminIdentifier = authentication != null ? authentication.getName() : "ADMIN";
+        userService.deleteUser(id, currentAdminIdentifier);
+        dataAuditService.logAudit(currentAdminIdentifier, "DELETE_USER", "User", id, "Xóa (khóa vĩnh viễn) tài khoản");
+        return ResponseEntity.ok(ApiResponse.success("Xóa tài khoản thành công", null));
+    }
+
     @PostMapping("/users/{id}/reset-password")
     public ResponseEntity<ApiResponse<ResetPasswordResponseDto>> resetUserPassword(@PathVariable String id) {
         ResetPasswordResponseDto response = userService.resetUserPassword(id);

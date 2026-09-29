@@ -241,6 +241,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void deleteUser(String targetUserId, String currentAdminIdOrEmail) {
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với ID: " + targetUserId));
+
+        if (currentAdminIdOrEmail != null &&
+                (currentAdminIdOrEmail.equalsIgnoreCase(targetUser.getId()) ||
+                        currentAdminIdOrEmail.equalsIgnoreCase(targetUser.getEmail()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa tài khoản của chính mình");
+        }
+
+        if (targetUser.getRole() == Role.ADMIN) {
+            long activeAdminCount = userRepository.countByRoleAndStatus(Role.ADMIN, "ACTIVE");
+            if (activeAdminCount <= 1) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa Admin duy nhất còn hoạt động trong hệ thống");
+            }
+        }
+
+        // Xoa mem: cac don hang/danh gia/audit log cu con tham chieu user_id nen
+        // khong the hard-delete ma khong pha vo rang buoc khoa ngoai. Dat
+        // status=BANNED de tai khoan bi khoa vinh vien va khong the dang nhap
+        // (AuthService.login va JwtAuthenticationFilter da chan status nay).
+        targetUser.setStatus("BANNED");
+        targetUser.setLockReason("Tài khoản đã bị xóa bởi quản trị viên");
+        targetUser.setLockedBy(currentAdminIdOrEmail != null ? currentAdminIdOrEmail : "ADMIN");
+        targetUser.setLockedAt(LocalDateTime.now());
+        userRepository.save(targetUser);
+    }
+
+    @Override
+    @Transactional
     public ResetPasswordResponseDto resetUserPassword(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với ID: " + id));

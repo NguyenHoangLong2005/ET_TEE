@@ -19,6 +19,8 @@ public interface UserService {
 
     UserAdminDto updateUserStatus(String targetUserId, UserStatusUpdateDto statusDto, String currentAdminIdOrEmail);
 
+    void deleteUser(String targetUserId, String currentAdminIdOrEmail);
+
     ResetPasswordResponseDto resetUserPassword(String id);
 
     List<RoleWithPermissionsDto> getAllRolesWithPermissions();
