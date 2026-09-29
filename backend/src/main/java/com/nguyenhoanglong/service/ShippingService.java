@@ -97,17 +97,14 @@ public class ShippingService {
     }
 
     public List<Shipment> getAllShipments(User actor) {
-        List<Shipment> list = shipments.findAll();
         if (actor != null && actor.getRole() != Role.ADMIN) {
             Long staffShopId = actor.getShopId();
             if (staffShopId == null) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản nhân viên chưa được gán chi nhánh");
             }
-            return list.stream()
-                    .filter(s -> s.getOrder() != null && staffShopId.equals(s.getOrder().getShopId()))
-                    .toList();
+            return shipments.findByOrderShopId(staffShopId);
         }
-        return list;
+        return shipments.findAll();
     }
 
     public Shipment getShipment(User actor, Long id) {
