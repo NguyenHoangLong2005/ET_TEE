@@ -51,18 +51,3 @@ export const apiClient = {
   delete: <T>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };
 
-export async function mergeGuestCart() {
-  if (typeof window === "undefined") return;
-  const raw = window.localStorage.getItem("ettee_cart");
-  if (!raw) return;
-  try {
-    const items = JSON.parse(raw).map((item: { id: string; quantity: number }) => ({
-      variantId: item.id,
-      quantity: item.quantity,
-    }));
-    if (items.length) await apiClient.post("/api/cart/merge", { items });
-    window.localStorage.removeItem("ettee_cart");
-  } catch {
-    // Giữ guest cart nếu merge thất bại để không làm mất dữ liệu khách hàng.
-  }
-}
