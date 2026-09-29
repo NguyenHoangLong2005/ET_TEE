@@ -414,7 +414,9 @@ public class AuthService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
         userRepository.save(user);
+        userRepository.resetFailedLoginAttempts(user.getId());
 
         token.setStatus("USED");
         token.setUsedAt(LocalDateTime.now());
