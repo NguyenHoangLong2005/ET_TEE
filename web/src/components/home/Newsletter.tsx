@@ -10,7 +10,11 @@ export default function Newsletter() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    toast.success('Đăng ký nhận tin thành công! Voucher 10% đã gửi vào email.');
+    // There is no newsletter backend (no subscriber storage, no voucher
+    // auto-issued/emailed on signup) - this used to claim a voucher had
+    // been sent when nothing was stored or sent anywhere. Until that exists,
+    // don't promise a delivery that never happens.
+    toast.info('Cảm ơn bạn đã quan tâm! Tính năng đăng ký nhận bản tin đang được hoàn thiện.');
     setEmail('');
   };
 
@@ -22,7 +26,7 @@ export default function Newsletter() {
             ĐĂNG KÝ NHẬN BẢN TIN
           </h2>
           <p className="text-slate-600 text-sm md:text-base mb-8 max-w-md leading-relaxed">
-            Nhận ngay voucher giảm 10% cho đơn hàng đầu tiên. Cập nhật sớm nhất về các bộ sưu tập mới và ưu đãi độc quyền.
+            Cập nhật sớm nhất về các bộ sưu tập mới và ưu đãi độc quyền từ ET.TEE.
           </p>
 
           {/* Subscribe Form */}
