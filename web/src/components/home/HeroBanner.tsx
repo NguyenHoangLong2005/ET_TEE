@@ -74,7 +74,7 @@ const FALLBACK_SLIDES: Slide[] = [
   { 
     id: 'b7', 
     bg: '/images/banners/home/banner-7.webp', 
-    href: '/products?sale=true',
+    href: '/products?status=sale',
     badge: 'MEGA SALE UNTIL 50%',
     title: 'ƯU ĐÃI ĐẶC BIỆT',
     subtitle: 'Săn deal giảm giá trực tiếp - Số lượng sản phẩm có hạn',

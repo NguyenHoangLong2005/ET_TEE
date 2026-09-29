@@ -16,7 +16,7 @@ const MAIN_MENU = [
   { label: 'Bé gái', href: '/products?targetGroup=kids&gender=girl' },
   { label: 'Phụ kiện', href: '/products?category=accessories' },
   { label: 'Gia đình', href: '/products?targetGroup=family' },
-  { label: 'Sale', href: '/products?sale=true', isSale: true },
+  { label: 'Sale', href: '/products?status=sale', isSale: true },
 ];
 
 export default function Header() {
@@ -69,7 +69,7 @@ export default function Header() {
           <div className="mx-auto sm:mx-0 flex items-center gap-2">
             <span>🔥 Freeship toàn quốc đơn từ <strong className="text-amber-300">499.000đ</strong></span>
             <span className="opacity-40">|</span>
-            <Link href="/products?sale=true" className="font-bold underline hover:text-amber-200 transition-colors flex items-center gap-1">
+            <Link href="/products?status=sale" className="font-bold underline hover:text-amber-200 transition-colors flex items-center gap-1">
               <Tag className="w-3 h-3" />
               Săn ngay
             </Link>
