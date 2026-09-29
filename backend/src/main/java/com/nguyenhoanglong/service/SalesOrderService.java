@@ -59,10 +59,16 @@ public class SalesOrderService {
         if (user == null) {
             user = userRepository.findById(name).orElse(null);
         }
-        if (user != null && user.getShopId() != null) {
-            return user.getShopId();
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không xác định được người dùng hiện tại");
         }
-        return 1L;
+        if (user.getShopId() == null) {
+            // Silently defaulting an unassigned staff account to shop 1 let
+            // them see and act on shop 1's orders even though they were
+            // never actually assigned there. Fail closed instead.
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được gán vào chi nhánh nào. Vui lòng liên hệ quản trị viên.");
+        }
+        return user.getShopId();
     }
 
     private String resolveUserId() {
