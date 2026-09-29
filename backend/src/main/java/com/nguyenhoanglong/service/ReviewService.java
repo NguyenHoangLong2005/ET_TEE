@@ -242,6 +242,77 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
+    // ── Staff (CSKH) moderation: list / reply / hide-unhide ──
+    // Reviews are auto-approved at creation (createReview above), so there
+    // never was an actual moderation queue - this closes that gap using the
+    // existing status column (REJECTED = hidden from the public listing,
+    // which already filters status='APPROVED') plus the reply_* columns
+    // added for staff replies.
+
+    public List<com.nguyenhoanglong.dto.StaffReviewDto> getReviewsForStaff() {
+        return reviewRepository.findAllForStaff().stream()
+                .map(this::mapToStaffDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public com.nguyenhoanglong.dto.StaffReviewDto replyToReview(String staffUserId, Long reviewId, String replyMessage) {
+        if (replyMessage == null || replyMessage.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung phản hồi không được để trống");
+        }
+        ProductReview review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá"));
+        review.setReplyMessage(replyMessage.trim());
+        review.setRepliedBy(staffUserId);
+        review.setRepliedAt(java.time.LocalDateTime.now());
+        review = reviewRepository.save(review);
+        return mapToStaffDto(review);
+    }
+
+    @Transactional
+    public com.nguyenhoanglong.dto.StaffReviewDto updateReviewVisibility(Long reviewId, String requestedStatus) {
+        ProductReview review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá"));
+        if ("HIDDEN".equalsIgnoreCase(requestedStatus)) {
+            review.setStatus("REJECTED");
+        } else {
+            review.setStatus("APPROVED");
+        }
+        review = reviewRepository.save(review);
+        productRepository.recalculateProductRating(review.getProduct().getId());
+        return mapToStaffDto(review);
+    }
+
+    private com.nguyenhoanglong.dto.StaffReviewDto mapToStaffDto(ProductReview r) {
+        com.nguyenhoanglong.dto.StaffReviewDto dto = new com.nguyenhoanglong.dto.StaffReviewDto();
+        dto.setId(r.getId());
+        dto.setProductSlug(r.getProduct() != null ? r.getProduct().getSlug() : null);
+        dto.setProductName(r.getProduct() != null ? r.getProduct().getName() : null);
+        dto.setCustomerName(r.getCustomerNameSnapshot());
+        dto.setRating(r.getRating());
+        dto.setContent(r.getContent());
+        dto.setPurchasedSize(r.getPurchasedSize());
+        dto.setPurchasedColor(r.getPurchasedColor());
+        dto.setVerifiedPurchase(r.isVerifiedPurchase());
+        dto.setCreatedAt(r.getCreatedAt());
+        if ("REJECTED".equals(r.getStatus())) {
+            dto.setStatus("HIDDEN");
+        } else if (r.getReplyMessage() != null) {
+            dto.setStatus("REPLIED");
+        } else {
+            dto.setStatus("PENDING_REPLY");
+        }
+        if (r.getReplyMessage() != null) {
+            com.nguyenhoanglong.dto.StaffReviewDto.ReplyDto reply = new com.nguyenhoanglong.dto.StaffReviewDto.ReplyDto();
+            reply.setId(r.getId());
+            reply.setReplyMessage(r.getReplyMessage());
+            reply.setRepliedBy(r.getRepliedBy());
+            reply.setRepliedAt(r.getRepliedAt());
+            dto.setReply(reply);
+        }
+        return dto;
+    }
+
     private ReviewResponse mapToResponse(ProductReview review) {
         ReviewResponse res = new ReviewResponse();
         res.setId(review.getId());

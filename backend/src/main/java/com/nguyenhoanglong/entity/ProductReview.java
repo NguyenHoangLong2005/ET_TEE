@@ -59,6 +59,15 @@ public class ProductReview {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "reply_message", columnDefinition = "TEXT")
+    private String replyMessage;
+
+    @Column(name = "replied_by")
+    private String repliedBy;
+
+    @Column(name = "replied_at")
+    private LocalDateTime repliedAt;
+
     public ProductReview() {}
 
     public Long getId() { return id; }
@@ -102,4 +111,13 @@ public class ProductReview {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getReplyMessage() { return replyMessage; }
+    public void setReplyMessage(String replyMessage) { this.replyMessage = replyMessage; }
+
+    public String getRepliedBy() { return repliedBy; }
+    public void setRepliedBy(String repliedBy) { this.repliedBy = repliedBy; }
+
+    public LocalDateTime getRepliedAt() { return repliedAt; }
+    public void setRepliedAt(LocalDateTime repliedAt) { this.repliedAt = repliedAt; }
 }
