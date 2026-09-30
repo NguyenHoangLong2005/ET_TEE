@@ -1,0 +1,2236 @@
+[
+  {
+    "id": 1,
+    "name": "Áo Thun Basic Nữ",
+    "slug": "ao-thun-basic-nu-trang",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/women/women-27.webp",
+      "/images/products/women/women-28.webp"
+    ],
+    "price": 199000,
+    "recommendationTags": [
+      "similar-basic-tshirt",
+      "outfit-with-jeans",
+      "outfit-with-skirt"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Trắng",
+    "slug": "ao-thun-nu-mau-vang",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-29.webp"
+    ],
+    "price": 199000,
+    "recommendationTags": [
+      "similar-basic-tshirt",
+      "outfit-with-jeans"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Đen",
+    "slug": "ao-thun-nu-den",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/women/women-26.webp"
+    ],
+    "price": 199000,
+    "recommendationTags": [
+      "similar-basic-tshirt",
+      "outfit-with-skirt",
+      "outfit-with-pants"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Áo Thun Nữ Màu Vàng",
+    "slug": "ao-top-nu-cam",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-24.webp",
+      "/images/products/women/women-25.webp"
+    ],
+    "price": 249000,
+    "recommendationTags": [
+      "outfit-with-skirt",
+      "outfit-with-jeans",
+      "similar-top"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Vàng",
+    "slug": "vay-ngan-nu-den",
+    "category": "women",
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-23.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "outfit-with-jeans",
+      "similar-skirt",
+      "accessory-match"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Áo Thun Nữ Đen",
+    "slug": "quan-dai-nu-trang",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-22.webp"
+    ],
+    "price": 349000,
+    "recommendationTags": [
+      "outfit-with-jeans",
+      "similar-pants"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Đen",
+    "slug": "outfit-nu-xanh-la",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-20.webp"
+    ],
+    "price": 459000,
+    "recommendationTags": [
+      "similar-outfit",
+      "family-match"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Áo Top Nữ Màu Cam",
+    "slug": "ao-polo-nam-xanh-duong",
+    "category": "women",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/men/men-47.webp",
+      "/images/products/men/men-48.webp"
+    ],
+    "price": 349000,
+    "recommendationTags": [
+      "similar-polo",
+      "outfit-with-khaki",
+      "outfit-with-jeans"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Cam",
+    "slug": "ao-polo-nam-beige",
+    "category": "men",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/men/men-46.webp"
+    ],
+    "price": 349000,
+    "recommendationTags": [
+      "similar-polo",
+      "outfit-with-khaki"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Váy Ngắn Nữ Đen",
+    "slug": "ao-thun-nam-den",
+    "category": "men",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "/images/products/men/men-62.webp",
+      "/images/products/men/men-63.webp"
+    ],
+    "price": 229000,
+    "recommendationTags": [
+      "similar-basic-tshirt",
+      "outfit-with-jeans"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Đen",
+    "slug": "ao-thun-nam-trang",
+    "category": "men",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/men/men-67.webp",
+      "/images/products/men/men-68.webp"
+    ],
+    "price": 199000,
+    "recommendationTags": [
+      "similar-basic-tshirt",
+      "outfit-with-jeans"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Quần Dài Nữ Trắng",
+    "slug": "ao-so-mi-nam-trang",
+    "category": "men",
+    "sizes": [
+      "S",
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-57.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-shirt",
+      "outfit-with-khaki",
+      "outfit-with-dress-pants"
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Trắng",
+    "slug": "quan-dai-nam-den",
+    "category": "men",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/men/men-41.webp"
+    ],
+    "price": 399000,
+    "recommendationTags": [
+      "outfit-with-polo",
+      "outfit-with-shirt",
+      "similar-pants"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Outfit Nữ Xanh Lá",
+    "slug": "outfit-nam-navy",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "/images/products/men/men-38.webp",
+      "/images/products/men/men-39.webp"
+    ],
+    "price": 599000,
+    "recommendationTags": [
+      "similar-outfit",
+      "family-match"
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Xanh lá",
+    "slug": "vay-be-gai-hong",
+    "category": "men",
+    "sizes": [
+      "3-4T",
+      "5-6T",
+      "7-8T"
+    ],
+    "images": [
+      "/images/products/kids/kids-17.webp"
+    ],
+    "price": 179000,
+    "recommendationTags": [
+      "similar-kids-dress",
+      "family-match"
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Áo Polo Nam Cổ Bẻ Xanh",
+    "slug": "vay-be-gai-trang",
+    "category": "kids",
+    "sizes": [
+      "3-4T",
+      "5-6T",
+      "7-8T"
+    ],
+    "images": [
+      "/images/products/kids/kids-18.webp"
+    ],
+    "price": 169000,
+    "recommendationTags": [
+      "similar-kids-dress",
+      "family-match"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Xanh dương",
+    "slug": "ao-thun-be-trai-trang",
+    "category": "kids",
+    "sizes": [
+      "3-4T",
+      "5-6T",
+      "7-8T"
+    ],
+    "images": [
+      "/images/products/kids/kids-21.webp"
+    ],
+    "price": 149000,
+    "recommendationTags": [
+      "similar-kids-tshirt",
+      "family-match"
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Trắng",
+    "slug": "set-do-gia-dinh",
+    "category": "kids",
+    "sizes": [
+      "Set S/M/3-4T",
+      "Set M/L/5-6T",
+      "Set L/XL/7-8T"
+    ],
+    "images": [
+      "/images/products/kids/kids-19.webp"
+    ],
+    "price": 899000,
+    "recommendationTags": [
+      "family-match",
+      "similar-family-set"
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Be",
+    "slug": "tat-ngắn-den",
+    "category": "family",
+    "sizes": [
+      "Free size"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-12.webp"
+    ],
+    "price": 49000,
+    "recommendationTags": [
+      "accessory-match",
+      "outfit-complement"
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Áo Polo Nam Màu Be",
+    "slug": "product-accessories-20",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-01.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Be",
+    "slug": "product-accessories-21",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-02.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Áo Thun Nam Form Rộng Đen",
+    "slug": "product-women-22",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-01.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Đen",
+    "slug": "product-kids-23",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-01.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Áo Thun Nam Trắng",
+    "slug": "product-kids-24",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-02.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Trắng",
+    "slug": "product-kids-25",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-03.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Áo Sơ Mi Nam Trắng",
+    "slug": "product-kids-26",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-04.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 27,
+    "name": "Trắng",
+    "slug": "product-kids-27",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-05.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Đen",
+    "slug": "product-kids-28",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-06.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Quần Dài Nam Đen",
+    "slug": "product-women-29",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-02.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Trắng",
+    "slug": "product-kids-30",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-07.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Trắng",
+    "slug": "product-kids-31",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-08.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Đen",
+    "slug": "product-kids-32",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-09.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Trắng",
+    "slug": "product-kids-33",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-10.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Outfit Nam Navy",
+    "slug": "product-women-34",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-03.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Navy",
+    "slug": "product-kids-35",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/categories/category-kids-01.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Váy Bé Gái Màu Hồng",
+    "slug": "product-kids-36",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-11.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 37,
+    "name": "Hồng",
+    "slug": "product-kids-37",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-12.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Trắng",
+    "slug": "product-men-38",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-01.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 39,
+    "name": "Đầm Bé Gái Trắng",
+    "slug": "product-accessories-39",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-03.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Trắng",
+    "slug": "product-women-40",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-04.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 41,
+    "name": "Áo Thun Bé Trai Trắng",
+    "slug": "product-accessories-41",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-04.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 42,
+    "name": "Trắng",
+    "slug": "product-men-42",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-02.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 43,
+    "name": "Đỏ",
+    "slug": "product-men-43",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-03.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 44,
+    "name": "Set Đồ Gia Đình",
+    "slug": "product-women-44",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-05.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 45,
+    "name": "Nhiều màu",
+    "slug": "product-women-45",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-06.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 46,
+    "name": "Tất Ngắn Đen",
+    "slug": "product-women-46",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-07.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 47,
+    "name": "Đen",
+    "slug": "product-women-47",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-08.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 48,
+    "name": "Trắng",
+    "slug": "product-women-48",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-09.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 49,
+    "name": "Sản phẩm accessories mới 20",
+    "slug": "product-men-49",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-04.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 50,
+    "name": "Mặc định",
+    "slug": "product-women-50",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-10.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 51,
+    "name": "Sản phẩm accessories mới 21",
+    "slug": "product-women-51",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-11.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 52,
+    "name": "Mặc định",
+    "slug": "product-women-52",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-12.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 53,
+    "name": "Sản phẩm women mới 22",
+    "slug": "product-women-53",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-13.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 54,
+    "name": "Mặc định",
+    "slug": "product-women-54",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-14.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 55,
+    "name": "Sản phẩm kids mới 23",
+    "slug": "product-men-55",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-05.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 56,
+    "name": "Mặc định",
+    "slug": "product-men-56",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-06.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 57,
+    "name": "Sản phẩm kids mới 24",
+    "slug": "product-men-57",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-07.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 58,
+    "name": "Mặc định",
+    "slug": "product-men-58",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-08.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 59,
+    "name": "Sản phẩm kids mới 25",
+    "slug": "product-men-59",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-09.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Mặc định",
+    "slug": "product-women-60",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-15.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 61,
+    "name": "Sản phẩm kids mới 26",
+    "slug": "product-men-61",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-10.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 62,
+    "name": "Mặc định",
+    "slug": "product-men-62",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-11.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 63,
+    "name": "Sản phẩm kids mới 27",
+    "slug": "product-men-63",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-12.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 64,
+    "name": "Mặc định",
+    "slug": "product-men-64",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-13.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 65,
+    "name": "Sản phẩm kids mới 28",
+    "slug": "product-men-65",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-14.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 66,
+    "name": "Mặc định",
+    "slug": "product-men-66",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-15.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 67,
+    "name": "Sản phẩm women mới 29",
+    "slug": "product-men-67",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-16.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 68,
+    "name": "Mặc định",
+    "slug": "product-men-68",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-17.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 69,
+    "name": "Sản phẩm kids mới 30",
+    "slug": "product-men-69",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-18.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 70,
+    "name": "Mặc định",
+    "slug": "product-men-70",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-19.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 71,
+    "name": "Sản phẩm kids mới 31",
+    "slug": "product-men-71",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-20.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 72,
+    "name": "Mặc định",
+    "slug": "product-men-72",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-21.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 73,
+    "name": "Sản phẩm kids mới 32",
+    "slug": "product-men-73",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-22.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 74,
+    "name": "Mặc định",
+    "slug": "product-men-74",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-23.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 75,
+    "name": "Sản phẩm kids mới 33",
+    "slug": "product-men-75",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-24.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 76,
+    "name": "Mặc định",
+    "slug": "product-men-76",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-25.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 77,
+    "name": "Sản phẩm women mới 34",
+    "slug": "product-men-77",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-26.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 78,
+    "name": "Mặc định",
+    "slug": "product-men-78",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-27.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 79,
+    "name": "Sản phẩm kids mới 35",
+    "slug": "product-men-79",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-28.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 80,
+    "name": "Mặc định",
+    "slug": "product-men-80",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-29.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 81,
+    "name": "Sản phẩm kids mới 36",
+    "slug": "product-men-81",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-30.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 82,
+    "name": "Mặc định",
+    "slug": "product-men-82",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-31.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 83,
+    "name": "Sản phẩm kids mới 37",
+    "slug": "product-men-83",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-32.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 84,
+    "name": "Mặc định",
+    "slug": "product-men-84",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-33.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 85,
+    "name": "Sản phẩm men mới 38",
+    "slug": "product-accessories-85",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-05.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 86,
+    "name": "Mặc định",
+    "slug": "product-women-86",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-16.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 87,
+    "name": "Sản phẩm accessories mới 39",
+    "slug": "product-men-87",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-34.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 88,
+    "name": "Mặc định",
+    "slug": "product-accessories-88",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-06.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 89,
+    "name": "Sản phẩm women mới 40",
+    "slug": "product-women-89",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-17.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 90,
+    "name": "Mặc định",
+    "slug": "product-women-90",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-18.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 91,
+    "name": "Sản phẩm accessories mới 41",
+    "slug": "product-accessories-91",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-07.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 92,
+    "name": "Mặc định",
+    "slug": "product-accessories-92",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-08.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 93,
+    "name": "Sản phẩm men mới 42",
+    "slug": "product-accessories-93",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-09.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 94,
+    "name": "Mặc định",
+    "slug": "product-accessories-94",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-10.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 95,
+    "name": "Sản phẩm men mới 43",
+    "slug": "product-accessories-95",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/accessories/accessories-11.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-phụ-kiện"
+    ]
+  },
+  {
+    "id": 96,
+    "name": "Mặc định",
+    "slug": "product-kids-96",
+    "category": "accessories",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-13.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 97,
+    "name": "Sản phẩm women mới 44",
+    "slug": "product-kids-97",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-14.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 98,
+    "name": "Mặc định",
+    "slug": "product-kids-98",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-15.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 99,
+    "name": "Sản phẩm women mới 45",
+    "slug": "product-kids-99",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-16.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 100,
+    "name": "Mặc định",
+    "slug": "product-kids-100",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/kids/kids-20.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 101,
+    "name": "Sản phẩm women mới 46",
+    "slug": "product-men-101",
+    "category": "kids",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-35.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 102,
+    "name": "Mặc định",
+    "slug": "product-men-102",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-36.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 103,
+    "name": "Sản phẩm women mới 47",
+    "slug": "product-men-103",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-37.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 104,
+    "name": "Mặc định",
+    "slug": "product-men-104",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-40.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 105,
+    "name": "Sản phẩm women mới 48",
+    "slug": "product-men-105",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-42.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-quần-/ váy"
+    ]
+  },
+  {
+    "id": 106,
+    "name": "Mặc định",
+    "slug": "product-men-106",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-43.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-quần-/ váy"
+    ]
+  },
+  {
+    "id": 107,
+    "name": "Sản phẩm men mới 49",
+    "slug": "product-men-107",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-44.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-quần-/ váy"
+    ]
+  },
+  {
+    "id": 108,
+    "name": "Mặc định",
+    "slug": "product-men-108",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-45.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-quần-/ váy"
+    ]
+  },
+  {
+    "id": 109,
+    "name": "Sản phẩm women mới 50",
+    "slug": "product-men-109",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-49.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 110,
+    "name": "Mặc định",
+    "slug": "product-men-110",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-50.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 111,
+    "name": "Sản phẩm women mới 51",
+    "slug": "product-men-111",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-51.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 112,
+    "name": "Mặc định",
+    "slug": "product-men-112",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-52.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 113,
+    "name": "Sản phẩm women mới 52",
+    "slug": "product-men-113",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-53.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 114,
+    "name": "Mặc định",
+    "slug": "product-men-114",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-54.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 115,
+    "name": "Sản phẩm women mới 53",
+    "slug": "product-men-115",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-55.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 116,
+    "name": "Mặc định",
+    "slug": "product-men-116",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-56.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 117,
+    "name": "Sản phẩm women mới 54",
+    "slug": "product-men-117",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-58.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 118,
+    "name": "Mặc định",
+    "slug": "product-men-118",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-59.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 119,
+    "name": "Sản phẩm men mới 55",
+    "slug": "product-men-119",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-60.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 120,
+    "name": "Mặc định",
+    "slug": "product-men-120",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-61.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 121,
+    "name": "Sản phẩm men mới 56",
+    "slug": "product-men-121",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-64.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 122,
+    "name": "Mặc định",
+    "slug": "product-men-122",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-65.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 123,
+    "name": "Sản phẩm men mới 57",
+    "slug": "product-men-123",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-66.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 124,
+    "name": "Mặc định",
+    "slug": "product-men-124",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-69.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 125,
+    "name": "Sản phẩm men mới 58",
+    "slug": "product-men-125",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-70.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 126,
+    "name": "Mặc định",
+    "slug": "product-men-126",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/men/men-71.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-áo-thun"
+    ]
+  },
+  {
+    "id": 127,
+    "name": "Sản phẩm men mới 59",
+    "slug": "product-women-127",
+    "category": "men",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-19.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  },
+  {
+    "id": 128,
+    "name": "Mặc định",
+    "slug": "product-women-128",
+    "category": "women",
+    "sizes": [
+      "M",
+      "L"
+    ],
+    "images": [
+      "/images/products/women/women-21.webp"
+    ],
+    "price": 299000,
+    "recommendationTags": [
+      "similar-sản-phẩm"
+    ]
+  }
+]

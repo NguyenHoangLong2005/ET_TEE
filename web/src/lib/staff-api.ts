@@ -16,9 +16,10 @@ export async function staffRequest<T>(
   try { body = text ? JSON.parse(text) : null; } catch { body = null; }
   const data = body && typeof body === "object" ? body as Record<string, unknown> : null;
   if (!response.ok || data?.success === false) {
+    if (response.status === 403) throw new Error("Bạn không có quyền thực hiện thao tác này.");
     const errorText = typeof data?.message === "string" ? data.message : undefined;
     throw new Error(errorText || (response.status === 502 || response.status === 503
-      ? "Không thể kết nối Spring Boot. Kiểm tra backend cổng 8080."
+      ? "Không thể kết nối Spring Boot. Kiểm tra backend cổng 8081."
       : `Yêu cầu API thất bại (HTTP ${response.status}).`));
   }
   return (data && "data" in data ? data.data : body) as T;

@@ -13,5 +13,17 @@ public interface StocktakeRepository extends JpaRepository<Stocktake, Long> {
 
     List<Stocktake> findByStatus(String status);
 
+<<<<<<< HEAD
     List<Stocktake> findByWarehouseLocationAndStatus(String warehouseLocation, String status);
 }
+=======
+    List<Stocktake> findByWarehouseLocationAndStatus(
+            String warehouseLocation,
+            String status
+    );
+
+    List<Stocktake> findByShopId(Long shopId);
+
+    List<Stocktake> findByShopIdAndStatus(Long shopId, String status);
+}
+>>>>>>> main

@@ -4,17 +4,17 @@ import com.nguyenhoanglong.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/health")
 public class HealthController {
 
     private final DataSource dataSource;
@@ -23,8 +23,19 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
-    @GetMapping
+    @GetMapping("/health")
+    public Map<String, Object> simpleHealth() {
+        Map<String, Object> health = new HashMap<>();
+        health.put("status", "UP");
+        health.put("timestamp", LocalDateTime.now());
+        health.put("application", "ET.TEE Fashion Recommendation System");
+        health.put("version", "1.0.0");
+        return health;
+    }
+
+    @GetMapping("/api/health")
     public ResponseEntity<ApiResponse<Map<String, String>>> checkHealth() {
+
         Map<String, String> data = new LinkedHashMap<>();
         data.put("status", "UP");
         return ResponseEntity.ok(ApiResponse.success("Fashion Backend is running", data));

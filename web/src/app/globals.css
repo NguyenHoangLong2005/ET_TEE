@@ -1,6 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
 @import "tailwindcss";
 
+/* ================================================================
+   ET.TEE ENTERPRISE DESIGN SYSTEM — FOUNDATION TOKENS
+   Phase 1: Color, Typography, Spacing, Radius, Shadow
+   Scope: /admin /staff/* /store-owner/* ONLY
+   ================================================================ */
+
 :root {
+  /* --- Brand Primary Scale --- */
+  --color-primary-50:  #FFF0F2;
+  --color-primary-100: #F9E2E5;
+  --color-primary-200: #F4C0C8;
+  --color-primary-300: #EC8D9A;
+  --color-primary-400: #E3546A;
+  --color-primary-600: #E50027;   /* ET.TEE Brand Red — anchor */
+  --color-primary-700: #BD001F;
+  --color-primary-800: #950019;
+  --color-primary-900: #6E0013;
+
+  /* --- Surface System --- */
+  --color-surface-page: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+
+  /* --- Border System --- */
+  --color-border:        #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+
+  /* --- Text System --- */
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-muted:     #94A3B8;
+
+  /* --- Semantic: Success --- */
+  --color-success:    #059669;
+  --color-success-bg: #ECFDF5;
+
+  /* --- Semantic: Warning --- */
+  --color-warning:    #D97706;
+  --color-warning-bg: #FFFBEB;
+
+  /* --- Semantic: Error/Danger --- */
+  --color-error:    #DC2626;
+  --color-error-bg: #FEF2F2;
+
+  /* --- Semantic: Info --- */
+  --color-info:    #2563EB;
+  --color-info-bg: #EFF6FF;
+
+  /* --- Shadow System --- */
+  --shadow-flat:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card:    0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-overlay: 0 4px 6px -1px rgba(15, 23, 42, 0.10), 0 10px 15px -3px rgba(15, 23, 42, 0.08);
+
+  /* --- Radius System --- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* --- Admin area background (kept for legacy compat) --- */
+  --color-admin-bg:      #F8FAFC;
+  --color-admin-surface: #FFFFFF;
+  --color-admin-border:  #E2E8F0;
+  --color-admin-text:    #0F172A;
+  --color-admin-muted:   #64748B;
+  --color-admin-sidebar: #FFFFFF;
+
+  /* --- Legacy tokens kept for storefront compatibility --- */
   --background: #020817;
   --foreground: #e2e8f0;
   --muted: #94a3b8;
@@ -8,25 +75,99 @@
   --line: rgba(148, 163, 184, 0.18);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  /* --- Brand Primary (ET.TEE Red) --- */
+  --color-primary:       #E50027;
+  --color-primary-50:    #FFF0F2;
+  --color-primary-100:   #F9E2E5;
+  --color-primary-200:   #F4C0C8;
+  --color-primary-300:   #EC8D9A;
+  --color-primary-600:   #E50027;
+  --color-primary-700:   #BD001F;
+  --color-primary-800:   #950019;
+  --color-primary-900:   #6E0013;
+
+  /* --- Surface --- */
+  --color-surface-page: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+
+  /* --- Border --- */
+  --color-border:        #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+
+  /* --- Text --- */
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-muted:     #94A3B8;
+
+  /* --- Semantic Colors --- */
+  --color-success:    #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning:    #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-error:      #DC2626;
+  --color-error-bg:   #FEF2F2;
+  --color-info:       #2563EB;
+  --color-info-bg:    #EFF6FF;
+
+  /* --- Legacy aliases kept for storefront compatibility --- */
+  --color-danger:    #DC2626;
+  --color-danger-bg: #FEF2F2;
+
+  /* --- Admin area tokens (kept for compat) --- */
+  --color-admin-bg:      #F8FAFC;
+  --color-admin-surface: #FFFFFF;
+  --color-admin-border:  #E2E8F0;
+  --color-admin-text:    #0F172A;
+  --color-admin-muted:   #64748B;
+  --color-admin-sidebar: #FFFFFF;
+
+  /* --- Brand (storefront, unchanged) --- */
+  --color-brand-primary: #18181B;
+  --color-brand-accent:  #E50027;
+  --color-brand-warm:    #FAF9F6;
+
+  /* --- Font Stack --- */
+  --font-sans:  "Be Vietnam Pro", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* --- Shadow tokens --- */
+  --shadow-flat:    0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card:    0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-overlay: 0 4px 6px -1px rgba(15, 23, 42, 0.10), 0 10px 15px -3px rgba(15, 23, 42, 0.08);
+
+  /* --- Radius --- */
+  --radius-card: 0.75rem;
+
+  /* --- Legacy shadow kept --- */
+  --shadow-card-hover: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+/* ================================================================
+   BASE STYLES
+   ================================================================ */
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    @apply bg-white text-slate-900 antialiased overflow-x-hidden;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-slate-900;
+  }
+
+  /* Admin area overrides: ensure Be Vietnam Pro font propagates */
+  [data-admin-area],
+  .admin-area {
+    font-family: var(--font-sans);
+  }
 }
 
 html {
   scroll-behavior: smooth;
-}
-
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(168, 85, 247, 0.18), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.12), transparent 25%),
-    var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -34,8 +175,8 @@ body {
 }
 
 ::selection {
-  background: rgba(168, 85, 247, 0.35);
-  color: white;
+  background: rgba(229, 0, 39, 0.15);
+  color: #E50027;
 }
 
 button,
@@ -48,4 +189,260 @@ textarea {
 img {
   max-width: 100%;
   display: block;
+}
+
+/* ================================================================
+   ENTERPRISE ADMIN FOCUS CONVENTION
+   Consistent across ALL admin/staff/store-owner inputs
+   ================================================================ */
+.admin-area input:focus,
+.admin-area select:focus,
+.admin-area textarea:focus,
+[data-admin-area] input:focus,
+[data-admin-area] select:focus,
+[data-admin-area] textarea:focus {
+  outline: none;
+  border-color: #E50027;
+  box-shadow: 0 0 0 3px rgba(229, 0, 39, 0.12);
+}
+
+/* Input focus utility — apply via className focus:border-primary focus:ring-primary/10 */
+
+/* ================================================================
+   ENTERPRISE TYPOGRAPHY SCALE
+   Used in admin/staff/store-owner areas
+   ================================================================ */
+
+/* h1-page-title */
+.text-page-title {
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: #0F172A;
+}
+
+/* h2-section-title */
+.text-section-title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: #0F172A;
+}
+
+/* h3-card-title */
+.text-card-title {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: #0F172A;
+}
+
+/* body */
+.text-body {
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+}
+
+/* body-table */
+.text-body-table {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+/* caption */
+.text-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+/* eyebrow-label */
+.text-eyebrow {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94A3B8;
+}
+
+/* metric-value-lg */
+.text-metric-lg {
+  font-size: 26px;
+  line-height: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+}
+
+/* metric-value-sm */
+.text-metric-sm {
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+}
+
+/* data-cell */
+.text-data-cell {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   ENTERPRISE COMPONENT PRIMITIVES
+   ================================================================ */
+
+/* --- KPI Card --- */
+.kpi-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-flat);
+}
+
+/* --- Enterprise Card --- */
+.enterprise-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-flat);
+  overflow: hidden;
+}
+
+/* --- Enterprise Card Header --- */
+.enterprise-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* --- Enterprise Table Header --- */
+.enterprise-table-header {
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.enterprise-table-header th {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94A3B8;
+  padding: 12px 16px;
+}
+
+/* --- Overlay shadow for modals/dropdowns only --- */
+.shadow-overlay {
+  box-shadow: var(--shadow-overlay);
+}
+
+/* --- Flat shadow for static cards --- */
+.shadow-flat {
+  box-shadow: var(--shadow-flat);
+}
+
+/* ================================================================
+   ENTERPRISE SIDEBAR NAV ITEM
+   Active: bg-primary-100 + text-primary-900 + icon-primary-900
+   ================================================================ */
+
+.nav-item-active {
+  background-color: #F9E2E5;    /* primary-100 */
+  color: #6E0013;               /* primary-900 */
+}
+
+.nav-item-active .nav-icon {
+  color: #6E0013;               /* primary-900 */
+}
+
+.nav-item-default {
+  color: #64748B;               /* text-secondary */
+}
+
+.nav-item-default .nav-icon {
+  color: #94A3B8;               /* text-muted */
+}
+
+/* ================================================================
+   SEMANTIC BADGE PRIMITIVES
+   ================================================================ */
+
+.badge-success {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.badge-warning {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.badge-error {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.badge-info {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.badge-neutral {
+  background: #F8FAFC;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+}
+
+/* ================================================================
+   SCROLLBAR — Enterprise Style
+   ================================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide Edge password reveal icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
 }

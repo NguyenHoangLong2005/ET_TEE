@@ -1,0 +1,72 @@
+{
+  "public/images/banners/banner-01.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-family-connect-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:38:51.969Z"
+  },
+  "public/images/banners/banner-02.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-tshirt-energy-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:39:06.797Z"
+  },
+  "public/images/banners/banner-03.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-back-to-school-sale-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:39:24.766Z"
+  },
+  "public/images/banners/banner-04.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-team-uniform-polo-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:39:35.565Z"
+  },
+  "public/images/banners/banner-05.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-winter-jacket-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:40:08.636Z"
+  },
+  "public/images/banners/banner-06.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-women-thermalwear-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:40:27.523Z"
+  },
+  "public/images/banners/banner-07.webp": {
+    "userLabel": "banner",
+    "userNewName": "banner-school-sale-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:40:42.101Z"
+  },
+  "public/images/lookbook/lookbook-01.webp": {
+    "userLabel": "lookbook",
+    "userNewName": "couple-kids-tshirt-yellow-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:41:07.042Z"
+  },
+  "public/images/lookbook/lookbook-02.webp": {
+    "userLabel": "lookbook",
+    "userNewName": "women-outfit-checkered-pants-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:42:29.709Z"
+  },
+  "public/images/products/accessories/accessories-01.webp": {
+    "userLabel": "product-accessories",
+    "userNewName": "accessory-socks-black-01.webp",
+    "userNotes": "",
+    "status": "mapped",
+    "decidedAt": "2026-09-09T02:42:07.364Z"
+  }
+}

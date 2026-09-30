@@ -1,0 +1,2754 @@
+{
+  "generatedAt": "2026-09-09T02:46:17.489Z",
+  "stats": {
+    "duplicateGroups": 76,
+    "refsToUpdate": 135,
+    "filesToDelete": 174,
+    "safeToDelete": 39,
+    "specialMoves": 2
+  },
+  "specialMoves": [
+    {
+      "from": "public/images/products/accessories/accessories-12.webp",
+      "to": "public/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "reason": "Not an accessory — is a yellow women tshirt"
+    },
+    {
+      "from": "public/images/products/accessories/acc-tshirt-yellow-01.webp",
+      "to": "public/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "reason": "Duplicate of accessories-12, also not an accessory"
+    }
+  ],
+  "refUpdates": [
+    {
+      "from": "/images/categories/category-kids-01.webp",
+      "to": "/images/products/women/women-outfit-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-19.webp",
+      "to": "/images/products/women/women-outfit-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-01.webp"
+    },
+    {
+      "from": "/images/lookbook/lookbook-01.webp",
+      "to": "/images/products/women/women-tshirt-yellow-03.webp",
+      "usedIn": [
+        "src/lib/data/marketing.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-03.webp"
+    },
+    {
+      "from": "/images/products/women/women-29.webp",
+      "to": "/images/products/women/women-tshirt-yellow-03.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-03.webp"
+    },
+    {
+      "from": "/images/lookbook/lookbook-02.webp",
+      "to": "/images/products/men/men-shirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/marketing.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-57.webp",
+      "to": "/images/products/men/men-shirt-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-07.webp",
+      "to": "/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-basic-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/acc-tshirt-yellow-01.webp",
+      "to": "/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "usedIn": [
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-basic-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-12.webp",
+      "to": "/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-basic-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-01.webp",
+      "to": "/images/products/accessories/accessory-socks-navy-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-socks-navy-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-02.webp",
+      "to": "/images/products/accessories/accessory-shoes-men-navy-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-shoes-men-navy-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-03.webp",
+      "to": "/images/products/accessories/accessory-armsleeve-nude-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-armsleeve-nude-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-04.webp",
+      "to": "/images/products/accessories/accessory-belt-auto-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-belt-auto-black-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-05.webp",
+      "to": "/images/products/accessories/accessory-cap-navy-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-cap-navy-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-06.webp",
+      "to": "/images/products/accessories/accessory-socks-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-socks-black-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-07.webp",
+      "to": "/images/products/accessories/accessory-socks-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-socks-grey-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-08.webp",
+      "to": "/images/products/accessories/accessory-heels-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-heels-white-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-09.webp",
+      "to": "/images/products/accessories/accessory-sandals-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-sandals-white-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-10.webp",
+      "to": "/images/products/accessories/accessory-heels-red-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-heels-red-01.webp"
+    },
+    {
+      "from": "/images/products/accessories/accessories-11.webp",
+      "to": "/images/products/accessories/accessory-belt-leather-brown-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/accessories/accessory-belt-leather-brown-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-01.webp",
+      "to": "/images/products/kids/kids-dress-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-blue-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-16.webp",
+      "to": "/images/products/kids/kids-dress-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-blue-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-02.webp",
+      "to": "/images/products/kids/kids-dress-pink-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-pink-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-17.webp",
+      "to": "/images/products/kids/kids-dress-pink-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-pink-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-03.webp",
+      "to": "/images/products/kids/kids-dress-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-18.webp",
+      "to": "/images/products/kids/kids-dress-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-dress-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-04.webp",
+      "to": "/images/products/kids/kids-shirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-shirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-20.webp",
+      "to": "/images/products/kids/kids-shirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-shirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-05.webp",
+      "to": "/images/products/kids/kids-outfit-set-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-outfit-set-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-19.webp",
+      "to": "/images/products/kids/kids-outfit-set-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-outfit-set-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-06.webp",
+      "to": "/images/products/kids/kids-tshirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-21.webp",
+      "to": "/images/products/kids/kids-tshirt-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-07.webp",
+      "to": "/images/products/women/women-skirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-skirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-23.webp",
+      "to": "/images/products/women/women-skirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-skirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-08.webp",
+      "to": "/images/products/women/women-top-orange-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-top-orange-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-24.webp",
+      "to": "/images/products/women/women-top-orange-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-top-orange-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-09.webp",
+      "to": "/images/products/women/women-pants-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-pants-white-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-22.webp",
+      "to": "/images/products/women/women-pants-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-pants-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-10.webp",
+      "to": "/images/products/women/women-tshirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-27.webp",
+      "to": "/images/products/women/women-tshirt-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/cart/page.tsx",
+        "src/app/(customer)/checkout/page.tsx",
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-11.webp",
+      "to": "/images/products/women/women-outfit-green-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-green-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-20.webp",
+      "to": "/images/products/women/women-outfit-green-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-green-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-12.webp",
+      "to": "/images/products/women/women-outfit-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-grey-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-21.webp",
+      "to": "/images/products/women/women-outfit-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-outfit-grey-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-13.webp",
+      "to": "/images/products/kids/kids-basic-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-blue-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-11.webp",
+      "to": "/images/products/kids/kids-basic-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-blue-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-14.webp",
+      "to": "/images/products/kids/kids-basic-pink-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-pink-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-12.webp",
+      "to": "/images/products/kids/kids-basic-pink-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-pink-01.webp"
+    },
+    {
+      "from": "/images/products/kids/kids-15.webp",
+      "to": "/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-tshirt-red-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-01.webp",
+      "to": "/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/kids/kids-basic-tshirt-red-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-01.webp",
+      "to": "/images/products/women/women-tshirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-26.webp",
+      "to": "/images/products/women/women-tshirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-02.webp",
+      "to": "/images/products/women/women-top-orange-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-top-orange-02.webp"
+    },
+    {
+      "from": "/images/products/women/women-25.webp",
+      "to": "/images/products/women/women-top-orange-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-top-orange-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-03.webp",
+      "to": "/images/products/women/women-tshirt-white-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-white-02.webp"
+    },
+    {
+      "from": "/images/products/women/women-28.webp",
+      "to": "/images/products/women/women-tshirt-white-02.webp",
+      "usedIn": [
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-white-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-04.webp",
+      "to": "/images/products/men/men-shirt-black-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-56.webp",
+      "to": "/images/products/men/men-shirt-black-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-05.webp",
+      "to": "/images/products/men/men-polo-pink-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-pink-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-50.webp",
+      "to": "/images/products/men/men-polo-pink-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-pink-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-06.webp",
+      "to": "/images/products/men/men-polo-purple-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-purple-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-51.webp",
+      "to": "/images/products/men/men-polo-purple-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-purple-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-08.webp",
+      "to": "/images/products/men/men-tshirt-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-67.webp",
+      "to": "/images/products/men/men-tshirt-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-09.webp",
+      "to": "/images/products/men/men-tshirt-yellow-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-yellow-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-71.webp",
+      "to": "/images/products/men/men-tshirt-yellow-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-yellow-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-13.webp",
+      "to": "/images/products/men/men-shorts-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shorts-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-58.webp",
+      "to": "/images/products/men/men-shorts-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shorts-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-14.webp",
+      "to": "/images/products/men/men-pants-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-grey-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-43.webp",
+      "to": "/images/products/men/men-pants-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-grey-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-15.webp",
+      "to": "/images/products/men/men-pants-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-45.webp",
+      "to": "/images/products/men/men-pants-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-16.webp",
+      "to": "/images/products/men/men-pants-cream-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-cream-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-42.webp",
+      "to": "/images/products/men/men-pants-cream-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-cream-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-17.webp",
+      "to": "/images/products/men/men-pants-khaki-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-khaki-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-44.webp",
+      "to": "/images/products/men/men-pants-khaki-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-khaki-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-18.webp",
+      "to": "/images/products/men/men-pants-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-41.webp",
+      "to": "/images/products/men/men-pants-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-pants-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-19.webp",
+      "to": "/images/products/men/men-outfit-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-40.webp",
+      "to": "/images/products/men/men-outfit-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-20.webp",
+      "to": "/images/products/men/men-outfit-beige-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-beige-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-35.webp",
+      "to": "/images/products/men/men-outfit-beige-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-beige-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-21.webp",
+      "to": "/images/products/men/men-outfit-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-36.webp",
+      "to": "/images/products/men/men-outfit-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-22.webp",
+      "to": "/images/products/men/men-tee-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-60.webp",
+      "to": "/images/products/men/men-tee-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-23.webp",
+      "to": "/images/products/men/men-polo-white-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-52.webp",
+      "to": "/images/products/men/men-polo-white-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-white-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-24.webp",
+      "to": "/images/products/men/men-polo-blue-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-49.webp",
+      "to": "/images/products/men/men-polo-blue-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-25.webp",
+      "to": "/images/products/men/men-polo-white-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-white-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-53.webp",
+      "to": "/images/products/men/men-polo-white-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-white-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-26.webp",
+      "to": "/images/products/men/men-tshirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-62.webp",
+      "to": "/images/products/men/men-tshirt-black-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-27.webp",
+      "to": "/images/products/men/men-tshirt-black-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-63.webp",
+      "to": "/images/products/men/men-tshirt-black-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-28.webp",
+      "to": "/images/products/men/men-tshirt-white-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-68.webp",
+      "to": "/images/products/men/men-tshirt-white-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-29.webp",
+      "to": "/images/products/men/men-tshirt-white-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-69.webp",
+      "to": "/images/products/men/men-tshirt-white-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-30.webp",
+      "to": "/images/products/men/men-tshirt-green-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-green-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-66.webp",
+      "to": "/images/products/men/men-tshirt-green-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-green-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-31.webp",
+      "to": "/images/products/men/men-tshirt-white-04.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-04.webp"
+    },
+    {
+      "from": "/images/products/men/men-70.webp",
+      "to": "/images/products/men/men-tshirt-white-04.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-white-04.webp"
+    },
+    {
+      "from": "/images/products/men/men-32.webp",
+      "to": "/images/products/men/men-tshirt-black-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-64.webp",
+      "to": "/images/products/men/men-tshirt-black-03.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-03.webp"
+    },
+    {
+      "from": "/images/products/men/men-33.webp",
+      "to": "/images/products/men/men-tshirt-black-04.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-04.webp"
+    },
+    {
+      "from": "/images/products/men/men-65.webp",
+      "to": "/images/products/men/men-tshirt-black-04.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tshirt-black-04.webp"
+    },
+    {
+      "from": "/images/products/men/men-37.webp",
+      "to": "/images/products/men/men-outfit-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-grey-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-11.webp",
+      "to": "/images/products/men/men-outfit-grey-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-grey-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-38.webp",
+      "to": "/images/products/men/men-outfit-navy-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-navy-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-10.webp",
+      "to": "/images/products/men/men-outfit-navy-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-navy-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-39.webp",
+      "to": "/images/products/men/men-outfit-navy-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-navy-02.webp"
+    },
+    {
+      "from": "/images/products/women/women-12.webp",
+      "to": "/images/products/men/men-outfit-navy-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-outfit-navy-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-46.webp",
+      "to": "/images/products/men/men-polo-beige-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-beige-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-09.webp",
+      "to": "/images/products/men/men-polo-beige-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-beige-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-47.webp",
+      "to": "/images/products/men/men-polo-blue-01.webp",
+      "usedIn": [
+        "src/app/(customer)/cart/page.tsx",
+        "src/app/(customer)/checkout/page.tsx",
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-07.webp",
+      "to": "/images/products/men/men-polo-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-48.webp",
+      "to": "/images/products/men/men-polo-blue-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-02.webp"
+    },
+    {
+      "from": "/images/products/women/women-08.webp",
+      "to": "/images/products/men/men-polo-blue-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-polo-blue-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-54.webp",
+      "to": "/images/products/men/men-shirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-05.webp",
+      "to": "/images/products/men/men-shirt-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-55.webp",
+      "to": "/images/products/men/men-shirt-black-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-02.webp"
+    },
+    {
+      "from": "/images/products/women/women-06.webp",
+      "to": "/images/products/men/men-shirt-black-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-shirt-black-02.webp"
+    },
+    {
+      "from": "/images/products/men/men-59.webp",
+      "to": "/images/products/men/men-tee-beige-01.webp",
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-beige-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-14.webp",
+      "to": "/images/products/men/men-tee-beige-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-beige-01.webp"
+    },
+    {
+      "from": "/images/products/men/men-61.webp",
+      "to": "/images/products/men/men-tee-purple-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-purple-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-13.webp",
+      "to": "/images/products/men/men-tee-purple-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/men/men-tee-purple-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-02.webp",
+      "to": "/images/products/women/women-dress-navy-ruffle-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-dress-navy-ruffle-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-03.webp",
+      "to": "/images/products/women/women-dress-floral-nude-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-dress-floral-nude-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-04.webp",
+      "to": "/images/products/women/women-dress-navy-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-dress-navy-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-15.webp",
+      "to": "/images/products/women/women-top-sport-black-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-top-sport-black-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-16.webp",
+      "to": "/images/products/women/women-shirt-stripe-blue-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-shirt-stripe-blue-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-17.webp",
+      "to": "/images/products/women/women-tshirt-yellow-01.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-01.webp"
+    },
+    {
+      "from": "/images/products/women/women-18.webp",
+      "to": "/images/products/women/women-tshirt-yellow-02.webp",
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ],
+      "reason": "dup of canonical public/images/products/women/women-tshirt-yellow-02.webp"
+    }
+  ],
+  "filesToDelete": [
+    {
+      "path": "public/images/products/women/women-outfit-casual-01.webp",
+      "canonical": "public/images/products/women/women-outfit-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/women/women-skirt-long-white-01.webp",
+      "canonical": "public/images/products/women/women-outfit-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/categories/category-kids-01.webp",
+      "canonical": "public/images/products/women/women-outfit-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-19.webp",
+      "canonical": "public/images/products/women/women-outfit-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/lookbook/lookbook-01.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/marketing.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-29.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/lookbook/lookbook-02.webp",
+      "canonical": "public/images/products/men/men-shirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/marketing.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-57.webp",
+      "canonical": "public/images/products/men/men-shirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-07.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/acc-tshirt-yellow-01.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-12.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-basic-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-01.webp",
+      "canonical": "public/images/products/accessories/accessory-socks-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-02.webp",
+      "canonical": "public/images/products/accessories/accessory-shoes-men-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-03.webp",
+      "canonical": "public/images/products/accessories/accessory-armsleeve-nude-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-04.webp",
+      "canonical": "public/images/products/accessories/accessory-belt-auto-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-05.webp",
+      "canonical": "public/images/products/accessories/accessory-cap-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-06.webp",
+      "canonical": "public/images/products/accessories/accessory-socks-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-07.webp",
+      "canonical": "public/images/products/accessories/accessory-socks-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-08.webp",
+      "canonical": "public/images/products/accessories/accessory-heels-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-09.webp",
+      "canonical": "public/images/products/accessories/accessory-sandals-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-10.webp",
+      "canonical": "public/images/products/accessories/accessory-heels-red-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/accessories/accessories-11.webp",
+      "canonical": "public/images/products/accessories/accessory-belt-leather-brown-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-pink-plaid-01.webp",
+      "canonical": "public/images/products/kids/kids-dress-blue-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-pink-plaid-02.webp",
+      "canonical": "public/images/products/kids/kids-dress-blue-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-01.webp",
+      "canonical": "public/images/products/kids/kids-dress-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-16.webp",
+      "canonical": "public/images/products/kids/kids-dress-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-floral-nude-01.webp",
+      "canonical": "public/images/products/kids/kids-dress-pink-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-floral-nude-02.webp",
+      "canonical": "public/images/products/kids/kids-dress-pink-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-02.webp",
+      "canonical": "public/images/products/kids/kids-dress-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-17.webp",
+      "canonical": "public/images/products/kids/kids-dress-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-navy-legend-01.webp",
+      "canonical": "public/images/products/kids/kids-dress-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-dress-navy-legend-02.webp",
+      "canonical": "public/images/products/kids/kids-dress-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-03.webp",
+      "canonical": "public/images/products/kids/kids-dress-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-18.webp",
+      "canonical": "public/images/products/kids/kids-dress-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-shirt-white-01.webp",
+      "canonical": "public/images/products/kids/kids-shirt-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-skirt-navy-pleated-01.webp",
+      "canonical": "public/images/products/kids/kids-shirt-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-04.webp",
+      "canonical": "public/images/products/kids/kids-shirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-20.webp",
+      "canonical": "public/images/products/kids/kids-shirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-set-basketball-navy-02.webp",
+      "canonical": "public/images/products/kids/kids-outfit-set-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-jacket-pink-sport-01.webp",
+      "canonical": "public/images/products/kids/kids-outfit-set-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-05.webp",
+      "canonical": "public/images/products/kids/kids-outfit-set-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-19.webp",
+      "canonical": "public/images/products/kids/kids-outfit-set-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-jacket-pink-sport-02.webp",
+      "canonical": "public/images/products/kids/kids-tshirt-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-tshirt-white-print-01.webp",
+      "canonical": "public/images/products/kids/kids-tshirt-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-06.webp",
+      "canonical": "public/images/products/kids/kids-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-21.webp",
+      "canonical": "public/images/products/kids/kids-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-set-basketball-navy-01.webp",
+      "canonical": "public/images/products/women/women-skirt-black-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-07.webp",
+      "canonical": "public/images/products/women/women-skirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-23.webp",
+      "canonical": "public/images/products/women/women-skirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-sweater-stripe-navy-01.webp",
+      "canonical": "public/images/products/women/women-top-orange-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-08.webp",
+      "canonical": "public/images/products/women/women-top-orange-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-24.webp",
+      "canonical": "public/images/products/women/women-top-orange-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-polo-tennis-white-01.webp",
+      "canonical": "public/images/products/women/women-pants-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-09.webp",
+      "canonical": "public/images/products/women/women-pants-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-22.webp",
+      "canonical": "public/images/products/women/women-pants-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-tshirt-graffiti-cream-01.webp",
+      "canonical": "public/images/products/women/women-tshirt-white-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-10.webp",
+      "canonical": "public/images/products/women/women-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-27.webp",
+      "canonical": "public/images/products/women/women-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/cart/page.tsx",
+        "src/app/(customer)/checkout/page.tsx",
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-jacket-uv-green-01.webp",
+      "canonical": "public/images/products/women/women-outfit-green-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/women/women-skirt-pleated-cream-01.webp",
+      "canonical": "public/images/products/women/women-outfit-green-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-11.webp",
+      "canonical": "public/images/products/women/women-outfit-green-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-20.webp",
+      "canonical": "public/images/products/women/women-outfit-green-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-jacket-uv-pink-01.webp",
+      "canonical": "public/images/products/women/women-outfit-grey-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/women/women-polo-green-01.webp",
+      "canonical": "public/images/products/women/women-outfit-grey-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-12.webp",
+      "canonical": "public/images/products/women/women-outfit-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-21.webp",
+      "canonical": "public/images/products/women/women-outfit-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-unisex-pants-navy-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-blue-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-unisex-tshirt-blue-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-blue-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-13.webp",
+      "canonical": "public/images/products/kids/kids-basic-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-11.webp",
+      "canonical": "public/images/products/kids/kids-basic-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-girl-skirt-navy-02.webp",
+      "canonical": "public/images/products/kids/kids-basic-pink-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-pants-cream-slim-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-pink-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-14.webp",
+      "canonical": "public/images/products/kids/kids-basic-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-12.webp",
+      "canonical": "public/images/products/kids/kids-basic-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/kids/kids-boy-shirt-white-red-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-unisex-cargo-white-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/women/women-pants-cargo-white-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/kids/kids-15.webp",
+      "canonical": "public/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-01.webp",
+      "canonical": "public/images/products/kids/kids-basic-tshirt-red-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-01.webp",
+      "canonical": "public/images/products/women/women-tshirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-26.webp",
+      "canonical": "public/images/products/women/women-tshirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-02.webp",
+      "canonical": "public/images/products/women/women-top-orange-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-25.webp",
+      "canonical": "public/images/products/women/women-top-orange-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-03.webp",
+      "canonical": "public/images/products/women/women-tshirt-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-28.webp",
+      "canonical": "public/images/products/women/women-tshirt-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-04.webp",
+      "canonical": "public/images/products/men/men-shirt-black-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-56.webp",
+      "canonical": "public/images/products/men/men-shirt-black-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-05.webp",
+      "canonical": "public/images/products/men/men-polo-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-50.webp",
+      "canonical": "public/images/products/men/men-polo-pink-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-06.webp",
+      "canonical": "public/images/products/men/men-polo-purple-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-51.webp",
+      "canonical": "public/images/products/men/men-polo-purple-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-08.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-67.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-09.webp",
+      "canonical": "public/images/products/men/men-tshirt-yellow-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-71.webp",
+      "canonical": "public/images/products/men/men-tshirt-yellow-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-13.webp",
+      "canonical": "public/images/products/men/men-shorts-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-58.webp",
+      "canonical": "public/images/products/men/men-shorts-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-14.webp",
+      "canonical": "public/images/products/men/men-pants-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-43.webp",
+      "canonical": "public/images/products/men/men-pants-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-15.webp",
+      "canonical": "public/images/products/men/men-pants-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-45.webp",
+      "canonical": "public/images/products/men/men-pants-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-16.webp",
+      "canonical": "public/images/products/men/men-pants-cream-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-42.webp",
+      "canonical": "public/images/products/men/men-pants-cream-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-17.webp",
+      "canonical": "public/images/products/men/men-pants-khaki-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-44.webp",
+      "canonical": "public/images/products/men/men-pants-khaki-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-18.webp",
+      "canonical": "public/images/products/men/men-pants-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-41.webp",
+      "canonical": "public/images/products/men/men-pants-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-19.webp",
+      "canonical": "public/images/products/men/men-outfit-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-40.webp",
+      "canonical": "public/images/products/men/men-outfit-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-20.webp",
+      "canonical": "public/images/products/men/men-outfit-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-35.webp",
+      "canonical": "public/images/products/men/men-outfit-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-21.webp",
+      "canonical": "public/images/products/men/men-outfit-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-36.webp",
+      "canonical": "public/images/products/men/men-outfit-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-22.webp",
+      "canonical": "public/images/products/men/men-tee-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-60.webp",
+      "canonical": "public/images/products/men/men-tee-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-23.webp",
+      "canonical": "public/images/products/men/men-polo-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-52.webp",
+      "canonical": "public/images/products/men/men-polo-white-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-24.webp",
+      "canonical": "public/images/products/men/men-polo-blue-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-49.webp",
+      "canonical": "public/images/products/men/men-polo-blue-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-25.webp",
+      "canonical": "public/images/products/men/men-polo-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-53.webp",
+      "canonical": "public/images/products/men/men-polo-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-26.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-62.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-27.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-63.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-28.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-68.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-29.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-69.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-30.webp",
+      "canonical": "public/images/products/men/men-tshirt-green-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-66.webp",
+      "canonical": "public/images/products/men/men-tshirt-green-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-31.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-04.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-70.webp",
+      "canonical": "public/images/products/men/men-tshirt-white-04.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-32.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-64.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-03.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-33.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-04.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/men/men-65.webp",
+      "canonical": "public/images/products/men/men-tshirt-black-04.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-skirt-long-grey-01.webp",
+      "canonical": "public/images/products/men/men-outfit-grey-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-37.webp",
+      "canonical": "public/images/products/men/men-outfit-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-11.webp",
+      "canonical": "public/images/products/men/men-outfit-grey-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-dress-dark-skirt-01.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-38.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-10.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-jacket-pink-zip-01.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-02.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-39.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-12.webp",
+      "canonical": "public/images/products/men/men-outfit-navy-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-dress-black-sleeveless-01.webp",
+      "canonical": "public/images/products/men/men-polo-beige-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-46.webp",
+      "canonical": "public/images/products/men/men-polo-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-09.webp",
+      "canonical": "public/images/products/men/men-polo-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-tshirt-print-white-01.webp",
+      "canonical": "public/images/products/men/men-polo-blue-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-47.webp",
+      "canonical": "public/images/products/men/men-polo-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/cart/page.tsx",
+        "src/app/(customer)/checkout/page.tsx",
+        "src/app/(customer)/page.tsx",
+        "src/app/(customer)/products/page.tsx",
+        "src/app/(customer)/products/[slug]/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-07.webp",
+      "canonical": "public/images/products/men/men-polo-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-dress-blue-long-01.webp",
+      "canonical": "public/images/products/men/men-polo-blue-02.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-48.webp",
+      "canonical": "public/images/products/men/men-polo-blue-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-08.webp",
+      "canonical": "public/images/products/men/men-polo-blue-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-skirt-navy-01.webp",
+      "canonical": "public/images/products/men/men-shirt-black-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-54.webp",
+      "canonical": "public/images/products/men/men-shirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-05.webp",
+      "canonical": "public/images/products/men/men-shirt-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-jacket-pink-01.webp",
+      "canonical": "public/images/products/men/men-shirt-black-02.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-55.webp",
+      "canonical": "public/images/products/men/men-shirt-black-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-06.webp",
+      "canonical": "public/images/products/men/men-shirt-black-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-top-stripe-white-01.webp",
+      "canonical": "public/images/products/men/men-tee-beige-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-59.webp",
+      "canonical": "public/images/products/men/men-tee-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/app/(customer)/page.tsx",
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-14.webp",
+      "canonical": "public/images/products/men/men-tee-beige-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-jacket-grey-sunprotect-01.webp",
+      "canonical": "public/images/products/men/men-tee-purple-01.webp",
+      "isUsed": false,
+      "usedIn": []
+    },
+    {
+      "path": "public/images/products/men/men-61.webp",
+      "canonical": "public/images/products/men/men-tee-purple-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-13.webp",
+      "canonical": "public/images/products/men/men-tee-purple-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-02.webp",
+      "canonical": "public/images/products/women/women-dress-navy-ruffle-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-03.webp",
+      "canonical": "public/images/products/women/women-dress-floral-nude-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-04.webp",
+      "canonical": "public/images/products/women/women-dress-navy-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-15.webp",
+      "canonical": "public/images/products/women/women-top-sport-black-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-16.webp",
+      "canonical": "public/images/products/women/women-shirt-stripe-blue-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-17.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-01.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    },
+    {
+      "path": "public/images/products/women/women-18.webp",
+      "canonical": "public/images/products/women/women-tshirt-yellow-02.webp",
+      "isUsed": true,
+      "usedIn": [
+        "src/lib/data/products.ts",
+        "public/images/asset-mapping.json"
+      ]
+    }
+  ]
+}

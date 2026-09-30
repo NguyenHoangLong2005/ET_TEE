@@ -13,6 +13,7 @@ public class Shipment {
     @Column(name = "shipment_id", nullable = false, updatable = false)
     private Long shipmentId;
 
+<<<<<<< HEAD
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -21,6 +22,12 @@ public class Shipment {
 
     @Column(name = "carrier", nullable = false, length = 150)
     private String carrier;
+=======
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"items", "user"})
+    @OneToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id", nullable = false, unique = true)
+    private Order order;
+>>>>>>> main
 
     @Column(name = "carrier_name", nullable = false, length = 150)
     private String carrierName;

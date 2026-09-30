@@ -12,4 +12,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     Optional<ProductVariant> findBySku(String sku);
     boolean existsBySku(String sku);
     List<ProductVariant> findByProductId(Long productId);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT pv FROM ProductVariant pv WHERE pv.id = :id")
+    Optional<ProductVariant> findByIdWithPessimisticLock(@org.springframework.data.repository.query.Param("id") Long id);
 }

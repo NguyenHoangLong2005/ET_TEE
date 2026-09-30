@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { clearAuthSession, getStoredUser, hasAnyPermission, hasAnyRole, refreshCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_ITEMS = [
   { href: "/", label: "Trang chủ" },
@@ -13,47 +14,27 @@ const NAV_ITEMS = [
 ];
 
 const OPERATIONS_ITEMS = [
-  { href: "/staff/dashboard", label: "Cửa hàng", roles: ["ADMIN", "SHOP_OWNER"], permissions: ["report.view"] },
-  { href: "/staff/orders", label: "Đơn vận hành", roles: ["ADMIN", "SHOP_OWNER", "CSKH_STAFF"], permissions: ["order.view"] },
-  { href: "/staff/support", label: "CSKH", roles: ["ADMIN", "SHOP_OWNER", "CSKH_STAFF"], permissions: ["support.handle", "return.handle", "refund.process"] },
-  { href: "/staff/products", label: "Sản phẩm & kho", roles: ["ADMIN", "SHOP_OWNER"], permissions: ["product.manage"] },
-  { href: "/admin/dashboard", label: "Admin", roles: ["ADMIN"], permissions: ["report.view"] },
-  { href: "/admin/users", label: "RBAC", roles: ["ADMIN"], permissions: ["account.manage"] },
-  { href: "/admin/ai-config", label: "AI config", roles: ["ADMIN"], permissions: ["feature.manage", "model.manage"] },
+  { href: "/staff/dashboard/sales", label: "Sales Studio", roles: ["ADMIN", "SHOP_OWNER", "SALES_STAFF"], permissions: ["VIEW_NEW_ORDER", "VERIFY_ORDER"] },
+  { href: "/staff/dashboard/marketing", label: "Marketing Studio", roles: ["ADMIN", "SHOP_OWNER", "MARKETING_STAFF"], permissions: ["VIEW_CAMPAIGN_ANALYTICS", "MANAGE_BANNER_LANDING"] },
+  { href: "/staff/dashboard/warehouse", label: "Warehouse Studio", roles: ["ADMIN", "SHOP_OWNER", "WAREHOUSE_STAFF"], permissions: ["PICK_PACK_LABEL", "INBOUND_STOCK"] },
+  { href: "/staff/dashboard/shipping", label: "Shipping Studio", roles: ["ADMIN", "SHOP_OWNER", "SHIPPING_STAFF"], permissions: ["MANAGE_WAYBILL", "RECEIVE_PACKED_LIST"] },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [user, setUser] = useState(getStoredUser());
-
-  useEffect(() => {
-    let active = true;
-    const currentUser = getStoredUser();
-    setUser(currentUser);
-
-    if (currentUser) {
-      refreshCurrentUser()
-        .then((refreshedUser) => {
-          if (active && refreshedUser) setUser(refreshedUser);
-        })
-        .catch(() => undefined);
-    }
-
-    return () => {
-      active = false;
-    };
-  }, [pathname]);
+  const { user, logout } = useAuth();
 
   const isAuthPage = useMemo(
-    () => ["/login", "/register"].includes(pathname ?? ""),
+    () => ["/auth/login", "/auth/register"].includes(pathname ?? ""),
     [pathname]
   );
 
   const handleSignOut = () => {
-    clearAuthSession();
-    setUser(null);
-    window.location.href = "/login";
+    logout();
+    window.location.href = "/auth/login";
   };
+
+  const userRoles = (user as any)?.roles || (user?.role ? [user.role] : []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -79,7 +60,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   {item.label}
                 </Link>
               ))}
-              {user ? OPERATIONS_ITEMS.filter((item) => hasAnyRole(user.roles, item.roles) && hasAnyPermission(user.permissions, item.permissions)).slice(0, 2).map((item) => (
+              {user ? OPERATIONS_ITEMS.filter((item) => hasAnyRole(userRoles, item.roles) && hasAnyPermission(user.permissions, item.permissions, userRoles)).slice(0, 2).map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -93,7 +74,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  <Link href="/profile" className="hidden sm:inline-flex px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-100 text-xs font-semibold hover:bg-slate-800 transition">
+                  <Link href={
+                    hasAnyRole(userRoles, ["ADMIN"]) ? "/admin/dashboard" :
+                    hasAnyRole(userRoles, ["SHOP_OWNER"]) ? "/store-owner/dashboard" :
+                    hasAnyRole(userRoles, ["MARKETING_STAFF"]) ? "/staff/dashboard/marketing" :
+                    hasAnyRole(userRoles, ["SALES_STAFF"]) ? "/staff/dashboard/sales" :
+                    hasAnyRole(userRoles, ["WAREHOUSE_STAFF"]) ? "/staff/dashboard/warehouse" :
+                    hasAnyRole(userRoles, ["SHIPPING_STAFF"]) ? "/staff/dashboard/shipping" :
+                    hasAnyRole(userRoles, ["CSKH_STAFF"]) ? "/staff/tickets" :
+                    "/account/profile"
+                  } className="hidden sm:inline-flex px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-100 text-xs font-semibold hover:bg-slate-800 transition">
                     {user.fullName || user.email || "Tài khoản"}
                   </Link>
                   <button
@@ -106,10 +96,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition">
+                  <Link href="/auth/login" className="px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition">
                     Đăng nhập
                   </Link>
-                  <Link href="/register" className="px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-lg shadow-violet-600/30 transition">
+                  <Link href="/auth/register" className="px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-lg shadow-violet-600/30 transition">
                     Đăng ký
                   </Link>
                 </>

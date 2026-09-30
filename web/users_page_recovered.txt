@@ -1,0 +1,808 @@
+Created At: 2026-09-27T12:21:33+07:00
+Completed At: 2026-09-27T12:21:34+07:00
+File Path: `file:///c:/userdata/fashion-recommendation-system/web/src/app/%28staff%29/admin/users/page.tsx`
+Total Lines: 1250
+Total Bytes: 62334
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: "use client";
+2: 
+3: import { useEffect, useState, useCallback } from "react";
+4: import { apiClient } from "@/lib/api-client";
+5: import PermissionGuard from "@/components/auth/PermissionGuard";
+6: import ConfirmModal from "@/components/ui/ConfirmModal";
+7: import PageHeader from "@/components/ui/PageHeader";
+8: import Button from "@/components/ui/Button";
+9: import Card from "@/components/ui/Card";
+10: import StatusBadge from "@/components/ui/StatusBadge";
+11: import DataTable, { Column } from "@/components/ui/DataTable";
+12: import { StatCard } from "@/components/dashboard/DashboardComponents";
+13: import { useAuth, usePermissions } from "@/contexts/AuthContext";
+14: import { getRoleDisplayName } from "@/lib/auth";
+15: import { toast } from "sonner";
+16: import {
+17:   Users, Shield, UserPlus, Search, Lock, Unlock,
+18:   Key, Eye, CheckCircle, XCircle, AlertTriangle,
+19:   ChevronLeft, ChevronRight, Trash2, Plus, RefreshCw,
+20:   Mail, Building, Crown, Filter,
+21: } from "lucide-react";
+22: 
+23: /* ───────────── types ───────────── */
+24: type UserAdminDto = {
+25:   id: string;
+26:   employeeCode: string;
+27:   fullName: string;
+28:   email: string;
+29:   phone?: string;
+30:   role: string;
+31:   shopId?: number;
+32:   status: string;
+33:   lockReason?: string;
+34:   lockedBy?: string;
+35:   lockedAt?: string;
+36:   mustChangePassword: boolean;
+37:   createdAt: string;
+38:   updatedAt: string;
+39:   permissions: string[];
+40: };
+41: 
+42: type RoleWithPermissions = {
+43:   code: string;
+44:   name: string;
+45:   description: string;
+46:   permissions: string[];
+47: };
+48: 
+49: type PageResponse<T> = {
+50:   content: T[];
+51:   totalElements: number;
+52:   totalPages: number;
+53:   number: number;
+54:   size: number;
+55: };
+56: 
+57: type TabType = "users" | "roles";
+58: 
+59: /* ───────────── role badge colours ───────────── */
+60: const ROLE_STYLE: Record<string, string> = {
+61:   ADMIN:           "bg-red-50 text-red-700 border-red-200",
+62:   SUPER_ADMIN:     "bg-red-50 text-red-700 border-red-200",
+63:   SALES_STAFF:     "bg-blue-50 text-blue-700 border-blue-200",
+64:   CSKH_STAFF:      "bg-purple-50 text-purple-700 border-purple-200",
+65:   WAREHOUSE_STAFF: "bg-amber-50 text-amber-700 border-amber-200",
+66:   SHIPPING_STAFF:  "bg-emerald-50 text-emerald-700 border-emerald-200",
+67:   MARKETING_STAFF: "bg-pink-50 text-pink-700 border-pink-200",
+68:   SHOP_OWNER:      "bg-indigo-50 text-indigo-700 border-indigo-200",
+69: };
+70: 
+71: const ROLE_AVATAR: Record<string, string> = {
+72:   ADMIN:           "from-red-500 to-red-600",
+73:   SUPER_ADMIN:     "from-red-500 to-red-600",
+74:   SALES_STAFF:     "from-blue-500 to-blue-600",
+75:   CSKH_STAFF:      "from-purple-500 to-purple-600",
+76:   WAREHOUSE_STAFF: "from-amber-500 to-amber-600",
+77:   SHIPPING_STAFF:  "from-emerald-500 to-emerald-600",
+78:   MARKETING_STAFF: "from-pink-500 to-pink-600",
+79:   SHOP_OWNER:      "from-indigo-500 to-indigo-600",
+80: };
+81: 
+82: /* ───────────── permission catalogue ───────────── */
+83: const ALL_PERMISSIONS: Record<string, { code: string; name: string }[]> = {
+84:   "Quản trị Hệ thống": [
+85:     { code: "MANAGE_USER", name: "Quản lý Người dùng" },
+86:     { code: "MANAGE_ROLE_PERMISSION", name: "Quản lý Vai trò & Quyền" },
+87:     { code: "MANAGE_GLOBAL_CATEGORY", name: "Quản lý Danh mục toàn cầu" },
+88:     { code: "CONFIG_PAYMENT_SHIPPING", name: "Cấu hình Thanh toán & Vận chuyển" },
+89:     { code: "VIEW_SYS_ERROR_LOG", name: "Xem Log Lỗi Hệ thống" },
+90:     { code: "VIEW_AUDIT_LOG", name: "Xem Log Audit" },
+91:     { code: "MANAGE_BACKUP", name: "Quản lý Backup DB" },
+92:     { code: "MANAGE_AI_MODEL_FEATURE_FLAG", name: "Quản lý AI & Feature Flag" },
+93:     { code: "MANAGE_MAILING", name: "Quản lý Hệ thống Mail" },
+94:   ],
+95:   "Chủ cửa hàng": [
+96:     { code: "MANAGE_SHOP_STAFF", name: "Quản lý Nhân viên Shop" },
+97:     { code: "MANAGE_SHOP_SHIFT", name: "Xếp ca & Lịch làm việc Shop" },
+98:     { code: "VIEW_SHOP_DASHBOARD", name: "Xem Dashboard Shop" },
+99:     { code: "VIEW_SHOP_LOG", name: "Xem Log Shop" },
+100:     { code: "VIEW_SHOP_AUDIT_LOG", name: "Xem Log Audit Shop" },
+101:     { code: "APPROVE_SHOP_PROMO", name: "Duyệt Khuyến mãi Shop" },
+102:     { code: "APPROVE_PROMOTION", name: "Duyệt Chương trình Khuyến mãi" },
+103:     { code: "APPROVE_INVENTORY_ADJUSTMENT", name: "Duyệt Điều chỉnh Tồn kho" },
+104:     { code: "MANAGE_SHOP_INVENTORY", name: "Quản lý Tồn kho Shop" },
+105:     { code: "MANAGE_SHOP_CATEGORY", name: "Quản lý Danh mục Shop" },
+106:     { code: "MANAGE_SHOP_PRODUCT", name: "Quản lý Sản phẩm Shop" },
+107:   ],
+108:   "Bán hàng": [
+109:     { code: "VIEW_NEW_ORDER", name: "Xem Đơn hàng mới" },
+110:     { code: "VERIFY_ORDER", name: "Xác thực Đơn hàng" },
+111:     { code: "PROCESS_ORDER_NOTE", name: "Xử lý Ghi chú Đơn hàng" },
+112:     { code: "REQUEST_STOCK_HOLD", name: "Yêu cầu Giữ hàng" },
+113:     { code: "MONITOR_ORDER_SLA", name: "Theo dõi SLA Đơn hàng" },
+114:   ],
+115:   "Chăm sóc Khách hàng": [
+116:     { code: "CHAT_CUSTOMER", name: "Chat với Khách hàng" },
+117:     { code: "MANAGE_TICKET", name: "Quản lý Ticket Hỗ trợ" },
+118:     { code: "SEARCH_ORDER_BASIC", name: "Tìm kiếm Đơn hàng cơ bản" },
+119:     { code: "PROCESS_RETURN_REFUND", name: "Xử lý Đổi trả / Hoàn tiền" },
+120:     { code: "ISSUE_SUPPORT_VOUCHER", name: "Phát hành Voucher đền bù" },
+121:     { code: "ESCALATE_TICKET", name: "Chuyển tuyến Ticket" },
+122:   ],
+123:   "Kho hàng": [
+124:     { code: "INBOUND_STOCK", name: "Nhập kho" },
+125:     { code: "COUNT_STOCK", name: "Kiểm kho" },
+126:     { code: "MANAGE_STOCK_LOCATION", name: "Quản lý Vị trí kho" },
+127:     { code: "ADJUST_STOCK", name: "Điều chỉnh Tồn kho" },
+128:     { code: "HOLD_STOCK_ORDER", name: "Giữ hàng cho Đơn" },
+129:     { code: "PICK_PACK_LABEL", name: "Nhặt, Đóng gói, Dán nhãn" },
+130:     { code: "HANDOVER_SHIPPING", name: "Bàn giao Vận chuyển" },
+131:     { code: "PROPOSE_RESTOCK", name: "Đề xuất Nhập thêm hàng" },
+132:   ],
+133:   "Vận chuyển": [
+134:     { code: "RECEIVE_PACKED_LIST", name: "Nhận danh sách đã đóng gói" },
+135:     { code: "MANAGE_WAYBILL", name: "Quản lý Vận đơn" },
+136:     { code: "CONFIRM_HANDOVER", name: "Xác nhận Nhận hàng" },
+137:     { code: "UPDATE_SHIPPING_EXCEPTION", name: "Cập nhật Ngoại lệ giao hàng" },
+138:     { code: "UPLOAD_POD", name: "Tải lên bằng chứng giao hàng" },
+139:     { code: "RECONCILE_COD", name: "Đối soát tiền thu hộ (COD)" },
+140:   ],
+141:   "Marketing": [
+142:     { code: "MANAGE_BANNER_LANDING", name: "Quản lý Banner & Landing Page" },
+143:     { code: "MANAGE_CAMPAIGN_PROMO", name: "Quản lý Chiến dịch & Khuyến mãi" },
+144:     { code: "MANAGE_PRODUCT_PLACEMENT", name: "Quản lý Sắp xếp SP" },
+145:     { code: "AB_TEST_CAMPAIGN", name: "A/B Testing Chiến dịch" },
+146:     { code: "VIEW_CAMPAIGN_ANALYTICS", name: "Xem Analytics Chiến dịch" },
+147:   ],
+148:   "Khác": [
+149:     { code: "PROFILE_VIEW", name: "Xem Hồ sơ cá nhân" },
+150:     { code: "ORDER_VIEW", name: "Xem Đơn hàng cá nhân" },
+151:     { code: "PRODUCT_VIEW", name: "Xem Sản phẩm chung" },
+152:   ],
+153: };
+154: 
+155: /* ════════════════════════════════════════════ */
+156: export default function AdminUsersPage() {
+157:   /* shared */
+158:   const { user: currentUser } = useAuth();
+159:   const [roles, setRoles] = useState<RoleWithPermissions[]>([]);
+160:   const [error, setError] = useState<string | null>(null);
+161:   const { hasAnyPermission } = usePermissions();
+162:   const canManage = hasAnyPermission(["MANAGE_USER", "MANAGE_ROLE_PERMISSION"]);
+163:   const [activeTab, setActiveTab] = useState<TabType>("users");
+164: 
+165:   const PROTECTED_SYSTEM_ROLES = [
+166:     "ADMIN", "SUPER_ADMIN", "SHOP_OWNER", "SALES_STAFF",
+167:     "CSKH_STAFF", "WAREHOUSE_STAFF", "SHIPPING_STAFF", "MARKETING_STAFF"
+168:   ];
+169: 
+170:   /* users tab */
+171:   const [users, setUsers] = useState<UserAdminDto[]>([]);
+172:   const [loadingUsers, setLoadingUsers] = useState(true);
+173:   const [keyword, setKeyword] = useState("");
+174:   const [roleFilter, setRoleFilter] = useState("");
+175:   const [statusFilter, setStatusFilter] = useState("");
+176:   const [page, setPage] = useState(0);
+177:   const [totalPages, setTotalPages] = useState(0);
+178:   const [totalElements, setTotalElements] = useState(0);
+179:   const [stats, setStats] = useState({ active: 0, locked: 0 });
+180: 
+181:   /* modals – user */
+182:   const [showCreateModal, setShowCreateModal] = useState(false);
+183:   const [createForm, setCreateForm] = useState({
+184:     employeeCode: "", fullName: "", email: "",
+185:     phone: "", roleCode: "SALES_STAFF", initialPassword: "",
+186:   });
+187:   const [showAdminConfirm, setShowAdminConfirm] = useState(false);
+188:   const [creating, setCreating] = useState(false);
+189:   const [lockUserId, setLockUserId] = useState<string | null>(null);
+190:   const [lockReason, setLockReason] = useState("");
+191:   const [locking, setLocking] = useState(false);
+192:   const [unlockUserId, setUnlockUserId] = useState<string | null>(null);
+193:   const [unlocking, setUnlocking] = useState(false);
+194:   const [tempPwd, setTempPwd] = useState<string | null>(null);
+195:   const [tempName, setTempName] = useState("");
+196:   const [viewUser, setViewUser] = useState<UserAdminDto | null>(null);
+197:   const [quotaUser, setQuotaUser] = useState<UserAdminDto | null>(null);
+198:   const [quotaAmt, setQuotaAmt] = useState("3000000");
+199:   const [quotaPeriod, setQuotaPeriod] = useState(new Date().toISOString().slice(0, 7));
+200:   const [quotaLoading, setQuotaLoading] = useState(false);
+201:   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+202:   const [deleteUserName, setDeleteUserName] = useState("");
+203:   const [deleting, setDeleting] = useState(false);
+204:   const [resetTargetUser, setResetTargetUser] = useState<UserAdminDto | null>(null);
+205:   const [resettingPwd, setResettingPwd] = useState(false);
+206: 
+207:   /* roles tab */
+208:   const [loadingRoles, setLoadingRoles] = useState(false);
+209:   const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(null);
+210:   const [showCreateRole, setShowCreateRole] = useState(false);
+211:   const [createRoleForm, setCreateRoleForm] = useState({ code: "", name: "", description: "" });
+212:   const [creatingRole, setCreatingRole] = useState(false);
+213:   const [deleteRoleCode, setDeleteRoleCode] = useState<string | null>(null);
+214:   const [deletingRole, setDeletingRole] = useState(false);
+215:   const [toggling, setToggling] = useState<string | null>(null);
+216: 
+217:   /* ── loaders ── */
+218:   const loadRoles = useCallback(async (retain = false) => {
+219:     try {
+220:       setLoadingRoles(true);
+221:       const data = await apiClient.get<RoleWithPermissions[]>("/api/admin/rbac/roles");
+222:       setRoles(data || []);
+223:       if (retain && selectedRole) {
+224:         const upd = (data || []).find(r => r.code === selectedRole.code);
+225:         setSelectedRole(upd ?? null);
+226:       }
+227:     } catch (e: any) {
+228:       toast.error(e.message || "Lỗi khi tải vai trò");
+229:     } finally {
+230:       setLoadingRoles(false);
+231:     }
+232:   }, [selectedRole]);
+233: 
+234:   const loadUsers = useCallback(async () => {
+235:     try {
+236:       setLoadingUsers(true);
+237:       const p: Record<string, string> = { page: page.toString(), size: "15" };
+238:       if (keyword.trim()) p.keyword = keyword.trim();
+239:       if (roleFilter) p.role = roleFilter;
+240:       if (statusFilter) p.status = statusFilter;
+241:       const data = await apiClient.get<PageResponse<UserAdminDto>>(
+242:         `/api/admin/users?${new URLSearchParams(p)}`
+243:       );
+244:       setUsers(data?.content || []);
+245:       setTotalPages(data?.totalPages || 0);
+246:       setTotalElements(data?.totalElements || 0);
+247:     } catch (e: any) {
+248:       setError(e.message || "Không thể tải danh sách người dùng");
+249:     } finally {
+250:       setLoadingUsers(false);
+251:     }
+252:   }, [page, keyword, roleFilter, statusFilter]);
+253: 
+254:   const loadStats = useCallback(async () => {
+255:     try {
+256:       const [a, l] = await Promise.all([
+257:         apiClient.get<PageResponse<UserAdminDto>>("/api/admin/users?page=0&size=1&status=ACTIVE"),
+258:         apiClient.get<PageResponse<UserAdminDto>>("/api/admin/users?page=0&size=1&status=LOCKED"),
+259:       ]);
+260:       setStats({ active: a?.totalElements || 0, locked: l?.totalElements || 0 });
+261:     } catch {}
+262:   }, []);
+263: 
+264:   useEffect(() => { loadRoles(); loadStats(); }, []);
+265:   useEffect(() => { setPage(0); }, [keyword, roleFilter, statusFilter]);
+266:   useEffect(() => {
+267:     if (activeTab === "users") loadUsers();
+268:     else loadRoles();
+269:   }, [activeTab, page, keyword, roleFilter, statusFilter]);
+270: 
+271:   /* ── user actions ── */
+272:   const submitCreateUser = async () => {
+273:     // TODO: hệ thống hiện single-shop (shopId=1 cố định). Nếu mở rộng multi-shop
+274:     // thật trong tương lai, cần thêm bảng Shop + API + UI chọn chi nhánh ở đây.
+275:     const isSystemRole = ["ADMIN", "SUPER_ADMIN"].includes(createForm.roleCode);
+276:     const resolvedShopId = isSystemRole ? undefined : 1;
+277: 
+278:     try {
+279:       setCreating(true);
+280:       setError(null);
+281:       await apiClient.post("/api/admin/users", {
+282:         employeeCode: createForm.employeeCode.trim() || undefined,
+283:         fullName: createForm.fullName.trim(),
+284:         email: createForm.email.trim(),
+285:         phone: createForm.phone.trim() || undefined,
+286:         roleCode: createForm.roleCode,
+287:         shopId: resolvedShopId,
+288:         initialPassword: createForm.initialPassword || undefined,
+289:       });
+290:       toast.success("Tạo tài khoản thành công!");
+291:       setShowCreateModal(false);
+292:       setShowAdminConfirm(false);
+293:       setCreateForm({ employeeCode: "", fullName: "", email: "", phone: "", roleCode: "SALES_STAFF", initialPassword: "" });
+294:       loadUsers(); loadStats();
+295:     } catch (e: any) {
+296:       setError(e.message || "Không thể tạo tài khoản");
+297:       toast.error(e.message || "Không thể tạo tài khoản");
+298:     } finally {
+299:       setCreating(false);
+300:     }
+301:   };
+302: 
+303:   const handleCreateUser = async (e: React.FormEvent) => {
+304:     e.preventDefault();
+305:     if (creating) return;
+306:     const cleanName = createForm.fullName.trim();
+307:     const cleanEmail = createForm.email.trim();
+308:     const cleanPhone = createForm.phone.trim();
+309:     if (!cleanName || !cleanEmail) {
+310:       toast.error("Vui lòng nhập đầy đủ Họ tên và Email");
+311:       return;
+312:     }
+313:     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+314:       toast.error("Địa chỉ Email không hợp lệ");
+315:       return;
+316:     }
+317:     if (cleanPhone && !/^[0-9+\s\-]{8,15}$/.test(cleanPhone)) {
+318:       toast.error("Số điện thoại không hợp lệ (8-15 chữ số)");
+319:       return;
+320:     }
+321: 
+322:     const isSystemRole = ["ADMIN", "SUPER_ADMIN"].includes(createForm.roleCode);
+323:     if (isSystemRole) {
+324:       setShowAdminConfirm(true);
+325:       return;
+326:     }
+327: 
+328:     await submitCreateUser();
+329:   };
+330: 
+331:   const handleLock = async () => {
+332:     if (!lockUserId || !lockReason.trim()) { toast.error("Vui lòng nhập lý do khóa"); return; }
+333:     if (currentUser && String(lockUserId) === String(currentUser.id)) {
+334:       toast.error("Không thể tự khóa tài khoản của chính mình!");
+335:       return;
+336:     }
+337:     try {
+338:       setLocking(true);
+339:       await apiClient.patch(`/api/admin/users/${lockUserId}/status`, { status: "LOCKED", lockReason: lockReason.trim() });
+340:       toast.success("Đã khóa tài khoản");
+341:       setLockUserId(null); setLockReason("");
+342:       loadUsers(); loadStats();
+343:     } catch (e: any) { toast.error(e.message || "Không thể khóa tài khoản"); }
+344:     finally { setLocking(false); }
+345:   };
+346: 
+347:   const handleUnlock = async () => {
+348:     if (!unlockUserId) return;
+349:     try {
+350:       setUnlocking(true);
+351:       await apiClient.patch(`/api/admin/users/${unlockUserId}/status`, { status: "ACTIVE" });
+352:       toast.success("Đã mở khóa tài khoản");
+353:       setUnlockUserId(null);
+354:       loadUsers(); loadStats();
+355:     } catch (e: any) { toast.error(e.message || "Không thể mở khóa"); }
+356:     finally { setUnlocking(false); }
+357:   };
+358: 
+359:   const confirmResetPassword = async () => {
+360:     if (!resetTargetUser) return;
+361:     try {
+362:       setResettingPwd(true);
+363:       const res = await apiClient.post<{ temporaryPassword: string }>(`/api/admin/users/${resetTargetUser.id}/reset-password`, {});
+364:       setTempPwd(res.temporaryPassword);
+365:       setTempName(resetTargetUser.fullName);
+366:       setResetTargetUser(null);
+367:       loadUsers();
+368:     } catch (e: any) {
+369:       toast.error(e.message || "Không thể reset mật khẩu");
+370:     } finally {
+371:       setResettingPwd(false);
+372:     }
+373:   };
+374: 
+375:   const handleDeleteUser = async () => {
+376:     if (!deleteUserId) return;
+377:     if (currentUser && String(deleteUserId) === String(currentUser.id)) {
+378:       toast.error("Không thể xóa tài khoản đang đăng nhập!");
+379:       return;
+380:     }
+381:     try {
+382:       setDeleting(true);
+383:       await apiClient.delete(`/api/admin/users/${deleteUserId}`);
+384:       toast.success("Xóa tài khoản thành công!");
+385:       setDeleteUserId(null); setDeleteUserName("");
+386:       loadUsers(); loadStats();
+387:     } catch (e: any) { toast.error(e.message || "Không thể xóa tài khoản"); }
+388:     finally { setDeleting(false); }
+389:   };
+390: 
+391:   const handleUpdateQuota = async (e: React.FormEvent) => {
+392:     e.preventDefault();
+393:     if (!quotaUser) return;
+394:     const num = parseFloat(quotaAmt);
+395:     if (isNaN(num) || num < 0) { toast.error("Hạn mức không hợp lệ"); return; }
+396:     try {
+397:       setQuotaLoading(true);
+398:       await apiClient.put(`/api/admin/cskh/quota/${quotaUser.id}`, { quotaAmount: num, period: quotaPeriod });
+399:       toast.success("Cập nhật quota thành công!");
+400:       setQuotaUser(null);
+401:     } catch (e: any) { toast.error(e.message || "Không thể cập nhật quota"); }
+402:     finally { setQuotaLoading(false); }
+403:   };
+404: 
+405:   /* ── role actions ── */
+406:   const handleCreateRole = async (e: React.FormEvent) => {
+407:     e.preventDefault();
+408:     if (creatingRole) return;
+409:     const normCode = createRoleForm.code.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+410:     const cleanName = createRoleForm.name.trim();
+411:     if (!normCode || !cleanName) {
+412:       toast.error("Vui lòng nhập Mã vai trò và Tên vai trò");
+413:       return;
+414:     }
+415:     if (roles.some(r => r.code.toUpperCase() === normCode)) {
+416:       toast.error(`Mã vai trò "${normCode}" đã tồn tại`);
+417:       return;
+418:     }
+419:     try {
+420:       setCreatingRole(true);
+421:       await apiClient.post("/api/admin/rbac/roles", {
+422:         code: normCode,
+423:         name: cleanName,
+424:         description: createRoleForm.description.trim(),
+425:       });
+426:       toast.success("Tạo vai trò thành công!");
+427:       setShowCreateRole(false);
+428:       setCreateRoleForm({ code: "", name: "", description: "" });
+429:       loadRoles();
+430:     } catch (e: any) { toast.error(e.message || "Không thể tạo vai trò"); }
+431:     finally { setCreatingRole(false); }
+432:   };
+433: 
+434:   const handleDeleteRole = async () => {
+435:     if (!deleteRoleCode) return;
+436:     if (PROTECTED_SYSTEM_ROLES.includes(deleteRoleCode.toUpperCase())) {
+437:       toast.error("Không thể xóa vai trò mặc định của hệ thống!");
+438:       setDeleteRoleCode(null);
+439:       return;
+440:     }
+441:     try {
+442:       setDeletingRole(true);
+443:       await apiClient.delete(`/api/admin/rbac/roles/${deleteRoleCode}`);
+444:       toast.success("Xóa vai trò thành công!");
+445:       if (selectedRole?.code === deleteRoleCode) setSelectedRole(null);
+446:       setDeleteRoleCode(null);
+447:       loadRoles();
+448:     } catch (e: any) { toast.error(e.message || "Không thể xóa vai trò"); }
+449:     finally { setDeletingRole(false); }
+450:   };
+451: 
+452:   const togglePerm = async (roleCode: string, permCode: string, has: boolean) => {
+453:     if ((roleCode === "ADMIN" || roleCode === "SUPER_ADMIN") && (permCode === "MANAGE_USER" || permCode === "MANAGE_ROLE_PERMISSION") && has) {
+454:       toast.error("Không thể thu hồi quyền Quản trị tối cao của vai trò ADMIN!");
+455:       return;
+456:     }
+457:     try {
+458:       setToggling(permCode);
+459:       if (has) await apiClient.delete(`/api/admin/rbac/roles/${roleCode}/permissions/${permCode}`);
+460:       else await apiClient.post(`/api/admin/rbac/roles/${roleCode}/permissions`, { permission: permCode });
+461:       toast.success(has ? `Đã thu hồi: ${permCode}` : `Đã cấp: ${permCode}`);
+462:       loadRoles(true);
+463:     } catch (e: any) { toast.error(e.message || "Không thể cập nhật quyền"); }
+464:     finally { setToggling(null); }
+465:   };
+466: 
+467:   /* ── helpers ── */
+468:   const fmt = (s: string) => s ? new Date(s).toLocaleDateString("vi-VN", {
+469:     day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
+470:   }) : "—";
+471: 
+472:   const avatarGrad = (role: string) => ROLE_AVATAR[role] || "from-gray-400 to-gray-500";
+473:   const roleBadge  = (role: string) => ROLE_STYLE[role]  || "bg-slate-50 text-slate-700 border-slate-200";
+474: 
+475:   /* ── columns for DataTable ── */
+476:   const userColumns: Column<UserAdminDto>[] = [
+477:     {
+478:       key: "employee",
+479:       header: "Nhân viên",
+480:       render: (u) => (
+481:         <div className="flex items-center gap-3">
+482:           <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGrad(u.role)} flex items-center justify-center text-white font-bold text-sm shrink-0`}>
+483:             {u.fullName?.charAt(0)?.toUpperCase() || "?"}
+484:           </div>
+485:           <div>
+486:             <div className="font-semibold text-slate-900">{u.fullName}</div>
+487:             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400">
+488:               <span className="font-mono">{u.employeeCode || "—"}</span>
+489:               <span>·</span>
+490:               <Mail className="w-3 h-3" />
+491:               <span className="truncate max-w-[160px]">{u.email}</span>
+492:             </div>
+493:             {u.mustChangePassword && (
+494:               <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
+495:                 <RefreshCw className="w-2.5 h-2.5" /> Đổi mật khẩu lần tới
+496:               </span>
+497:             )}
+498:           </div>
+499:         </div>
+500:       ),
+501:     },
+502:     {
+503:       key: "role",
+504:       header: "Vai trò",
+505:       render: (u) => (
+506:         <div>
+507:           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${roleBadge(u.role)}`}>
+508:             <Shield className="w-3 h-3" />
+509:             {getRoleDisplayName(u.role)}
+510:           </span>
+511:           <div className="text-[11px] text-slate-400 mt-1">{u.permissions?.length || 0} quyền</div>
+512:         </div>
+513:       ),
+514:     },
+515:     {
+516:       key: "shop",
+517:       header: "Chi nhánh",
+518:       render: (u) => (
+519:         u.shopId ? (
+520:           <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+521:             <Building className="w-3 h-3" /> Shop #{u.shopId}
+522:           </span>
+523:         ) : (
+524:           <span className="inline-flex items-center gap-1.5 text-xs bg-slate-900 text-white px-2.5 py-1 rounded-md">
+525:             <Crown className="w-3 h-3" /> HQ
+526:           </span>
+527:         )
+528:       ),
+529:     },
+530:     {
+531:       key: "status",
+532:       header: "Trạng thái",
+533:       render: (u) => (
+534:         u.status === "ACTIVE" ? (
+535:           <StatusBadge status="ACTIVE" label="Hoạt động" />
+536:         ) : (
+537:           <div>
+538:             <StatusBadge status="LOCKED" label="Đã khóa" />
+539:             {u.lockReason && (
+540:               <p className="text-[10px] text-slate-400 mt-0.5 max-w-[140px] truncate" title={u.lockReason}>
+541:                 {u.lockReason}
+542:               </p>
+543:             )}
+544:           </div>
+545:         )
+546:       ),
+547:     },
+548:     {
+549:       key: "actions",
+550:       header: "",
+551:       align: "right",
+552:       render: (u) => (
+553:         canManage ? (
+554:           <div className="flex items-center justify-end gap-1">
+555:             <button
+556:               type="button"
+557:               onClick={() => setViewUser(u)}
+558:               title="Xem chi tiết"
+559:               className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+560:             >
+561:               <Eye className="w-4 h-4" />
+562:             </button>
+563:             {(u.role === "CSKH_STAFF" || u.role === "ADMIN") && (
+564:               <button
+565:                 type="button"
+566:                 onClick={() => {
+567:                   setQuotaUser(u);
+568:                   setQuotaAmt("3000000");
+569:                   setQuotaPeriod(new Date().toISOString().slice(0, 7));
+570:                 }}
+571:                 title="Quota CSKH"
+572:                 className="p-1.5 rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
+573:               >
+574:                 <Key className="w-4 h-4" />
+575:               </button>
+576:             )}
+577:             <button
+578:               type="button"
+579:               onClick={() => setResetTargetUser(u)}
+580:               title="Reset mật khẩu"
+581:               className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors"
+582:             >
+583:               <RefreshCw className="w-4 h-4" />
+584:             </button>
+585:             {u.status === "ACTIVE" ? (
+586:               (!currentUser || String(u.id) !== String(currentUser.id)) && u.role !== "SUPER_ADMIN" && (
+587:                 <button
+588:                   type="button"
+589:                   onClick={() => setLockUserId(u.id)}
+590:                   title="Khóa tài khoản"
+591:                   className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+592:                 >
+593:                   <Lock className="w-4 h-4" />
+594:                 </button>
+595:               )
+596:             ) : (
+597:               <button
+598:                 type="button"
+599:                 onClick={() => setUnlockUserId(u.id)}
+600:                 title="Mở khóa"
+601:                 className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors"
+602:               >
+603:                 <Unlock className="w-4 h-4" />
+604:               </button>
+605:             )}
+606:             {u.role !== "ADMIN" && u.role !== "SUPER_ADMIN" && (!currentUser || String(u.id) !== String(currentUser.id)) && (
+607:               <button
+608:                 type="button"
+609:                 onClick={() => { setDeleteUserId(u.id); setDeleteUserName(u.fullName); }}
+610:                 title="Xóa tài khoản"
+611:                 className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+612:               >
+613:                 <Trash2 className="w-4 h-4" />
+614:               </button>
+615:             )}
+616:           </div>
+617:         ) : null
+618:       ),
+619:     },
+620:   ];
+621: 
+622:   /* ════════════════ RENDER ════════════════ */
+623:   return (
+624:     <PermissionGuard requiredPermissions={["MANAGE_USER", "MANAGE_ROLE_PERMISSION"]}>
+625:       <div className="p-6 space-y-6">
+626: 
+627:         {/* ── Page header ── */}
+628:         <PageHeader
+629:           title="Nhân sự & Phân quyền"
+630:           subtitle="Quản lý tài khoản, vai trò và ma trận quyền hạn toàn hệ thống"
+631:           breadcrumbs={[
+632:             { label: "Admin", href: "/admin/dashboard" },
+633:             { label: "Nhân sự & Phân quyền" },
+634:           ]}
+635:           actions={
+636:             canManage ? (
+637:               <Button
+638:                 variant="primary"
+639:                 onClick={() => activeTab === "users" ? setShowCreateModal(true) : setShowCreateRole(true)}
+640:               >
+641:                 {activeTab === "users" ? (
+642:                   <>
+643:                     <UserPlus className="w-4 h-4 mr-2" /> Tạo nhân viên
+644:                   </>
+645:                 ) : (
+646:                   <>
+647:                     <Plus className="w-4 h-4 mr-2" /> Tạo vai trò
+648:                   </>
+649:                 )}
+650:               </Button>
+651:             ) : undefined
+652:           }
+653:         />
+654: 
+655:         {/* ── Error banner ── */}
+656:         {error && (
+657:           <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+658:             <AlertTriangle className="w-4 h-4 shrink-0" />
+659:             <span className="flex-1">{error}</span>
+660:             <button onClick={() => setError(null)}><XCircle className="w-4 h-4" /></button>
+661:           </div>
+662:         )}
+663: 
+664:         {/* ── Stats row (users tab only) ── */}
+665:         {activeTab === "users" && (
+666:           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+667:             <StatCard
+668:               title="Tổng nhân sự"
+669:               value={totalElements}
+670:               icon={Users}
+671:               color="blue"
+672:             />
+673:             <StatCard
+674:               title="Đang hoạt động"
+675:               value={stats.active}
+676:               icon={CheckCircle}
+677:               color="green"
+678:             />
+679:             <StatCard
+680:               title="Đã bị khóa"
+681:               value={stats.locked}
+682:               icon={Lock}
+683:               color="red"
+684:             />
+685:           </div>
+686:         )}
+687: 
+688:         {/* ── Main card ── */}
+689:         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+690: 
+691:           {/* Tab bar */}
+692:           <div className="flex border-b border-slate-200 px-1">
+693:             {([
+694:               { id: "users" as TabType, label: "Danh sách nhân sự", icon: <Users className="w-4 h-4" /> },
+695:               { id: "roles" as TabType, label: "Vai trò & Quyền hạn", icon: <Shield className="w-4 h-4" /> },
+696:             ] as const).map(t => (
+697:               <button
+698:                 key={t.id}
+699:                 onClick={() => setActiveTab(t.id)}
+700:                 className={`relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors ${
+701:                   activeTab === t.id
+702:                     ? "text-primary"
+703:                     : "text-slate-500 hover:text-slate-700"
+704:                 }`}
+705:               >
+706:                 {t.icon}
+707:                 {t.label}
+708:                 {activeTab === t.id && (
+709:                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t" />
+710:                 )}
+711:               </button>
+712:             ))}
+713:           </div>
+714: 
+715:           {/* ══════════ USERS TAB ══════════ */}
+716:           {activeTab === "users" && (
+717:             <div className="p-4">
+718:               <DataTable<UserAdminDto>
+719:                 columns={userColumns}
+720:                 data={users}
+721:                 loading={loadingUsers}
+722:                 rowKey={(u) => u.id}
+723:                 searchQuery={keyword}
+724:                 onSearchChange={setKeyword}
+725:                 searchPlaceholder="Tìm mã NV, tên, email, SĐT..."
+726:                 emptyTitle="Không tìm thấy nhân sự"
+727:                 emptyMessage="Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm."
+728:                 filterSlot={
+729:                   <div className="flex items-center gap-2">
+730:                     <Filter className="w-4 h-4 text-slate-400" />
+731:                     <select
+732:                       value={roleFilter}
+733:                       onChange={e => setRoleFilter(e.target.value)}
+734:                       className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-700 min-w-[140px]"
+735:                     >
+736:                       <option value="">Tất cả vai trò</option>
+737:                       {roles.map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
+738:                     </select>
+739:                     <select
+740:                       value={statusFilter}
+741:                       onChange={e => setStatusFilter(e.target.value)}
+742:                       className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-700 min-w-[140px]"
+743:                     >
+744:                       <option value="">Tất cả trạng thái</option>
+745:                       <option value="ACTIVE">Hoạt động</option>
+746:                       <option value="LOCKED">Đã khóa</option>
+747:                     </select>
+748:                     <button
+749:                       onClick={() => { setKeyword(""); setRoleFilter(""); setStatusFilter(""); }}
+750:                       className="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors text-slate-500"
+751:                       title="Xóa bộ lọc"
+752:                     >
+753:                       <RefreshCw className="w-4 h-4" />
+754:                     </button>
+755:                   </div>
+756:                 }
+757:                 pagination={{
+758:                   currentPage: page + 1,
+759:                   totalPages: totalPages || 1,
+760:                   totalItems: totalElements,
+761:                   pageSize: 15,
+762:                   onPageChange: (p) => setPage(p - 1),
+763:                 }}
+764:               />
+765:             </div>
+766:           )}
+767: 
+768:           {/* ══════════ ROLES TAB ══════════ */}
+769:           {activeTab === "roles" && (
+770:             <div className="flex" style={{ minHeight: 560 }}>
+771:               {/* Left: role list */}
+772:               <div className="w-72 border-r border-slate-100 flex flex-col shrink-0">
+773:                 <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+774:                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+775:                     Danh sách vai trò ({roles.length})
+776:                   </p>
+777:                 </div>
+778:                 <div className="flex-1 overflow-y-auto p-2 space-y-1">
+779:                   {loadingRoles && roles.length === 0
+780:                     ? [...Array(4)].map((_, i) => (
+781:                         <div key={i} className="h-16 bg-slate-100 rounded-lg animate-pulse" />
+782:                       ))
+783:                     : roles.map(r => (
+784:                         <div
+785:                           key={r.code}
+786:                           onClick={() => setSelectedRole(r)}
+787:                           className={`group flex items-start justify-between p-3 rounded-lg cursor-pointer transition-all ${
+788:                             selectedRole?.code === r.code
+789:                               ? "bg-red-50 border border-red-200"
+790:                               : "hover:bg-slate-50 border border-transparent"
+791:                           }`}
+792:                         >
+793:                           <div className="flex-1 min-w-0">
+794:                             <p className={`text-sm font-semibold truncate ${selectedRole?.code === r.code ? "text-red-700" : "text-slate-800"}`}>
+795:                               {r.name}
+796:                             </p>
+797:                             <p className="text-[11px] font-mono text-slate-400 mt-0.5">{r.code}</p>
+798:                             <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded mt-1 inline-block">
+799:                               {r.permissions?.length || 0} quyền
+800:                             </span>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

@@ -1,32 +1,90 @@
 package com.nguyenhoanglong.controller.admin;
 
-import com.nguyenhoanglong.dto.ApiResponse;
-import com.nguyenhoanglong.repository.UserRepository;
+import com.nguyenhoanglong.dto.*;
+import com.nguyenhoanglong.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/admin")
+@PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_USER)")
 public class AdminUserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final com.nguyenhoanglong.service.DataAuditService dataAuditService;
 
-    public AdminUserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AdminUserController(UserService userService, com.nguyenhoanglong.service.DataAuditService dataAuditService) {
+        this.userService = userService;
+        this.dataAuditService = dataAuditService;
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getSystemUsersOverview() {
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("totalUsers", userRepository.count());
-        data.put("rolesSupported", List.of("SYSTEM_ADMIN", "STORE_STAFF", "CUSTOMER"));
-        data.put("auditStatus", "RBAC Policy Active");
-        return ResponseEntity.ok(ApiResponse.success("System Admin: User roles overview fetched", data));
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<Page<UserAdminDto>>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
+        
+        Page<UserAdminDto> users = userService.getUsers(page, size, keyword, role, status);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách người dùng thành công", users));
     }
+
+    /** Thong ke nhanh cho the tong quan dashboard (1 cau COUNT ... GROUP BY). */
+    @GetMapping("/users/stats")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> getUserStats() {
+        return ResponseEntity.ok(ApiResponse.success("Lấy thống kê người dùng thành công", userService.getUserStats()));
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserAdminDto>> getUserById(@PathVariable String id) {
+        UserAdminDto user = userService.getUserById(id);
+        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin người dùng thành công", user));
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<ApiResponse<UserAdminDto>> createUser(@Valid @RequestBody UserCreateDto createDto) {
+        UserAdminDto created = userService.createUser(createDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tạo người dùng mới thành công", created));
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserAdminDto>> updateUser(
+            @PathVariable String id,
+            @Valid @RequestBody UserUpdateDto updateDto) {
+        UserAdminDto updated = userService.updateUser(id, updateDto);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin người dùng thành công", updated));
+    }
+
+    @PatchMapping("/users/{id}/status")
+    public ResponseEntity<ApiResponse<UserAdminDto>> updateUserStatus(
+            @PathVariable String id,
+            @Valid @RequestBody UserStatusUpdateDto statusDto,
+            Authentication authentication) {
+        
+        String currentAdminIdentifier = authentication != null ? authentication.getName() : "ADMIN";
+        UserAdminDto updated = userService.updateUserStatus(id, statusDto, currentAdminIdentifier);
+        
+        boolean isLocking = "LOCKED".equalsIgnoreCase(statusDto.getStatus());
+        String msg = isLocking ? "Khóa tài khoản thành công" : "Mở khóa tài khoản thành công";
+        
+        dataAuditService.logAudit(currentAdminIdentifier, isLocking ? "LOCK_USER" : "UNLOCK_USER", "User", id, msg);
+        
+        return ResponseEntity.ok(ApiResponse.success(msg, updated));
+    }
+
+    @PostMapping("/users/{id}/reset-password")
+    public ResponseEntity<ApiResponse<ResetPasswordResponseDto>> resetUserPassword(@PathVariable String id) {
+        ResetPasswordResponseDto response = userService.resetUserPassword(id);
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
+    }
+
 }
