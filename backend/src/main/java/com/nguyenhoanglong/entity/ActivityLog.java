@@ -35,6 +35,42 @@ public class ActivityLog {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // ── Traceability (added by V20261001000000) ──
+    @Column(name = "actor_email")
+    private String actorEmail;
+
+    @Column(name = "actor_role")
+    private String actorRole;
+
+    @Column(name = "http_method")
+    private String httpMethod;
+
+    @Column(name = "request_path")
+    private String requestPath;
+
+    @Column(name = "status_code")
+    private Integer statusCode;
+
+    /** SUCCESS or FAILURE. Null on legacy rows. */
+    @Column(name = "result")
+    private String result;
+
+    @Column(name = "user_agent")
+    private String userAgent;
+
+    @Column(name = "duration_ms")
+    private Integer durationMs;
+
+    /** Correlates every log row written while serving one HTTP request. */
+    @Column(name = "request_id")
+    private String requestId;
+
+    @Column(name = "old_value", columnDefinition = "TEXT")
+    private String oldValue;
+
+    @Column(name = "new_value", columnDefinition = "TEXT")
+    private String newValue;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -58,4 +94,27 @@ public class ActivityLog {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getActorEmail() { return actorEmail; }
+    public void setActorEmail(String actorEmail) { this.actorEmail = actorEmail; }
+    public String getActorRole() { return actorRole; }
+    public void setActorRole(String actorRole) { this.actorRole = actorRole; }
+    public String getHttpMethod() { return httpMethod; }
+    public void setHttpMethod(String httpMethod) { this.httpMethod = httpMethod; }
+    public String getRequestPath() { return requestPath; }
+    public void setRequestPath(String requestPath) { this.requestPath = requestPath; }
+    public Integer getStatusCode() { return statusCode; }
+    public void setStatusCode(Integer statusCode) { this.statusCode = statusCode; }
+    public String getResult() { return result; }
+    public void setResult(String result) { this.result = result; }
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+    public Integer getDurationMs() { return durationMs; }
+    public void setDurationMs(Integer durationMs) { this.durationMs = durationMs; }
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+    public String getOldValue() { return oldValue; }
+    public void setOldValue(String oldValue) { this.oldValue = oldValue; }
+    public String getNewValue() { return newValue; }
+    public void setNewValue(String newValue) { this.newValue = newValue; }
 }

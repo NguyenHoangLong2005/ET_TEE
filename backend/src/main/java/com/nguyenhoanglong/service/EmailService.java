@@ -24,6 +24,9 @@ public class EmailService {
      * This lets register/reset flows complete in environments where SMTP is unavailable
      * (e.g. local dev). The OTP is still persisted in the DB and surfaced in logs.
      */
+    @Value("${app.mail.log-otp-on-failure:false}")
+    private boolean logOtpOnFailure;
+
     @Value("${app.mail.fail-soft:true}")
     private boolean failSoft;
 
@@ -56,8 +59,13 @@ public class EmailService {
             logEntry.setStatus("SENT");
             emailLogRepository.save(logEntry);
         } catch (MessagingException | MailException e) {
-            log.warn("[{}] Email send failed for {} ({}): {}. OTP={}",
-                    flow, toEmail, e.getClass().getSimpleName(), e.getMessage(), code);
+            log.warn("[{}] Email send failed for {} ({}): {}",
+                    flow, toEmail, e.getClass().getSimpleName(), e.getMessage());
+            // The one-time code must not end up in log files / the admin log viewer by default.
+            // Opt in (dev only) when SMTP is not configured and you need the code to test sign-up.
+            if (logOtpOnFailure) {
+                log.warn("[{}] DEV ONLY - code for {}: {}", flow, toEmail, code);
+            }
 
             logEntry.setStatus("FAILED");
             logEntry.setErrorMessage(e.getMessage());

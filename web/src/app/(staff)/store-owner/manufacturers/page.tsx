@@ -9,8 +9,6 @@ import PageHeader from '@/components/ui/PageHeader';
 import Button from '@/components/ui/Button';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { useAuth } from '@/contexts/AuthContext';
-import { getActiveRole } from '@/lib/auth';
 
 interface Manufacturer {
   id: number;
@@ -23,8 +21,8 @@ interface Manufacturer {
 }
 
 export default function ManufacturersPage() {
-  const { user } = useAuth();
-  const isAdmin = getActiveRole(user?.role ? [user.role] : (user as any)?.roles) === 'ADMIN';
+  // PermissionGuard below limits the page to SHOP_OWNER / ADMIN / SUPER_ADMIN, all of whom may manage.
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [data, setData] = useState<Manufacturer[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
@@ -40,8 +38,8 @@ export default function ManufacturersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const res = await apiClient.get<any>(`/api/manufacturers?page=${page}&size=20&keyword=${encodeURIComponent(keyword)}`);
       if (res?.items) {
@@ -57,8 +55,11 @@ export default function ManufacturersPage() {
         setTotalPages(res.totalPages || 1);
         setTotalItems(res.totalElements || res.content.length);
       }
-    } catch {
+      setLoadError(null);
+    } catch (err: any) {
+      // Never pretend the list is empty when the request actually failed.
       setData([]);
+      setLoadError(err?.message || 'Không thể tải danh sách nhà sản xuất');
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,6 @@ export default function ManufacturersPage() {
     }
 
     const payload = {
-      ...formData,
       name: cleanName,
       contactEmail: cleanEmail,
       country: (formData.country || '').trim() || 'Việt Nam',
@@ -116,7 +116,7 @@ export default function ManufacturersPage() {
       setIsModalOpen(false);
       setEditingItem(null);
       setFormData({});
-      fetchData();
+      fetchData(true);
     } catch (err: any) {
       toast.error(err?.message || 'Lỗi khi lưu nhà sản xuất');
     } finally {
@@ -130,8 +130,10 @@ export default function ManufacturersPage() {
     try {
       await apiClient.delete(`/api/manufacturers/${itemToDelete.id}`);
       toast.success('Đã xóa nhà sản xuất');
-      setData(prev => prev.filter(d => d.id !== itemToDelete.id));
       setItemToDelete(null);
+      // Step back a page if we just removed the last row of a non-first page.
+      if (data.length === 1 && page > 0) setPage(page - 1);
+      else fetchData();
     } catch (err: any) {
       toast.error(err?.message || 'Xóa nhà sản xuất thất bại');
     } finally {
@@ -166,7 +168,7 @@ export default function ManufacturersPage() {
             href={item.website.startsWith('http') ? item.website : `https://${item.website}`}
             target="_blank"
             rel="noreferrer"
-            className="text-primary hover:underline font-mono text-xs truncate max-w-[180px] inline-block"
+            className="text-[#BD001F] hover:underline text-xs truncate max-w-[200px] inline-block"
           >
             {item.website}
           </a>
@@ -187,34 +189,33 @@ export default function ManufacturersPage() {
       header: 'Số sản phẩm',
       align: 'right',
       render: (item) => (
-        <span className="font-mono font-bold text-slate-900 text-xs">{item.productCount || 0}</span>
+        <span className="inline-flex min-w-[2rem] justify-center px-2 py-0.5 rounded-full bg-zinc-100 font-semibold text-zinc-800 text-xs tabular-nums">
+          {item.productCount || 0}
+        </span>
       ),
     },
     {
       key: 'actions',
       header: 'Thao tác',
       align: 'right',
-      render: (item) =>
-        isAdmin ? (
-          <div className="flex items-center justify-end gap-1.5">
-            <button
-              onClick={() => handleOpenModal(item)}
-              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Sửa"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setItemToDelete(item)}
-              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Xóa"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <span className="text-xs text-slate-300 italic">Chỉ xem</span>
-        ),
+      render: (item) => (
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => handleOpenModal(item)}
+            className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors"
+            title="Sửa"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setItemToDelete(item)}
+            className="p-1.5 text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] rounded-lg transition-colors"
+            title="Xóa"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -225,33 +226,33 @@ export default function ManufacturersPage() {
         {/* Header */}
         <PageHeader
           title="Quản lý Nhà sản xuất"
-          subtitle={
-            isAdmin
-              ? "Quản lý thông tin các đối tác gia công và xưởng sản xuất liên kết (dùng chung toàn hệ thống)."
-              : "Danh sách nhà sản xuất dùng chung, chỉ Quản trị viên được thêm/sửa/xóa."
-          }
-          badge={isAdmin ? "HỆ THỐNG" : "CHỈ XEM"}
+          subtitle="Quản lý các đối tác gia công và xưởng sản xuất (dùng chung toàn hệ thống). Số sản phẩm là số sản phẩm đã chọn nhà sản xuất này trong form sản phẩm."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={fetchData}
                 loading={loading}
                 icon={<RefreshCw className="w-4 h-4" />}
               >
                 Làm mới
               </Button>
-              {isAdmin && (
-                <Button
-                  onClick={() => handleOpenModal()}
-                  icon={<Plus className="w-4 h-4" />}
-                >
-                  Thêm mới
-                </Button>
-              )}
+              <Button
+                onClick={() => handleOpenModal()}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                Thêm mới
+              </Button>
             </div>
           }
         />
+
+        {loadError && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-[#F4C0C8] bg-[#FFF0F2] px-4 py-3 text-sm text-[#950019]">
+            <span>{loadError}</span>
+            <Button variant="outline" size="sm" onClick={fetchData}>Thử lại</Button>
+          </div>
+        )}
 
         {/* Table */}
         <DataTable<Manufacturer>
@@ -268,12 +269,16 @@ export default function ManufacturersPage() {
             totalItems,
             onPageChange: (p) => setPage(p),
           }}
-          emptyTitle="Không tìm thấy nhà sản xuất nào"
-          emptyMessage="Chưa có đối tác sản xuất nào hoặc không khớp với từ khóa tìm kiếm."
+          emptyTitle={keyword.trim() ? 'Không có kết quả phù hợp' : 'Chưa có nhà sản xuất nào'}
+          emptyMessage={
+            keyword.trim()
+              ? `Không có nhà sản xuất nào khớp với "${keyword.trim()}".`
+              : 'Nhấn Thêm mới để tạo nhà sản xuất đầu tiên.'
+          }
         />
 
         {/* Modal Create / Edit */}
-        {isAdmin && isModalOpen && (
+        {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -298,7 +303,7 @@ export default function ManufacturersPage() {
                     required
                     value={formData.name || ''}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
                     placeholder="VD: Xưởng may ET.TEE Sài Gòn"
                   />
                 </div>
@@ -310,7 +315,7 @@ export default function ManufacturersPage() {
                       type="text"
                       value={formData.country || ''}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
                       placeholder="Việt Nam"
                     />
                   </div>
@@ -320,7 +325,7 @@ export default function ManufacturersPage() {
                       type="text"
                       value={formData.website || ''}
                       onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
                       placeholder="ettee.vn"
                     />
                   </div>
@@ -332,7 +337,7 @@ export default function ManufacturersPage() {
                     type="email"
                     value={formData.contactEmail || ''}
                     onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
                     placeholder="contact@factory.vn"
                   />
                 </div>
@@ -343,14 +348,14 @@ export default function ManufacturersPage() {
                     rows={3}
                     value={formData.description || ''}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027] resize-none"
                     placeholder="Mô tả năng lực xưởng..."
                   />
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     onClick={() => setIsModalOpen(false)}
                     disabled={isSaving}
                   >
@@ -371,9 +376,18 @@ export default function ManufacturersPage() {
 
         {/* Delete Confirm Modal */}
         <ConfirmModal
-          isOpen={isAdmin && !!itemToDelete}
+          isOpen={!!itemToDelete}
           title="Xóa nhà sản xuất"
-          message={`Bạn có chắc muốn xóa nhà sản xuất "${itemToDelete?.name}" không?`}
+          message={
+            <div className="space-y-2">
+              <p>Bạn có chắc muốn xóa nhà sản xuất "{itemToDelete?.name}" không?</p>
+              {(itemToDelete?.productCount ?? 0) > 0 && (
+                <p className="text-amber-700">
+                  Hiện có {itemToDelete?.productCount} sản phẩm đang chọn nhà sản xuất này. Các sản phẩm không bị xóa, nhưng sẽ mất liên kết nhà sản xuất khi bạn mở lại form.
+                </p>
+              )}
+            </div>
+          }
           confirmText="Xác nhận xóa"
           cancelText="Hủy"
           type="danger"

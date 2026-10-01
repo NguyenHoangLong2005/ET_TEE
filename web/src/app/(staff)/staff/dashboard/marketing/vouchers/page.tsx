@@ -18,7 +18,18 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 
 // Types
 type DiscountType = "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIP";
-type VoucherStatus = "ACTIVE" | "INACTIVE";
+// Mirrors MarketingService.validateVoucherTransition: staff toggle ACTIVE <-> PAUSED; the rest are
+// terminal or belong to shop-owner approval. Sending "INACTIVE" was always rejected.
+type VoucherStatus = "ACTIVE" | "PAUSED" | "CANCELLED" | "EXPIRED" | "PENDING_APPROVAL" | "REJECTED";
+const STATUS_LABEL: Record<VoucherStatus, string> = {
+  ACTIVE: "Kích hoạt", PAUSED: "Tạm dừng", CANCELLED: "Đã hủy", EXPIRED: "Hết hạn",
+  PENDING_APPROVAL: "Chờ duyệt", REJECTED: "Bị từ chối",
+};
+const canToggle = (s: VoucherStatus) => s === "ACTIVE" || s === "PAUSED";
+const STATUS_TONE: Record<VoucherStatus, "success" | "warning" | "danger" | "neutral"> = {
+  ACTIVE: "success", PAUSED: "neutral", CANCELLED: "danger", EXPIRED: "danger",
+  PENDING_APPROVAL: "warning", REJECTED: "danger",
+};
 
 interface Voucher {
   id: string;
@@ -63,8 +74,8 @@ export default function VouchersPage() {
     isPublic: true,
   });
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const baseUrl = getApiBaseUrl();
       const headers = getAuthHeaders() as Record<string, string>;
@@ -102,7 +113,8 @@ export default function VouchersPage() {
       setEditingVoucher(voucher);
       setFormData({
         ...voucher,
-        expiresAt: new Date(voucher.expiresAt).toISOString().slice(0, 16),
+        // Prefilling 1970 for a voucher without expiry would expire it on save.
+        expiresAt: voucher.expiresAt ? new Date(voucher.expiresAt).toISOString().slice(0, 16) : "",
       });
     } else {
       setEditingVoucher(null);
@@ -157,9 +169,10 @@ export default function VouchersPage() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Lỗi khi lưu voucher");
       }
-      toast.success(isEditing ? "Cập nhật voucher thành công" : "Tạo voucher thành công");
+      // New vouchers from marketing staff wait in the store owner approval queue before going live.
+      toast.success(isEditing ? "Cập nhật voucher thành công" : "Đã tạo voucher và gửi chủ cửa hàng phê duyệt");
       setIsModalOpen(false);
-      await fetchData();
+      await fetchData(true);
     } catch (err: any) {
       toast.error(err?.message || "Không thể lưu voucher");
     } finally {
@@ -168,7 +181,7 @@ export default function VouchersPage() {
   };
 
   const handleToggleStatus = async (id: string, currentStatus: VoucherStatus) => {
-    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const newStatus: VoucherStatus = currentStatus === "ACTIVE" ? "PAUSED" : "ACTIVE";
     try {
       const url = `${getApiBaseUrl()}/api/marketing/admin/vouchers/${id}/status`;
       const res = await fetch(url, {
@@ -181,7 +194,7 @@ export default function VouchersPage() {
         throw new Error(errData.message || "Không thể thay đổi trạng thái");
       }
       setVouchers(prev => prev.map(v => v.id === id ? { ...v, status: newStatus } : v));
-      toast.success(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt' : 'vô hiệu hóa'} voucher`);
+      toast.success(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt' : 'tạm dừng'} voucher`);
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi đổi trạng thái voucher");
     }
@@ -258,7 +271,7 @@ export default function VouchersPage() {
             {v.discountType === "FIXED_AMOUNT" && formatCurrency(v.discountValue)}
             {v.discountType === "FREE_SHIP" && "Miễn phí ship"}
           </span>
-          {v.maxDiscountAmount && v.maxDiscountAmount > 0 && (
+          {!!v.maxDiscountAmount && v.maxDiscountAmount > 0 && (
             <div className="text-[11px] text-slate-400">Tối đa {formatCurrency(v.maxDiscountAmount)}</div>
           )}
         </div>
@@ -295,6 +308,8 @@ export default function VouchersPage() {
       key: "expiresAt",
       header: "Hạn sử dụng",
       render: (v) => {
+        // end_date is nullable: no expiry. new Date(null) would render 1970 / "Invalid Date".
+        if (!v.expiresAt) return <span className="text-xs text-slate-400">Không thời hạn</span>;
         const isExpired = new Date(v.expiresAt) < new Date();
         return (
           <span className={`text-xs ${isExpired ? 'text-rose-600 font-semibold' : 'text-slate-600'}`}>
@@ -310,7 +325,8 @@ export default function VouchersPage() {
       render: (v) => (
         <StatusBadge
           status={v.status}
-          label={v.status === "ACTIVE" ? "Kích hoạt" : "Vô hiệu"}
+          label={STATUS_LABEL[v.status] ?? v.status}
+          tone={STATUS_TONE[v.status]}
         />
       )
     },
@@ -319,13 +335,15 @@ export default function VouchersPage() {
       header: "Thao tác",
       render: (v) => (
         <div className="flex items-center gap-1.5 justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleStatus(v.id, v.status)}
-            title={v.status === "ACTIVE" ? "Vô hiệu hóa" : "Kích hoạt"}
-            icon={<Power className="w-3.5 h-3.5" />}
-          />
+          {canToggle(v.status) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleToggleStatus(v.id, v.status)}
+              title={v.status === "ACTIVE" ? "Tạm dừng" : "Kích hoạt"}
+              icon={<Power className="w-3.5 h-3.5" />}
+            />
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -433,7 +451,9 @@ export default function VouchersPage() {
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="ACTIVE">Kích hoạt</option>
-              <option value="INACTIVE">Vô hiệu</option>
+              <option value="PAUSED">Tạm dừng</option>
+              <option value="EXPIRED">Hết hạn</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
           </div>
         }
@@ -504,7 +524,8 @@ export default function VouchersPage() {
                     type="number"
                     min="0"
                     required
-                    value={formData.discountValue}
+                    value={formData.discountValue || ""}
+                    placeholder="0"
                     onChange={(e) => setFormData({ ...formData, discountValue: Number(e.target.value) })}
                     className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
@@ -515,7 +536,7 @@ export default function VouchersPage() {
                     type="number"
                     min="0"
                     disabled={formData.discountType !== "PERCENTAGE"}
-                    value={formData.maxDiscountAmount || 0}
+                    value={formData.maxDiscountAmount || ""}
                     onChange={(e) => setFormData({ ...formData, maxDiscountAmount: Number(e.target.value) })}
                     placeholder="0 là không giới hạn"
                     className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
@@ -529,7 +550,8 @@ export default function VouchersPage() {
                   <input
                     type="number"
                     min="0"
-                    value={formData.minOrderValue}
+                    value={formData.minOrderValue || ""}
+                    placeholder="0"
                     onChange={(e) => setFormData({ ...formData, minOrderValue: Number(e.target.value) })}
                     className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary"
                   />
@@ -539,7 +561,7 @@ export default function VouchersPage() {
                   <input
                     type="number"
                     min="1"
-                    value={formData.maxUsage}
+                    value={formData.maxUsage || ""}
                     onChange={(e) => setFormData({ ...formData, maxUsage: Number(e.target.value) })}
                     className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary"
                   />

@@ -145,8 +145,7 @@ public class MarketingController {
             BigDecimal subtotal = body.get("subtotal") != null
                     ? new BigDecimal(body.get("subtotal").toString()) : BigDecimal.ZERO;
             String userId = getCurrentUserId();
-            boolean isNewCustomer = Boolean.TRUE.equals(body.get("isNewCustomer"));
-            Voucher voucher = marketingService.validateVoucher(code, subtotal, userId, isNewCustomer);
+            Voucher voucher = marketingService.validateVoucher(code, subtotal, userId);
             Map<String, Object> discount = marketingService.computeDiscount(voucher, subtotal);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -202,6 +201,16 @@ public class MarketingController {
         response.put("success", true);
         response.put("data", post);
         return ResponseEntity.ok(response);
+    }
+
+    // Counted from the reader's browser rather than in GET /posts/{slug}: the storefront fetches
+    // that with a 60s Next.js cache, so most reads never reach the backend.
+    @PostMapping("/posts/{slug}/view")
+    public ResponseEntity<Map<String, Object>> recordPostView(@PathVariable String slug) {
+        if (!marketingService.recordPostView(slug)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài viết");
+        }
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     // ═════════════════════════════════════════════════════════════════════

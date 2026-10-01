@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { formatVnd } from '@/lib/utils/price';
 import { useEffect, useState } from 'react';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -40,7 +41,7 @@ export default function TrendingBlock() {
   }, []);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+    return formatVnd(price) + ' VND';
   };
 
   // Background image - try product image first, fallback to local

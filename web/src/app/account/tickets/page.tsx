@@ -46,7 +46,7 @@ interface SupportTicketDetail extends SupportTicket {
 }
 
 interface CustomerOrder {
-  id: number;
+  id?: number;
   orderCode: string;
   totalAmount: number;
   createdAt: string;
@@ -93,8 +93,8 @@ export default function CustomerTicketsPage() {
   const [creating, setCreating] = useState(false);
 
   /* ── Load My Tickets ── */
-  const fetchTickets = useCallback(async () => {
-    setLoading(true);
+  const fetchTickets = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const headers = getAuthHeaders();
       const res = await fetch(`${getApiBaseUrl()}/api/customer/tickets/my-tickets?page=0&size=50`, {
@@ -102,7 +102,8 @@ export default function CustomerTicketsPage() {
       });
       const json = await res.json();
       if (json.success && json.data) {
-        setTickets(json.data.content || []);
+        // PaginatedResponseDto returns the page in `items` (Spring's Page would use `content`)
+        setTickets(json.data.items || json.data.content || []);
       } else {
         setTickets([]);
       }
@@ -232,7 +233,7 @@ export default function CustomerTicketsPage() {
           orderId: '',
           priority: 2,
         });
-        await fetchTickets();
+        await fetchTickets(true);
       } else {
         toast.error(json.message || 'Không thể gửi yêu cầu hỗ trợ');
       }
@@ -250,27 +251,8 @@ export default function CustomerTicketsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header Card */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black uppercase text-slate-900 tracking-tight flex items-center gap-2.5">
-            <LifeBuoy className="w-6 h-6 text-primary" />
-            <span>Trung tâm Hỗ trợ & Khiếu nại</span>
-          </h1>
-          <p className="text-slate-500 text-xs md:text-sm mt-1">
-            Gửi yêu cầu trợ giúp về đơn hàng, chính sách đổi trả hoặc thắc mắc dịch vụ trực tiếp tới bộ phận CSKH ET.TEE.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Tạo yêu cầu hỗ trợ</span>
-        </button>
-      </div>
-
       {/* Filter Tabs */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         {[
           { key: 'ALL', label: 'Tất cả' },
@@ -282,7 +264,7 @@ export default function CustomerTicketsPage() {
           <button
             key={tab.key}
             onClick={() => setFilterStatus(tab.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`h-10 px-5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
               filterStatus === tab.key
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
@@ -291,6 +273,14 @@ export default function CustomerTicketsPage() {
             {tab.label}
           </button>
         ))}
+      </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="inline-flex h-12 items-center justify-center gap-2 px-6 rounded-full bg-primary hover:bg-primary-hover text-white text-sm font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-shrink-0"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Tạo yêu cầu hỗ trợ</span>
+        </button>
       </div>
 
       {/* Tickets List */}
@@ -305,13 +295,13 @@ export default function CustomerTicketsPage() {
           <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
             <MessageSquare className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 mb-1">Chưa có yêu cầu hỗ trợ nào</h3>
-          <p className="text-slate-500 text-xs max-w-sm mx-auto mb-6">
+          <h3 className="text-lg font-bold text-slate-900 mb-1.5">Chưa có yêu cầu hỗ trợ nào</h3>
+          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 leading-relaxed">
             Nếu bạn gặp khó khăn với đơn hàng hoặc dịch vụ, hãy bấm tạo yêu cầu để đội ngũ ET.TEE hỗ trợ kịp thời.
           </p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors"
+            className="inline-flex h-11 items-center gap-2 px-6 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Tạo yêu cầu ngay</span>
@@ -332,33 +322,33 @@ export default function CustomerTicketsPage() {
               <div
                 key={ticket.id}
                 onClick={() => handleOpenDetail(ticket.id)}
-                className="group bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl p-5 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="group bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div className="space-y-2 flex-1">
+                <div className="space-y-2.5 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                    <span className="font-mono text-sm font-extrabold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
                       #{ticket.ticketCode}
                     </span>
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusCfg.badgeClass}`}>
-                      <StatusIcon className="w-3 h-3" />
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusCfg.badgeClass}`}>
+                      <StatusIcon className="w-3.5 h-3.5" />
                       <span>{statusCfg.label}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                       <span className={`w-2 h-2 rounded-full ${priorityCfg.dotClass}`} />
                       <span>Ưu tiên {priorityCfg.label}</span>
                     </span>
                     {ticket.orderCode && (
-                      <span className="text-[11px] font-semibold text-primary bg-red-50 border border-red-100 px-2 py-0.5 rounded">
+                      <span className="text-xs font-semibold text-primary bg-red-50 border border-red-100 px-2.5 py-1 rounded-md">
                         Đơn hàng: {ticket.orderCode}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">
+                  <h3 className="text-base md:text-lg font-bold text-slate-900 group-hover:text-primary transition-colors">
                     {ticket.subject}
                   </h3>
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-slate-500">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
+                      <Calendar className="w-4 h-4" />
                       {new Date(ticket.createdAt).toLocaleDateString('vi-VN', {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit'
@@ -370,7 +360,7 @@ export default function CustomerTicketsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 group-hover:text-slate-900 flex-shrink-0">
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-500 group-hover:text-slate-900 flex-shrink-0">
                   <span>Xem hội thoại</span>
                   <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -388,23 +378,24 @@ export default function CustomerTicketsPage() {
             <div className="p-6 border-b border-slate-100 flex items-start justify-between gap-4 bg-slate-50/50">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-black text-slate-900 bg-slate-200 px-2 py-0.5 rounded">
+                  <span className="font-mono text-sm font-black text-slate-900 bg-slate-200 px-2.5 py-1 rounded-md">
                     #{selectedTicket.ticketCode}
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${STATUS_CONFIG[selectedTicket.status]?.badgeClass || 'bg-slate-100'}`}>
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border ${STATUS_CONFIG[selectedTicket.status]?.badgeClass || 'bg-slate-100'}`}>
                     {STATUS_CONFIG[selectedTicket.status]?.label || selectedTicket.status}
                   </span>
                   {selectedTicket.orderCode && (
-                    <span className="text-[11px] font-bold text-primary bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                    <span className="text-xs font-bold text-primary bg-red-50 px-2.5 py-1 rounded-md border border-red-100">
                       Đơn: {selectedTicket.orderCode}
                     </span>
                   )}
                 </div>
-                <h2 className="text-base font-black text-slate-900">{selectedTicket.subject}</h2>
+                <h2 className="text-lg md:text-xl font-black text-slate-900 leading-snug">{selectedTicket.subject}</h2>
               </div>
               <button
                 onClick={() => setSelectedTicket(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+                aria-label="Đóng"
+                className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -421,15 +412,15 @@ export default function CustomerTicketsPage() {
                       className={`flex flex-col ${isCustomer ? 'items-end' : 'items-start'}`}
                     >
                       <div className="flex items-center gap-2 mb-1 px-1">
-                        <span className="text-[11px] font-bold text-slate-600">
+                        <span className="text-xs font-bold text-slate-600">
                           {isCustomer ? 'Bạn' : (msg.senderName || 'Hỗ trợ viên ET.TEE')}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-xs text-slate-400">
                           {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs ${
                           isCustomer
                             ? 'bg-slate-900 text-white rounded-tr-none'
                             : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-none'
@@ -442,7 +433,7 @@ export default function CustomerTicketsPage() {
                               href={msg.attachmentUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="underline text-[11px] hover:opacity-80"
+                              className="underline text-xs hover:opacity-80"
                             >
                               Tệp đính kèm
                             </a>
@@ -453,7 +444,7 @@ export default function CustomerTicketsPage() {
                   );
                 })
               ) : (
-                <div className="text-center py-8 text-xs text-slate-400">
+                <div className="text-center py-8 text-sm text-slate-400">
                   Chưa có tin nhắn phản hồi nào trong yêu cầu này.
                 </div>
               )}
@@ -467,19 +458,19 @@ export default function CustomerTicketsPage() {
                   placeholder="Nhập nội dung phản hồi tới CSKH..."
                   value={replyMessage}
                   onChange={e => setReplyMessage(e.target.value)}
-                  className="flex-1 h-11 px-4 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 focus:bg-white transition-colors"
+                  className="flex-1 h-12 px-5 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:border-slate-900 focus:bg-white transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={sendingReply || !replyMessage.trim()}
-                  className="h-11 px-5 bg-primary hover:bg-primary-hover disabled:opacity-40 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all flex-shrink-0"
+                  className="h-12 px-6 bg-primary hover:bg-primary-hover disabled:opacity-40 text-white font-bold rounded-full text-sm flex items-center gap-2 transition-all flex-shrink-0"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                   <span>{sendingReply ? 'Đang gửi...' : 'Gửi'}</span>
                 </button>
               </form>
             ) : (
-              <div className="p-4 bg-slate-100 text-center text-xs text-slate-500 font-medium border-t border-slate-200">
+              <div className="p-4 bg-slate-100 text-center text-sm text-slate-500 font-medium border-t border-slate-200">
                 Yêu cầu hỗ trợ này đã được đóng. Nếu vẫn cần trợ giúp, bạn vui lòng tạo một yêu cầu mới.
               </div>
             )}
@@ -490,23 +481,24 @@ export default function CustomerTicketsPage() {
       {/* ─── Create New Ticket Modal ─── */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 p-6 md:p-8 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 p-6 md:p-8 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-black uppercase text-slate-900 tracking-tight flex items-center gap-2">
-                <LifeBuoy className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-black uppercase text-slate-900 tracking-tight flex items-center gap-2.5">
+                <LifeBuoy className="w-6 h-6 text-primary" />
                 <span>Tạo yêu cầu hỗ trợ mới</span>
               </h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl"
+                aria-label="Đóng"
+                className="flex h-10 w-10 items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTicket} className="space-y-4">
+            <form onSubmit={handleCreateTicket} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Tiêu đề yêu cầu <span className="text-primary">*</span>
                 </label>
                 <input
@@ -515,22 +507,22 @@ export default function CustomerTicketsPage() {
                   placeholder="Ví dụ: Cần hỗ trợ đổi kích cỡ sản phẩm, chậm giao hàng..."
                   value={createForm.subject}
                   onChange={e => setCreateForm({ ...createForm, subject: e.target.value })}
-                  className="w-full h-11 px-4 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full h-12 px-4 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Đơn hàng liên quan (Tùy chọn)
                 </label>
                 <select
                   value={createForm.orderId}
                   onChange={e => setCreateForm({ ...createForm, orderId: e.target.value })}
-                  className="w-full h-11 px-4 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                  className="w-full h-12 px-4 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
                 >
                   <option value="">-- Không gắn đơn hàng cụ thể --</option>
                   {orders.map(o => (
-                    <option key={o.id} value={o.id}>
+                    <option key={o.id ?? o.orderCode} value={o.id ?? ''}>
                       Đơn #{o.orderCode} ({o.totalAmount.toLocaleString('vi-VN')}₫)
                     </option>
                   ))}
@@ -538,13 +530,13 @@ export default function CustomerTicketsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Mức độ ưu tiên
                 </label>
                 <select
                   value={createForm.priority}
                   onChange={e => setCreateForm({ ...createForm, priority: Number(e.target.value) })}
-                  className="w-full h-11 px-4 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                  className="w-full h-12 px-4 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
                 >
                   <option value={1}>Thấp - Cần giải đáp chung</option>
                   <option value={2}>Bình thường - Thắc mắc về đơn hoặc sản phẩm</option>
@@ -554,7 +546,7 @@ export default function CustomerTicketsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Nội dung chi tiết <span className="text-primary">*</span>
                 </label>
                 <textarea
@@ -563,7 +555,7 @@ export default function CustomerTicketsPage() {
                   placeholder="Mô tả cụ thể sự cố hoặc thắc mắc của bạn để chúng tôi phục vụ nhanh nhất..."
                   value={createForm.initialMessage}
                   onChange={e => setCreateForm({ ...createForm, initialMessage: e.target.value })}
-                  className="w-full p-4 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full p-4 border border-slate-300 rounded-xl text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
@@ -571,14 +563,14 @@ export default function CustomerTicketsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 h-11 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                  className="flex-1 h-12 border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 h-11 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all disabled:opacity-50"
+                  className="flex-1 h-12 bg-primary hover:bg-primary-hover text-white rounded-full text-sm font-black uppercase tracking-wider transition-all disabled:opacity-50"
                 >
                   {creating ? 'Đang gửi...' : 'Gửi yêu cầu'}
                 </button>

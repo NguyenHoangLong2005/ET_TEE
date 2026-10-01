@@ -49,9 +49,9 @@ export default function AdminRbacPage() {
   const [isDeleting, setIsDeleting]           = useState(false);
   const [togglingPerm, setTogglingPerm]       = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (silent?: unknown) => {
     try {
-      setLoading(true);
+      if (silent !== true) setLoading(true);
       const [rolesRes, catalogRes]: any[] = await Promise.all([
         apiClient.get("/api/admin/rbac/roles"),
         apiClient.get("/api/admin/rbac/permissions"),
@@ -109,7 +109,7 @@ export default function AdminRbacPage() {
       }
     } catch (err: any) {
       toast.error(err?.message || "Không thể cập nhật quyền hạn. Đang hoàn tác...");
-      fetchData();
+      fetchData(true);
     } finally {
       setTogglingPerm(null);
     }
@@ -123,7 +123,7 @@ export default function AdminRbacPage() {
       toast.success(`Đã xóa vai trò ${deleteTargetRole.name}`);
       setDeleteTargetRole(null);
       setSelectedRoleCode("ADMIN");
-      await fetchData();
+      await fetchData(true);
     } catch (err: any) {
       toast.error(err?.message || "Không thể xóa vai trò này");
     } finally {

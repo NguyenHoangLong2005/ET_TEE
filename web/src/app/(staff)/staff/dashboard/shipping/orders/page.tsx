@@ -74,6 +74,50 @@ export default function ShippingOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  // Tao van don: buoc dua don kho da ban giao vao luong van chuyen (trang Kien hang).
+  const [createFor, setCreateFor] = useState<Order | null>(null);
+  const [carrier, setCarrier] = useState("GHN");
+  const [trackingCode, setTrackingCode] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  // Ma noi bo khi hang chua cap ma: tien to hang + ma don (ma don la duy nhat).
+  const generateTrackingCode = () => {
+    const prefix = carrier.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "ET";
+    const suffix = Date.now().toString().slice(-6);
+    setTrackingCode(`${prefix}-${createFor?.orderCode ?? ""}-${suffix}`);
+  };
+
+  const openCreate = (o: Order) => {
+    setCreateFor(o);
+    setCarrier(o.shippingProvider ?? "GHN");
+    setTrackingCode(o.trackingCode ?? "");
+  };
+
+  const handleCreateShipment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createFor) return;
+    const orderId = createFor.id ?? createFor.orderId;
+    if (!trackingCode.trim()) {
+      toast.error("Vui lòng nhập hoặc tạo mã vận đơn");
+      return;
+    }
+    setCreating(true);
+    try {
+      await apiClient.post("/api/staff/shipping/shipments", {
+        orderId,
+        carrierName: carrier,
+        trackingCode: trackingCode.trim(),
+      });
+      toast.success(`Đã tạo vận đơn cho đơn ${createFor.orderCode ?? `#${orderId}`}. Tiếp tục xử lý ở mục Kiện hàng.`);
+      // Don da co van don roi khoi danh sach cho giao.
+      setOrders(prev => prev.filter(o => (o.id ?? o.orderId) !== orderId));
+      setCreateFor(null);
+    } catch (err: any) {
+      toast.error(err?.message || "Không thể tạo vận đơn");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -209,15 +253,22 @@ export default function ShippingOrdersPage() {
       header: 'Thao Tác',
       align: 'right',
       render: (o) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setDetailOrder(o)}
-          className="flex items-center gap-1"
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Chi tiết</span>
-        </Button>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDetailOrder(o)}
+            className="flex items-center gap-1"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Chi tiết</span>
+          </Button>
+          {o.status === "HANDED_TO_CARRIER" && (
+            <Button size="sm" onClick={() => openCreate(o)} icon={<Truck className="w-3.5 h-3.5" />}>
+              Tạo vận đơn
+            </Button>
+          )}
+        </div>
       )
     }
   ];
@@ -316,6 +367,57 @@ export default function ShippingOrdersPage() {
           </div>
         }
       />
+
+      {/* Create Shipment Modal */}
+      {createFor && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <form onSubmit={handleCreateShipment} className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
+                <Truck className="w-5 h-5 text-sky-600" />
+                <h3 className="text-sm font-semibold text-slate-900">Tạo vận đơn {createFor.orderCode}</h3>
+              </div>
+              <button type="button" onClick={() => setCreateFor(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 text-sm">
+              <label className="block space-y-1.5">
+                <span className="text-xs font-semibold text-slate-600">Đơn vị vận chuyển</span>
+                <select
+                  value={carrier}
+                  onChange={e => setCarrier(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-200"
+                >
+                  {["GHN", "GHTK", "J&T", "Nội bộ"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-semibold text-slate-600">Mã vận đơn <span className="text-rose-500">*</span></span>
+                <div className="flex gap-2">
+                  <input
+                    value={trackingCode}
+                    onChange={e => setTrackingCode(e.target.value)}
+                    placeholder="Nhập mã hãng cấp, hoặc bấm Tạo mã"
+                    required
+                    className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-200"
+                  />
+                  <Button type="button" variant="outline" onClick={generateTrackingCode}>Tạo mã</Button>
+                </div>
+              </label>
+              <p className="text-xs text-slate-500">
+                {createFor.paymentMethod === "COD"
+                  ? `Tiền thu hộ COD: ${fmtMoney(createFor.totalAmount ?? createFor.total)} (hệ thống tự tính theo đơn).`
+                  : "Đơn đã thanh toán, không thu hộ."}
+              </p>
+            </div>
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50">
+              <Button type="button" variant="outline" onClick={() => setCreateFor(null)}>Hủy</Button>
+              <Button type="submit" loading={creating}>Tạo vận đơn</Button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {detailOrder && (

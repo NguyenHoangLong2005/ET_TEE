@@ -110,7 +110,7 @@ public class StaffShippingController {
     @PutMapping("/exceptions/{id}/resolve")
     public ResponseEntity<?> resolveException(@PathVariable Long id, @RequestBody ResolveRequest request) {
         User actor = getCurrentUser();
-        return ResponseEntity.ok(service.resolveException(actor, id, request.note()));
+        return ResponseEntity.ok(service.resolveException(actor, id, request.note(), Boolean.TRUE.equals(request.returnToSender())));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).UPLOAD_POD)")
@@ -164,7 +164,8 @@ public class StaffShippingController {
     public record ShipmentRequest(Long orderId, String carrierName, String trackingCode, BigDecimal codAmount) {}
     public record TrackingRequest(String trackingCode) {}
     public record ExceptionRequest(Long shipmentId, String type, String description) {}
-    public record ResolveRequest(String note) {}
+    /** returnToSender: delivery failed and the parcel goes back to the warehouse. */
+    public record ResolveRequest(String note, Boolean returnToSender) {}
     public record ProofRequest(String receiverName, String imageUrl, String note) {}
 }
 

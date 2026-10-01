@@ -21,6 +21,7 @@ public class DataAuditService {
     private final ProductRepository productRepository;
     private final ObjectMapper objectMapper;
     private final ActivityLogRepository activityLogRepository;
+    private final ActivityLogService activityLogService;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DataAuditService.class);
 
     // Define colors mapping
@@ -43,13 +44,21 @@ public class DataAuditService {
         COLOR_MAP.put("tím", "#7E57C2");
     }
 
-    public DataAuditService(ProductRepository productRepository, ObjectMapper objectMapper, ActivityLogRepository activityLogRepository) {
+    public DataAuditService(ProductRepository productRepository, ObjectMapper objectMapper, ActivityLogRepository activityLogRepository,
+                            ActivityLogService activityLogService) {
+        this.activityLogService = activityLogService;
         this.productRepository = productRepository;
         this.objectMapper = objectMapper;
         this.activityLogRepository = activityLogRepository;
     }
 
     public void logAudit(String adminId, String action, String entity, String entityId, String message) {
+        logAudit(adminId, action, entity, entityId, message, null, null);
+    }
+
+    /** Same as above, additionally keeping the value before and after the change. */
+    public void logAudit(String adminId, String action, String entity, String entityId, String message,
+                         String oldValue, String newValue) {
         log.info("AUDIT LOG | Admin: {} | Action: {} | Entity: {} | ID: {} | Msg: {}", adminId, action, entity, entityId, message);
         try {
             ActivityLog logEntity = new ActivityLog();
@@ -58,9 +67,11 @@ public class DataAuditService {
             logEntity.setTargetEntity(entity);
             logEntity.setTargetId(entityId);
             logEntity.setDescription(message);
-            logEntity.setIpAddress("127.0.0.1");
+            logEntity.setOldValue(oldValue);
+            logEntity.setNewValue(newValue);
             logEntity.setCreatedAt(LocalDateTime.now());
-            activityLogRepository.save(logEntity);
+            // client IP, user agent, request id, actor e-mail/role are filled in by the service
+            activityLogService.record(logEntity);
         } catch (Exception e) {
             log.error("Failed to save activity log in DataAuditService", e);
         }

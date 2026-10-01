@@ -40,8 +40,8 @@ export default function StoreOwnerShiftsPage() {
   const [deleting, setDeleting] = useState(false);
 
   /* ── Fetch ── */
-  const fetchShifts = useCallback(async () => {
-    setLoading(true);
+  const fetchShifts = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const res = await apiClient.get<any>('/api/store-owner/work-shifts');
       const list = Array.isArray(res) ? res : (res?.data || res?.items || []);
@@ -70,9 +70,9 @@ export default function StoreOwnerShiftsPage() {
     }
     const isDuplicateShift = shifts.some(
       s =>
-        s.userEmail.trim().toLowerCase() === cleanEmail &&
+        (s.userEmail || '').trim().toLowerCase() === cleanEmail &&
         s.shiftDate === formShiftDate &&
-        s.shiftType === formShiftType
+        (s.shiftType || '').toLowerCase() === formShiftType.toLowerCase()
     );
     if (isDuplicateShift) {
       toast.error(`Nhân viên "${cleanEmail}" đã được phân ca "${formShiftType}" vào ngày ${formShiftDate}!`);
@@ -93,7 +93,7 @@ export default function StoreOwnerShiftsPage() {
       setCreateModalOpen(false);
       setFormUserEmail('');
       setFormShiftDate('');
-      fetchShifts();
+      fetchShifts(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể tạo ca làm việc');
     } finally {
@@ -146,7 +146,7 @@ export default function StoreOwnerShiftsPage() {
       header: 'Nhân viên',
       render: (shift) => (
         <div>
-          <div className="font-bold text-slate-900">{shift.userName || 'Nhân viên chi nhánh'}</div>
+          <div className="font-bold text-slate-900">{shift.userName || 'Nhân viên'}</div>
           <div className="text-xs text-slate-400 font-mono">{shift.userEmail}</div>
         </div>
       ),
@@ -206,8 +206,7 @@ export default function StoreOwnerShiftsPage() {
         {/* Header */}
         <PageHeader
           title="Lịch làm việc & Xếp ca"
-          subtitle="Lịch phân ca làm việc và theo dõi danh sách nhân sự tại chi nhánh."
-          badge="CHI NHÁNH"
+          subtitle="Lịch phân ca làm việc và theo dõi danh sách nhân sự tại cửa hàng."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
@@ -245,7 +244,7 @@ export default function StoreOwnerShiftsPage() {
             onPageChange: (p) => setPage(p),
           }}
           emptyTitle="Chưa có lịch phân ca làm việc nào"
-          emptyMessage="Nhấn nút 'Phân ca mới' ở góc phải để giao ca cho nhân viên."
+          emptyMessage="Nhấn nút'Phân ca mới' ở góc phải để giao ca cho nhân viên."
         />
 
         {/* Modal: Create Work Shift */}

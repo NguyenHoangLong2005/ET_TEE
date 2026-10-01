@@ -55,14 +55,30 @@ function ShippingNav({ active }: { active: string }) {
   );
 }
 
+// Khop ShipmentStatus cua backend: PENDING -> HANDED_OVER -> IN_TRANSIT -> DELIVERED.
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
-  PENDING:            { label: "Chờ xử lý",       cls: "bg-slate-100 text-slate-600 border-slate-200" },
-  HANDED_TO_CARRIER:  { label: "Đã bàn giao",      cls: "bg-sky-100 text-sky-700 border-sky-200" },
-  IN_TRANSIT:         { label: "Đang vận chuyển",  cls: "bg-blue-100 text-blue-700 border-blue-200" },
-  OUT_FOR_DELIVERY:   { label: "Đang giao",         cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  DELIVERED:          { label: "Đã giao",           cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  FAILED_DELIVERY:    { label: "Giao thất bại",    cls: "bg-rose-100 text-rose-700 border-rose-200" },
+  PENDING:     { label: "Chờ bàn giao ĐVVC", cls: "bg-slate-100 text-slate-600 border-slate-200" },
+  HANDED_OVER: { label: "Đã bàn giao ĐVVC",  cls: "bg-sky-100 text-sky-700 border-sky-200" },
+  IN_TRANSIT:  { label: "Đang vận chuyển",   cls: "bg-blue-100 text-blue-700 border-blue-200" },
+  DELIVERED:   { label: "Đã giao",            cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  EXCEPTION:   { label: "Có sự cố",           cls: "bg-rose-100 text-rose-700 border-rose-200" },
+  RETURNED:    { label: "Hoàn về",            cls: "bg-amber-100 text-amber-700 border-amber-200" },
 };
+
+// API tra ve entity Shipment voi thong tin don long trong `order`; lam phang cho giao dien.
+function toShipment(raw: any): Shipment {
+  const o = raw?.order ?? {};
+  return {
+    ...raw,
+    orderId: raw?.orderId ?? o.id,
+    orderCode: raw?.orderCode ?? o.orderCode,
+    customerName: raw?.customerName ?? o.customerName,
+    customerPhone: raw?.customerPhone ?? o.phone,
+    shippingAddress: raw?.shippingAddress ?? o.shippingAddress,
+    paymentMethod: raw?.paymentMethod ?? o.paymentMethod,
+    total: raw?.total ?? o.total,
+  };
+}
 
 // Generate tracking code
 function generateTrackingCode(carrier: string) {
@@ -104,8 +120,8 @@ export default function ShippingShipmentsPage() {
         throw new Error(errData.message || "Không thể tải danh sách kiện hàng");
       }
       const data = await res.json();
-      const arr: Shipment[] = Array.isArray(data) ? data : data?.data ?? [];
-      setShipments(arr);
+      const arr: any[] = Array.isArray(data) ? data : data?.data ?? [];
+      setShipments(arr.map(toShipment));
     } catch (err: any) {
       toast.error(err?.message || "Không thể tải danh sách kiện hàng");
       setShipments([]);
@@ -145,7 +161,7 @@ export default function ShippingShipmentsPage() {
       toast.success(`Đã gắn mã vận đơn ${trackingInput} cho đơn ${trackingModal.orderCode || `#${trackingModal.id}`}`);
       setShipments(prev => prev.map(s =>
         s.id === trackingModal.id
-          ? { ...s, trackingCode: trackingInput.trim(), carrierName: carrierInput, status: s.status === "PENDING" ? "HANDED_TO_CARRIER" : s.status }
+          ? { ...s, trackingCode: trackingInput.trim() }
           : s
       ));
       setTrackingModal(null);
@@ -206,7 +222,7 @@ export default function ShippingShipmentsPage() {
         throw new Error(errData.message || "Không thể xác nhận bàn giao");
       }
       toast.success("Đã bàn giao kiện hàng cho đối tác vận chuyển thành công");
-      setShipments(prev => prev.map(s => s.id === id ? { ...s, status: "HANDED_TO_CARRIER" } : s));
+      setShipments(prev => prev.map(s => s.id === id ? { ...s, status: "HANDED_OVER" } : s));
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi bàn giao kiện hàng");
     }
@@ -239,7 +255,7 @@ export default function ShippingShipmentsPage() {
   });
 
   const pendingCount = shipments.filter(s => !s.trackingCode || s.status === "PENDING").length;
-  const activeCount = shipments.filter(s => ["HANDED_TO_CARRIER", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(s.status)).length;
+  const activeCount = shipments.filter(s => ["HANDED_OVER", "IN_TRANSIT"].includes(s.status)).length;
   const deliveredCount = shipments.filter(s => s.status === "DELIVERED").length;
 
   return (
@@ -314,7 +330,7 @@ export default function ShippingShipmentsPage() {
             {filtered.map(s => {
               const cfg = STATUS_CFG[s.status] ?? { label: s.status, cls: "bg-slate-100 text-slate-600 border-slate-200" };
               const needsTracking = !s.trackingCode || s.status === "PENDING";
-              const canProof = ["HANDED_TO_CARRIER", "IN_TRANSIT", "OUT_FOR_DELIVERY"].includes(s.status);
+              const canProof = s.status === "IN_TRANSIT"; // backend chi cho SHIPPING -> DELIVERED
               const isCOD = s.paymentMethod === "COD" || (s.codAmount ?? 0) > 0;
 
               return (
@@ -394,7 +410,7 @@ export default function ShippingShipmentsPage() {
                           Bàn giao ĐVVC
                         </Button>
                       )}
-                      {s.status === "HANDED_TO_CARRIER" && (
+                      {s.status === "HANDED_OVER" && (
                         <Button
                           size="sm"
                           variant="secondary"

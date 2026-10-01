@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api-config';
+import { isPlaceholderImage, isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
 
 type Slide = {
   id: string;
@@ -92,6 +93,7 @@ const FALLBACK_SLIDES: Slide[] = [
 ];
 
 const AUTO_PLAY_INTERVAL = 6000;
+const FALLBACK_BG = FALLBACK_SLIDES[0].bg;
 
 export default function HeroBanner() {
   const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
@@ -105,27 +107,42 @@ export default function HeroBanner() {
   // homepage. Fetch real banners and use them when any are active; keep the
   // static slides as a fallback so the hero section is never empty.
   useEffect(() => {
-    let cancelled = false;
-    fetch(`${getApiBaseUrl()}/api/marketing/banners/HOME_HERO`)
+    const controller = new AbortController();
+    fetch(`${getApiBaseUrl()}/api/marketing/banners/HOME_HERO`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((res) => {
-        if (cancelled) return;
-        const banners = Array.isArray(res?.data) ? res.data : [];
-        const active = banners.filter((b: any) => (b.status || 'ACTIVE') === 'ACTIVE' && b.imageUrl);
-        if (active.length === 0) return;
-        setSlides(active.map((b: any, idx: number) => ({
-          id: `banner-${b.id ?? idx}`,
-          bg: b.imageUrl,
-          href: b.linkUrl || '/products',
-          badge: 'NEW',
-          title: b.title || '',
-          subtitle: b.subtitle || '',
-          cta: 'Khám Phá Ngay',
-        })));
+        const banners: any[] = Array.isArray(res?.data) ? res.data : [];
+        const next: Slide[] = banners
+          .filter((b) => (b?.status || 'ACTIVE') === 'ACTIVE' && b?.isActive !== false)
+          .map((b, idx) => ({ b, idx, bg: sanitizeImageUrl(b.imageUrl) }))
+          .filter((x): x is { b: any; idx: number; bg: string } => x.bg !== null && !isPlaceholderImage(x.bg))
+          .sort(
+            (a, c) =>
+              (a.b.displayOrder ?? 0) - (c.b.displayOrder ?? 0) ||
+              (c.b.priority ?? 0) - (a.b.priority ?? 0),
+          )
+          .map(({ b, idx, bg }) => ({
+            id: `banner-${b.id ?? idx}`,
+            bg,
+            href: typeof b.linkUrl === 'string' && b.linkUrl.trim() ? b.linkUrl.trim() : '/products',
+            badge: 'NEW',
+            title: b.title || '',
+            subtitle: b.subtitle || '',
+            cta: 'Khám Phá Ngay',
+          }));
+        if (next.length === 0) return;
+        setSlides(next);
         setCurrent(0);
       })
       .catch(() => { /* keep fallback slides */ });
-    return () => { cancelled = true; };
+    return () => controller.abort();
+  }, []);
+
+  // A banner image that fails to load (dead link, 404, blocked host) is
+  // swapped for a local image instead of leaving a blank slide.
+  const [failed, setFailed] = useState<Set<string>>(new Set());
+  const markFailed = useCallback((id: string) => {
+    setFailed((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
 
   const goNext = useCallback(() => {
@@ -160,11 +177,14 @@ export default function HeroBanner() {
             <Link href={slide.href} className="block w-full h-full relative cursor-pointer group">
               {/* Background Image */}
               <Image
-                src={slide.bg}
+                src={failed.has(slide.id) ? FALLBACK_BG : slide.bg}
                 alt={slide.title}
                 fill
                 priority={index === 0}
                 sizes="100vw"
+                // Remote hosts are not allowlisted in next.config; skip the optimizer.
+                unoptimized={isRemoteImage(slide.bg) && !failed.has(slide.id)}
+                onError={() => markFailed(slide.id)}
                 className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}

@@ -12,8 +12,8 @@ import { useWishlist } from '@/contexts/WishlistContext';
 const MAIN_MENU = [
   { label: 'Nam', href: '/products?targetGroup=men' },
   { label: 'Nữ', href: '/products?targetGroup=women' },
-  { label: 'Bé trai', href: '/products?targetGroup=kids&gender=boy' },
-  { label: 'Bé gái', href: '/products?targetGroup=kids&gender=girl' },
+  { label: 'Bé trai', href: '/products?targetGroup=boys' },
+  { label: 'Bé gái', href: '/products?targetGroup=girls' },
   { label: 'Phụ kiện', href: '/products?category=accessories' },
   { label: 'Gia đình', href: '/products?targetGroup=family' },
   { label: 'Sale', href: '/products?status=sale', isSale: true },
@@ -76,6 +76,7 @@ export default function Header() {
           </div>
 
           <div className="hidden md:flex items-center gap-4 text-[11px] text-red-100">
+            <Link href="/news" className="hover:underline">Tin tức</Link>
             <Link href="/stores" className="hover:underline">Hệ thống cửa hàng</Link>
             <Link href="/faq" className="hover:underline">Hỗ trợ 24/7</Link>
           </div>
@@ -281,6 +282,14 @@ export default function Header() {
                   <ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" />
                 </Link>
               ))}
+              <Link
+                href="/news"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-800 hover:bg-slate-100"
+              >
+                Tin tức
+                <ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" />
+              </Link>
             </nav>
 
             <div className="border-t border-slate-100 p-5 space-y-3 bg-slate-50">

@@ -17,7 +17,7 @@ import {
   Users, Shield, UserPlus, Search, Lock, Unlock,
   Key, Eye, CheckCircle, XCircle, AlertTriangle,
   ChevronLeft, ChevronRight, Trash2, Plus, RefreshCw,
-  Mail, Building, Crown, Filter,
+  Mail, Building, Crown, Filter, UserCog,
 } from "lucide-react";
 
 /* ───────────── types ───────────── */
@@ -210,6 +210,11 @@ export default function AdminUsersPage() {
   const [deleting, setDeleting] = useState(false);
   const [resetTargetUser, setResetTargetUser] = useState<UserAdminDto | null>(null);
   const [resettingPwd, setResettingPwd] = useState(false);
+  const [roleEditUser, setRoleEditUser] = useState<UserAdminDto | null>(null);
+  const [roleEditForm, setRoleEditForm] = useState({
+    fullName: "", employeeCode: "", phone: "", roleCode: "", shopId: "" as string | number,
+  });
+  const [savingRole, setSavingRole] = useState(false);
 
   /* roles tab */
   const [loadingRoles, setLoadingRoles] = useState(false);
@@ -231,9 +236,9 @@ export default function AdminUsersPage() {
     }
   }, []);
 
-  const loadRoles = useCallback(async (retain = false) => {
+  const loadRoles = useCallback(async (retain = false, silent?: unknown) => {
     try {
-      setLoadingRoles(true);
+      if (silent !== true) setLoadingRoles(true);
       const data = await apiClient.get<RoleWithPermissions[]>("/api/admin/rbac/roles");
       setRoles(data || []);
       if (retain && selectedRole) {
@@ -247,9 +252,9 @@ export default function AdminUsersPage() {
     }
   }, [selectedRole]);
 
-  const loadUsers = useCallback(async () => {
+  const loadUsers = useCallback(async (silent?: unknown) => {
     try {
-      setLoadingUsers(true);
+      if (silent !== true) setLoadingUsers(true);
       const p: Record<string, string> = { page: page.toString(), size: "15" };
       if (keyword.trim()) p.keyword = keyword.trim();
       if (roleFilter) p.role = roleFilter;
@@ -296,7 +301,7 @@ export default function AdminUsersPage() {
     try {
       setCreating(true);
       setError(null);
-      await apiClient.post("/api/admin/users", {
+      const created = await apiClient.post<{ temporaryPassword?: string }>("/api/admin/users", {
         employeeCode: createForm.employeeCode.trim() || undefined,
         fullName: createForm.fullName.trim(),
         email: createForm.email.trim(),
@@ -306,6 +311,11 @@ export default function AdminUsersPage() {
         initialPassword: createForm.initialPassword || undefined,
       });
       toast.success("Tạo tài khoản thành công!");
+      // Blank password -> the server generated one; it is only shown here, once.
+      if (created?.temporaryPassword) {
+        setTempPwd(created.temporaryPassword);
+        setTempName(createForm.fullName.trim());
+      }
       setShowCreateModal(false);
       setShowAdminConfirm(false);
       setCreateForm({ employeeCode: "", fullName: "", email: "", phone: "", roleCode: "SALES_STAFF", initialPassword: "", shopId: "" });
@@ -357,7 +367,7 @@ export default function AdminUsersPage() {
       await apiClient.patch(`/api/admin/users/${lockUserId}/status`, { status: "LOCKED", lockReason: lockReason.trim() });
       toast.success("Đã khóa tài khoản");
       setLockUserId(null); setLockReason("");
-      loadUsers(); loadStats();
+      loadUsers(true); loadStats();
     } catch (e: any) { toast.error(e.message || "Không thể khóa tài khoản"); }
     finally { setLocking(false); }
   };
@@ -369,7 +379,7 @@ export default function AdminUsersPage() {
       await apiClient.patch(`/api/admin/users/${unlockUserId}/status`, { status: "ACTIVE" });
       toast.success("Đã mở khóa tài khoản");
       setUnlockUserId(null);
-      loadUsers(); loadStats();
+      loadUsers(true); loadStats();
     } catch (e: any) { toast.error(e.message || "Không thể mở khóa"); }
     finally { setUnlocking(false); }
   };
@@ -382,11 +392,54 @@ export default function AdminUsersPage() {
       setTempPwd(res.temporaryPassword);
       setTempName(resetTargetUser.fullName);
       setResetTargetUser(null);
-      loadUsers();
+      loadUsers(true);
     } catch (e: any) {
       toast.error(e.message || "Không thể reset mật khẩu");
     } finally {
       setResettingPwd(false);
+    }
+  };
+
+  const openRoleEdit = (u: UserAdminDto) => {
+    setRoleEditUser(u);
+    setRoleEditForm({
+      fullName: u.fullName || "",
+      employeeCode: u.employeeCode || "",
+      phone: u.phone || "",
+      roleCode: u.role,
+      shopId: u.shopId ?? "",
+    });
+  };
+
+  const handleChangeRole = async () => {
+    if (!roleEditUser) return;
+    const { roleCode, shopId, fullName, employeeCode, phone } = roleEditForm;
+    if (!fullName.trim()) { toast.error("Họ tên không được để trống"); return; }
+    if (phone.trim() && !/^[0-9+\s\-]{8,15}$/.test(phone.trim())) {
+      toast.error("Số điện thoại không hợp lệ (8-15 chữ số)");
+      return;
+    }
+    const isShopBound = SHOP_BOUND_ROLES.includes(roleCode);
+    if (isShopBound && !shopId) {
+      toast.error("Vai trò này bắt buộc phải chọn chi nhánh");
+      return;
+    }
+    try {
+      setSavingRole(true);
+      await apiClient.put(`/api/admin/users/${roleEditUser.id}`, {
+        employeeCode: employeeCode.trim() || undefined,
+        fullName: fullName.trim(),
+        phone: phone.trim() || undefined,
+        roleCode,
+        shopId: isShopBound ? Number(shopId) : undefined,
+      });
+      toast.success(`Đã cập nhật thông tin ${fullName.trim()}`);
+      setRoleEditUser(null);
+      loadUsers(true);
+    } catch (e: any) {
+      toast.error(e.message || "Không thể cập nhật thông tin");
+    } finally {
+      setSavingRole(false);
     }
   };
 
@@ -401,7 +454,7 @@ export default function AdminUsersPage() {
       await apiClient.delete(`/api/admin/users/${deleteUserId}`);
       toast.success("Xóa tài khoản thành công!");
       setDeleteUserId(null); setDeleteUserName("");
-      loadUsers(); loadStats();
+      loadUsers(true); loadStats();
     } catch (e: any) { toast.error(e.message || "Không thể xóa tài khoản"); }
     finally { setDeleting(false); }
   };
@@ -444,7 +497,7 @@ export default function AdminUsersPage() {
       toast.success("Tạo vai trò thành công!");
       setShowCreateRole(false);
       setCreateRoleForm({ code: "", name: "", description: "" });
-      loadRoles();
+      loadRoles(false, true);
     } catch (e: any) { toast.error(e.message || "Không thể tạo vai trò"); }
     finally { setCreatingRole(false); }
   };
@@ -462,7 +515,7 @@ export default function AdminUsersPage() {
       toast.success("Xóa vai trò thành công!");
       if (selectedRole?.code === deleteRoleCode) setSelectedRole(null);
       setDeleteRoleCode(null);
-      loadRoles();
+      loadRoles(false, true);
     } catch (e: any) { toast.error(e.message || "Không thể xóa vai trò"); }
     finally { setDeletingRole(false); }
   };
@@ -477,7 +530,7 @@ export default function AdminUsersPage() {
       if (has) await apiClient.delete(`/api/admin/rbac/roles/${roleCode}/permissions/${permCode}`);
       else await apiClient.post(`/api/admin/rbac/roles/${roleCode}/permissions`, { permission: permCode });
       toast.success(has ? `Đã thu hồi: ${permCode}` : `Đã cấp: ${permCode}`);
-      loadRoles(true);
+      loadRoles(true, true);
     } catch (e: any) { toast.error(e.message || "Không thể cập nhật quyền"); }
     finally { setToggling(null); }
   };
@@ -577,6 +630,14 @@ export default function AdminUsersPage() {
               className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
             >
               <Eye className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => openRoleEdit(u)}
+              title="Sửa thông tin / đổi vai trò"
+              className="p-1.5 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors"
+            >
+              <UserCog className="w-4 h-4" />
             </button>
             {(u.role === "CSKH_STAFF" || u.role === "ADMIN") && (
               <button
@@ -831,7 +892,7 @@ export default function AdminUsersPage() {
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">Mật khẩu ban đầu</label>
                   <input type="password" value={createForm.initialPassword}
                     onChange={e => setCreateForm({ ...createForm, initialPassword: e.target.value })}
-                    placeholder="Để trống dùng mặc định"
+                    placeholder="Để trống để hệ thống tạo mật khẩu ngẫu nhiên"
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                   <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1">
@@ -850,6 +911,91 @@ export default function AdminUsersPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Change Role */}
+        {roleEditUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-xl w-full max-w-md shadow-xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-50 rounded-lg">
+                    <UserCog className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">Sửa thông tin nhân viên</h2>
+                    <p className="text-xs text-slate-500">{roleEditUser.email}</p>
+                  </div>
+                </div>
+                <button onClick={() => setRoleEditUser(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="px-6 py-4 space-y-4 text-sm">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Họ và tên *</label>
+                    <input type="text" value={roleEditForm.fullName}
+                      onChange={e => setRoleEditForm(prev => ({ ...prev, fullName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Mã nhân viên</label>
+                    <input type="text" value={roleEditForm.employeeCode}
+                      onChange={e => setRoleEditForm(prev => ({ ...prev, employeeCode: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Số điện thoại</label>
+                  <input type="text" value={roleEditForm.phone}
+                    onChange={e => setRoleEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Vai trò *</label>
+                  <select value={roleEditForm.roleCode}
+                    disabled={!!currentUser && String(roleEditUser.id) === String(currentUser.id)}
+                    onChange={e => setRoleEditForm(prev => ({ ...prev, roleCode: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  >
+                    {roles.map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
+                  </select>
+                </div>
+                {SHOP_BOUND_ROLES.includes(roleEditForm.roleCode) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Chi nhánh *</label>
+                    <select value={roleEditForm.shopId}
+                      onChange={e => setRoleEditForm(prev => ({ ...prev, shopId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="">-- Chọn chi nhánh --</option>
+                      {shops.map(sh => <option key={sh.id} value={sh.id}>{sh.name}</option>)}
+                    </select>
+                  </div>
+                )}
+                {["ADMIN", "SUPER_ADMIN"].includes(roleEditForm.roleCode) && roleEditForm.roleCode !== roleEditUser.role && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700 font-medium leading-relaxed">
+                      Vai trò {roleEditForm.roleCode} có quyền quản trị tối cao trên toàn hệ thống. Hãy chắc chắn trước khi lưu.
+                    </p>
+                  </div>
+                )}
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setRoleEditUser(null)}
+                    className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">Hủy</button>
+                  <button type="button" onClick={handleChangeRole} disabled={savingRole}
+                    className="px-5 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 shadow-sm">
+                    {savingRole ? "Đang lưu..." : "Lưu thay đổi"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

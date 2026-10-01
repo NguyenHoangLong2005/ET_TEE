@@ -59,8 +59,27 @@ public class AdminUserController {
     @PutMapping("/users/{id}")
     public ResponseEntity<ApiResponse<UserAdminDto>> updateUser(
             @PathVariable String id,
-            @Valid @RequestBody UserUpdateDto updateDto) {
+            @Valid @RequestBody UserUpdateDto updateDto,
+            Authentication authentication) {
+        String currentAdminIdentifier = authentication != null ? authentication.getName() : "ADMIN";
+        UserAdminDto before = userService.getUserById(id);
+        boolean roleChanged = updateDto.getRoleCode() != null
+                && !updateDto.getRoleCode().trim().equalsIgnoreCase(before.getRole());
+
+        if (roleChanged && (currentAdminIdentifier.equalsIgnoreCase(before.getId())
+                || currentAdminIdentifier.equalsIgnoreCase(before.getEmail()))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Không thể tự thay đổi vai trò của chính mình");
+        }
+
         UserAdminDto updated = userService.updateUser(id, updateDto);
+        if (roleChanged) {
+            dataAuditService.logAudit(currentAdminIdentifier, "CHANGE_USER_ROLE", "User", id,
+                    "Đổi vai trò " + before.getRole() + " -> " + updated.getRole());
+        } else {
+            dataAuditService.logAudit(currentAdminIdentifier, "UPDATE_USER", "User", id,
+                    "Cập nhật thông tin nhân viên " + updated.getEmail());
+        }
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin người dùng thành công", updated));
     }
 

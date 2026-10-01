@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class ShopWorkShiftCreateDto {
     private String userId;
+    private String userEmail;
     private LocalDate shiftDate;
     private String shiftType;
     private String note;
@@ -21,6 +22,8 @@ public class ShopWorkShiftCreateDto {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    public String getUserEmail() { return userEmail; }
+    public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
     public LocalDate getShiftDate() { return shiftDate; }
     public void setShiftDate(LocalDate shiftDate) { this.shiftDate = shiftDate; }
     public String getShiftType() { return shiftType; }

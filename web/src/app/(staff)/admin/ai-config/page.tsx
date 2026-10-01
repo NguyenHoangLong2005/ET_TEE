@@ -6,15 +6,11 @@ import PermissionGuard from "@/components/auth/PermissionGuard";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import StatusBadge from "@/components/ui/StatusBadge";
 import DataTable, { Column } from "@/components/ui/DataTable";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
-import {
-  Cpu, Sparkles, Plus, CheckCircle2, RefreshCw,
-  Sliders, ArrowUpRight, Check, Activity, Shield
-} from "lucide-react";
+import { Cpu, Plus, RefreshCw, X } from "lucide-react";
 
 interface AiModelVersion {
   id: number;
@@ -24,6 +20,15 @@ interface AiModelVersion {
   description?: string;
   createdAt: string;
 }
+
+const formatDate = (value?: string) => {
+  if (!value) return "—";
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("vi-VN");
+};
+
+const inputClass =
+  "w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
 
 export default function AdminAiConfigPage() {
   const [models, setModels] = useState<AiModelVersion[]>([]);
@@ -43,9 +48,9 @@ export default function AdminAiConfigPage() {
   const [activatingModel, setActivatingModel] = useState<AiModelVersion | null>(null);
   const [isActivating, setIsActivating] = useState(false);
 
-  const fetchModels = useCallback(async () => {
+  const fetchModels = useCallback(async (silent?: unknown) => {
     try {
-      setLoading(true);
+      if (silent !== true) setLoading(true);
       const res: any = await apiClient.get("/api/admin/model-versions");
       const list = Array.isArray(res) ? res : res?.data ?? [];
       setModels(list);
@@ -60,16 +65,17 @@ export default function AdminAiConfigPage() {
     fetchModels();
   }, [fetchModels]);
 
-  const activeModel = models.find((m) => m.active) || models[0];
+  // Only a model that is really active counts as "serving"; never fall back to models[0].
+  const activeModel = models.find((m) => m.active);
 
   const handleActivateModel = async () => {
     if (!activatingModel) return;
     setIsActivating(true);
     try {
       await apiClient.post(`/api/admin/model-versions/${activatingModel.id}/activate`, {});
-      toast.success(`Đã kích hoạt mô hình ${activatingModel.modelName} (${activatingModel.version}) làm mô hình mặc định!`);
+      toast.success(`Đã kích hoạt mô hình ${activatingModel.modelName} (${activatingModel.version}) làm mô hình phục vụ chính`);
       setActivatingModel(null);
-      await fetchModels();
+      await fetchModels(true);
     } catch (err: any) {
       toast.error(err?.message || "Kích hoạt mô hình thất bại");
     } finally {
@@ -86,10 +92,10 @@ export default function AdminAiConfigPage() {
     setIsSubmitting(true);
     try {
       await apiClient.post("/api/admin/model-versions", registerForm);
-      toast.success("Đã đăng ký phiên bản mô hình AI mới thành công!");
+      toast.success("Đã đăng ký phiên bản mô hình mới");
       setShowRegisterModal(false);
       setRegisterForm({ modelName: "", version: "", description: "", active: false });
-      await fetchModels();
+      await fetchModels(true);
     } catch (err: any) {
       toast.error(err?.message || "Đăng ký mô hình thất bại");
     } finally {
@@ -100,60 +106,54 @@ export default function AdminAiConfigPage() {
   const columns: Column<AiModelVersion>[] = [
     {
       key: "modelName",
-      header: "Tên Mô Hình AI",
+      header: "Tên mô hình",
       render: (m) => (
-        <div>
-          <span className="font-bold text-slate-900 text-xs">{m.modelName}</span>
-          <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{m.description || "—"}</p>
+        <div className="flex items-center gap-2.5">
+          <Cpu className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="min-w-0">
+            <span className="font-semibold text-slate-900 text-sm">{m.modelName}</span>
+            <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{m.description || "Chưa có mô tả"}</p>
+          </div>
         </div>
       ),
     },
     {
       key: "version",
-      header: "Phiên Bản",
+      header: "Phiên bản",
       render: (m) => (
-        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
-          {m.version}
-        </span>
+        <span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700">{m.version}</span>
       ),
     },
     {
       key: "active",
-      header: "Trạng Thái",
+      header: "Trạng thái",
       render: (m) =>
         m.active ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            ĐANG PHỤC VỤ (ACTIVE)
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Đang phục vụ
           </span>
         ) : (
-          <span className="text-[10px] font-semibold text-slate-400">Sẵn sàng (Standby)</span>
+          <span className="inline-flex px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+            Chờ kích hoạt
+          </span>
         ),
     },
     {
       key: "createdAt",
-      header: "Ngày Đăng Ký",
-      render: (m) => (
-        <span className="font-mono text-slate-400 text-xs">
-          {new Date(m.createdAt).toLocaleDateString("vi-VN")}
-        </span>
-      ),
+      header: "Ngày đăng ký",
+      render: (m) => <span className="text-slate-500 text-xs">{formatDate(m.createdAt)}</span>,
     },
     {
       key: "id",
-      header: "Hành Động",
+      header: "Thao tác",
       align: "right",
       render: (m) =>
         m.active ? (
-          <span className="text-xs text-slate-400 italic font-medium">Mô hình hiện tại</span>
+          <span className="text-xs text-slate-400">Đang dùng</span>
         ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActivatingModel(m)}
-            className="text-xs"
-          >
-            Kích Hoạt
+          <Button size="sm" variant="outline" onClick={() => setActivatingModel(m)}>
+            Kích hoạt
           </Button>
         ),
     },
@@ -161,82 +161,46 @@ export default function AdminAiConfigPage() {
 
   return (
     <PermissionGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]} requiredPermissions={["MANAGE_AI_MODEL_FEATURE_FLAG"]}>
-      <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6 text-slate-800">
+      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
         <PageHeader
-          title="Quản Lý AI Models & Kiến Trúc Gợi Ý"
-          subtitle="Giám sát các phiên bản mô hình học máy gợi ý thời trang và chuyển đổi phiên bản phục vụ"
-          breadcrumbs={[
-            { label: "Admin", href: "/admin/dashboard" },
-            { label: "AI Config" },
-          ]}
+          title="AI Models & Cấu hình"
+          subtitle="Quản lý các phiên bản mô hình gợi ý thời trang và chọn phiên bản đang phục vụ cửa hàng."
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Link href="/admin/ai-feature-flags">
-                <Button variant="outline" size="sm" icon={<Sparkles className="w-3.5 h-3.5 text-amber-500" />}>
-                  Cờ Tính Năng AI
-                </Button>
+                <Button variant="outline">Cờ tính năng AI</Button>
               </Link>
               <Button
-                variant="outline"
-                size="sm"
-                icon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}
+                variant="secondary"
                 onClick={fetchModels}
-                disabled={loading}
+                loading={loading}
+                icon={<RefreshCw className="w-4 h-4" />}
               >
                 Làm mới
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={() => setShowRegisterModal(true)}
-              >
-                Đăng Ký Model Mới
+              <Button onClick={() => setShowRegisterModal(true)} icon={<Plus className="w-4 h-4" />}>
+                Đăng ký mô hình
               </Button>
             </div>
           }
         />
 
-        {/* ─── Active Model Spotlight Card ─── */}
-        {activeModel && (
-          <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-md border border-slate-800 relative overflow-hidden">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-800 text-emerald-400 text-xs font-mono font-bold border border-slate-700">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  PRODUCTION ACTIVE MODEL
-                </div>
-                <h2 className="text-2xl font-black tracking-tight">{activeModel.modelName}</h2>
-                <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
-                  {activeModel.description || "Mô hình phục vụ gợi ý sản phẩm và tìm kiếm thời trang thông minh."}
-                </p>
-                <div className="flex items-center gap-4 pt-2 text-xs font-mono text-slate-300">
-                  <span>Phiên bản: <strong className="text-white">{activeModel.version}</strong></span>
-                  <span>·</span>
-                  <span>Đăng ký: {new Date(activeModel.createdAt).toLocaleDateString("vi-VN")}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                <Link href="/admin/ai-feature-flags">
-                  <button className="px-4 py-2.5 rounded-xl bg-white text-slate-900 text-xs font-bold hover:bg-slate-100 transition-colors shadow-sm flex items-center gap-1.5">
-                    Quản Lý Cờ Tính Năng AI <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
-                </Link>
-              </div>
-            </div>
+        {/* Chỉ báo khi chưa có mô hình nào đang phục vụ (mô hình đang chạy đã hiện trong bảng) */}
+        {!loading && !activeModel && (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center">
+            <p className="text-sm font-semibold text-slate-900">Chưa có mô hình nào đang phục vụ</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {models.length > 0
+                ? "Chọn một phiên bản trong danh sách bên dưới và bấm Kích hoạt."
+                : "Đăng ký phiên bản mô hình đầu tiên để bắt đầu."}
+            </p>
           </div>
         )}
 
-        {/* ─── Model Registry Table ─── */}
+        {/* ─── Danh sách mô hình ─── */}
         <Card
-          title={
-            <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-slate-900" />
-              <span>Danh Sách Mô Hình Học Máy Đã Đăng Ký</span>
-            </div>
-          }
-          subtitle="Tất cả các phiên bản model trong kho lưu trữ. Bạn có thể kích hoạt chuyển đổi tức thì."
+          title="Mô hình đã đăng ký"
+          subtitle="Tất cả phiên bản trong kho lưu trữ. Kích hoạt một phiên bản để chuyển sang phục vụ ngay."
           noPadding
         >
           <DataTable
@@ -244,102 +208,88 @@ export default function AdminAiConfigPage() {
             data={models}
             loading={loading}
             rowKey={(m) => m.id}
-            emptyTitle="Chưa có phiên bản model nào"
-            emptyMessage="Nhấn 'Đăng Ký Model Mới' để thêm phiên bản mô hình AI."
+            emptyTitle="Chưa có phiên bản mô hình nào"
+            emptyMessage="Bấm 'Đăng ký mô hình' để thêm phiên bản đầu tiên."
           />
         </Card>
 
-        {/* ─── Register Model Modal ─── */}
+        {/* ─── Modal đăng ký ─── */}
         {showRegisterModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <form onSubmit={handleRegisterModel}>
-                <div className="px-6 py-4 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-5 h-5 text-red-400" />
-                    <h3 className="font-bold text-sm">Đăng Ký Phiên Bản AI Model</h3>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowRegisterModal(false)}
-                    className="text-slate-400 hover:text-white text-xs font-bold"
-                  >
-                    ✕
-                  </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h3 className="text-sm font-semibold text-slate-900">Đăng ký phiên bản mô hình</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  aria-label="Đóng"
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleRegisterModel} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                    Tên mô hình <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: ET-StyleMatch"
+                    value={registerForm.modelName}
+                    onChange={(e) => setRegisterForm({ ...registerForm, modelName: e.target.value })}
+                    className={`${inputClass} font-mono`}
+                  />
                 </div>
 
-                <div className="p-6 space-y-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Tên Mô Hình <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="VD: ET-StyleMatch, ET-FashionEmbed"
-                      value={registerForm.modelName}
-                      onChange={(e) => setRegisterForm({ ...registerForm, modelName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Mã Phiên Bản (Version Tag) <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="VD: v2.2.0, v3.0-rc1"
-                      value={registerForm.version}
-                      onChange={(e) => setRegisterForm({ ...registerForm, version: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Mô Tả & Trọng Số</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Mô tả thuật toán, tập dữ liệu huấn luyện hoặc trọng số mô hình..."
-                      value={registerForm.description}
-                      onChange={(e) => setRegisterForm({ ...registerForm, description: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-900"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="checkbox"
-                      id="activeNow"
-                      checked={registerForm.active}
-                      onChange={(e) => setRegisterForm({ ...registerForm, active: e.target.checked })}
-                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                    />
-                    <label htmlFor="activeNow" className="text-slate-700 font-semibold cursor-pointer">
-                      Kích hoạt làm mô hình phục vụ chính ngay lập tức
-                    </label>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                    Phiên bản <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: v2.2.0"
+                    value={registerForm.version}
+                    onChange={(e) => setRegisterForm({ ...registerForm, version: e.target.value })}
+                    className={`${inputClass} font-mono`}
+                  />
                 </div>
 
-                <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Mô tả</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Thuật toán, tập dữ liệu huấn luyện hoặc ghi chú về phiên bản này..."
+                    value={registerForm.description}
+                    onChange={(e) => setRegisterForm({ ...registerForm, description: e.target.value })}
+                    className={inputClass}
+                  />
+                </div>
+
+                <label className="flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={registerForm.active}
+                    onChange={(e) => setRegisterForm({ ...registerForm, active: e.target.checked })}
+                    className="rounded border-slate-300 text-primary focus:ring-primary/20"
+                  />
+                  Kích hoạt làm mô hình phục vụ chính ngay
+                </label>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2">
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    variant="secondary"
                     onClick={() => setShowRegisterModal(false)}
                     disabled={isSubmitting}
                   >
                     Hủy
                   </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    loading={isSubmitting}
-                    disabled={isSubmitting}
-                  >
-                    Đăng Ký
+                  <Button type="submit" loading={isSubmitting}>
+                    Đăng ký
                   </Button>
                 </div>
               </form>
@@ -347,12 +297,12 @@ export default function AdminAiConfigPage() {
           </div>
         )}
 
-        {/* ─── Confirm Model Switch Modal ─── */}
+        {/* ─── Xác nhận chuyển mô hình ─── */}
         <ConfirmModal
           isOpen={Boolean(activatingModel)}
-          title="Xác nhận chuyển đổi mô hình AI"
-          message={`Bạn có chắc muốn kích hoạt mô hình "${activatingModel?.modelName}" (${activatingModel?.version}) làm mô hình phục vụ chính? Toàn bộ các yêu cầu gợi ý trang phục và tìm kiếm thông minh sẽ được định tuyến sang phiên bản này.`}
-          confirmText="Kích Hoạt Ngay"
+          title="Chuyển sang mô hình này?"
+          message={`Kích hoạt "${activatingModel?.modelName}" (${activatingModel?.version}) làm mô hình phục vụ chính? Các yêu cầu gợi ý và tìm kiếm thông minh sẽ được chuyển sang phiên bản này.`}
+          confirmText="Kích hoạt"
           cancelText="Hủy"
           type="warning"
           isLoading={isActivating}

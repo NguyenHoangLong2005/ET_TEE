@@ -57,13 +57,13 @@ export default function StaffSidebar() {
   const areaLabel = isAdminArea
     ? 'Quản trị Hệ thống'
     : isStoreOwner
-    ? 'Quản lý Chi nhánh'
+    ? 'Quản lý Cửa hàng'
     : getDepartmentFromPathname(pathname)?.name || 'Nhân viên Vận hành';
 
   const areaBadgeText = isAdminArea
     ? 'SYSTEM'
     : isStoreOwner
-    ? 'BRANCH'
+    ? 'STORE'
     : 'STAFF';
 
   return (
@@ -136,7 +136,7 @@ export default function StaffSidebar() {
           {!isCollapsed ? (
             <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50">
               <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="text-xs font-semibold text-slate-700 truncate">Chi nhánh #1</span>
+              <span className="text-xs font-semibold text-slate-700 truncate">ET.TEE Store</span>
             </div>
           ) : (
             <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center mx-auto">
@@ -273,14 +273,14 @@ export default function StaffSidebar() {
           >
             <div className="py-1">
               <Link
-                href="/account/profile"
+                href="/staff/profile"
                 onClick={() => setShowDropdown(false)}
                 className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
               >
                 <User className="w-4 h-4 text-slate-400" /> Hồ sơ cá nhân
               </Link>
               <Link
-                href="/account/change-password"
+                href="/staff/change-password"
                 onClick={() => setShowDropdown(false)}
                 className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
               >

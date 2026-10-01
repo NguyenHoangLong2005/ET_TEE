@@ -3,6 +3,8 @@ package com.nguyenhoanglong.dto;
 import java.util.List;
 
 public class OrderResponse {
+    private Long id;
+    private String createdAt;
     private String orderCode;
     private String customerName;
     private String customerPhone;
@@ -16,6 +18,10 @@ public class OrderResponse {
     private String orderStatus;
     private List<OrderItemResponse> items;
 
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getOrderCode() { return orderCode; }
     public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
 
@@ -45,6 +51,14 @@ public class OrderResponse {
 
     public String getOrderStatus() { return orderStatus; }
     public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+
+    /** Last day the customer may still request a return (delivered orders only). */
+    private String returnDeadline;
+    private boolean returnEligible;
+    public String getReturnDeadline() { return returnDeadline; }
+    public void setReturnDeadline(String returnDeadline) { this.returnDeadline = returnDeadline; }
+    public boolean isReturnEligible() { return returnEligible; }
+    public void setReturnEligible(boolean returnEligible) { this.returnEligible = returnEligible; }
 
     public List<OrderItemResponse> getItems() { return items; }
     public void setItems(List<OrderItemResponse> items) { this.items = items; }

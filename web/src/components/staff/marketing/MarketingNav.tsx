@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/staff/dashboard/marketing", label: "Tổng quan" },
-  { href: "/staff/dashboard/marketing/campaigns", label: "Chiến dịch" },
-  { href: "/staff/dashboard/marketing/banners", label: "Banner" },
+  { href: "/staff/dashboard/marketing/homepage", label: "Trang chủ" },
   { href: "/staff/dashboard/marketing/posts", label: "Bài viết" },
   { href: "/staff/dashboard/marketing/vouchers", label: "Voucher" },
-  { href: "/staff/dashboard/marketing/product-placement", label: "Vị trí SP" },
   { href: "/staff/dashboard/marketing/analytics", label: "Hiệu quả" },
 ];
 

@@ -25,7 +25,8 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     List<Voucher> findAllActive(@Param("now") java.time.LocalDateTime now);
 
     // Loc o tang DB cho man hinh duyet cua chu shop (truoc day dung findAll() roi filter).
-    @Query("SELECT v FROM Voucher v WHERE v.shopId = :shopId "
+    // shopId NULL: created by marketing staff with no shop, which any store owner may approve.
+    @Query("SELECT v FROM Voucher v WHERE (v.shopId = :shopId OR v.shopId IS NULL) "
             + "AND UPPER(COALESCE(v.status, '')) IN ('PENDING', 'PENDING_APPROVAL')")
     List<Voucher> findPendingApprovalByShopId(@Param("shopId") Long shopId);
 

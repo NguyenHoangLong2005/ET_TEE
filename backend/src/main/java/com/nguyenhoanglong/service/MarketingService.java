@@ -24,6 +24,8 @@ public class MarketingService {
     @Autowired private VoucherRedemptionRepository redemptionRepository;
     @Autowired private ProductRepository productRepository;
     @Autowired private MarketingPostRepository marketingPostRepository;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private UserRepository userRepository;
 
     // ═════════════════════════════════════════════════════════════════════
     // BANNERS
@@ -172,7 +174,17 @@ public class MarketingService {
         voucher.setCode(cleanCode);
         voucher.setUsedCount(0);
 
-        if (voucher.getShopId() != null && !"APPROVED".equalsIgnoreCase(voucher.getStatus())) {
+        User creator = findUser(createdBy);
+        boolean createdByStaff = creator == null
+                || (creator.getRole() != Role.ADMIN && creator.getRole() != Role.SHOP_OWNER);
+        if (createdByStaff) {
+            // Marketing staff vouchers go to the store owner approval queue. The page never sent a
+            // shopId, so they used to go live immediately and the queue stayed empty. The voucher is
+            // scoped to the staff member's shop; with no shop, any store owner may approve it.
+            voucher.setShopId(creator != null ? creator.getShopId() : null);
+            voucher.setStatus("PENDING_APPROVAL");
+            voucher.setIsActive(false);
+        } else if (voucher.getShopId() != null && !"APPROVED".equalsIgnoreCase(voucher.getStatus())) {
             // If created for a specific shop, route through store owner approval queue
             voucher.setStatus("PENDING_APPROVAL");
             voucher.setIsActive(false);
@@ -222,11 +234,13 @@ public class MarketingService {
         if (updates.getMaxDiscountAmount() != null) existing.setMaxDiscountAmount(updates.getMaxDiscountAmount());
         if (updates.getMaxUses() != null) existing.setMaxUses(updates.getMaxUses());
         if (updates.getPerUserLimit() != null) existing.setPerUserLimit(updates.getPerUserLimit());
-        if (updates.getIsActive() != null) existing.setIsActive(updates.getIsActive());
         if (updates.getStatus() != null) {
-            existing.setStatus(updates.getStatus());
-            existing.setIsActive("ACTIVE".equalsIgnoreCase(updates.getStatus()));
+            // Same rules as the status endpoint, so an edit can't activate a voucher awaiting approval.
+            validateVoucherTransition(existing.getStatus(), updates.getStatus().toUpperCase());
+            existing.setStatus(updates.getStatus().toUpperCase());
         }
+        // Derived from status only: a client-sent isActive=true used to switch on a pending voucher.
+        existing.setIsActive("ACTIVE".equalsIgnoreCase(existing.getStatus()));
         if (updates.getTargetGroup() != null) existing.setTargetGroup(updates.getTargetGroup());
         if (updates.getFreeShipping() != null) existing.setFreeShipping(updates.getFreeShipping());
         if (updates.getStartDate() != null) existing.setStartDate(updates.getStartDate());
@@ -269,6 +283,11 @@ public class MarketingService {
      * or cancelled promotion should be a new voucher with a new code and audit
      * trail, not a silent resurrection of the old one.
      */
+    private User findUser(String emailOrId) {
+        if (emailOrId == null || emailOrId.isBlank()) return null;
+        return userRepository.findByEmail(emailOrId).orElseGet(() -> userRepository.findById(emailOrId).orElse(null));
+    }
+
     private void validateVoucherTransition(String from, String to) {
         String normalizedFrom = from == null ? "ACTIVE" : from.toUpperCase();
         if (normalizedFrom.equals(to)) return;
@@ -301,6 +320,15 @@ public class MarketingService {
         }
     }
 
+    /**
+     * Validate a voucher for the current user, deciding "new customer" on the server.
+     * The public validate endpoint used to take isNewCustomer from the request body.
+     */
+    public Voucher validateVoucher(String code, BigDecimal orderSubtotal, String userId) {
+        boolean isNewCustomer = userId != null && !orderRepository.existsByUserId(userId);
+        return validateVoucher(code, orderSubtotal, userId, isNewCustomer);
+    }
+
     /** Validate a voucher for a given user/subtotal. Returns the voucher if OK. */
     public Voucher validateVoucher(String code, BigDecimal orderSubtotal, String userId, boolean isNewCustomer) {
         if (code == null || code.trim().isEmpty()) {
@@ -324,6 +352,13 @@ public class MarketingService {
 
         // targetGroup
         String target = voucher.getTargetGroup() == null ? "ALL" : voucher.getTargetGroup();
+        // A guest cannot be classified as new or returning, so audience-restricted codes need
+        // an account. (Guest per-user limits are enforced at checkout by e-mail/phone, see
+        // assertGuestVoucherLimit.)
+        boolean guest = userId == null || userId.isBlank();
+        if (guest && !"ALL".equals(target)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng đăng nhập để sử dụng mã giảm giá này");
+        }
         if ("NEW_CUSTOMER".equals(target) && !isNewCustomer) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã này chỉ dành cho khách hàng mới");
         }
@@ -353,6 +388,20 @@ public class MarketingService {
         }
 
         return voucher;
+    }
+
+    /**
+     * Guest checkout has no user id, so perUserLimit used to be skipped entirely and a guest
+     * could reuse a one-per-customer code on every order. Count the non-cancelled orders that
+     * already used this voucher with the same e-mail or phone instead.
+     */
+    public void assertGuestVoucherLimit(Voucher voucher, String email, String phone) {
+        if (voucher.getPerUserLimit() == null) return;
+        long uses = orderRepository.countVoucherUsesByContact(voucher.getId(),
+                email == null ? "" : email.trim(), phone == null ? "" : phone.trim());
+        if (uses >= voucher.getPerUserLimit()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã sử dụng hết lượt cho mã này");
+        }
     }
 
     /** Calculate discount for a voucher given subtotal. */
@@ -409,14 +458,19 @@ public class MarketingService {
      * Undoes incrementVoucherUsage() for a cancelled order: gives the usage
      * slot back to the voucher and removes its redemption record, so a
      * cancelled order doesn't permanently consume a customer's voucher use.
+     * Its CONVERSION event goes too, or analytics keeps counting the cancelled
+     * order (and its revenue) as a promotion order.
      */
     @Transactional
-    public void releaseVoucherUsage(String orderCode) {
+    public void releaseVoucherUsage(Long orderId, String orderCode) {
         List<VoucherRedemption> records = redemptionRepository.findByOrderCode(orderCode);
         for (VoucherRedemption r : records) {
             voucherRepository.decrementUsedCountAtomic(r.getVoucherId(), LocalDateTime.now());
         }
         redemptionRepository.deleteAll(records);
+        if (orderId != null) {
+            analyticsRepository.deleteConversionsByOrderId(orderId);
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════
@@ -672,7 +726,17 @@ public class MarketingService {
     public List<MarketingPost> getAllPosts(String status, String query) {
         String s = (status == null || "ALL".equalsIgnoreCase(status) || status.isBlank()) ? null : status.trim().toUpperCase();
         String q = (query == null || query.isBlank()) ? null : query.trim();
-        return marketingPostRepository.searchPosts(s, q);
+        // Filtered in Java: the repository's "(:p IS NULL OR ...)" query fails on
+        // PostgreSQL because a null String binds as bytea ("lower(bytea) does not exist").
+        List<MarketingPost> posts = s == null
+                ? marketingPostRepository.findAllByOrderByCreatedAtDesc()
+                : marketingPostRepository.findByStatusOrderByCreatedAtDesc(s);
+        if (q == null) return posts;
+        String needle = q.toLowerCase();
+        return posts.stream()
+                .filter(p -> (p.getTitle() != null && p.getTitle().toLowerCase().contains(needle))
+                        || (p.getSlug() != null && p.getSlug().toLowerCase().contains(needle)))
+                .toList();
     }
 
     public Optional<MarketingPost> getPostById(Long id) {
@@ -681,6 +745,12 @@ public class MarketingService {
 
     public Optional<MarketingPost> getPostBySlug(String slug) {
         return marketingPostRepository.findBySlug(slug);
+    }
+
+    /** @return false when no published post has this slug. */
+    @Transactional
+    public boolean recordPostView(String slug) {
+        return marketingPostRepository.incrementViewsBySlug(slug) > 0;
     }
 
     @Transactional
@@ -818,7 +888,11 @@ public class MarketingService {
         List<Map<String, Object>> topBanners = new ArrayList<>();
         for (Object[] r : topBannersRows) {
             Long bid = (Long) r[0];
-            long count = ((Number) r[1]).longValue();
+            // r[1] counts every event for the banner (clicks included); impressions must be
+            // counted on their own or the banner row disagrees with the KPI total and CTR.
+            long count = (since != null)
+                    ? analyticsRepository.countByBannerIdAndEventTypeSince(bid, "IMPRESSION", since)
+                    : analyticsRepository.countByBannerIdAndEventType(bid, "IMPRESSION");
             Banner banner = bannerRepository.findById(bid).orElse(null);
             Map<String, Object> b = new LinkedHashMap<>();
             b.put("bannerId", bid);
@@ -866,7 +940,6 @@ public class MarketingService {
                 m.put("ctr", cImp > 0 ? round2((double) cClicks / cImp * 100) : 0);
                 m.put("conversions", cConv);
                 m.put("revenue", cRev);
-                m.put("trend", "up");
                 topCampaigns.add(m);
             }
         }
@@ -878,24 +951,22 @@ public class MarketingService {
         List<Object[]> voucherAggRows = (since != null)
                 ? redemptionRepository.aggregateVoucherRedemptionsSince(since)
                 : redemptionRepository.aggregateVoucherRedemptions();
+        Map<Long, Object[]> aggByVoucher = new HashMap<>();
+        for (Object[] r : voucherAggRows) aggByVoucher.put((Long) r[0], r);
+        // Every voucher the voucher-management page lists, not only redeemed ones: built from the
+        // redemption rows alone, a freshly created voucher never showed up here at all.
         List<Map<String, Object>> vouchersList = new ArrayList<>();
-        for (Object[] r : voucherAggRows) {
-            Long vid = (Long) r[0];
-            long used = ((Number) r[1]).longValue();
-            BigDecimal totalDiscount = (BigDecimal) r[2];
-            double avgOrder = ((Number) r[3]).doubleValue();
-            Voucher v = voucherRepository.findById(vid).orElse(null);
-            if (v != null) {
-                Map<String, Object> vm = new LinkedHashMap<>();
-                vm.put("code", v.getCode());
-                vm.put("name", v.getName());
-                vm.put("used", used);
-                vm.put("totalDiscount", totalDiscount);
-                vm.put("avgOrder", round2(avgOrder));
-                vm.put("convRate", 100.0);
-                vouchersList.add(vm);
-            }
+        for (Voucher v : voucherRepository.findAll()) {
+            Object[] r = aggByVoucher.get(v.getId());
+            Map<String, Object> vm = new LinkedHashMap<>();
+            vm.put("code", v.getCode());
+            vm.put("name", v.getName());
+            vm.put("used", r != null ? ((Number) r[1]).longValue() : 0L);
+            vm.put("totalDiscount", r != null ? (BigDecimal) r[2] : BigDecimal.ZERO);
+            vm.put("avgOrder", r != null ? round2(((Number) r[3]).doubleValue()) : 0);
+            vouchersList.add(vm);
         }
+        vouchersList.sort(Comparator.comparingLong((Map<String, Object> m) -> (Long) m.get("used")).reversed());
         result.put("vouchers", vouchersList);
         result.put("topVouchers", vouchersList);
 

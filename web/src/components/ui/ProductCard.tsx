@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { formatVnd, roundVnd } from '@/lib/utils/price';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { toast } from 'sonner';
@@ -41,7 +42,9 @@ export default function ProductCard({
     ? category 
     : (category?.name || 'Thời trang');
 
-  const isSale = originalPrice && originalPrice > price;
+  // Compare the prices as displayed (rounded to the thousand): a sale price a few hundred
+  // dong under the original used to show "299.000₫ ~~299.000₫~~".
+  const isSale = !!originalPrice && roundVnd(originalPrice) > roundVnd(price);
   const discountPercent = isSale ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -197,11 +200,11 @@ export default function ProductCard({
         {/* Price */}
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className={`text-sm md:text-base font-black ${discountPercent > 0 ? 'text-primary' : 'text-slate-900'}`}>
-            {price.toLocaleString('vi-VN')}₫
+            {formatVnd(price)}₫
           </span>
-          {originalPrice && (
+          {isSale && (
             <span className="text-xs text-slate-400 line-through font-medium">
-              {originalPrice.toLocaleString('vi-VN')}₫
+              {formatVnd(originalPrice)}₫
             </span>
           )}
         </div>

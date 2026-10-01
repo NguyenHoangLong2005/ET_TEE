@@ -43,9 +43,9 @@ export default function AdminBackupPage() {
   const [deleteTarget, setDeleteTarget] = useState<BackupItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchBackups = useCallback(async () => {
+  const fetchBackups = useCallback(async (silent?: unknown) => {
     try {
-      setLoading(true);
+      if (silent !== true) setLoading(true);
       const res: any = await apiClient.get('/api/admin/backup');
       const list = Array.isArray(res) ? res : res?.data ?? [];
       setBackups(list);
@@ -66,7 +66,7 @@ export default function AdminBackupPage() {
       const res: any = await apiClient.post('/api/admin/backup/create', {});
       toast.success(res?.message || 'Đã tạo bản sao lưu snapshot thành công!');
       setShowCreateModal(false);
-      await fetchBackups();
+      await fetchBackups(true);
     } catch (err: any) {
       toast.error(err?.message || 'Tạo bản sao lưu thất bại');
     } finally {
@@ -105,7 +105,7 @@ export default function AdminBackupPage() {
       await apiClient.delete(`/api/admin/backup/${deleteTarget.fileName}`);
       toast.success(`Đã xóa bản sao lưu ${deleteTarget.fileName}`);
       setDeleteTarget(null);
-      await fetchBackups();
+      await fetchBackups(true);
     } catch (err: any) {
       toast.error(err?.message || 'Xóa bản sao lưu thất bại');
     } finally {

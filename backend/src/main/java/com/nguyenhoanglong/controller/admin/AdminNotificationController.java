@@ -72,8 +72,8 @@ public class AdminNotificationController {
 
     @GetMapping
     public ResponseEntity<?> getNotifications() {
-        List<SystemNotification> list = notificationRepository.findTop20ByOrderByCreatedAtDesc();
-        long unreadCount = notificationRepository.countByIsReadFalse();
+        List<SystemNotification> list = notificationRepository.findTop20ByRecipientUserIdIsNullOrderByCreatedAtDesc();
+        long unreadCount = notificationRepository.countByIsReadFalseAndRecipientUserIdIsNull();
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("notifications", list);

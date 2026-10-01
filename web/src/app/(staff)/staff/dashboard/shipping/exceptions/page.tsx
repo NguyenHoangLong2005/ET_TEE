@@ -92,6 +92,7 @@ export default function ShippingExceptionsPage() {
   // Resolve modal
   const [resolveModal, setResolveModal] = useState<Exception | null>(null);
   const [resolveNote, setResolveNote] = useState("");
+  const [returnToSender, setReturnToSender] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Report modal
@@ -104,8 +105,8 @@ export default function ShippingExceptionsPage() {
   const baseUrl = getApiBaseUrl();
   const authHeaders = getAuthHeaders() as Record<string, string>;
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const res = await fetch(`${baseUrl}/api/staff/shipping/exceptions`, { headers: authHeaders, cache: "no-store" });
       if (!res.ok) {
@@ -135,7 +136,7 @@ export default function ShippingExceptionsPage() {
       const res = await fetch(`${baseUrl}/api/staff/shipping/exceptions/${resolveModal.id}/resolve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ note: resolveNote.trim() }),
+        body: JSON.stringify({ note: resolveNote.trim(), returnToSender }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -144,7 +145,7 @@ export default function ShippingExceptionsPage() {
       toast.success(`Đã cập nhật ngoại lệ cho đơn ${resolveModal.orderCode || `#${resolveModal.id}`}`);
       setExceptions(prev => prev.map(ex =>
         ex.id === resolveModal.id
-          ? { ...ex, status: "RESOLVED", resolution: resolveNote.trim(), resolvedAt: new Date().toISOString() }
+          ? { ...ex, status: returnToSender ? "RETURNED" : "RESOLVED", resolution: resolveNote.trim(), resolvedAt: new Date().toISOString() }
           : ex
       ));
       setResolveModal(null);
@@ -182,7 +183,7 @@ export default function ShippingExceptionsPage() {
       setReportModal(false);
       setReportShipmentId("");
       setReportDesc("");
-      await load();
+      await load(true);
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi ghi nhận ngoại lệ");
     } finally {
@@ -362,6 +363,7 @@ export default function ShippingExceptionsPage() {
                           size="sm"
                           onClick={() => {
                             setResolveModal(ex);
+                            setReturnToSender(false);
                             setResolveNote(RESOLUTION_TEMPLATES[0]);
                           }}
                           icon={<CheckCircle2 className="w-3.5 h-3.5" />}
@@ -395,6 +397,25 @@ export default function ShippingExceptionsPage() {
               </div>
 
               <form onSubmit={handleResolve} className="space-y-4">
+                <fieldset>
+                  <legend className="block text-xs font-semibold text-slate-700 mb-1">Hướng xử lý *</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${!returnToSender ? "border-sky-400 bg-sky-50" : "border-slate-200"}`}>
+                      <input type="radio" name="resolve-action" checked={!returnToSender} onChange={() => setReturnToSender(false)} />
+                      Tiếp tục giao hàng
+                    </label>
+                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${returnToSender ? "border-orange-400 bg-orange-50" : "border-slate-200"}`}>
+                      <input type="radio" name="resolve-action" checked={returnToSender} onChange={() => setReturnToSender(true)} />
+                      Hoàn hàng về kho
+                    </label>
+                  </div>
+                  {returnToSender && (
+                    <p className="mt-2 text-[11px] text-orange-700">
+                      Đơn hàng sẽ bị hủy, hàng được cộng lại vào kho và tồn bán; đơn đã thanh toán chuyển sang chờ hoàn tiền.
+                    </p>
+                  )}
+                </fieldset>
+
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Mẫu phản hồi nhanh</label>
                   <select

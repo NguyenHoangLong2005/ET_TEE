@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { isRemoteImage } from '@/lib/utils/imageUtils';
 import { useSearchParams } from 'next/navigation';
 
 export default function ProductGallery({ images }: { images: { imageUrl: string, colorCode?: string, colorHex?: string, isPrimary?: boolean }[] }) {
@@ -51,6 +52,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
           >
             <Image
               src={img}
+              unoptimized={isRemoteImage(img)}
               alt={`Thumbnail ${idx + 1}`}
               fill
               sizes="64px"
@@ -70,6 +72,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
         <Image
           key={fadeKey}
           src={mainImage || displayImages[0]}
+          unoptimized={isRemoteImage(mainImage || displayImages[0])}
           alt="Product Main Image"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"

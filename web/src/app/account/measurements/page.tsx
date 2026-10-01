@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, AlertCircle, Info } from 'lucide-react';
 import { getAuthHeaders } from '@/lib/auth';
 import { getApiBaseUrl } from '@/lib/api-config';
 import { toast } from 'sonner';
@@ -39,15 +38,15 @@ function MeasurementsSkeleton() {
 }
 
 const MEASUREMENT_PROFILES = [
-  { id: 'SELF_ADULT', label: 'Người lớn (Bản thân)', icon: '👤' },
-  { id: 'CHILD', label: 'Trẻ em', icon: '👦' },
-  { id: 'OTHER', label: 'Mua hộ / Khác', icon: '🎁' },
+  { id: 'SELF_ADULT', label: 'Người lớn (Bản thân)' },
+  { id: 'CHILD', label: 'Trẻ em' },
+  { id: 'OTHER', label: 'Mua hộ / Khác' },
 ];
 
 const FIT_PREFERENCES = [
-  { id: 'SLIM', label: 'Ôm vừa vặn', subLabel: 'Slim fit', icon: '👕' },
-  { id: 'REGULAR', label: 'Thoải mái', subLabel: 'Regular fit', icon: '👔' },
-  { id: 'LOOSE', label: 'Rộng rãi', subLabel: 'Loose / Oversize', icon: '🧥' },
+  { id: 'SLIM', label: 'Ôm vừa vặn', subLabel: 'Slim fit' },
+  { id: 'REGULAR', label: 'Thoải mái', subLabel: 'Regular fit' },
+  { id: 'LOOSE', label: 'Rộng rãi', subLabel: 'Loose / Oversize' },
 ];
 
 export default function MeasurementsPage() {
@@ -216,7 +215,6 @@ export default function MeasurementsPage() {
           Lưu số đo để ET.TEE giúp bạn chọn size chuẩn xác nhất.
         </p>
         <div className="bg-rose-50/50 border border-rose-200 rounded-3xl p-6 text-center space-y-4 max-w-3xl">
-          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
           <p className="text-rose-700 font-medium text-sm">{loadError}</p>
           <button
             onClick={() => window.location.reload()}
@@ -256,13 +254,23 @@ export default function MeasurementsPage() {
                 key={profile.id}
                 type="button"
                 onClick={() => handleProfileTypeChange(profile.id)}
-                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+                aria-pressed={formData.measurementProfileType === profile.id}
+                className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
                   formData.measurementProfileType === profile.id
                     ? 'border-slate-900 bg-white shadow-xs'
                     : 'border-transparent bg-slate-100 hover:bg-slate-200/80 text-slate-600'
                 }`}
               >
-                <span className="text-3xl mb-2">{profile.icon}</span>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                    formData.measurementProfileType === profile.id ? 'border-slate-900' : 'border-slate-300'
+                  }`}
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full transition-transform ${
+                    formData.measurementProfileType === profile.id ? 'scale-100 bg-slate-900' : 'scale-0'
+                  }`} />
+                </span>
                 <span className={`text-sm font-semibold ${formData.measurementProfileType === profile.id ? 'text-slate-900' : ''}`}>
                   {profile.label}
                 </span>
@@ -390,7 +398,16 @@ export default function MeasurementsPage() {
                     : 'border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600'
                 }`}
               >
-                <span className="text-2xl">{fit.icon}</span>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                    formData.fitPreference === fit.id ? 'border-slate-900' : 'border-slate-300'
+                  }`}
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full transition-transform ${
+                    formData.fitPreference === fit.id ? 'scale-100 bg-slate-900' : 'scale-0'
+                  }`} />
+                </span>
                 <div>
                   <p className={`font-semibold text-sm ${formData.fitPreference === fit.id ? 'text-slate-900' : ''}`}>{fit.label}</p>
                   <p className="text-xs text-slate-500">{fit.subLabel}</p>
@@ -418,9 +435,10 @@ export default function MeasurementsPage() {
                       onMouseEnter={() => setActiveTooltip(field.name)}
                       onMouseLeave={() => setActiveTooltip(null)}
                       onClick={() => setActiveTooltip(activeTooltip === field.name ? null : field.name)}
-                      className="text-slate-400 hover:text-slate-900 transition-colors"
+                      aria-label={`Cách đo ${field.label}`}
+                      className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold leading-none text-slate-400 hover:border-slate-900 hover:text-slate-900 transition-colors"
                     >
-                      <Info className="w-3.5 h-3.5" />
+                      ?
                     </button>
                     {activeTooltip === field.name && (
                       <div className="absolute z-10 w-48 p-2.5 mt-1 text-xs text-white bg-slate-900 rounded-xl shadow-lg -left-24 bottom-full mb-2">
@@ -462,10 +480,8 @@ export default function MeasurementsPage() {
             disabled={isSaving || !hasChanges}
             className="flex items-center justify-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs tracking-wider rounded-full shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
           >
-            {isSaving ? (
+            {isSaving && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <Save className="w-4 h-4" />
             )}
             LƯU SỐ ĐO
           </button>

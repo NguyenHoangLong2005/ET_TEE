@@ -11,6 +11,9 @@ import java.util.Optional;
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<Inventory> findByProductId(Long productId);
 
+    /** Ton kho cua san pham TAI DUNG chi nhanh (findByProductId khong phan biet chi nhanh). */
+    Optional<Inventory> findByProductIdAndShopId(Long productId, Long shopId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Inventory i WHERE i.productId = :productId")
     Optional<Inventory> findByProductIdWithLock(@Param("productId") Long productId);

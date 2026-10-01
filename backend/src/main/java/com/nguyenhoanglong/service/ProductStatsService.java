@@ -26,12 +26,24 @@ public class ProductStatsService {
 
     private final ProductRepository productRepository;
 
-    public ProductStatsService(ProductRepository productRepository) {
+    private final org.springframework.transaction.support.TransactionTemplate readOnlyTx;
+
+    public ProductStatsService(ProductRepository productRepository,
+                               org.springframework.transaction.PlatformTransactionManager txManager) {
         this.productRepository = productRepository;
+        this.readOnlyTx = new org.springframework.transaction.support.TransactionTemplate(txManager);
+        this.readOnlyTx.setReadOnly(true);
     }
 
-    @Transactional(readOnly = true)
+    // Remote DB: the stats need ~7 sequential queries, so cache them briefly.
+    private static final com.nguyenhoanglong.util.TtlCache<String, ProductStatsDto> STATS_CACHE =
+            new com.nguyenhoanglong.util.TtlCache<>(60, 1800, 1);
+
     public ProductStatsDto getStats() {
+        return STATS_CACHE.get("stats", () -> readOnlyTx.execute(s -> loadStats()));
+    }
+
+    private ProductStatsDto loadStats() {
         ProductStatsDto dto = new ProductStatsDto();
         dto.setTotalActive(productRepository.countActive());
 

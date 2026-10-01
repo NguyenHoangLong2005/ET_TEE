@@ -35,9 +35,9 @@ export default function AIFeatureFlagsPage() {
   const [deleteTargetKey, setDeleteTargetKey] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchFlags = useCallback(async () => {
+  const fetchFlags = useCallback(async (silent?: unknown) => {
     try {
-      setLoading(true);
+      if (silent !== true) setLoading(true);
       const res: any = await apiClient.get('/api/admin/feature-flags');
       const list = Array.isArray(res) ? res : res?.data ?? [];
       setFlags(list);
@@ -64,7 +64,7 @@ export default function AIFeatureFlagsPage() {
       toast.success(`Đã ${!currentStatus ? 'bật' : 'tắt'} tính năng "${key}"`);
     } catch {
       toast.error('Không thể cập nhật cờ tính năng. Đang hoàn tác...');
-      fetchFlags();
+      fetchFlags(true);
     } finally {
       setTogglingKey(null);
     }
@@ -90,7 +90,7 @@ export default function AIFeatureFlagsPage() {
       toast.success(`Đã thêm cờ tính năng "${cleanKey}" thành công!`);
       setShowCreateModal(false);
       setCreateForm({ key: '', description: '', enabled: true });
-      await fetchFlags();
+      await fetchFlags(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể tạo cờ tính năng');
     } finally {
@@ -106,7 +106,7 @@ export default function AIFeatureFlagsPage() {
       await apiClient.delete(`/api/admin/feature-flags/${deleteTargetKey}`);
       toast.success(`Đã xóa cờ tính năng "${deleteTargetKey}"`);
       setDeleteTargetKey(null);
-      await fetchFlags();
+      await fetchFlags(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể xóa cờ tính năng này');
     } finally {

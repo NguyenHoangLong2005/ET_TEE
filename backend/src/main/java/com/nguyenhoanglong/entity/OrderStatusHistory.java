@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "order_status_history")
+@EntityListeners(com.nguyenhoanglong.config.OrderStatusHistoryMailListener.class)
 public class OrderStatusHistory {
     
     @Id

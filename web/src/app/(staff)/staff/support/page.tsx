@@ -7,6 +7,8 @@ import {
   Package, Link as LinkIcon, ShieldAlert, DollarSign, FileText
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext';
+import { normalizeRoleCode } from '@/lib/auth';
 import { toast } from 'sonner';
 
 interface TicketMessage {
@@ -104,6 +106,12 @@ const DENOMINATIONS = [
 ];
 
 export default function SupportChatPage() {
+  // Order lookup and compensation vouchers (incl. the quota) are CSKH/Admin-only on the backend
+  // (CskhExtendedController). This page is also served at /store-owner/support, where calling them
+  // 403'd and threw a dev error overlay.
+  const { user } = useAuth();
+  const role = normalizeRoleCode(user?.role);
+  const canUseCskhTools = role === 'CSKH_STAFF' || role === 'ADMIN' || role === 'SUPER_ADMIN';
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [ticketDetail, setTicketDetail] = useState<SupportTicketDetail | null>(null);
@@ -148,8 +156,8 @@ export default function SupportChatPage() {
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   // Load ticket list
-  const fetchTickets = async () => {
-    setLoadingList(true);
+  const fetchTickets = async (silent?: unknown) => {
+    if (silent !== true) setLoadingList(true);
     setErrorMsg(null);
     try {
       let query = `?page=0&size=50`;
@@ -198,8 +206,8 @@ export default function SupportChatPage() {
   }, [selectedTicketId]);
 
   // Fetch quota
-  const fetchQuotaInfo = async () => {
-    setLoadingQuota(true);
+  const fetchQuotaInfo = async (silent?: unknown) => {
+    if (silent !== true) setLoadingQuota(true);
     try {
       const res = await apiClient.get<CskhQuotaStatusDto>('/api/staff/cskh/vouchers/quota');
       setQuotaInfo(res);
@@ -211,8 +219,8 @@ export default function SupportChatPage() {
   };
 
   useEffect(() => {
-    fetchQuotaInfo();
-  }, []);
+    if (canUseCskhTools) fetchQuotaInfo();
+  }, [canUseCskhTools]);
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -233,7 +241,7 @@ export default function SupportChatPage() {
       });
       setReplyMessage('');
       await fetchTicketDetail(selectedTicketId);
-      fetchTickets();
+      fetchTickets(true);
     } catch (err: any) {
       toast.error(err.message || "Lỗi khi gửi tin nhắn phản hồi");
     } finally {
@@ -247,7 +255,7 @@ export default function SupportChatPage() {
       await apiClient.patch(`/api/staff/support/tickets/${ticketId}/status`, {
         status: newStatus
       });
-      fetchTickets();
+      fetchTickets(true);
       if (selectedTicketId === ticketId) {
         fetchTicketDetail(ticketId);
       }
@@ -328,7 +336,7 @@ export default function SupportChatPage() {
       });
       setIsAssignModalOpen(false);
       await fetchTicketDetail(selectedTicketId);
-      fetchTickets();
+      fetchTickets(true);
     } catch (err: any) {
       console.error("Lỗi phân công ticket:", err);
       setModalErrorMsg(err.message || "Lỗi phân công ticket");
@@ -351,7 +359,7 @@ export default function SupportChatPage() {
       });
       setIsEscalateModalOpen(false);
       await fetchTicketDetail(selectedTicketId);
-      fetchTickets();
+      fetchTickets(true);
     } catch (err: any) {
       console.error("Lỗi leo thang ticket:", err);
       setModalErrorMsg(err.message || "Lỗi leo thang ticket");
@@ -400,7 +408,7 @@ export default function SupportChatPage() {
         orderId: orderId
       });
       await fetchTicketDetail(selectedTicketId);
-      fetchTickets();
+      fetchTickets(true);
       setIsLookupModalOpen(false);
       toast.success("Đã liên kết đơn hàng vào ticket thành công!");
     } catch (err: any) {
@@ -417,7 +425,7 @@ export default function SupportChatPage() {
     setGrantDenomination(20000);
     setGrantReason('');
     setGrantError(null);
-    await fetchQuotaInfo();
+    await fetchQuotaInfo(true);
   };
 
   const handleGrantVoucherSubmit = async (e: React.FormEvent) => {
@@ -434,8 +442,8 @@ export default function SupportChatPage() {
       });
       setIsGrantModalOpen(false);
       await fetchTicketDetail(selectedTicketId);
-      await fetchQuotaInfo();
-      fetchTickets();
+      await fetchQuotaInfo(true);
+      fetchTickets(true);
     } catch (err: any) {
       console.error("Lỗi cấp voucher tri ân:", err);
       setGrantError(err.message || "Không thể cấp voucher tri ân");
@@ -487,12 +495,14 @@ export default function SupportChatPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleOpenLookupModal}
-            className="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg shadow-flat transition font-medium"
-          >
-            <Search className="w-3.5 h-3.5" /> Tra cứu đơn hàng
-          </button>
+          {canUseCskhTools && (
+            <button
+              onClick={handleOpenLookupModal}
+              className="flex items-center gap-1.5 text-xs bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg shadow-flat transition font-medium"
+            >
+              <Search className="w-3.5 h-3.5" /> Tra cứu đơn hàng
+            </button>
+          )}
 
           <button
             onClick={fetchTickets}
@@ -698,10 +708,10 @@ export default function SupportChatPage() {
 
                   {/* Action Buttons */}
                   <div className="flex items-center flex-wrap gap-2">
-                    {ticketDetail.status !== 'CLOSED' && (
+                    {canUseCskhTools && ticketDetail.status !== 'CLOSED' && (
                       <button
                         onClick={handleOpenGrantModal}
-                        className="   hover: hover: text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
+                        className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
                       >
                         <Gift className="w-3.5 h-3.5" /> Tặng Voucher CSKH
                       </button>

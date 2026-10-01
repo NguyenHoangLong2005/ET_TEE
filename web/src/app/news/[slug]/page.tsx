@@ -1,8 +1,32 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Clock, Calendar, ArrowLeft, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
-import { ARTICLES } from '@/data/articles';
+import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api-config';
+import ViewTracker from './ViewTracker';
+
+// Staff write plain text in the posts form: blank line between paragraphs, "## " for a section
+// heading, "- " for bullets. Rendered as React text rather than innerHTML so a post cannot inject markup.
+function PostBody({ content }: { content: string }) {
+  const blocks = content.replace(/\r\n/g, '\n').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  return (
+    <div className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-slate-100">
+      {blocks.map((block, i) => {
+        if (block.startsWith('## ')) {
+          return <h3 key={i} className="font-bold text-slate-900 text-base pt-2">{block.slice(3).trim()}</h3>;
+        }
+        const lines = block.split('\n');
+        if (lines.every(l => l.trimStart().startsWith('- '))) {
+          return (
+            <ul key={i} className="list-disc pl-5 space-y-1">
+              {lines.map((l, j) => <li key={j}>{l.trimStart().slice(2)}</li>)}
+            </ul>
+          );
+        }
+        return <p key={i} className="whitespace-pre-line">{block}</p>;
+      })}
+    </div>
+  );
+}
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -29,17 +53,31 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   } catch {}
 
   if (!article) {
-    article = ARTICLES.find(a => a.slug === slug);
-  }
-
-  if (!article) {
     notFound();
   }
 
-  const related = ARTICLES.filter(a => a.slug !== article.slug);
+  // Other published posts; previously this listed the hardcoded demo articles whatever was published.
+  let related: { slug: string; title: string; category: string; img: string }[] = [];
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/marketing/posts`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      const list = Array.isArray(json?.data) ? json.data : [];
+      related = list
+        .filter((p: any) => p.slug !== article.slug)
+        .slice(0, 4)
+        .map((p: any) => ({
+          slug: p.slug,
+          title: p.title,
+          category: (Array.isArray(p.tags) && p.tags[0]) ? p.tags[0] : 'Tin tức',
+          img: p.coverImageUrl || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop',
+        }));
+    }
+  } catch {}
 
   return (
     <main className="min-h-screen bg-slate-50/50 pt-6 pb-20">
+      <ViewTracker slug={article.slug} />
       <div className="container mx-auto px-4 xl:px-8 max-w-3xl">
         
         {/* Back Link */}
@@ -85,40 +123,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           {/* Article Body Content */}
-          {article.content ? (
-            <div 
-              className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-slate-100 prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: article.content }} 
-            />
-          ) : (
-            <div className="text-sm leading-relaxed text-slate-700 space-y-4 pt-4 border-t border-slate-100">
-              <p>
-                Khi lựa chọn trang phục thời trang hằng ngày, phom dáng và chất liệu luôn là hai yếu tố hàng đầu quyết định sự tự tin của người mặc. Tại ET.TEE, mỗi đường kim mũi chỉ đều được thiết kế tỉ mỉ dựa trên nghiên cứu vóc dáng thực tế của hơn 100.000 người tiêu dùng Việt Nam.
-              </p>
-
-              <h3 className="font-bold text-slate-900 text-base pt-2">1. Hiểu Đúng Về Phom Dáng Dành Cho Bạn</h3>
-              <p>
-                Một chiếc áo vừa vặn là khi rộng vai ôm vừa đỉnh xương vai, độ dài áo vừa qua thắt lưng 5-7cm và nách áo không bị đùn vải. Nếu bạn có thân hình cân đối, phom <strong>Slim Fit</strong> ôm nhẹ sẽ tôn vòng ngực và vòng eo hoàn hảo. Nếu bạn thích sự thoải mái, phom <strong>Regular Fit</strong> là sự lựa chọn an toàn tuyệt đối.
-              </p>
-
-              <h3 className="font-bold text-slate-900 text-base pt-2">2. Chất Liệu Cao Cấp – Bí Quyết Giữ Phom Bền Lâu</h3>
-              <p>
-                ET.TEE ưu tiên sử dụng dòng chất liệu <strong>Eco-Cotton 95% kết hợp 5% Spandex</strong>. Sự kết hợp này mang lại bề mặt vải mềm mịn, thấm hút mồ hôi vượt trội và co giãn 4 chiều linh hoạt mà không lo biến dạng hay bai gião sau nhiều lần giặt.
-              </p>
-
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>3 Mẹo Nhỏ Cần Lưu Ý Từ ET.TEE:</span>
-                </span>
-                <ul className="list-disc pl-5 space-y-1 text-slate-600">
-                  <li>Luôn lộn trái áo khi giặt máy để giữ màu vải luôn tươi mới.</li>
-                  <li>Không ngâm sản phẩm với dung dịch tẩy rửa nồng độ cao quá 15 phút.</li>
-                  <li>Phơi áo trên móc treo có độ rộng vừa phải để tránh làm vểnh vai áo.</li>
-                </ul>
-              </div>
-            </div>
-          )}
+          {article.content && <PostBody content={article.content} />}
 
           {/* Bottom Share & Nav */}
           <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
@@ -136,6 +141,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
         </article>
 
         {/* Related Articles */}
+        {related.length > 0 && (
         <div className="mt-12 space-y-4">
           <h3 className="text-sm font-black uppercase text-slate-900">Bài viết liên quan</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,12 +154,12 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-amber-600 uppercase">{r.category}</span>
                   <h4 className="font-bold text-slate-900 text-xs line-clamp-2 leading-snug">{r.title}</h4>
-                  <span className="text-[10px] text-slate-400">{r.readTime}</span>
                 </div>
               </Link>
             ))}
           </div>
         </div>
+        )}
 
       </div>
     </main>

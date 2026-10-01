@@ -68,7 +68,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthDto.LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            String ipAddress = httpRequest.getRemoteAddr();
+            String ipAddress = com.nguyenhoanglong.util.ClientIpResolver.resolve(httpRequest);
             AuthDto.AuthResponse response = authService.login(request, ipAddress);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

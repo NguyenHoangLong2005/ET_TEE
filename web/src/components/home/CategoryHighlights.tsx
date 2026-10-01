@@ -22,10 +22,25 @@ export default function CategoryHighlights() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const fetchWithRetry = async (attempts = 3) => {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const res = await fetch(`${getApiBaseUrl()}/api/categories`);
+          if (res.ok) return res;
+        } catch {
+          /* network error: retry */
+        }
+        // The backend may be restarting; wait briefly before retrying.
+        if (i < attempts - 1) await new Promise((r) => setTimeout(r, 800 * (i + 1)));
+      }
+      throw new Error('Failed to fetch categories');
+    };
+
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${getApiBaseUrl()}/api/categories`);
-        if (!res.ok) throw new Error('Failed to fetch categories');
+        const res = await fetchWithRetry();
+        if (cancelled) return;
 
         const data = await res.json();
         // Filter only root categories (parentId is null) that are active
@@ -34,18 +49,28 @@ export default function CategoryHighlights() {
         );
         setCategories(rootCategories);
       } catch (err) {
-        console.error('Error fetching categories:', err);
-        setError('Không thể tải danh mục');
+        // Not console.error: the UI falls back to static categories, and
+        // console.error triggers the Next dev error overlay.
+        console.warn('Error fetching categories:', err);
+        if (!cancelled) setError('Không thể tải danh mục');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchCategories();
+    return () => { cancelled = true; };
   }, []);
 
   // Map categories to display format with fallback images
-  const displayCategories = categories.slice(0, 5).map((cat, index) => {
+  const visibleCategories = categories.slice(0, 5);
+  // The first card spans 2x2 and the rest fill the remaining 2 columns. When
+  // an odd number of small cards remain, stretch the last one across both
+  // columns so the grid has no empty cell.
+  const smallCardCount = visibleCategories.length - 1;
+  const stretchLast = smallCardCount > 0 && smallCardCount % 2 === 1;
+
+  const displayCategories = visibleCategories.map((cat, index) => {
     // Use imageUrl if available, otherwise use local fallback
     let imgUrl = cat.imageUrl;
     if (!imgUrl) {
@@ -68,7 +93,12 @@ export default function CategoryHighlights() {
       badge: index === 0 ? 'XU HƯỚNG' : index === 1 ? 'MUST-HAVE' : index === 2 ? 'ORGANIC' : 'HOT DEAL',
       href: `/products?category=${cat.slug}`,
       img: imgUrl,
-      span: index === 0 ? 'lg:col-span-2 lg:row-span-2' : 'lg:col-span-1',
+      span:
+        index === 0
+          ? 'lg:col-span-2 lg:row-span-2'
+          : stretchLast && index === visibleCategories.length - 1
+            ? 'lg:col-span-2'
+            : 'lg:col-span-1',
       tall: index === 0,
     };
   });
@@ -113,7 +143,7 @@ export default function CategoryHighlights() {
               { name: 'Thời Trang Nữ', slug: 'women', sub: 'Áo, Váy, Quần & Phụ Kiện', badge: 'XU HƯỚNG', span: 'lg:col-span-2 lg:row-span-2', tall: true, img: '/images/banners/home/banner-1.webp', href: '/products?category=women' },
               { name: 'Thời Trang Nam', slug: 'men', sub: 'Sơ mi, Polo, Áo khoác', badge: 'MUST-HAVE', span: 'lg:col-span-1', tall: false, img: '/images/banners/home/banner-2.webp', href: '/products?category=men' },
               { name: 'Trẻ Em (Kids)', slug: 'kids', sub: 'Size 90 – 160 cm', badge: 'ORGANIC', span: 'lg:col-span-1', tall: false, img: '/images/banners/home/banner-3.webp', href: '/products?category=kids' },
-              { name: 'Family Set', slug: 'family', sub: 'Mặc đồng điệu cả nhà', badge: 'HOT DEAL', span: 'lg:col-span-1', tall: false, img: '/images/banners/home/banner-4.webp', href: '/products?category=family' },
+              { name: 'Family Set', slug: 'family', sub: 'Mặc đồng điệu cả nhà', badge: 'HOT DEAL', span: 'lg:col-span-2', tall: false, img: '/images/banners/home/banner-4.webp', href: '/products?category=family' },
             ].map((cat) => (
               <Link
                 key={cat.slug}

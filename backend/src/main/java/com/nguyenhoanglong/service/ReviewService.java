@@ -169,6 +169,9 @@ public class ReviewService {
         OrderItem orderItem = orderItemRepository.findById(request.getOrderItemId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order item not found"));
 
+        if (orderItem.getProduct() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm này đã ngừng kinh doanh");
+        }
         if (!orderItem.getProduct().getSlug().equals(slug)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mismatched product");
         }
@@ -322,8 +325,8 @@ public class ReviewService {
         res.setPurchasedSize(review.getPurchasedSize());
         res.setPurchasedColor(review.getPurchasedColor());
         res.setCreatedAt(review.getCreatedAt());
-        res.setProductSlug(review.getProduct().getSlug());
-        res.setProductName(review.getProduct().getName());
+        res.setProductSlug(review.getProduct() != null ? review.getProduct().getSlug() : null);
+        res.setProductName(review.getProduct() != null ? review.getProduct().getName() : null);
         res.setStatus(review.getStatus());
         return res;
     }

@@ -90,7 +90,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedRolesAndPermissions() {
         Map<Role, String> roleNames = Map.of(
                 Role.ADMIN, "Quản trị viên Hệ thống",
-                Role.SHOP_OWNER, "Chủ cửa hàng (Chi nhánh)",
+                Role.SHOP_OWNER, "Chủ cửa hàng",
                 Role.SALES_STAFF, "Nhân viên Bán hàng / CSKH",
                 Role.WAREHOUSE_STAFF, "Nhân viên Quản lý Kho",
                 Role.SHIPPING_STAFF, "Nhân viên Vận chuyển / Shipper",

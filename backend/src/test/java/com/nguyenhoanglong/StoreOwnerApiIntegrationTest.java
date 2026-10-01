@@ -50,7 +50,7 @@ public class StoreOwnerApiIntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("Case 1: Get shop products, update local price & promo price, validate promo <= local constraint")
+    @DisplayName("Case 1: Get product, update price & sale price, validate sale < price constraint")
     public void testCase1_GetAndUpdateShopProductConfig() {
         // Create master product
         Product prod = new Product();
@@ -62,26 +62,33 @@ public class StoreOwnerApiIntegrationTest {
 
         Long shopId = 1L;
 
-        // Fetch product config -> default base price
+        // Fetch product -> list price, no promotion
         ShopProductDto dto = storeOwnerService.getShopProductById(shopId, savedProd.getId());
         assertEquals(0, new BigDecimal("500000").compareTo(dto.getBasePrice()));
-        assertNull(dto.getLocalPrice());
+        assertNull(dto.getBaseSalePrice());
 
-        // Attempt update with localPromoPrice > localPrice -> 400 Bad Request
-        ShopProductConfigUpdateDto invalidUpdate = new ShopProductConfigUpdateDto(new BigDecimal("400000"), new BigDecimal("600000"), true);
+        // Attempt update with salePrice >= price -> 400 Bad Request
+        ProductPriceUpdateDto invalidUpdate = pricing("400000", "600000", true);
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
-            storeOwnerService.updateShopProductConfig(shopId, savedProd.getId(), invalidUpdate);
+            storeOwnerService.updateProductPricing(savedProd.getId(), invalidUpdate);
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-        assertTrue(ex.getReason().contains("Giá khuyến mãi local không thể lớn hơn giá niêm yết"));
+        assertTrue(ex.getReason().contains("Giá khuyến mãi phải nhỏ hơn giá niêm yết"));
 
-        // Valid update
-        ShopProductConfigUpdateDto validUpdate = new ShopProductConfigUpdateDto(new BigDecimal("450000"), new BigDecimal("390000"), true);
-        ShopProductDto updated = storeOwnerService.updateShopProductConfig(shopId, savedProd.getId(), validUpdate);
+        // Valid update changes the product itself (system-wide price)
+        ShopProductDto updated = storeOwnerService.updateProductPricing(savedProd.getId(), pricing("450000", "390000", true));
 
-        assertEquals(0, new BigDecimal("450000").compareTo(updated.getLocalPrice()));
-        assertEquals(0, new BigDecimal("390000").compareTo(updated.getLocalPromoPrice()));
+        assertEquals(0, new BigDecimal("450000").compareTo(updated.getBasePrice()));
+        assertEquals(0, new BigDecimal("390000").compareTo(updated.getBaseSalePrice()));
         assertTrue(updated.getIsAvailableForSale());
+    }
+
+    private static ProductPriceUpdateDto pricing(String price, String salePrice, boolean active) {
+        ProductPriceUpdateDto d = new ProductPriceUpdateDto();
+        d.setPrice(new BigDecimal(price));
+        d.setSalePrice(new BigDecimal(salePrice));
+        d.setActive(active);
+        return d;
     }
 
     @Test

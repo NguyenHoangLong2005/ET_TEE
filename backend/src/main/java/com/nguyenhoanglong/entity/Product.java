@@ -50,6 +50,13 @@ public class Product {
     @Column(length = 100)
     private String brand;
 
+    /** Chosen from the store owner's manufacturer / supplier lists (both optional). */
+    @Column(name = "manufacturer_id")
+    private Long manufacturerId;
+
+    @Column(name = "supplier_id")
+    private Long supplierId;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
@@ -172,6 +179,10 @@ public class Product {
     public void setDescription(String description) { this.description = description; }
     public String getBrand() { return brand; }
     public void setBrand(String brand) { this.brand = brand; }
+    public Long getManufacturerId() { return manufacturerId; }
+    public void setManufacturerId(Long manufacturerId) { this.manufacturerId = manufacturerId; }
+    public Long getSupplierId() { return supplierId; }
+    public void setSupplierId(Long supplierId) { this.supplierId = supplierId; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
     public BigDecimal getSalePrice() { return salePrice; }

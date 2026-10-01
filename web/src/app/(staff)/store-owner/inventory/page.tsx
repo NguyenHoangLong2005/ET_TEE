@@ -35,10 +35,29 @@ export default function StoreOwnerInventoryPage() {
   const [restockModalOpen, setRestockModalOpen] = useState(false);
   const [selectedRestockId, setSelectedRestockId] = useState<number>(0);
   const [restockAmount, setRestockAmount] = useState<number>(10);
+  // The storefront sells per colour / size: a restock must name the variant it refills.
+  const [restockVariants, setRestockVariants] = useState<{ id: number; sku: string; color?: string | null; size?: string | null; availableQuantity?: number | null }[]>([]);
+  const [restockVariantId, setRestockVariantId] = useState<number>(0);
+
+  useEffect(() => {
+    setRestockVariants([]);
+    setRestockVariantId(0);
+    if (!restockModalOpen || !selectedRestockId) return;
+    let cancelled = false;
+    apiClient.get<any[]>(`/api/staff/warehouse/products/${selectedRestockId}/variants`)
+      .then((list) => {
+        if (cancelled) return;
+        const arr = Array.isArray(list) ? list : [];
+        setRestockVariants(arr);
+        if (arr.length === 1) setRestockVariantId(arr[0].id);
+      })
+      .catch(() => { /* the server still validates on submit */ });
+    return () => { cancelled = true; };
+  }, [restockModalOpen, selectedRestockId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchInventory = useCallback(async () => {
-    setIsLoading(true);
+  const fetchInventory = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setIsLoading(true);
     try {
       let dataList: InventoryItem[] = [];
       try {
@@ -51,7 +70,7 @@ export default function StoreOwnerInventoryPage() {
             sku: i.sku || `SKU-${i.productId}`,
             stockQuantity: typeof i.quantityOnHand === 'number' ? i.quantityOnHand : (i.stockQuantity ?? 0),
             lowStockThreshold: i.reorderLevel || 10,
-            warehouseName: i.location || 'Kho Chi nhánh',
+            warehouseName: i.location || 'Kho cửa hàng',
           }));
         }
       } catch {
@@ -67,7 +86,7 @@ export default function StoreOwnerInventoryPage() {
           sku: p.slug ? `SKU-${p.productId || p.id}` : `ET-P-${p.productId || p.id}`,
           stockQuantity: typeof p.stock === 'number' ? p.stock : 15,
           lowStockThreshold: 10,
-          warehouseName: 'Kho Chi nhánh',
+          warehouseName: 'Kho cửa hàng',
         }));
       }
 
@@ -115,19 +134,24 @@ export default function StoreOwnerInventoryPage() {
       toast.error('Vui lòng chọn sản phẩm và nhập số lượng nhập kho lớn hơn 0');
       return;
     }
+    if (restockVariants.length > 0 && !restockVariantId) {
+      toast.error('Vui lòng chọn màu / size cần nhập');
+      return;
+    }
     const target = items.find((i) => i.productId === selectedRestockId);
     try {
       setIsSubmitting(true);
       await apiClient.post('/api/staff/warehouse/inbound', {
         productId: selectedRestockId,
+        variantId: restockVariantId || undefined,
         productName: target?.productName || `Sản phẩm #${selectedRestockId}`,
         quantity: Math.round(restockAmount),
-        location: target?.warehouseName || 'Kho Chi nhánh',
+        location: target?.warehouseName || 'Kho cửa hàng',
       });
       toast.success(`Đã bổ sung ${Math.round(restockAmount)} sản phẩm vào tồn kho`);
       setRestockModalOpen(false);
       setRestockAmount(10);
-      fetchInventory();
+      fetchInventory(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể thực hiện nhập kho');
     } finally {
@@ -161,7 +185,7 @@ export default function StoreOwnerInventoryPage() {
       render: (item) => (
         <span className="text-slate-600 font-medium flex items-center gap-1.5">
           <Warehouse className="w-3.5 h-3.5 text-slate-400" />
-          {item.warehouseName || 'Kho Chi nhánh'}
+          {item.warehouseName || 'Kho cửa hàng'}
         </span>
       ),
     },
@@ -216,9 +240,8 @@ export default function StoreOwnerInventoryPage() {
         
         {/* Header */}
         <PageHeader
-          title="Quản lý Tồn kho Chi nhánh"
+          title="Quản lý Tồn kho"
           subtitle="Theo dõi số lượng hàng thực tế, cảnh báo mức an toàn và bổ sung tồn kho."
-          badge="CHI NHÁNH"
           actions={
             <div className="flex items-center gap-2.5">
               <Button
@@ -304,7 +327,7 @@ export default function StoreOwnerInventoryPage() {
         {restockModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <form onSubmit={handleRestockSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900">Nhập bổ sung tồn kho chi nhánh</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Nhập bổ sung tồn kho</h3>
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Chọn sản phẩm</label>
                 <select
@@ -319,6 +342,24 @@ export default function StoreOwnerInventoryPage() {
                   ))}
                 </select>
               </div>
+              {restockVariants.length > 0 && (
+                <div>
+                  <label htmlFor="restock-variant" className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Màu / Size</label>
+                  <select
+                    id="restock-variant"
+                    value={restockVariantId}
+                    onChange={(e) => setRestockVariantId(Number(e.target.value))}
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  >
+                    <option value={0}>— Chọn màu / size —</option>
+                    {restockVariants.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {[v.color, v.size].filter(Boolean).join(' / ') || v.sku} (đang bán được: {v.availableQuantity ?? 0})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Số lượng nhập thêm</label>
                 <input

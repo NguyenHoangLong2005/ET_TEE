@@ -29,6 +29,8 @@ public class ShippingService {
     private final SoldCountService soldCountService;
     private final OrderStateMachine stateMachine;
     private final OrderStatusHistoryRepository historyRepository;
+    private final OrderStockService orderStockService;
+    private final MarketingService marketingService;
 
     public ShippingService(OrderRepository orders,
                            ShipmentRepository shipments,
@@ -38,7 +40,9 @@ public class ShippingService {
                            CodReconciliationItemRepository codReconciliationItemRepository,
                            SoldCountService soldCountService,
                            OrderStateMachine stateMachine,
-                           OrderStatusHistoryRepository historyRepository) {
+                           OrderStatusHistoryRepository historyRepository,
+                           OrderStockService orderStockService,
+                           MarketingService marketingService) {
         this.orders = orders;
         this.shipments = shipments;
         this.exceptions = exceptions;
@@ -48,6 +52,8 @@ public class ShippingService {
         this.soldCountService = soldCountService;
         this.stateMachine = stateMachine;
         this.historyRepository = historyRepository;
+        this.orderStockService = orderStockService;
+        this.marketingService = marketingService;
     }
 
     /**
@@ -85,7 +91,11 @@ public class ShippingService {
     }
 
     public List<Order> getReadyOrders(User actor) {
-        List<Order> list = orders.findByStatusOrderByCreatedAtDesc(OrderStatus.HANDED_TO_CARRIER);
+        // Don kho da ban giao nhung CHUA co van don: buoc dau cua bo phan van chuyen.
+        // Don da tao van don thi theo doi o danh sach kien hang (getAllShipments).
+        List<Order> list = SalesOrderService.oldestFirst(orders.findByStatusOrderByCreatedAtDesc(OrderStatus.HANDED_TO_CARRIER)).stream()
+                .filter(o -> shipments.findByOrderId(o.getId()).isEmpty())
+                .toList();
         if (actor != null && actor.getRole() != Role.ADMIN) {
             Long staffShopId = actor.getShopId();
             if (staffShopId == null) {
@@ -102,9 +112,23 @@ public class ShippingService {
             if (staffShopId == null) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản nhân viên chưa được gán chi nhánh");
             }
-            return shipments.findByOrderShopId(staffShopId);
+            return workQueueOrder(shipments.findByOrderShopId(staffShopId));
         }
-        return shipments.findAll();
+        return workQueueOrder(shipments.findAll());
+    }
+
+    /**
+     * Kien con dang xu ly len truoc, cu nhat truoc (FIFO); kien da giao / hoan ve
+     * xuong cuoi, moi nhat truoc. Truoc day danh sach khong co thu tu nao.
+     */
+    private static List<Shipment> workQueueOrder(List<Shipment> list) {
+        java.util.function.Predicate<Shipment> done = s ->
+                s.getStatus() == ShipmentStatus.DELIVERED || s.getStatus() == ShipmentStatus.RETURNED;
+        java.util.Comparator<Shipment> byId = java.util.Comparator.comparing(Shipment::getId);
+        return list.stream()
+                .sorted(java.util.Comparator.<Shipment, Boolean>comparing(done::test)
+                        .thenComparing((a, b) -> done.test(a) ? byId.compare(b, a) : byId.compare(a, b)))
+                .toList();
     }
 
     public Shipment getShipment(User actor, Long id) {
@@ -123,10 +147,17 @@ public class ShippingService {
         if (shipments.findByOrderId(orderId).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn đã có shipment");
         }
+        String carrier = carrierName == null ? "" : carrierName.trim();
+        if (carrier.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn đơn vị vận chuyển");
+        }
+        // Cot tracking_code NOT NULL + UNIQUE: kiem tra truoc de bao loi ro rang thay vi
+        // de DB tu choi voi thong bao chung "vi pham rang buoc".
+        String code = requireUniqueTrackingCode(trackingCode, null);
         Shipment s = new Shipment();
         s.setOrder(order);
-        s.setCarrierName(carrierName);
-        s.setTrackingCode(trackingCode);
+        s.setCarrierName(carrier);
+        s.setTrackingCode(code);
         s.setCodAmount(resolveCodAmount(order, codAmount));
         s.setStatus(ShipmentStatus.PENDING);
         return shipments.save(s);
@@ -135,8 +166,22 @@ public class ShippingService {
     public Shipment updateTrackingCode(User actor, Long id, String trackingCode) {
         Shipment s = shipment(id);
         enforceShippingShopOwnership(actor, s.getOrder());
-        s.setTrackingCode(trackingCode);
+        s.setTrackingCode(requireUniqueTrackingCode(trackingCode, s.getId()));
         return shipments.save(s);
+    }
+
+    private String requireUniqueTrackingCode(String trackingCode, Long ownShipmentId) {
+        String code = trackingCode == null ? "" : trackingCode.trim();
+        if (code.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập mã vận đơn");
+        }
+        boolean taken = ownShipmentId == null
+                ? shipments.existsByTrackingCode(code)
+                : shipments.existsByTrackingCodeAndIdNot(code, ownShipmentId);
+        if (taken) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã vận đơn " + code + " đã được dùng cho kiện hàng khác");
+        }
+        return code;
     }
 
     @Transactional
@@ -166,7 +211,13 @@ public class ShippingService {
     }
 
     public List<ShippingException> getExceptions(User actor) {
-        List<ShippingException> list = exceptions.findAllByOrderByCreatedAtDesc();
+        // Su co dang mo (OPEN) len truoc, cu nhat truoc; da xu ly xuong cuoi, moi nhat truoc.
+        java.util.Comparator<ShippingException> byTime = java.util.Comparator.comparing(
+                ShippingException::getCreatedAt, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()));
+        List<ShippingException> list = exceptions.findAllByOrderByCreatedAtDesc().stream()
+                .sorted(java.util.Comparator.<ShippingException, Boolean>comparing(e -> !"OPEN".equals(e.getStatus()))
+                        .thenComparing((a, b) -> "OPEN".equals(a.getStatus()) ? byTime.compare(a, b) : byTime.compare(b, a)))
+                .toList();
         if (actor != null && actor.getRole() != Role.ADMIN) {
             Long staffShopId = actor.getShopId();
             if (staffShopId == null) {
@@ -194,21 +245,58 @@ public class ShippingService {
     }
 
     public ShippingException resolveException(User actor, Long id, String note) {
+        return resolveException(actor, id, note, false);
+    }
+
+    /**
+     * Closes an exception either by continuing delivery, or by returning the parcel to the
+     * warehouse (failed delivery). The return path did not exist: ShipmentStatus.RETURNED was
+     * never set and the order, its stock and voucher stayed stuck in HANDED_TO_CARRIER/SHIPPING.
+     */
+    @Transactional
+    public ShippingException resolveException(User actor, Long id, String note, boolean returnToSender) {
         ShippingException e = exceptions.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ngoại lệ " + id));
         if (e.getShipment() != null) {
             enforceShippingShopOwnership(actor, e.getShipment().getOrder());
         }
-        e.setStatus("RESOLVED");
+        if ("RESOLVED".equals(e.getStatus()) || "RETURNED".equals(e.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngoại lệ này đã được xử lý");
+        }
         e.setResolutionNote(note);
-
-        // addException force-sets the shipment to EXCEPTION and nothing ever moved
-        // it back, permanently stranding a shipment that had even one resolved
-        // exception. Resolution returns it to HANDED_OVER, the state it must have
-        // been in to receive an exception in the normal flow, so it can continue.
         Shipment shipment = e.getShipment();
+
+        if (returnToSender) {
+            if (shipment == null || shipment.getOrder() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngoại lệ không gắn với vận đơn nào");
+            }
+            Order o = shipment.getOrder();
+            OrderStatus before = o.getStatus();
+            String reason = "Giao hàng không thành công, hoàn về kho" + (note != null && !note.isBlank() ? ": " + note.trim() : "");
+            transitionOrder(o, OrderStatus.CANCELLED, actor, reason);
+            o.setCancelReason(reason);
+            if ("PAID".equalsIgnoreCase(o.getPaymentStatus())) {
+                o.setPaymentStatus("REFUND_PENDING");
+            }
+            orderStockService.restoreVariantStock(o);
+            orderStockService.restoreWarehouseOnHand(o, before);
+            if (o.getVoucherCode() != null && !o.getVoucherCode().isBlank()) {
+                marketingService.releaseVoucherUsage(o.getId(), o.getOrderCode());
+            }
+            orders.save(o);
+            shipment.setStatus(ShipmentStatus.RETURNED);
+            shipments.save(shipment);
+            e.setStatus("RETURNED");
+            return exceptions.save(e);
+        }
+
+        e.setStatus("RESOLVED");
+        // addException force-sets the shipment to EXCEPTION; put it back where it was so the
+        // flow can continue. Always resetting to HANDED_OVER stranded parcels that were already
+        // in transit: "start shipping" then asked for SHIPPING -> SHIPPING and was refused.
         if (shipment != null && shipment.getStatus() == ShipmentStatus.EXCEPTION) {
-            shipment.setStatus(ShipmentStatus.HANDED_OVER);
+            boolean inTransit = shipment.getOrder() != null && shipment.getOrder().getStatus() == OrderStatus.SHIPPING;
+            shipment.setStatus(inTransit ? ShipmentStatus.IN_TRANSIT : ShipmentStatus.HANDED_OVER);
             shipments.save(shipment);
         }
         return exceptions.save(e);
@@ -218,6 +306,10 @@ public class ShippingService {
     public ProofOfDelivery delivered(User actor, Long shipmentId, String receiverName, String imageUrl, String note) {
         Shipment s = shipment(shipmentId);
         enforceShippingShopOwnership(actor, s.getOrder());
+        // Don chi duoc SHIPPING -> DELIVERED; kien chua xuat phat thi chua the "da giao".
+        if (s.getStatus() != ShipmentStatus.IN_TRANSIT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kiện hàng chưa ở trạng thái đang vận chuyển");
+        }
         s.setStatus(ShipmentStatus.DELIVERED);
         s.setDeliveredAt(LocalDateTime.now());
         s.setDeliveryProofUrl(imageUrl);

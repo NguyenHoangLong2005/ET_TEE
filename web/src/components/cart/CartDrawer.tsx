@@ -7,6 +7,7 @@ import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 import SafeImage from '@/components/ui/SafeImage';
+import { formatVnd, roundVnd } from '@/lib/utils/price';
 
 export default function CartDrawer() {
   const { cart, isDrawerOpen, closeDrawer, updateQuantity, removeItem } = useCart();
@@ -127,18 +128,18 @@ export default function CartDrawer() {
 
                       {/* Price */}
                       <div className="text-right">
-                        {item.salePrice && item.salePrice < item.price ? (
+                        {item.salePrice && roundVnd(item.salePrice) < roundVnd(item.price) ? (
                           <div className="flex flex-col items-end">
                             <p className="text-primary font-black text-sm">
-                              {item.salePrice.toLocaleString('vi-VN')}₫
+                              {formatVnd(item.salePrice)}₫
                             </p>
                             <p className="text-xs text-slate-400 line-through mt-0.5">
-                              {item.price.toLocaleString('vi-VN')}₫
+                              {formatVnd(item.price)}₫
                             </p>
                           </div>
                         ) : (
                           <p className="font-black text-slate-900 text-sm">
-                            {item.price.toLocaleString('vi-VN')}₫
+                            {formatVnd(item.salePrice || item.price)}₫
                           </p>
                         )}
                       </div>

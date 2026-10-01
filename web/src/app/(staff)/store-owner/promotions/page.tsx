@@ -79,8 +79,8 @@ export default function StoreOwnerPromotionsPage() {
     expiresAt: ''
   });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setIsLoading(true);
     try {
       if (activeTab === 'pending') {
         const data = await apiClient.get<any>('/api/store-owner/approvals/pending');
@@ -154,7 +154,7 @@ export default function StoreOwnerPromotionsPage() {
           : `Đã từ chối voucher "${confirmModal.promo.code}"`
       );
       setConfirmModal({ isOpen: false, promo: null, action: 'approve', note: '' });
-      fetchData();
+      fetchData(true);
     } catch (err: any) {
       toast.error(err?.message || 'Lỗi khi xử lý phê duyệt voucher');
     } finally {
@@ -344,8 +344,7 @@ export default function StoreOwnerPromotionsPage() {
         {/* Header */}
         <PageHeader
           title="Quản lý Khuyến mãi & Phê duyệt"
-          subtitle="Phê duyệt voucher đề xuất từ đội ngũ marketing và phát hành mã giảm giá chi nhánh."
-          badge="CHI NHÁNH"
+          subtitle="Phê duyệt voucher đề xuất từ đội ngũ marketing và phát hành mã giảm giá."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
@@ -360,7 +359,7 @@ export default function StoreOwnerPromotionsPage() {
                 onClick={() => setIsCreateModalOpen(true)}
                 icon={<Plus className="w-4 h-4" />}
               >
-                Tạo Voucher Chi nhánh
+                Tạo Voucher
               </Button>
             </div>
           }
@@ -413,7 +412,7 @@ export default function StoreOwnerPromotionsPage() {
             onSearchChange={setSearch}
             searchPlaceholder="Tìm kiếm mã voucher..."
             emptyTitle="Chưa có voucher nào"
-            emptyMessage="Nhấn 'Tạo Voucher Chi nhánh' để phát hành mã mới."
+            emptyMessage="Nhấn'Tạo Voucher' để phát hành mã mới."
           />
         )}
 
@@ -452,7 +451,7 @@ export default function StoreOwnerPromotionsPage() {
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
               <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-900">Tạo Voucher Chi nhánh Mới</h3>
+                <h3 className="text-sm font-semibold text-slate-900">Tạo Voucher Mới</h3>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
                   className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"

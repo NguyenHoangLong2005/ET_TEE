@@ -4,6 +4,7 @@ import com.nguyenhoanglong.dto.ApiResponse;
 import com.nguyenhoanglong.dto.PaginatedResponseDto;
 import com.nguyenhoanglong.entity.Manufacturer;
 import com.nguyenhoanglong.repository.ManufacturerRepository;
+import com.nguyenhoanglong.repository.ProductRepository;
 import com.nguyenhoanglong.service.CurrentUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,55 +17,99 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
- * Nha san xuat la du lieu DUNG CHUNG toan he thong: chi ADMIN duoc
- * them/sua/xoa (theo ma tran phan quyen Giai doan 2). SHOP_OWNER/WAREHOUSE_STAFF
- * chi duoc xem, dung khi nhap hang.
+ * Nha san xuat la du lieu DUNG CHUNG toan he thong. SHOP_OWNER va ADMIN duoc
+ * them/sua/xoa; WAREHOUSE_STAFF chi xem (dung khi nhap hang).
+ *
+ * "So san pham" duoc DEM THAT theo products.manufacturer_id (nha san xuat duoc
+ * chon trong form san pham), khong phai con so nhap tay. Truong brand cua san
+ * pham la thuong hieu hien thi cho khach, khong lien quan den nha san xuat.
  */
 @RestController
 @RequestMapping("/api/manufacturers")
 public class ManufacturerController {
 
+    private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
     private final ManufacturerRepository manufacturerRepository;
+    private final ProductRepository productRepository;
     private final CurrentUserService currentUserService;
 
-    public ManufacturerController(ManufacturerRepository manufacturerRepository, CurrentUserService currentUserService) {
+    public ManufacturerController(ManufacturerRepository manufacturerRepository,
+                                  ProductRepository productRepository,
+                                  CurrentUserService currentUserService) {
         this.manufacturerRepository = manufacturerRepository;
+        this.productRepository = productRepository;
         this.currentUserService = currentUserService;
     }
 
-    private void seedDefaultsIfEmpty() {
-        if (manufacturerRepository.count() == 0) {
-            List<Manufacturer> defaults = List.of(
-                new Manufacturer("Xưởng May Dệt Kim Hà Nội", "Việt Nam", "https://detkimhanoi.vn", "contact@detkimhanoi.vn", "Chuyên gia công áo thun 100% Cotton 2 chiều và 4 chiều định lượng 250gsm cho ET.TEE.", 18),
-                new Manufacturer("Xưởng Gia Công May Mặc Sài Gòn Garment", "Việt Nam", "https://saigongarment.com", "orders@saigongarment.com", "Chuyên may quần jean, kaki túi hộp và áo khoác gió dù 2 lớp chuẩn form streetwear.", 24),
-                new Manufacturer("Công Ty Cổ Phần May Đông Đô", "Việt Nam", "https://dongdogarment.vn", "info@dongdogarment.vn", "Đối tác sản xuất hoodie nỉ bông chân cua 380gsm và sơ mi oversize.", 15),
-                new Manufacturer("Xưởng Thêu Vi Tính & In Kỹ Thuật Số Hải Phòng", "Việt Nam", "https://haiphongprint.vn", "xuongin@haiphongprint.vn", "Xưởng in lụa trame cao cấp và in kỹ thuật số DTG cho các mẫu áo Graphic Tee.", 12)
-            );
-            manufacturerRepository.saveAll(defaults);
+    /** Response shape: entity fields + the real product count. */
+    public record ManufacturerView(Long id, String name, String country, String website,
+                                   String contactEmail, String description, long productCount,
+                                   LocalDateTime createdAt, LocalDateTime updatedAt) {}
+
+    private ManufacturerView toView(Manufacturer m) {
+        long count = productRepository.countByManufacturerId(m.getId());
+        return new ManufacturerView(m.getId(), m.getName(), m.getCountry(), m.getWebsite(),
+                m.getContactEmail(), m.getDescription(), count, m.getCreatedAt(), m.getUpdatedAt());
+    }
+
+    private static String clean(String s) {
+        return s == null ? null : (s.trim().isEmpty() ? null : s.trim());
+    }
+
+    /** Validates and normalises the writable fields; throws 400/409 with a Vietnamese message. */
+    private void validate(Manufacturer request, Long selfId) {
+        String name = clean(request.getName());
+        if (name == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên nhà sản xuất không được để trống");
+        }
+        if (name.length() > 255) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên nhà sản xuất tối đa 255 ký tự");
+        }
+        String email = clean(request.getContactEmail());
+        if (email != null && (email.length() > 150 || !EMAIL.matcher(email).matches())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email liên hệ không đúng định dạng");
+        }
+        String website = clean(request.getWebsite());
+        if (website != null && website.length() > 255) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Website tối đa 255 ký tự");
+        }
+        String country = clean(request.getCountry());
+        if (country != null && country.length() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quốc gia tối đa 100 ký tự");
+        }
+        boolean duplicate = selfId == null
+                ? manufacturerRepository.existsByNameIgnoreCase(name)
+                : manufacturerRepository.existsByNameIgnoreCaseAndIdNot(name, selfId);
+        if (duplicate) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Nhà sản xuất cùng tên đã tồn tại");
         }
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN', 'WAREHOUSE_STAFF')")
-    public ResponseEntity<ApiResponse<PaginatedResponseDto<Manufacturer>>> getManufacturers(
+    public ResponseEntity<ApiResponse<PaginatedResponseDto<ManufacturerView>>> getManufacturers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String keyword) {
 
-        seedDefaultsIfEmpty();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        // "" (never null) = no filter; a null bind param breaks LOWER(CONCAT(..)) on PostgreSQL.
+        String cleanKeyword = keyword != null ? keyword.trim() : "";
         Page<Manufacturer> pagedResult = manufacturerRepository.searchManufacturers(cleanKeyword, pageable);
 
-        PaginatedResponseDto<Manufacturer> responseDto = new PaginatedResponseDto<>(
-                pagedResult.getContent(),
-                (int) pagedResult.getTotalElements(),
-                page,
-                size,
+        List<ManufacturerView> items = pagedResult.getContent().stream().map(this::toView).toList();
+        PaginatedResponseDto<ManufacturerView> responseDto = new PaginatedResponseDto<>(
+                items,
+                pagedResult.getTotalElements(),
+                pagedResult.getNumber(),
+                pagedResult.getSize(),
                 pagedResult.getTotalPages(),
                 null
         );
@@ -74,26 +119,24 @@ public class ManufacturerController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN', 'WAREHOUSE_STAFF')")
-    public ResponseEntity<ApiResponse<Manufacturer>> getManufacturerById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ManufacturerView>> getManufacturerById(@PathVariable Long id) {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà sản xuất"));
-        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin nhà sản xuất thành công", manufacturer));
+        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin nhà sản xuất thành công", toView(manufacturer)));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Manufacturer>> createManufacturer(@RequestBody Manufacturer request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên nhà sản xuất không được để trống");
-        }
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ManufacturerView>> createManufacturer(@RequestBody Manufacturer request) {
+        validate(request, null);
 
         Manufacturer newEntity = new Manufacturer(
                 request.getName().trim(),
-                request.getCountry() != null && !request.getCountry().trim().isEmpty() ? request.getCountry().trim() : "Việt Nam",
-                request.getWebsite() != null ? request.getWebsite().trim() : null,
-                request.getContactEmail() != null ? request.getContactEmail().trim() : null,
-                request.getDescription() != null ? request.getDescription().trim() : null,
-                request.getProductCount() != null ? request.getProductCount() : 0
+                clean(request.getCountry()) != null ? clean(request.getCountry()) : "Việt Nam",
+                clean(request.getWebsite()),
+                clean(request.getContactEmail()),
+                clean(request.getDescription()),
+                0
         );
         String actor = currentUserService.getCurrentUserIdOrNull();
         newEntity.setCreatedBy(actor);
@@ -101,53 +144,39 @@ public class ManufacturerController {
 
         Manufacturer saved = manufacturerRepository.save(newEntity);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Tạo mới nhà sản xuất thành công", saved));
+                .body(ApiResponse.success("Tạo mới nhà sản xuất thành công", toView(saved)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Manufacturer>> updateManufacturer(
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ManufacturerView>> updateManufacturer(
             @PathVariable Long id,
             @RequestBody Manufacturer request) {
 
         Manufacturer existing = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà sản xuất"));
+        validate(request, id);
 
-        if (request.getName() != null && !request.getName().trim().isEmpty()) {
-            existing.setName(request.getName().trim());
-        }
-        if (request.getCountry() != null) {
-            existing.setCountry(request.getCountry().trim());
-        }
-        if (request.getWebsite() != null) {
-            existing.setWebsite(request.getWebsite().trim());
-        }
-        if (request.getContactEmail() != null) {
-            existing.setContactEmail(request.getContactEmail().trim());
-        }
-        if (request.getDescription() != null) {
-            existing.setDescription(request.getDescription().trim());
-        }
-        if (request.getProductCount() != null) {
-            existing.setProductCount(request.getProductCount());
-        }
-
+        existing.setName(request.getName().trim());
+        existing.setCountry(clean(request.getCountry()) != null ? clean(request.getCountry()) : "Việt Nam");
+        existing.setWebsite(clean(request.getWebsite()));
+        existing.setContactEmail(clean(request.getContactEmail()));
+        existing.setDescription(clean(request.getDescription()));
         existing.setUpdatedBy(currentUserService.getCurrentUserIdOrNull());
 
         Manufacturer updated = manufacturerRepository.save(existing);
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin nhà sản xuất thành công", updated));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin nhà sản xuất thành công", toView(updated)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteManufacturer(@PathVariable Long id) {
-        // Xoa mem: Product khong co lien ket FK toi Manufacturer (chi co truong
-        // brand dang van ban tu do), nen KHONG the kiem tra "con san pham dang
-        // dung" nhu voi Category. Neu ve sau them lien ket that, bo sung kiem
-        // tra tai day truoc khi xoa.
+        // Xoa mem. Product khong co FK toi Manufacturer (chi co brand dang van ban),
+        // nen viec xoa khong lam hong san pham; giao dien canh bao so san pham dang
+        // mang thuong hieu nay truoc khi xoa.
         Manufacturer existing = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhà sản xuất"));
-        existing.setDeletedAt(LocalDateTime.now());
+        existing.setDeletedAt(LocalDateTime.now(ZoneId.systemDefault()));
         existing.setUpdatedBy(currentUserService.getCurrentUserIdOrNull());
         manufacturerRepository.save(existing);
         return ResponseEntity.ok(ApiResponse.success("Xóa nhà sản xuất thành công", null));

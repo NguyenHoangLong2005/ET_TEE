@@ -20,11 +20,10 @@ import java.util.Map;
  * /config quan ly danh muc NOI BAT theo chi nhanh (StoreFeaturedCategory, co
  * shop_id) - SHOP_OWNER duoc sua trong pham vi chi nhanh minh.
  *
- * Cac endpoint CRUD danh muc GOC (createCategory/updateCategory/deleteCategory
- * ben duoi) thao tac thang len bang categories dung chung toan he thong -
- * Category KHONG co shop_id, "danh muc rieng cua chi nhanh" khong ton tai
- * trong mo hinh du lieu. Truoc day cac endpoint nay cho SHOP_OWNER goi, tuc
- * la SHOP_OWNER sua duoc danh muc dung chung - da sua thanh chi ADMIN.
+ * Cac endpoint CRUD danh muc (createCategory/updateCategory/deleteCategory
+ * ben duoi) thao tac len bang categories dung chung toan he thong (Category
+ * KHONG co shop_id). SHOP_OWNER va ADMIN deu duoc CRUD; xoa bi chan boi
+ * CategoryService.checkDelete (danh muc con, san pham, don chua hoan tat).
  */
 @RestController
 @RequestMapping("/api/store-owner/categories")
@@ -68,7 +67,7 @@ public class StoreOwnerCategoryController {
         return ResponseEntity.ok(response);
     }
 
-    // ── CRUD danh mục (Store Owner quản lý danh mục riêng của chi nhánh) ──
+    // ── CRUD danh mục (Store Owner quản lý danh mục riêng của cửa hàng) ──
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
@@ -88,8 +87,17 @@ public class StoreOwnerCategoryController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/delete-check")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<Map<String, Object>> checkDelete(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", categoryService.checkDelete(id));
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> createCategory(@Valid @RequestBody CategoryDto dto) {
         CategoryDto created = categoryService.createCategory(dto);
         Map<String, Object> response = new HashMap<>();
@@ -100,7 +108,7 @@ public class StoreOwnerCategoryController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryDto dto) {
@@ -113,7 +121,7 @@ public class StoreOwnerCategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         Map<String, Object> response = new HashMap<>();

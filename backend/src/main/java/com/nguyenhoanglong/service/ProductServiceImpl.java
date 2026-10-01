@@ -29,16 +29,43 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final com.nguyenhoanglong.repository.ProductVariantRepository variantRepository;
+    private final org.springframework.transaction.support.TransactionTemplate readOnlyTx;
     private final CategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository,
+                              com.nguyenhoanglong.repository.ProductVariantRepository variantRepository,
+                              org.springframework.transaction.PlatformTransactionManager txManager) {
+        this.variantRepository = variantRepository;
+        this.readOnlyTx = new org.springframework.transaction.support.TransactionTemplate(txManager);
+        this.readOnlyTx.setReadOnly(true);
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
     }
 
+    // The DB is remote, so every listing costs several network round-trips.
+    // Short-lived cache; cleared on product create/update/delete.
+    private static final com.nguyenhoanglong.util.TtlCache<String, PaginatedResponseDto<ProductDto>> LISTING_CACHE =
+            new com.nguyenhoanglong.util.TtlCache<>(30, 1800, 200);
+
+    /** For code outside this service that changes what the storefront shows (e.g. price edits by the store owner). */
+    public static void invalidateListingCache() {
+        LISTING_CACHE.clear();
+    }
+
     @Override
-    @Transactional(readOnly = true)
     public PaginatedResponseDto<ProductDto> getProducts(
+            String q, String targetGroup, String gender, String productType, String category, String collection,
+            String color, String adultSize, String kidsSize, String accessorySize,
+            BigDecimal minPrice, BigDecimal maxPrice, String status, Pageable pageable) {
+        String key = java.util.Arrays.asList(q, targetGroup, gender, productType, category, collection, color,
+                adultSize, kidsSize, accessorySize, minPrice, maxPrice, status, pageable).toString();
+        return LISTING_CACHE.get(key, () -> readOnlyTx.execute(status_ -> loadProducts(q, targetGroup, gender,
+                productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice,
+                status, pageable)));
+    }
+
+    private PaginatedResponseDto<ProductDto> loadProducts(
             String q, String targetGroup, String gender, String productType, String category, String collection,
             String color, String adultSize, String kidsSize, String accessorySize,
             BigDecimal minPrice, BigDecimal maxPrice, String status, Pageable pageable) {
@@ -49,8 +76,9 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Product> page = productRepository.findAll(spec, pageable);
         List<ProductDto> items = page.getContent().stream()
-                .map(this::mapToDto)
+                .map(product -> mapToDto(product, false))
                 .collect(Collectors.toList());
+        attachVariantSummaries(items);
 
         Map<String, Object> filters = new HashMap<>();
         // Could populate real filters here
@@ -121,6 +149,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto createProduct(ProductDto productDto) {
+        LISTING_CACHE.clear();
         Product product = new Product();
         applyDtoToProduct(productDto, product);
         Product saved = productRepository.save(product);
@@ -129,6 +158,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto updateProduct(Long id, ProductDto productDto) {
+        LISTING_CACHE.clear();
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
         applyDtoToProduct(productDto, product);
@@ -151,7 +181,10 @@ public class ProductServiceImpl implements ProductService {
         product.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
         if (dto.getIsNew() != null) product.setIsNew(dto.getIsNew());
         if (dto.getIsBestSeller() != null) product.setIsBestSeller(dto.getIsBestSeller());
-        if (dto.getIsSale() != null) product.setIsSale(dto.getIsSale());
+        // Derived from the prices, like the store owner's pricing does: a client-set flag drifted
+        // (511 products flagged "on sale", many with no discount at all).
+        product.setIsSale(product.getSalePrice() != null && product.getPrice() != null
+                && product.getSalePrice().compareTo(product.getPrice()) < 0);
 
         Long categoryId = dto.getCategoryId() != null ? dto.getCategoryId()
                 : (dto.getCategory() != null ? dto.getCategory().getId() : null);
@@ -200,17 +233,55 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long id) {
+        LISTING_CACHE.clear();
         // Xoa mem: doi status='DELETED' thay vi deleteById. Product da co
         // @SQLRestriction("status <> 'DELETED'") nen san pham nay tu dong bien
         // mat khoi moi truy van sau khi doi status - don hang/phieu nhap cu
         // van con tham chieu duoc toi no.
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
+        // Same rules as the store owner's delete, which this admin path used to skip.
+        productRemovalService.assertNoOpenOrders(id);
+        String suffix = "-deleted-" + product.getId();
+        String slug = product.getSlug();
+        if (slug != null && !slug.endsWith(suffix)) {
+            product.setSlug(slug.length() + suffix.length() > 255 ? slug.substring(0, 255 - suffix.length()) + suffix : slug + suffix);
+        }
         product.setStatus("DELETED");
         productRepository.save(product);
+        productRemovalService.detachFromCartsAndWishlists(id);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private ProductRemovalService productRemovalService;
+
+    /**
+     * Fills each listing item's variants with distinct color-only and size-only entries
+     * (all a product card needs) using two small grouped queries instead of loading
+     * every variant row.
+     */
+    private void attachVariantSummaries(List<ProductDto> items) {
+        if (items.isEmpty()) return;
+        List<Long> ids = items.stream().map(ProductDto::getId).collect(Collectors.toList());
+        Map<Long, List<ProductVariantDto>> byProduct = new HashMap<>();
+        for (Object[] row : variantRepository.findDistinctColorsByProductIds(ids)) {
+            byProduct.computeIfAbsent((Long) row[0], k -> new ArrayList<>()).add(ProductVariantDto.builder()
+                    .color((String) row[1]).colorHex((String) row[2]).colorCode((String) row[3]).build());
+        }
+        for (Object[] row : variantRepository.findDistinctSizesByProductIds(ids)) {
+            byProduct.computeIfAbsent((Long) row[0], k -> new ArrayList<>()).add(ProductVariantDto.builder()
+                    .size((String) row[1]).build());
+        }
+        for (ProductDto item : items) {
+            item.setVariants(byProduct.getOrDefault(item.getId(), new ArrayList<>()));
+        }
     }
 
     private ProductDto mapToDto(Product product) {
+        return mapToDto(product, true);
+    }
+
+    private ProductDto mapToDto(Product product, boolean includeVariants) {
         CategoryDto categoryDto = null;
         if (product.getCategory() != null) {
             categoryDto = CategoryDto.builder()
@@ -221,7 +292,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         List<ProductVariantDto> variantDtos = new ArrayList<>();
-        if (product.getVariants() != null) {
+        if (includeVariants && product.getVariants() != null) {
             variantDtos = product.getVariants().stream()
                     .map(v -> ProductVariantDto.builder()
                             .id(v.getId())

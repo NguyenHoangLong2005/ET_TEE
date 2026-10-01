@@ -7,7 +7,7 @@ import EmptyState from '@/components/ui/EmptyState';
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: string | ReactNode;
   render?: (row: T, index: number) => ReactNode;
   className?: string;
   headerClassName?: string;
@@ -40,6 +40,9 @@ export interface DataTableProps<T> {
   pagination?: PaginationConfig;
   className?: string;
   onRowClick?: (row: T) => void;
+  /** table-layout: fixed. Columns take their `width`; the rest share the remaining space and long
+   *  content must truncate itself, so the table always fits its container without a horizontal scrollbar. */
+  fixedLayout?: boolean;
 }
 
 /**
@@ -71,6 +74,7 @@ export function DataTable<T>({
   pagination,
   className = '',
   onRowClick,
+  fixedLayout = false,
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -149,7 +153,7 @@ export function DataTable<T>({
 
       {/* Table */}
       <div className="overflow-x-auto relative flex-1 min-h-[200px]">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className={`w-full text-left text-xs border-collapse ${fixedLayout ? 'table-fixed' : ''}`}>
           <thead>
             <tr className="border-b border-slate-200" style={{ background: '#F8FAFC' }}>
               {columns.map((col) => {
@@ -228,7 +232,7 @@ export function DataTable<T>({
                     return (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 text-slate-700 ${alignCls} ${col.className ?? ''}`}
+                        className={`px-4 py-3 text-slate-700 ${fixedLayout ? 'overflow-hidden' : ''} ${alignCls} ${col.className ?? ''}`}
                       >
                         {col.render
                           ? col.render(row, idx)

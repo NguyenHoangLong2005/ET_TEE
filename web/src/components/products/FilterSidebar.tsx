@@ -8,6 +8,7 @@ interface FilterSidebarProps {
   stats: {
     targetGroup: Record<string, number>;
     productType: Record<string, number>;
+    category?: Record<string, number>;
     sizes: { adult: string[]; kids: string[] };
   };
 }
@@ -104,6 +105,8 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
   const currentAdultSizeSet = getParamSet('adultSize');
   const currentKidsSizeSet = getParamSet('kidsSize');
   const currentStatusSet = getParamSet('status');
+  // The header "Phụ kiện" tab links with ?category=accessories
+  const accessoriesChecked = searchParams.get('category') === 'accessories';
 
   // Toggle multi-select checkbox for array parameters
   const toggleMultiFilter = (key: string, value: string) => {
@@ -196,7 +199,18 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     { id: 'baby', label: 'Em bé', count: stats.targetGroup.baby ?? 0 }
   ].filter(item => item.count > 0);
 
+  const toggleAccessories = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (accessoriesChecked) params.delete('category');
+    else params.set('category', 'accessories');
+    params.delete('page');
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
+  };
+
   const hasActiveSidebarFilters = 
+    accessoriesChecked ||
     currentTargetSet.size > 0 ||
     currentProductTypeSet.size > 0 ||
     currentAdultSizeSet.size > 0 ||
@@ -213,6 +227,11 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
 
   return (
     <>
+      {isPending && (
+        <div className="fixed top-0 left-0 right-0 z-[100] h-0.5 bg-primary/20 overflow-hidden" role="progressbar" aria-label="Đang tải sản phẩm">
+          <div className="h-full w-1/3 bg-primary animate-[filter-progress_1s_ease-in-out_infinite]" />
+        </div>
+      )}
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden w-full flex items-center justify-between mb-4 border-b border-slate-200 pb-4">
         <button 
@@ -268,6 +287,17 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                     </label>
                   );
                 })}
+                <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+                  <input
+                    type="checkbox"
+                    checked={accessoriesChecked}
+                    onChange={toggleAccessories}
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
+                  />
+                  <span className={`text-[14px] group-hover:text-primary transition-colors ${accessoriesChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                    Phụ kiện{stats.category?.accessories ? <span className="text-slate-400 font-normal"> ({stats.category.accessories})</span> : null}
+                  </span>
+                </label>
               </div>
             )}
           </div>

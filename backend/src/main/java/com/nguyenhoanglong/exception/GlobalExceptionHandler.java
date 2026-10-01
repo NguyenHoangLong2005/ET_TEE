@@ -86,6 +86,31 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    // Client mistakes used to fall through to the generic handler below and come back as
+    // 500 "server error" (e.g. ?minPrice=abc, an unknown URL, a malformed JSON body).
+    @ExceptionHandler({
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class,
+            org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.multipart.MaxUploadSizeExceededException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ex) {
+        String message = ex instanceof org.springframework.web.multipart.MaxUploadSizeExceededException
+                ? "Tệp tải lên quá lớn"
+                : "Dữ liệu gửi lên không hợp lệ";
+        return new ResponseEntity<>(ApiResponse.error(message), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResource(Exception ex) {
+        return new ResponseEntity<>(ApiResponse.error("Không tìm thấy đường dẫn yêu cầu"), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(Exception ex) {
+        return new ResponseEntity<>(ApiResponse.error("Phương thức không được hỗ trợ"), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
         // Loi that (stack trace, thong diep SQL/noi bo) chi ghi log server-side.

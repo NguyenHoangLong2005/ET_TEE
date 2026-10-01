@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, Sparkles, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
+import { formatVnd, roundVnd } from '@/lib/utils/price';
 
 export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeItem } = useCart();
@@ -130,7 +132,8 @@ export default function CartPage() {
                   <div className="col-span-6 flex gap-4">
                     <Link href={`/products/${item.productSlug}`} className="w-24 h-[120px] relative bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                       <Image 
-                        src={item.productImage || '/images/placeholder.webp'}
+                        src={sanitizeImageUrl(item.productImage) || '/images/placeholder.webp'}
+                        unoptimized={isRemoteImage(item.productImage)}
                         alt={item.productName}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -147,13 +150,13 @@ export default function CartPage() {
                         <p>Size: <span className="font-bold text-slate-900">{item.size}</span></p>
                       </div>
                       <div className="lg:hidden text-xs mt-1">
-                        {item.salePrice && item.salePrice < item.price ? (
+                        {item.salePrice && roundVnd(item.salePrice) < roundVnd(item.price) ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-red-600">{item.salePrice.toLocaleString('vi-VN')}₫</span>
-                            <span className="text-slate-400 line-through text-[11px]">{item.price.toLocaleString('vi-VN')}₫</span>
+                            <span className="font-black text-red-600">{formatVnd(item.salePrice)}₫</span>
+                            <span className="text-slate-400 line-through text-[11px]">{formatVnd(item.price)}₫</span>
                           </div>
                         ) : (
-                          <span className="font-black text-slate-900">{item.price.toLocaleString('vi-VN')}₫</span>
+                          <span className="font-black text-slate-900">{formatVnd(item.salePrice || item.price)}₫</span>
                         )}
                       </div>
                       
@@ -229,9 +232,9 @@ export default function CartPage() {
                   {/* Desktop Total */}
                   <div className="hidden lg:block lg:col-span-3 text-right">
                     <span className="font-black text-base text-slate-900">{item.itemTotal.toLocaleString('vi-VN')}₫</span>
-                    {item.salePrice && item.salePrice < item.price && (
+                    {item.salePrice && roundVnd(item.salePrice) < roundVnd(item.price) && (
                       <p className="text-[11px] text-emerald-600 font-bold mt-0.5">
-                        Tiết kiệm {((item.price - item.salePrice) * item.quantity).toLocaleString('vi-VN')}₫
+                        Tiết kiệm {((roundVnd(item.price) - roundVnd(item.salePrice)) * item.quantity).toLocaleString('vi-VN')}₫
                       </p>
                     )}
                   </div>

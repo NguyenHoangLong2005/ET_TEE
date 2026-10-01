@@ -43,3 +43,8 @@ web/script.js
 *.log
 .DS_Store
 Thumbs.db
+logs/
+
+# uploaded product images
+/backend/uploads/
+backend/uploads/

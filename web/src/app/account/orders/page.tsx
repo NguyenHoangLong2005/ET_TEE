@@ -12,11 +12,16 @@ const STATUS_MAP: Record<string, { label: string, colorClass: string }> = {
   PENDING_PAYMENT: { label: 'Chờ thanh toán', colorClass: 'bg-amber-100 text-amber-900 border border-amber-200' },
   PENDING_CONFIRMATION: { label: 'Chờ xác nhận', colorClass: 'bg-sky-100 text-sky-900 border border-sky-200' },
   CONFIRMED: { label: 'Đã xác nhận', colorClass: 'bg-indigo-100 text-indigo-900 border border-indigo-200' },
+  PICKING: { label: 'Đang chuẩn bị hàng', colorClass: 'bg-indigo-100 text-indigo-900 border border-indigo-200' },
+  PACKED: { label: 'Đã đóng gói', colorClass: 'bg-indigo-100 text-indigo-900 border border-indigo-200' },
+  HANDED_TO_CARRIER: { label: 'Đã giao vận chuyển', colorClass: 'bg-purple-100 text-purple-900 border border-purple-200' },
   SHIPPING: { label: 'Đang giao hàng', colorClass: 'bg-purple-100 text-purple-900 border border-purple-200' },
   DELIVERED: { label: 'Đã giao', colorClass: 'bg-emerald-100 text-emerald-900 border border-emerald-200' },
   COMPLETED: { label: 'Hoàn thành', colorClass: 'bg-emerald-100 text-emerald-900 border border-emerald-200' },
   CANCELLED: { label: 'Đã hủy', colorClass: 'bg-rose-100 text-rose-900 border border-rose-200' },
+  RETURN_REQUESTED: { label: 'Chờ duyệt trả hàng', colorClass: 'bg-orange-100 text-orange-900 border border-orange-200' },
   RETURNED: { label: 'Hoàn trả', colorClass: 'bg-orange-100 text-orange-900 border border-orange-200' },
+  REFUNDED: { label: 'Đã hoàn tiền', colorClass: 'bg-slate-100 text-slate-900 border border-slate-200' },
 };
 
 function OrderSkeleton() {
@@ -97,10 +102,11 @@ export default function AccountOrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'ALL') return true;
-    if (filter === 'PENDING') return ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'CONFIRMED'].includes(order.orderStatus);
-    if (filter === 'SHIPPING') return order.orderStatus === 'SHIPPING';
+    // Warehouse steps (PICKING/PACKED) and HANDED_TO_CARRIER used to match no tab.
+    if (filter === 'PENDING') return ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'CONFIRMED', 'PICKING', 'PACKED'].includes(order.orderStatus);
+    if (filter === 'SHIPPING') return ['HANDED_TO_CARRIER', 'SHIPPING'].includes(order.orderStatus);
     if (filter === 'COMPLETED') return ['DELIVERED', 'COMPLETED'].includes(order.orderStatus);
-    if (filter === 'CANCELLED') return ['CANCELLED', 'RETURNED'].includes(order.orderStatus);
+    if (filter === 'CANCELLED') return ['CANCELLED', 'RETURN_REQUESTED', 'RETURNED', 'REFUNDED'].includes(order.orderStatus);
     return true;
   });
 
@@ -129,7 +135,7 @@ export default function AccountOrdersPage() {
           { id: 'PENDING', label: 'Chờ xử lý' },
           { id: 'SHIPPING', label: 'Đang giao' },
           { id: 'COMPLETED', label: 'Hoàn thành' },
-          { id: 'CANCELLED', label: 'Đã hủy' }
+          { id: 'CANCELLED', label: 'Hủy / Trả hàng' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -255,6 +261,15 @@ export default function AccountOrdersPage() {
                   <span className="text-xl font-black text-primary">{order.totalAmount?.toLocaleString('vi-VN')}đ</span>
                 </div>
                 
+                <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
+                {order.paymentMethod === 'BANK_TRANSFER' && order.paymentStatus !== 'PAID' && order.orderStatus === 'PENDING_PAYMENT' && (
+                  <Link
+                    href={`/account/orders/${order.orderCode}`}
+                    className="flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-wider rounded-xl transition-all text-sm w-full sm:w-auto shadow-2xs"
+                  >
+                    Thanh toán
+                  </Link>
+                )}
                 <Link 
                   href={`/account/orders/${order.orderCode}`}
                   className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-slate-200/80 text-slate-800 font-bold rounded-xl hover:border-slate-900 hover:text-slate-900 transition-all text-sm w-full sm:w-auto shadow-2xs"
@@ -262,6 +277,7 @@ export default function AccountOrdersPage() {
                   <Eye className="w-4 h-4" />
                   Xem chi tiết
                 </Link>
+                </div>
               </div>
 
             </div>

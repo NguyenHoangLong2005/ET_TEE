@@ -67,6 +67,12 @@ public class User {
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
+    /** Tokens issued before this moment are rejected (see JwtAuthenticationFilter). */
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
+
+    public LocalDateTime getPasswordChangedAt() { return passwordChangedAt; }
+
     @Column(name = "employee_code", unique = true, length = 50)
     private String employeeCode;
 
@@ -103,7 +109,14 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     
     public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setPasswordHash(String passwordHash) {
+        // Every password change (self-service, reset, admin temp password) goes through here,
+        // so this is the one place that ends the sessions opened with the old password.
+        if (this.passwordHash != null && !this.passwordHash.equals(passwordHash)) {
+            this.passwordChangedAt = LocalDateTime.now();
+        }
+        this.passwordHash = passwordHash;
+    }
     
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }

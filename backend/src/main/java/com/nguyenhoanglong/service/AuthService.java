@@ -144,7 +144,10 @@ public class AuthService {
         emailService.sendVerificationEmail(user.getEmail(), otp);
     }
 
-    @Transactional
+    // noRollbackFor: a wrong code increments attemptCount (and may set LOCKED/EXPIRED) and then
+    // throws. With the default rollback-on-RuntimeException those writes were undone, so the
+    // 5-attempt limit never took effect and a 6-digit code could be brute-forced.
+    @Transactional(noRollbackFor = RuntimeException.class)
     public AuthDto.AuthResponse verifyEmail(AuthDto.VerifyEmailRequest request) {
         request.setEmail(normalizeEmail(request.getEmail()));
         User user = userRepository.findByEmail(request.getEmail())
@@ -232,43 +235,57 @@ public class AuthService {
         request.setEmail(normalizeEmail(request.getEmail()));
 
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isEmpty() && !request.getEmail().contains("@")) {
+            // Nhân viên đăng nhập bằng username (mã nhân viên)
+            userOpt = userRepository.findByEmployeeCodeIgnoreCase(request.getEmail());
+            userOpt.ifPresent(u -> request.setEmail(u.getEmail()));
+        }
         if (userOpt.isEmpty()) {
             logAttempt(request.getEmail(), ipAddress, false);
+            auditLoginFailure(request.getEmail(), null, ipAddress, "Email không tồn tại");
             throw new RuntimeException("Email hoặc mật khẩu không đúng");
         }
         User user = userOpt.get();
 
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
             logAttempt(request.getEmail(), ipAddress, false);
+            auditLoginFailure(request.getEmail(), user, ipAddress, "Tài khoản đang bị tạm khóa");
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Tài khoản bị tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             logAttempt(request.getEmail(), ipAddress, false);
+            auditLoginFailure(request.getEmail(), user, ipAddress, "Sai mật khẩu");
             userRepository.incrementFailedLoginAttempts(user.getId());
             throw new RuntimeException("Email hoặc mật khẩu không đúng");
+        }
+
+        // Checked before the success bookkeeping: a banned or unverified account used to be
+        // logged as a successful login (and have its lockout reset) and only then refused.
+        if (!user.isEmailVerified()) {
+            throw new RuntimeException("UNVERIFIED");
+        }
+        if ("BANNED".equals(user.getStatus()) || "LOCKED".equals(user.getStatus())) {
+            logAttempt(request.getEmail(), ipAddress, false);
+            auditLoginFailure(request.getEmail(), user, ipAddress, "Tài khoản đã bị khóa");
+            throw new RuntimeException("Tài khoản đã bị khóa");
         }
 
         // Đăng nhập thành công -> reset lockout
         userRepository.resetFailedLoginAttempts(user.getId());
         logAttempt(request.getEmail(), ipAddress, true);
 
-        activityLogService.log(
-                user.getId() != null ? user.getId().toString() : "UNKNOWN",
-                "USER_LOGIN",
-                "User",
-                user.getId() != null ? user.getId().toString() : "UNKNOWN",
-                "Đăng nhập hệ thống thành công (Email: " + user.getEmail() + ", Vai trò: " + (user.getRole() != null ? user.getRole().name() : "USER") + ")",
-                ipAddress
-        );
-
-        if (!user.isEmailVerified()) {
-            throw new RuntimeException("UNVERIFIED");
-        }
-
-        if ("BANNED".equals(user.getStatus()) || "LOCKED".equals(user.getStatus())) {
-            throw new RuntimeException("Tài khoản đã bị khóa");
-        }
+        com.nguyenhoanglong.entity.ActivityLog loginEntry = new com.nguyenhoanglong.entity.ActivityLog();
+        loginEntry.setUserId(user.getId() != null ? user.getId().toString() : "UNKNOWN");
+        loginEntry.setAction("USER_LOGIN");
+        loginEntry.setTargetEntity("User");
+        loginEntry.setTargetId(user.getId() != null ? user.getId().toString() : "UNKNOWN");
+        loginEntry.setActorEmail(user.getEmail());
+        loginEntry.setActorRole(user.getRole() != null ? user.getRole().name() : "USER");
+        loginEntry.setDescription("Đăng nhập hệ thống thành công (Email: " + user.getEmail() + ", Vai trò: " + (user.getRole() != null ? user.getRole().name() : "USER") + ")");
+        loginEntry.setIpAddress(ipAddress);
+        loginEntry.setResult(ActivityLogService.RESULT_SUCCESS);
+        activityLogService.record(loginEntry);
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().name());
@@ -292,6 +309,7 @@ public class AuthService {
         authResponse.setRole(roleName);
         authResponse.setPermissions(getPermissionsForRole(roleName));
         authResponse.setShopId(user.getShopId());
+        authResponse.setMustChangePassword(user.isMustChangePassword());
         return authResponse;
     }
 
@@ -301,6 +319,22 @@ public class AuthService {
                 .stream()
                 .map(com.nguyenhoanglong.entity.RolePermissionEntity::getPermission)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /** Failed logins are security events: keep who tried (e-mail), from where, and why. */
+    private void auditLoginFailure(String email, User user, String ipAddress, String reason) {
+        com.nguyenhoanglong.entity.ActivityLog entry = new com.nguyenhoanglong.entity.ActivityLog();
+        String userId = user != null && user.getId() != null ? user.getId().toString() : null;
+        entry.setUserId(userId != null ? userId : "ANONYMOUS");
+        entry.setAction("LOGIN_FAILED");
+        entry.setTargetEntity("User");
+        entry.setTargetId(userId);
+        entry.setActorEmail(email);
+        entry.setActorRole(user != null && user.getRole() != null ? user.getRole().name() : null);
+        entry.setIpAddress(ipAddress);
+        entry.setResult(ActivityLogService.RESULT_FAILURE);
+        entry.setDescription("Đăng nhập thất bại (Email: " + email + ") - " + reason);
+        activityLogService.recordAsync(entry);
     }
 
     private void logAttempt(String email, String ipAddress, boolean success) {
@@ -320,6 +354,7 @@ public class AuthService {
         response.setRole(roleName);
         response.setPermissions(getPermissionsForRole(roleName));
         response.setShopId(user.getShopId());
+        response.setMustChangePassword(user.isMustChangePassword());
         return response;
     }
 
@@ -371,7 +406,8 @@ public class AuthService {
         return forgotPassword(email);
     }
 
-    @Transactional
+    // See verifyEmail: failed-attempt counting must survive the exception that reports it.
+    @Transactional(noRollbackFor = RuntimeException.class)
     public String resetPassword(String email, String otp, String newPassword) {
         email = normalizeEmail(email);
         User user = userRepository.findByEmail(email)

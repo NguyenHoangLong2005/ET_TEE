@@ -276,7 +276,8 @@ public class CartService {
             imageUrl = product.getImages().get(0).getImageUrl();
         }
 
-        BigDecimal activePrice = variant.getSalePrice() != null ? variant.getSalePrice() : variant.getPrice();
+        BigDecimal activePrice = com.nguyenhoanglong.util.PriceUtils.roundToThousand(
+                variant.getSalePrice() != null ? variant.getSalePrice() : variant.getPrice());
         BigDecimal itemTotal = activePrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
         return new CartDto.CartItemResponse(

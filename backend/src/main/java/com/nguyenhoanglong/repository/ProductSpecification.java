@@ -80,10 +80,11 @@ public class ProductSpecification {
                 for (String st : statusArray) {
                     st = st.trim();
                     if ("sale".equalsIgnoreCase(st)) {
-                        statusPredicates.add(criteriaBuilder.or(
-                                criteriaBuilder.equal(root.get("isSale"), true),
-                                criteriaBuilder.isNotNull(root.get("salePrice"))
-                        ));
+                        // salePrice equal to price is not a discount; "is not null" matched the
+                        // whole catalogue (every product carried salePrice = price).
+                        // Only a real discount counts; the isSale flag had drifted from the prices.
+                        statusPredicates.add(criteriaBuilder.lessThan(
+                                root.<java.math.BigDecimal>get("salePrice"), root.<java.math.BigDecimal>get("price")));
                     } else if ("new".equalsIgnoreCase(st)) {
                         statusPredicates.add(criteriaBuilder.equal(root.get("isNew"), true));
                     } else if ("best".equalsIgnoreCase(st) || "bestseller".equalsIgnoreCase(st)) {

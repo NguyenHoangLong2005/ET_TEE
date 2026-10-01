@@ -45,6 +45,8 @@ class SalesOrderServiceCancelTest {
     @Mock private OrderStatusHistoryRepository historyRepository;
     @Mock private InventoryRepository inventoryRepository;
     @Mock private ProductVariantRepository variantRepository;
+    @Mock private MarketingService marketingService;
+    @Mock private SoldCountService soldCountService;
 
     private SalesOrderService service;
 
@@ -52,7 +54,44 @@ class SalesOrderServiceCancelTest {
     void setUp() {
         service = new SalesOrderService(
                 orders, notes, reservations, productRepository, userRepository,
-                new OrderStateMachine(), historyRepository, inventoryRepository, variantRepository);
+                new OrderStateMachine(), historyRepository, inventoryRepository, variantRepository,
+                marketingService, soldCountService, new OrderStockService(variantRepository, inventoryRepository));
+    }
+
+    @Test
+    void cancelOrder_afterPacking_putsGoodsBackOnTheShelf() {
+        Product product = new Product();
+        product.setId(7L);
+        OrderItem item = new OrderItem();
+        item.setQuantity(2);
+        item.setProduct(product);
+
+        Order order = new Order();
+        order.setId(102L);
+        order.setStatus(OrderStatus.PACKED);
+        order.setItems(List.of(item));
+
+        com.nguyenhoanglong.entity.Inventory inv = new com.nguyenhoanglong.entity.Inventory();
+        inv.setProductId(7L);
+        inv.setQuantityOnHand(5);
+
+        when(orders.findById(102L)).thenReturn(Optional.of(order));
+        when(orders.save(any(Order.class))).thenAnswer(a -> a.getArgument(0));
+        when(reservations.findByOrderId(102L)).thenReturn(List.<StockReservation>of());
+        when(inventoryRepository.findByProductIdWithLock(7L)).thenReturn(Optional.of(inv));
+
+        // Admin context: sales staff may not cancel a packed order, a manager may.
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        "admin@x", null, List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))));
+        try {
+            service.cancelOrder(102L, "Khách đổi ý");
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+
+        assertThat(inv.getQuantityOnHand()).isEqualTo(7);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 
     @Test

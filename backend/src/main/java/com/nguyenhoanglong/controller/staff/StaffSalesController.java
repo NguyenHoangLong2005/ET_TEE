@@ -2,6 +2,7 @@ package com.nguyenhoanglong.controller.staff;
 
 import com.nguyenhoanglong.entity.OrderStatus;
 import com.nguyenhoanglong.entity.OrderStatusHistory;
+import com.nguyenhoanglong.service.BankTransferPaymentService;
 import com.nguyenhoanglong.service.SalesOrderService;
 import com.nguyenhoanglong.service.OrderStateMachine;
 
@@ -19,10 +20,27 @@ import java.util.List;
 public class StaffSalesController {
     private final SalesOrderService service;
     private final OrderStateMachine stateMachine;
+    private final BankTransferPaymentService bankTransferPaymentService;
 
-    public StaffSalesController(SalesOrderService service, OrderStateMachine stateMachine) {
+    public StaffSalesController(SalesOrderService service, OrderStateMachine stateMachine,
+                                BankTransferPaymentService bankTransferPaymentService) {
         this.service = service;
         this.stateMachine = stateMachine;
+        this.bankTransferPaymentService = bankTransferPaymentService;
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> dashboard() {
+        return ResponseEntity.ok(service.getDashboardSummary());
+    }
+
+    @GetMapping("/orders/page")
+    public ResponseEntity<?> ordersPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(service.getOrdersPage(page, size, filter, q));
     }
 
     @GetMapping("/orders")
@@ -42,7 +60,7 @@ public class StaffSalesController {
 
     @GetMapping("/orders/{id}/notes")
     public ResponseEntity<?> orderNotes(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getOrderNotes(id));
+        return ResponseEntity.ok(service.getOrderNoteRows(id));
     }
 
     @GetMapping("/orders/{id}/status-info")
@@ -78,9 +96,25 @@ public class StaffSalesController {
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
+    @PutMapping("/orders/{id}/status")
+    public ResponseEntity<?> changeStatus(@PathVariable Long id, @RequestBody StatusRequest request) {
+        return ResponseEntity.ok(service.changeStatusBySales(id, request.status(), request.reason()));
+    }
+
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
     @PostMapping("/orders/{id}/confirm")
     public ResponseEntity<?> confirmOrder(@PathVariable Long id) {
         return ResponseEntity.ok(service.confirmOrder(id));
+    }
+
+    /** Staff checked the bank statement and the transfer for this order has arrived. */
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
+    @PostMapping("/orders/{id}/confirm-payment")
+    public ResponseEntity<?> confirmBankTransfer(@PathVariable Long id) {
+        var order = service.getOrder(id); // enforces the staff member's shop scope
+        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String actor = auth != null ? auth.getName() : null;
+        return ResponseEntity.ok(bankTransferPaymentService.markPaid(order, actor, "Nhân viên xác nhận đã nhận chuyển khoản"));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
@@ -128,6 +162,7 @@ public class StaffSalesController {
 
     public record VerifyRequest(String customerName, String phone, String shippingAddress) {}
     public record CancelRequest(String reason) {}
+    public record StatusRequest(String status, String reason) {}
     public record NoteRequest(String content, String userId) {}
     public record ReservationRequest(Long productId, Integer quantity) {}
     public record StatusDisplay(OrderStatus status, String displayName, String colorClass) {}

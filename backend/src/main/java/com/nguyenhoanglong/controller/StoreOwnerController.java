@@ -60,7 +60,7 @@ public class StoreOwnerController {
 
         Long targetShopId = resolveShopId(shopId);
         PaginatedResponseDto<ShopProductDto> result = storeOwnerService.getShopProducts(targetShopId, page, size, keyword, categoryId, status);
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách sản phẩm chi nhánh thành công", result));
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách sản phẩm cửa hàng thành công", result));
     }
 
     @GetMapping("/products/{productId}")
@@ -74,16 +74,57 @@ public class StoreOwnerController {
         return ResponseEntity.ok(ApiResponse.success("Lấy chi tiết cấu hình sản phẩm thành công", dto));
     }
 
-    @PutMapping("/products/{productId}/config")
+    /** Full product record for the edit form (also works for products that are switched off). */
+    @GetMapping("/products/{productId}/form")
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
-    public ResponseEntity<ApiResponse<ShopProductDto>> updateShopProductConfig(
-            @RequestParam(required = false) Long shopId,
-            @PathVariable Long productId,
-            @Valid @RequestBody ShopProductConfigUpdateDto updateDto) {
+    public ResponseEntity<ApiResponse<StoreProductFormDto>> getProductForm(@PathVariable Long productId) {
+        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin sản phẩm thành công", storeOwnerService.getProductForm(productId)));
+    }
 
-        Long targetShopId = resolveShopId(shopId);
-        ShopProductDto updated = storeOwnerService.updateShopProductConfig(targetShopId, productId, updateDto);
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật cấu hình giá local và trạng thái bán thành công", updated));
+    @PostMapping("/products")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<StoreProductFormDto>> createProduct(@RequestBody StoreProductFormDto body) {
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(ApiResponse.success("Đã tạo sản phẩm", storeOwnerService.createProduct(body)));
+    }
+
+    @PutMapping("/products/{productId}")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<StoreProductFormDto>> updateProduct(
+            @PathVariable Long productId, @RequestBody StoreProductFormDto body) {
+        return ResponseEntity.ok(ApiResponse.success("Đã cập nhật sản phẩm", storeOwnerService.updateProduct(productId, body)));
+    }
+
+    @GetMapping("/products/{productId}/delete-check")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkProductDelete(@PathVariable Long productId) {
+        return ResponseEntity.ok(ApiResponse.success("OK", storeOwnerService.checkProductDelete(productId)));
+    }
+
+    @DeleteMapping("/products/{productId}")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long productId) {
+        storeOwnerService.deleteProduct(productId);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa sản phẩm", null));
+    }
+
+    /** Sets list price, promotional price and on/off-sale state. One price for the whole system. */
+    @PutMapping("/products/{productId}/pricing")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ShopProductDto>> updateProductPricing(
+            @PathVariable Long productId,
+            @RequestBody ProductPriceUpdateDto updateDto) {
+
+        ShopProductDto updated = storeOwnerService.updateProductPricing(productId, updateDto);
+        return ResponseEntity.ok(ApiResponse.success("Đã cập nhật giá trên toàn hệ thống", updated));
+    }
+
+    /** ACTIVATE | DEACTIVATE | CLEAR_SALE on the selected products. */
+    @PutMapping("/products/bulk")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> bulkProductAction(@RequestBody ShopProductBulkDto body) {
+        int changed = storeOwnerService.bulkProductAction(body.getProductIds(), body.getAction());
+        return ResponseEntity.ok(ApiResponse.success("Đã cập nhật sản phẩm", Map.of("changed", changed)));
     }
 
     // ==========================================
@@ -122,6 +163,17 @@ public class StoreOwnerController {
         String actor = getActorIdOrEmail();
         StoreApprovalItemDto result = storeOwnerService.processInventoryAdjustmentApproval(targetShopId, adjustmentId, actionDto, actor);
         return ResponseEntity.ok(ApiResponse.success("Xử lý phê duyệt điều chỉnh tồn kho thành công", result));
+    }
+
+    @PutMapping("/approvals/restock-requests/{requestId}")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<StoreApprovalItemDto>> processRestockApproval(
+            @RequestParam(required = false) Long shopId,
+            @PathVariable Long requestId,
+            @Valid @RequestBody StoreApprovalActionDto actionDto) {
+        Long targetShopId = resolveShopId(shopId);
+        StoreApprovalItemDto result = storeOwnerService.processRestockApproval(targetShopId, requestId, actionDto, getActorIdOrEmail());
+        return ResponseEntity.ok(ApiResponse.success("Xử lý đề xuất nhập hàng thành công", result));
     }
 
     @PutMapping("/approvals/{approvalId}")
@@ -243,21 +295,76 @@ public class StoreOwnerController {
             @RequestParam(required = false) Long shopId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
 
         Long targetShopId = resolveShopId(shopId);
-        PaginatedResponseDto<Map<String, Object>> result = storeOwnerService.getShopOrders(targetShopId, page, size, status);
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn hàng chi nhánh thành công", result));
+        java.time.LocalDate fromDate = parseOptionalDate(from);
+        java.time.LocalDate toDate = parseOptionalDate(to);
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Ngày bắt đầu không được sau ngày kết thúc");
+        }
+        PaginatedResponseDto<Map<String, Object>> result = storeOwnerService.getShopOrders(
+                targetShopId, page, size, status, search, fromDate, toDate);
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn hàng cửa hàng thành công", result));
+    }
+
+    @GetMapping("/orders/{orderId}")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getShopOrderDetail(
+            @PathVariable Long orderId,
+            @RequestParam(required = false) Long shopId) {
+
+        Long targetShopId = resolveShopId(shopId);
+        return ResponseEntity.ok(ApiResponse.success("Lấy chi tiết đơn hàng thành công",
+                storeOwnerService.getShopOrderDetail(targetShopId, orderId)));
+    }
+
+    private static java.time.LocalDate parseOptionalDate(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return java.time.LocalDate.parse(value.trim());
+        } catch (Exception e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Ngày không hợp lệ (định dạng yyyy-MM-dd)");
+        }
     }
 
     // Dashboard Metrics - REAL data from database
     @GetMapping({"/dashboard", "/dashboard/metrics"})
     @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardMetrics(
-            @RequestParam(required = false) Long shopId) {
+            @RequestParam(required = false) Long shopId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
 
         Long targetShopId = resolveShopId(shopId);
-        Map<String, Object> metrics = storeOwnerService.getShopDashboardMetrics(targetShopId);
+        Map<String, Object> metrics;
+        if (from == null && to == null) {
+            metrics = storeOwnerService.getShopDashboardMetrics(targetShopId);
+        } else {
+            java.time.LocalDate fromDate;
+            java.time.LocalDate toDate;
+            try {
+                fromDate = java.time.LocalDate.parse(from);
+                toDate = java.time.LocalDate.parse(to);
+            } catch (Exception e) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Khoảng thời gian không hợp lệ (định dạng yyyy-MM-dd)");
+            }
+            if (fromDate.isAfter(toDate)) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Ngày bắt đầu không được sau ngày kết thúc");
+            }
+            if (java.time.temporal.ChronoUnit.DAYS.between(fromDate, toDate) > 1100) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Khoảng thời gian tối đa là 3 năm");
+            }
+            metrics = storeOwnerService.getShopDashboardMetrics(targetShopId, fromDate, toDate);
+        }
         return ResponseEntity.ok(ApiResponse.success("Lấy chỉ số tổng quan shop thành công", metrics));
     }
 
@@ -270,7 +377,7 @@ public class StoreOwnerController {
     public ResponseEntity<ApiResponse<List<UserAdminDto>>> getShopStaff(@RequestParam(required = false) Long shopId) {
         Long targetShopId = resolveShopId(shopId);
         List<UserAdminDto> staffList = storeOwnerService.getShopStaff(targetShopId);
-        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách nhân viên chi nhánh thành công", staffList));
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách nhân viên cửa hàng thành công", staffList));
     }
 
     @PostMapping("/staff")
@@ -282,7 +389,7 @@ public class StoreOwnerController {
         createDto.setShopId(targetShopId);
         String actor = getActorIdOrEmail();
         UserAdminDto created = storeOwnerService.createShopStaff(targetShopId, createDto, actor);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tạo nhân viên chi nhánh thành công", created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tạo nhân viên cửa hàng thành công", created));
     }
 
     @PatchMapping("/staff/{staffId}/status")

@@ -10,12 +10,16 @@ import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import SafeImage from '@/components/ui/SafeImage';
+import { formatVnd } from '@/lib/utils/price';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { cart, fetchCart } = useCart();
+  const { cart, fetchCart, isLoading: cartLoading } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set once the order is placed: the cart empties before the redirect lands, and the
+  // "Giỏ hàng trống" screen must not flash in between.
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const [formData, setFormData] = useState({
     customerName: '',
@@ -32,10 +36,9 @@ export default function CheckoutPage() {
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
 
-  const calculateSubtotal = () => (cart?.items || []).reduce((sum, item) => {
-    const price = item.salePrice || item.price;
-    return sum + (price * item.quantity);
-  }, 0);
+  // itemTotal is computed by the server from the price rounded to the thousand, the same
+  // price checkout charges. Summing raw salePrice/price here showed a different total.
+  const calculateSubtotal = () => (cart?.items || []).reduce((sum, item) => sum + item.itemTotal, 0);
 
   const applyVoucher = async () => {
     if (!formData.voucherCode.trim()) {
@@ -76,15 +79,46 @@ export default function CheckoutPage() {
 
   const [bankConfig, setBankConfig] = useState<any>(null);
 
+  // Prefill the form from the logged-in customer's profile. Only empty fields are filled, so
+  // anything the customer already typed (or an earlier autofill) is never overwritten.
   useEffect(() => {
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        customerName: user.fullName || '',
-        customerEmail: user.email || '',
-        customerPhone: user.phone || ''
-      }));
-    }
+    if (!user) return;
+    const fillEmpty = (values: Partial<typeof formData>) =>
+      setFormData(prev => {
+        const next = { ...prev };
+        (Object.keys(values) as (keyof typeof formData)[]).forEach(key => {
+          if (!prev[key] && values[key]) next[key] = values[key] as string;
+        });
+        return next;
+      });
+
+    // Immediately from the auth context, then completed from the full profile (address).
+    fillEmpty({
+      customerName: user.fullName || '',
+      customerEmail: user.email || '',
+      customerPhone: user.phone || '',
+    });
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/api/account/profile`, {
+          headers: getAuthHeaders() as Record<string, string>,
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        const d = json?.data;
+        if (cancelled || !json?.success || !d) return;
+        fillEmpty({
+          customerName: d.fullName || '',
+          customerPhone: d.phone || '',
+          shippingAddress: d.defaultShippingAddress || '',
+        });
+      } catch {
+        /* profile is a convenience; the customer can still type the details */
+      }
+    })();
+    return () => { cancelled = true; };
   }, [user]);
 
   useEffect(() => {
@@ -195,15 +229,44 @@ export default function CheckoutPage() {
         throw new Error(json.message || 'Lỗi khi thanh toán');
       }
 
-      toast.success('Đặt hàng thành công!');
-      await fetchCart();
-      router.push(`/order-success/${json.data.orderCode}`);
+      const orderCode = json.data.orderCode;
+      setOrderPlaced(true);
+      fetchCart();
+
+      // Bank transfer: hand over to the PayOS checkout page when PayOS is configured; it sends the
+      // customer back to /order-success, which confirms the payment with PayOS. Otherwise (or if
+      // PayOS fails) the order page shows the plain QR as before.
+      if (checkoutPayload.paymentMethod === 'BANK_TRANSFER') {
+        try {
+          const linkRes = await fetch(`${getApiBaseUrl()}/api/orders/${orderCode}/payos-link`, { method: 'POST', headers });
+          const link = await linkRes.json().catch(() => null);
+          if (linkRes.ok && link?.data?.checkoutUrl) {
+            window.location.href = link.data.checkoutUrl;
+            return;
+          }
+        } catch {
+          /* fall back to the QR page */
+        }
+        toast.success('Đã tạo đơn hàng. Vui lòng chuyển khoản để hoàn tất.');
+      } else {
+        toast.success('Đặt hàng thành công!');
+      }
+      router.push(`/order-success/${orderCode}`);
     } catch (err: any) {
       toast.error(err.message || 'Lỗi kết nối máy chủ');
-    } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (orderPlaced || (cartLoading && !cart)) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="min-h-[50vh] flex items-center justify-center text-sm text-slate-500">
+          {orderPlaced ? 'Đang chuyển đến trang thanh toán…' : 'Đang tải giỏ hàng…'}
+        </div>
+      </div>
+    );
+  }
 
   if (!cart || cart.items.length === 0) {
     return (
@@ -229,10 +292,6 @@ export default function CheckoutPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-12 text-slate-900">
       <PageBreadcrumb items={[{ label: 'Giỏ hàng', href: '/cart' }, { label: 'Thanh toán' }]} />
 
-      <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-slate-900 mb-8">
-        Thanh toán
-      </h1>
-      
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         <div className="lg:w-2/3">
           <form id="checkout-form" onSubmit={handleSubmit} className="space-y-8">
@@ -456,7 +515,7 @@ export default function CheckoutPage() {
                     <p className="text-xs text-slate-500 mt-1">{item.color} / {item.size}</p>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-slate-500">x{item.quantity}</span>
-                      <span className="font-bold text-slate-900">{(item.salePrice || item.price).toLocaleString('vi-VN')}đ</span>
+                      <span className="font-bold text-slate-900">{formatVnd(item.salePrice || item.price)}đ</span>
                     </div>
                   </div>
                 </div>
@@ -490,7 +549,7 @@ export default function CheckoutPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Nhập mã voucher"
+                  placeholder="Nhập mã"
                   value={formData.voucherCode}
                   onChange={(e) => {
                     const next = e.target.value.toUpperCase();
@@ -502,13 +561,13 @@ export default function CheckoutPage() {
                       setVoucherInfo(null);
                     }
                   }}
-                  className="flex-1 px-3.5 h-11 border border-slate-300 rounded-xl text-sm font-mono uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                  className="flex-1 min-w-0 px-3.5 h-11 border border-slate-300 rounded-xl text-sm font-mono uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
                 />
                 <button
                   type="button"
                   onClick={applyVoucher}
                   disabled={voucherLoading || !formData.voucherCode.trim()}
-                  className="h-11 px-5 rounded-xl bg-slate-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-primary transition-colors disabled:opacity-40"
+                  className="shrink-0 whitespace-nowrap h-11 px-5 rounded-xl bg-slate-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-primary transition-colors disabled:opacity-40"
                 >
                   {voucherLoading ? 'Đang kiểm tra…' : 'Áp dụng'}
                 </button>

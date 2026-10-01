@@ -92,13 +92,13 @@ public class PermissionConstants {
         list.add(new PermissionCatalogDto(MANAGE_MAILING, "ADMIN", "Quản lý Email", "Xem log gửi email, gửi lại email thất bại"));
 
         // SHOP_OWNER
-        list.add(new PermissionCatalogDto(MANAGE_SHOP_STAFF, "SHOP_OWNER", "Quản lý Nhân viên Chi nhánh", "Tạo, khoá, reset mật khẩu nhân viên thuộc chi nhánh"));
-        list.add(new PermissionCatalogDto(VIEW_SHOP_DASHBOARD, "SHOP_OWNER", "Xem Dashboard Chi nhánh", "Truy cập bảng điều khiển tổng quan chi nhánh"));
-        list.add(new PermissionCatalogDto(VIEW_SHOP_LOG, "SHOP_OWNER", "Xem Log Chi nhánh", "Truy cập nhật ký hoạt động chi nhánh"));
-        list.add(new PermissionCatalogDto(APPROVE_SHOP_PROMO, "SHOP_OWNER", "Phê duyệt Khuyến mãi Chi nhánh", "Duyệt/từ chối voucher và điều chỉnh tồn kho"));
-        list.add(new PermissionCatalogDto(MANAGE_SHOP_INVENTORY, "SHOP_OWNER", "Quản lý Tồn kho Chi nhánh", "Xem và điều chỉnh tồn kho thuộc chi nhánh"));
-        list.add(new PermissionCatalogDto(MANAGE_SHOP_CATEGORY, "SHOP_OWNER", "Quản lý Danh mục Chi nhánh", "Cấu hình danh mục hiển thị riêng cho chi nhánh"));
-        list.add(new PermissionCatalogDto(MANAGE_SHOP_PRODUCT, "SHOP_OWNER", "Quản lý Sản phẩm Chi nhánh", "Cấu hình giá, trạng thái bán sản phẩm chi nhánh"));
+        list.add(new PermissionCatalogDto(MANAGE_SHOP_STAFF, "SHOP_OWNER", "Quản lý Nhân viên", "Tạo, khoá, reset mật khẩu nhân viên thuộc cửa hàng"));
+        list.add(new PermissionCatalogDto(VIEW_SHOP_DASHBOARD, "SHOP_OWNER", "Xem Dashboard", "Truy cập bảng điều khiển tổng quan cửa hàng"));
+        list.add(new PermissionCatalogDto(VIEW_SHOP_LOG, "SHOP_OWNER", "Xem Log", "Truy cập nhật ký hoạt động cửa hàng"));
+        list.add(new PermissionCatalogDto(APPROVE_SHOP_PROMO, "SHOP_OWNER", "Phê duyệt Khuyến mãi", "Duyệt/từ chối voucher và điều chỉnh tồn kho"));
+        list.add(new PermissionCatalogDto(MANAGE_SHOP_INVENTORY, "SHOP_OWNER", "Quản lý Tồn kho", "Xem và điều chỉnh tồn kho thuộc cửa hàng"));
+        list.add(new PermissionCatalogDto(MANAGE_SHOP_CATEGORY, "SHOP_OWNER", "Quản lý Danh mục", "Cấu hình danh mục hiển thị riêng cho cửa hàng"));
+        list.add(new PermissionCatalogDto(MANAGE_SHOP_PRODUCT, "SHOP_OWNER", "Quản lý Sản phẩm", "Cấu hình giá, trạng thái bán sản phẩm cửa hàng"));
 
         // SALES_STAFF
         list.add(new PermissionCatalogDto(VIEW_NEW_ORDER, "SALES_STAFF", "Xem Đơn hàng Mới", "Truy cập danh sách đơn hàng mới cần xử lý"));

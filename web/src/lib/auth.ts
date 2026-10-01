@@ -37,6 +37,17 @@ export function normalizeRoleCode(value: string | null | undefined) {
     .replace(/^_+|_+$/g, "");
 }
 
+/**
+ * Trang doi mat khau tam (do admin cap lai) theo loai tai khoan. Khach hang
+ * (USER) khong vao duoc khu /staff, nen phai dung trang cua tai khoan khach.
+ */
+export function getPasswordChangePath(role: string | null | undefined) {
+  const norm = normalizeRoleCode(role);
+  return !norm || norm === "USER" || norm === "CUSTOMER"
+    ? "/account/change-password"
+    : "/staff/change-password";
+}
+
 export function normalizeRoleList(values?: (string | null | undefined)[] | string | null) {
   if (!values) return [];
   const arr = Array.isArray(values) ? values : [values];

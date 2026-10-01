@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -18,15 +19,24 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u.status FROM User u WHERE LOWER(u.email) = LOWER(:email)")
     Optional<String> findStatusByEmail(String email);
+
+    /** status, role, passwordChangedAt, mustChangePassword: what the JWT filter must read fresh on every request. */
+    @Query("SELECT u.status, u.role, u.passwordChangedAt, u.mustChangePassword FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    List<Object[]> findAuthStateByEmail(@Param("email") String email);
     
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
     boolean existsByEmail(String email);
     
     boolean existsByEmployeeCode(String employeeCode);
 
+    @Query("SELECT u FROM User u WHERE LOWER(u.employeeCode) = LOWER(:employeeCode)")
+    Optional<User> findByEmployeeCodeIgnoreCase(String employeeCode);
+
     boolean existsByEmployeeCodeAndIdNot(String employeeCode, String id);
 
     long countByRoleAndStatus(com.nguyenhoanglong.entity.Role role, String status);
+
+    List<User> findByRoleAndStatus(com.nguyenhoanglong.entity.Role role, String status);
 
     @Query("SELECT u FROM User u WHERE " +
            "(:keyword IS NULL OR LOWER(u.email) LIKE CAST(:keyword AS text) OR LOWER(u.fullName) LIKE CAST(:keyword AS text) OR LOWER(u.employeeCode) LIKE CAST(:keyword AS text)) " +

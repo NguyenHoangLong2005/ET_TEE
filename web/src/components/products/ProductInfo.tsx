@@ -1,14 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { formatVnd, roundVnd } from '@/lib/utils/price';
 import { Heart, Truck, RefreshCcw, ShieldCheck, Sparkles, ShoppingBag, Zap, MapPin } from 'lucide-react';
 import { Product } from '@/lib/services/productService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { CartService } from '@/lib/services/cartService';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import SizeGuideModal from '@/components/products/SizeGuideModal';
 import StoreStockModal from '@/components/products/StoreStockModal';
+
+// Checkout and the cart check availableQuantity; max(stock, available) showed items as
+// in stock that the server then refused.
+const sellable = (v: { stock?: number; availableQuantity?: number }) => v.availableQuantity ?? v.stock ?? 0;
 
 export default function ProductInfo({ product }: { product: Product }) {
   const router = useRouter();
@@ -22,7 +28,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   (product.variants || []).forEach(v => {
     if (!v.colorHex || !v.size) return;
     const key = `${v.colorHex}__${v.size}`;
-    const s = Math.max(v.stock ?? 0, v.availableQuantity ?? 0);
+    const s = sellable(v);
     const prev = stockMap.get(key) ?? 0;
     if (s > prev) stockMap.set(key, s);
   });
@@ -38,7 +44,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const { user } = useAuth();
-  const { addToCart, closeDrawer } = useCart();
+  const { cart, addToCart, closeDrawer, fetchCart } = useCart();
   const pathname = usePathname();
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
@@ -47,7 +53,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const selectedVariant = product.variants?.find(
     v => (v.colorHex === selectedColor || !v.colorHex) && (v.size === selectedSize || !v.size)
   );
-  const variantStock = selectedVariant ? Math.max(selectedVariant.stock ?? 0, selectedVariant.availableQuantity ?? 0) : 0;
+  const variantStock = selectedVariant ? sellable(selectedVariant) : 0;
   const stock = variantStock;
   const isOutOfStock = Boolean(selectedColor && selectedSize && stock === 0);
 
@@ -61,7 +67,9 @@ export default function ProductInfo({ product }: { product: Product }) {
     return (stockMap.get(`${colorHex}__${size}`) ?? 0) > 0;
   };
 
-  const handleAddToCart = async (): Promise<boolean> => {
+  // buyNow: "Mua ngay" must buy exactly the chosen quantity. Adding would stack it on top of
+  // a line already in the cart (1 in cart + Mua ngay 1 = 2), so set that line's quantity instead.
+  const handleAddToCart = async (buyNow = false): Promise<boolean> => {
     if (isSubmitting) return false;
     if (!selectedColor && availableColors.length > 0) {
       toast.error('Vui lòng chọn màu sắc.');
@@ -93,17 +101,29 @@ export default function ProductInfo({ product }: { product: Product }) {
 
     setIsSubmitting(true);
     try {
-      await addToCart(targetVariantId as number, safeQuantity);
+      const existing = buyNow
+        ? cart?.items.find(item => item.variantId === targetVariantId)
+        : undefined;
+      if (existing) {
+        await CartService.updateQuantity(existing.id, safeQuantity);
+        await fetchCart();
+      } else {
+        await addToCart(targetVariantId as number, safeQuantity);
+      }
       return true;
-    } catch {
+    } catch (err: unknown) {
+      if (buyNow) toast.error(err instanceof Error ? err.message : 'Không thể cập nhật giỏ hàng');
       return false;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const currentPrice = product.salePrice || product.price;
-  const originalPrice = product.salePrice && product.salePrice < product.price ? product.price : undefined;
+  // The cart charges the chosen variant's price, which may differ from the product's.
+  const priceSource = selectedVariant && selectedVariant.price ? selectedVariant : product;
+  const currentPrice = priceSource.salePrice || priceSource.price;
+  // Compared as displayed (rounded), so a sub-thousand "discount" isn't shown as a sale.
+  const originalPrice = priceSource.salePrice && roundVnd(priceSource.salePrice) < roundVnd(priceSource.price) ? priceSource.price : undefined;
   const discountPercent = originalPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
 
   return (
@@ -148,11 +168,11 @@ export default function ProductInfo({ product }: { product: Product }) {
         {/* Price display */}
         <div className="mb-6 flex items-baseline gap-3">
           <span className={`text-2xl md:text-3xl font-black tracking-tight ${discountPercent > 0 ? 'text-primary' : 'text-slate-900'}`}>
-            {currentPrice.toLocaleString('vi-VN')}₫
+            {formatVnd(currentPrice)}₫
           </span>
           {originalPrice && (
             <span className="text-base text-slate-400 line-through font-medium">
-              {originalPrice.toLocaleString('vi-VN')}₫
+              {formatVnd(originalPrice)}₫
             </span>
           )}
         </div>
@@ -296,7 +316,7 @@ export default function ProductInfo({ product }: { product: Product }) {
             <button 
               type="button"
               disabled={isSubmitting || isOutOfStock}
-              onClick={handleAddToCart}
+              onClick={() => handleAddToCart()}
               className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full font-black uppercase text-xs tracking-widest transition-all duration-300 flex items-center justify-center gap-2 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -309,7 +329,7 @@ export default function ProductInfo({ product }: { product: Product }) {
             type="button"
             disabled={isSubmitting || isOutOfStock}
             onClick={async () => {
-              const success = await handleAddToCart();
+              const success = await handleAddToCart(true);
               if (success) {
                 closeDrawer();
                 router.push('/checkout');

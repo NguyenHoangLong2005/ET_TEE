@@ -118,8 +118,8 @@ export default function StoreOwnerStaffPage() {
   const [creatingEval, setCreatingEval] = useState(false);
 
   /* ── Load Staff ── */
-  const fetchStaff = useCallback(async () => {
-    setLoading(true);
+  const fetchStaff = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const res = await apiClient.get<StaffMember[]>('/api/store-owner/staff');
       setStaff(Array.isArray(res) ? res : []);
@@ -132,8 +132,8 @@ export default function StoreOwnerStaffPage() {
   }, []);
 
   /* ── Load Evaluations ── */
-  const fetchEvaluations = useCallback(async () => {
-    setLoadingEvals(true);
+  const fetchEvaluations = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoadingEvals(true);
     try {
       const res = await apiClient.get<StaffEvaluation[]>('/api/store-owner/evaluations');
       setEvaluations(Array.isArray(res) ? res : []);
@@ -198,7 +198,7 @@ export default function StoreOwnerStaffPage() {
 
     try {
       setCreating(true);
-      await apiClient.post('/api/store-owner/staff', {
+      const created = await apiClient.post<{ temporaryPassword?: string }>('/api/store-owner/staff', {
         employeeCode: createForm.employeeCode.trim() || undefined,
         fullName: cleanName,
         email: cleanEmail,
@@ -209,12 +209,17 @@ export default function StoreOwnerStaffPage() {
       });
 
       toast.success('Tạo nhân viên thành công!');
+      // Blank password -> the server generated one; it is only shown here, once.
+      if (created?.temporaryPassword) {
+        setTempPwd(created.temporaryPassword);
+        setTempName(cleanName);
+      }
       setShowCreate(false);
       setCreateForm({
         employeeCode: '', fullName: '', email: '',
         phone: '', roleCode: 'SALES_STAFF', initialPassword: '',
       });
-      fetchStaff();
+      fetchStaff(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể tạo nhân viên');
     } finally {
@@ -237,7 +242,7 @@ export default function StoreOwnerStaffPage() {
       toast.success('Đã khóa tài khoản nhân viên');
       setLockId(null);
       setLockReason('');
-      fetchStaff();
+      fetchStaff(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể khóa tài khoản');
     } finally {
@@ -255,7 +260,7 @@ export default function StoreOwnerStaffPage() {
       });
       toast.success('Đã mở khóa tài khoản nhân viên');
       setUnlockId(null);
-      fetchStaff();
+      fetchStaff(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể mở khóa');
     } finally {
@@ -306,7 +311,7 @@ export default function StoreOwnerStaffPage() {
         salesTargetAchievement: 100,
         feedbackNotes: '',
       });
-      await fetchEvaluations();
+      await fetchEvaluations(true);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể lưu đánh giá');
     } finally {
@@ -487,9 +492,8 @@ export default function StoreOwnerStaffPage() {
 
         {/* Header */}
         <PageHeader
-          title="Quản lý Nhân sự Chi nhánh"
-          subtitle="Quản lý tài khoản nhân viên, cấp phát vai trò và đánh giá hiệu suất nhân sự chi nhánh."
-          badge="CHI NHÁNH"
+          title="Quản lý Nhân sự"
+          subtitle="Quản lý tài khoản nhân viên, cấp phát vai trò và đánh giá hiệu suất nhân sự."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
@@ -550,7 +554,7 @@ export default function StoreOwnerStaffPage() {
             onSearchChange={setKeyword}
             searchPlaceholder="Tìm tên, email, mã nhân viên..."
             emptyTitle="Chưa có nhân viên nào"
-            emptyMessage='Nhấn "Thêm nhân viên" để tạo tài khoản mới.'
+            emptyMessage='Nhấn"Thêm nhân viên" để tạo tài khoản mới.'
           />
         )}
 
@@ -565,7 +569,7 @@ export default function StoreOwnerStaffPage() {
             onSearchChange={setEvalSearch}
             searchPlaceholder="Tìm theo tên nhân viên, kỳ đánh giá, nhận xét..."
             emptyTitle="Chưa có bản ghi đánh giá nào"
-            emptyMessage='Nhấn "Tạo đánh giá" để ghi nhận hiệu suất nhân viên.'
+            emptyMessage='Nhấn"Tạo đánh giá" để ghi nhận hiệu suất nhân viên.'
           />
         )}
 
@@ -644,7 +648,7 @@ export default function StoreOwnerStaffPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Vai trò chi nhánh <span className="text-red-500">*</span>
+                    Vai trò <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={createForm.roleCode}
@@ -665,7 +669,7 @@ export default function StoreOwnerStaffPage() {
                     type="text"
                     value={createForm.initialPassword}
                     onChange={e => setCreateForm({ ...createForm, initialPassword: e.target.value })}
-                    placeholder="Mặc định: 123456 (yêu cầu đổi lần đầu)"
+                    placeholder="Để trống để hệ thống tạo mật khẩu ngẫu nhiên"
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-primary font-mono"
                   />
                 </div>

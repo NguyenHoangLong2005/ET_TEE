@@ -92,7 +92,7 @@ export default function RegisterPage() {
     email: v => !v ? 'Vui lòng nhập email.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Email không đúng định dạng.' : fieldErrors.email === 'Email đã được sử dụng.' ? fieldErrors.email : '',
     phone: v => !v ? 'Vui lòng nhập số điện thoại.' : !VN_PHONE_RE.test(v.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ (VD: 0901234567).' : '',
     address: v => !v.trim() ? 'Vui lòng nhập địa chỉ giao hàng.' : '',
-    password: v => !v ? 'Vui lòng nhập mật khẩu.' : v.length < 6 ? 'Mật khẩu phải từ 6 ký tự trở lên.' : (COMMON_PASSWORDS.has(v) || COMMON_PASSWORDS.has(v.toLowerCase())) ? 'Mật khẩu quá phổ biến, dễ bị đoán.' : '',
+    password: v => !v ? 'Vui lòng nhập mật khẩu.' : v.length < 8 ? 'Mật khẩu phải từ 8 ký tự trở lên.' : !/[a-zA-Z]/.test(v) || !/[0-9]/.test(v) ? 'Mật khẩu phải có cả chữ và số.' : (COMMON_PASSWORDS.has(v) || COMMON_PASSWORDS.has(v.toLowerCase())) ? 'Mật khẩu quá phổ biến, dễ bị đoán.' : '',
     confirmPassword: v => !v ? 'Vui lòng nhập lại mật khẩu.' : v !== formData.password ? 'Mật khẩu nhập lại không khớp.' : '',
   };
 

@@ -41,8 +41,28 @@ public class StaffWarehouseController {
     @PostMapping("/inbound")
     public ResponseEntity<?> inbound(@RequestBody InboundRequest request) {
         return ResponseEntity.ok(service.inbound(
-                request.productId(), request.productName(), request.quantity(), request.location()
+                request.productId(), request.productName(), request.quantity(), request.location(),
+                request.supplierId(), request.note(), request.variantId()
         ));
+    }
+
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK)")
+    @GetMapping("/products/{productId}/variants")
+    public ResponseEntity<?> productVariants(@PathVariable Long productId) {
+        return ResponseEntity.ok(service.getProductVariants(productId));
+    }
+
+    // Danh mục sản phẩm để chọn khi nhập kho (gồm cả sản phẩm chưa có dòng tồn kho).
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK)")
+    @GetMapping("/products")
+    public ResponseEntity<?> catalogProducts() {
+        return ResponseEntity.ok(service.getCatalogProducts());
+    }
+
+    // Lịch sử phiếu nhập kho (mới nhất trước).
+    @GetMapping("/inbound")
+    public ResponseEntity<?> inboundHistory() {
+        return ResponseEntity.ok(service.getReceipts());
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).COUNT_STOCK)")
@@ -153,7 +173,20 @@ public class StaffWarehouseController {
         return ResponseEntity.ok(service.getReplenishmentSuggestions());
     }
 
-    public record InboundRequest(Long productId, String productName, Integer quantity, String location) {}
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).PROPOSE_RESTOCK)")
+    @PostMapping("/replenishment")
+    public ResponseEntity<?> proposeRestock(@RequestBody RestockRequestBody request) {
+        return ResponseEntity.ok(service.createRestockRequest(request.inventoryId(), request.quantity(), request.note()));
+    }
+
+    @GetMapping("/replenishment/requests")
+    public ResponseEntity<?> restockRequests() {
+        return ResponseEntity.ok(service.getRestockRequests());
+    }
+
+    public record InboundRequest(Long productId, String productName, Integer quantity, String location,
+                                 Long supplierId, String note, Long variantId) {}
+    public record RestockRequestBody(Long inventoryId, Integer quantity, String note) {}
     public record CountRequest(Integer actualQuantity) {}
     public record LocationRequest(String location) {}
     public record AdjustmentRequest(Integer difference, String reason) {}

@@ -43,8 +43,8 @@ export const TIER_BRANDING_CONFIG: Record<SystemTier, TierBranding> = {
   },
   STORE_OWNER: {
     tier: 'STORE_OWNER',
-    name: 'Quản lý Chi nhánh',
-    shortBadge: 'BRANCH',
+    name: 'Quản lý Cửa hàng',
+    shortBadge: 'STORE',
     description: 'Quản lý kho hàng, nhân sự và đơn hàng tại cửa hàng',
     primaryAccentClass: 'text-slate-900',
     borderAccentClass: 'border-slate-200',

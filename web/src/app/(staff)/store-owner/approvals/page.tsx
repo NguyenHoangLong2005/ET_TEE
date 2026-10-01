@@ -14,6 +14,12 @@ import {
   FileCheck, Check, X
 } from 'lucide-react';
 
+const TYPE_LABEL: Record<string, string> = {
+  VOUCHER: 'Voucher',
+  INVENTORY_ADJUSTMENT: 'Điều chỉnh tồn kho',
+  RESTOCK_REQUEST: 'Đề xuất nhập hàng',
+};
+
 interface ApprovalItem {
   id: string | number;
   type: string; // VOUCHER / INVENTORY_ADJUSTMENT
@@ -22,7 +28,24 @@ interface ApprovalItem {
   status: string;
   createdAt: string;
   targetId?: number;
+  description?: string;
 }
+
+/** Chuẩn hóa payload backend (approvalId/requestedBy/description) sang ApprovalItem. */
+const normalizeApproval = (raw: any): ApprovalItem => {
+  const approvalId = String(raw?.approvalId ?? raw?.id ?? '');
+  const idMatch = approvalId.match(/(\d+)$/);
+  return {
+    id: approvalId,
+    type: raw?.type ?? '',
+    title: raw?.title ?? '',
+    description: raw?.description ?? '',
+    requesterName: raw?.requestedBy ?? raw?.requesterName ?? '',
+    status: raw?.status ?? '',
+    createdAt: raw?.createdAt ?? '',
+    targetId: raw?.targetId ?? (idMatch ? Number(idMatch[1]) : undefined),
+  };
+};
 
 export default function StoreOwnerApprovalsPage() {
   const [items, setItems] = useState<ApprovalItem[]>([]);
@@ -43,12 +66,12 @@ export default function StoreOwnerApprovalsPage() {
   });
   const [processing, setProcessing] = useState(false);
 
-  const fetchApprovals = useCallback(async () => {
-    setLoading(true);
+  const fetchApprovals = useCallback(async (silent?: unknown) => {
+    if (silent !== true) setLoading(true);
     try {
       const res: any = await apiClient.get('/api/store-owner/approvals/pending');
       const list = Array.isArray(res) ? res : (res?.items ?? res?.content ?? res?.data ?? []);
-      setItems(Array.isArray(list) ? list : []);
+      setItems(Array.isArray(list) ? list.map(normalizeApproval) : []);
     } catch (err: any) {
       toast.error(err?.message || 'Không thể tải danh sách chờ phê duyệt.');
       setItems([]);
@@ -81,12 +104,14 @@ export default function StoreOwnerApprovalsPage() {
     setProcessing(true);
     try {
       const payload = {
-        action: confirmModal.action,
+        action: confirmModal.action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
         note: confirmModal.note.trim(),
       };
 
       if (confirmModal.item.type === 'VOUCHER' && confirmModal.item.targetId) {
         await apiClient.put(`/api/store-owner/approvals/vouchers/${confirmModal.item.targetId}`, payload);
+      } else if (confirmModal.item.type === 'RESTOCK_REQUEST' && confirmModal.item.targetId) {
+        await apiClient.put(`/api/store-owner/approvals/restock-requests/${confirmModal.item.targetId}`, payload);
       } else if (confirmModal.item.type === 'INVENTORY_ADJUSTMENT' && confirmModal.item.targetId) {
         await apiClient.put(`/api/store-owner/approvals/inventory-adjustments/${confirmModal.item.targetId}`, payload);
       } else {
@@ -95,7 +120,7 @@ export default function StoreOwnerApprovalsPage() {
 
       toast.success(`Đã ${confirmModal.action === 'APPROVE' ? 'phê duyệt' : 'từ chối'} yêu cầu thành công`);
       setConfirmModal({ isOpen: false, item: null, action: 'APPROVE', note: '' });
-      fetchApprovals();
+      fetchApprovals(true);
     } catch (err: any) {
       toast.error(err?.message || 'Thao tác phê duyệt thất bại');
     } finally {
@@ -106,9 +131,9 @@ export default function StoreOwnerApprovalsPage() {
   const filteredItems = useMemo(() => {
     return items.filter(item =>
       !search.trim() ||
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.requesterName.toLowerCase().includes(search.toLowerCase()) ||
-      item.type.toLowerCase().includes(search.toLowerCase())
+      (item.title || '').toLowerCase().includes(search.toLowerCase()) ||
+      (item.requesterName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (TYPE_LABEL[item.type] ?? item.type ?? '').toLowerCase().includes(search.toLowerCase())
     );
   }, [items, search]);
 
@@ -118,7 +143,7 @@ export default function StoreOwnerApprovalsPage() {
       header: 'Phân loại',
       render: (item) => (
         <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
-          {item.type}
+          {TYPE_LABEL[item.type] ?? item.type}
         </span>
       ),
     },
@@ -128,6 +153,9 @@ export default function StoreOwnerApprovalsPage() {
       render: (item) => (
         <div>
           <div className="font-bold text-slate-900 text-sm">{item.title}</div>
+          {item.description && (
+            <div className="text-xs text-slate-500 mt-0.5">{item.description}</div>
+          )}
           {item.targetId && (
             <div className="text-[11px] text-slate-400 font-mono">Ref ID: #{item.targetId}</div>
           )}
@@ -182,9 +210,8 @@ export default function StoreOwnerApprovalsPage() {
 
         {/* ─── Top Control Bar ─── */}
         <PageHeader
-          title="Hàng đợi Phê duyệt Chi nhánh"
-          subtitle="Phê duyệt các yêu cầu khuyến mãi và điều chỉnh tồn kho từ nhân viên chi nhánh."
-          badge="CHI NHÁNH"
+          title="Hàng đợi Phê duyệt"
+          subtitle="Phê duyệt các yêu cầu khuyến mãi và điều chỉnh tồn kho từ nhân viên."
           actions={
             <Button
               variant="secondary"
@@ -207,7 +234,7 @@ export default function StoreOwnerApprovalsPage() {
           onSearchChange={setSearch}
           searchPlaceholder="Tìm kiếm theo tiêu đề, người gửi..."
           emptyTitle="Hiện tại không có yêu cầu nào chờ duyệt"
-          emptyMessage="Tất cả đề xuất điều chỉnh tồn kho & mã giảm giá chi nhánh đã được xử lý hoàn tất."
+          emptyMessage="Tất cả đề xuất điều chỉnh tồn kho & mã giảm giá đã được xử lý hoàn tất."
         />
 
         {/* Action Confirmation Modal */}

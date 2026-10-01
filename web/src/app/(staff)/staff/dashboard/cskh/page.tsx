@@ -22,7 +22,7 @@ interface TicketItem {
   subject?: string;
   title?: string;
   status: string;
-  priority?: string;
+  priority?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -34,8 +34,14 @@ const fmtDate = (s?: string) => {
   } catch { return s; }
 };
 
-const PRIORITY_TONE: Record<string, 'danger' | 'warning' | 'info' | 'success'> = {
-  HIGH: 'danger', URGENT: 'danger', MEDIUM: 'warning', LOW: 'info', NORMAL: 'info',
+// SupportTicket.priority is 1..5 (default 3), same scale as the customer ticket page. It was typed
+// as a string here and .toUpperCase() crashed the dashboard.
+const PRIORITY_META: Record<number, { label: string; tone: 'danger' | 'warning' | 'info' }> = {
+  1: { label: 'Thấp', tone: 'info' },
+  2: { label: 'Bình thường', tone: 'info' },
+  3: { label: 'Cao', tone: 'warning' },
+  4: { label: 'Khẩn cấp', tone: 'danger' },
+  5: { label: 'Khẩn cấp', tone: 'danger' },
 };
 
 export default function CskhDashboardPage() {
@@ -115,13 +121,9 @@ export default function CskhDashboardPage() {
       key: 'priority',
       header: 'Ưu tiên',
       render: t => {
-        if (!t.priority) return <span className="text-slate-400 text-xs">—</span>;
-        return (
-          <StatusBadge
-            tone={PRIORITY_TONE[t.priority.toUpperCase()] ?? 'info'}
-            label={t.priority}
-          />
-        );
+        const meta = t.priority != null ? PRIORITY_META[Number(t.priority)] : undefined;
+        if (!meta) return <span className="text-slate-400 text-xs">—</span>;
+        return <StatusBadge tone={meta.tone} label={meta.label} />;
       },
     },
     {

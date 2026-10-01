@@ -34,9 +34,9 @@ export default function AdminShopsPage() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchShops = useCallback(async () => {
+  const fetchShops = useCallback(async (silent?: unknown) => {
     try {
-      setLoading(true);
+      if (silent !== true) setLoading(true);
       const data = await apiClient.get<Shop[]>('/api/admin/shops');
       setShops(data || []);
     } catch (e: any) {
@@ -87,7 +87,7 @@ export default function AdminShopsPage() {
         toast.success('Tạo chi nhánh thành công');
       }
       setIsModalOpen(false);
-      fetchShops();
+      fetchShops(true);
     } catch (e: any) {
       toast.error(e.message || 'Không thể lưu chi nhánh');
     } finally {
@@ -161,7 +161,6 @@ export default function AdminShopsPage() {
         <PageHeader
           title="Quản lý Chi nhánh"
           subtitle="Danh sách chi nhánh của chuỗi ET.TEE. Ngừng hoạt động một chi nhánh không xóa đơn hàng/nhân viên đã gắn với nó."
-          badge="HỆ THỐNG"
           actions={
             <div className="flex items-center gap-2.5">
               <Button variant="secondary" onClick={fetchShops} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>

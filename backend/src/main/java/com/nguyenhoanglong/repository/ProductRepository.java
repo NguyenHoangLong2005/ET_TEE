@@ -35,6 +35,15 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                                         @org.springframework.data.repository.query.Param("excludeId") Long excludeId,
                                         org.springframework.data.domain.Pageable pageable);
 
+    /** Products carry the manufacturer only as free text (brand), so match on it. */
+    long countByBrandIgnoreCase(String brand);
+
+    /** Products (not deleted) that name this supplier. */
+    long countBySupplierId(Long supplierId);
+
+    /** Products (not deleted) made by this manufacturer. */
+    long countByManufacturerId(Long manufacturerId);
+
     List<Product> findByCategoryId(Long categoryId);
     org.springframework.data.domain.Page<Product> findByCategoryId(Long categoryId, org.springframework.data.domain.Pageable pageable);
     org.springframework.data.domain.Page<Product> findByNameContainingIgnoreCase(String name, org.springframework.data.domain.Pageable pageable);

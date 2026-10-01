@@ -21,8 +21,12 @@ public class AuthDto {
         @NotBlank(message = "Địa chỉ không được để trống")
         private String address;
 
+        // Same rule as reset / change password; 6 characters of anything used to be accepted here,
+        // which the change-password form then refused to keep.
         @NotBlank(message = "Mật khẩu không được để trống")
-        @Size(min = 6, message = "Mật khẩu phải từ 6 ký tự trở lên")
+        @Size(min = 8, message = "Mật khẩu phải từ 8 ký tự trở lên")
+        @jakarta.validation.constraints.Pattern(regexp = "^(?=.*[A-Za-z])(?=.*[0-9]).*$",
+                message = "Mật khẩu phải có cả chữ và số")
         private String password;
         private String guestToken;
         public String getGuestToken() { return guestToken; }
@@ -156,5 +160,10 @@ public class AuthDto {
         public void setPermissions(java.util.List<String> permissions) { this.permissions = permissions; }
         public Long getShopId() { return shopId; }
         public void setShopId(Long shopId) { this.shopId = shopId; }
+
+        /** True while the account holds a temporary password; the client must go to change it. */
+        private boolean mustChangePassword;
+        public boolean isMustChangePassword() { return mustChangePassword; }
+        public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
     }
 }
