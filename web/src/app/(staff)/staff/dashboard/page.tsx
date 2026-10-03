@@ -126,20 +126,6 @@ export default function StaffDashboardPage() {
           </div>
         </div>
 
-<<<<<<< HEAD
-      <div className="flex gap-4 border-b border-slate-800 pb-3">
-        <Link href="/staff/dashboard" className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 font-bold text-xs border border-amber-500/30">📊 Tổng quan</Link>
-        <Link href="/staff/products" className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition">📦 Quản lý Sản phẩm & Tồn kho</Link>
-        <Link href="/staff/orders" className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition">🚚 Quản lý Đơn hàng & Đóng gói</Link>
-        <link href="/staff/sales" className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition">💰 Báo cáo & Doanh thu</link>
-        <link href="/staff/shipping" className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition">🚢 Quản lý Vận chuyển</link>
-        <link href="/staff/warehouse" className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium text-xs border border-slate-800 transition">🏭 Quản lý Kho</link>
-      </div>
-
-      {error ? (
-        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-rose-200 text-sm">
-          {error}
-=======
         {/* Quick Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {quickStats.map((stat, idx) => (
@@ -160,7 +146,6 @@ export default function StaffDashboardPage() {
               </div>
             </div>
           ))}
->>>>>>> main
         </div>
 
         {/* Studio Switcher */}
@@ -286,11 +271,7 @@ export default function StaffDashboardPage() {
       </div>
     </ProtectedRoute>
   );
-<<<<<<< HEAD
-}
-=======
 }
 
 // Import Tag from lucide
 import { Tag } from "lucide-react";
->>>>>>> main

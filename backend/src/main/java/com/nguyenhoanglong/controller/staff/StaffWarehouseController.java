@@ -5,8 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/staff/warehouse")
 // Class level only establishes "is a warehouse operator". Every mutating endpoint
@@ -33,17 +31,7 @@ public class StaffWarehouseController {
         return ResponseEntity.ok(service.getInventory());
     }
 
-    @GetMapping("/inventory/{id}")
-    public ResponseEntity<?> inventoryDetail(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.inventory(id));
-    }
-
-    @GetMapping("/inventory/product/{variantId}")
-    public ResponseEntity<?> inventoryByProduct(@PathVariable UUID variantId) {
-        return ResponseEntity.ok(service.getInventoryByProduct(variantId));
-    }
-
-    // Don kho can xu ly: confirmed / picking / packed (order_status_transitions).
+    // Đơn kho cần xử lý: confirmed / picking / packed (order_status_transitions).
     @GetMapping("/orders")
     public ResponseEntity<?> orders() {
         return ResponseEntity.ok(service.getWarehouseOrders());
@@ -53,25 +41,25 @@ public class StaffWarehouseController {
     @PostMapping("/inbound")
     public ResponseEntity<?> inbound(@RequestBody InboundRequest request) {
         return ResponseEntity.ok(service.inbound(
-                request.variantId(), request.quantity(), request.location()
+                request.productId(), request.productName(), request.quantity(), request.location()
         ));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).COUNT_STOCK)")
     @PostMapping("/inbound/{id}/count")
-    public ResponseEntity<?> countInbound(@PathVariable UUID id, @RequestBody CountRequest request) {
+    public ResponseEntity<?> countInbound(@PathVariable Long id, @RequestBody CountRequest request) {
         return ResponseEntity.ok(service.countInbound(id, request.actualQuantity()));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_STOCK_LOCATION)")
     @PutMapping("/inventory/{id}/location")
-    public ResponseEntity<?> updateLocation(@PathVariable UUID id, @RequestBody LocationRequest request) {
+    public ResponseEntity<?> updateLocation(@PathVariable Long id, @RequestBody LocationRequest request) {
         return ResponseEntity.ok(service.updateLocation(id, request.location()));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).ADJUST_STOCK)")
     @PostMapping("/inventory/{id}/adjustments")
-    public ResponseEntity<?> createAdjustment(@PathVariable UUID id, @RequestBody AdjustmentRequest request) {
+    public ResponseEntity<?> createAdjustment(@PathVariable Long id, @RequestBody AdjustmentRequest request) {
         return ResponseEntity.ok(service.createAdjustmentRequest(
                 id, request.difference(), request.reason(), request.requestedBy()
         ));
@@ -107,17 +95,8 @@ public class StaffWarehouseController {
         return ResponseEntity.ok(service.rejectReservation(id, request.reason()));
     }
 
-<<<<<<< HEAD
-    @GetMapping("/orders/{id}")
-    public ResponseEntity<?> orderDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(service.order(id));
-    }
-
-    @GetMapping("/orders/{id}/picking")
-=======
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).PICK_PACK_LABEL)")
     @PostMapping("/orders/{id}/picking")
->>>>>>> main
     public ResponseEntity<?> startPicking(@PathVariable Long id) {
         return ResponseEntity.ok(service.startPicking(id));
     }
@@ -174,7 +153,7 @@ public class StaffWarehouseController {
         return ResponseEntity.ok(service.getReplenishmentSuggestions());
     }
 
-    public record InboundRequest(UUID variantId, Integer quantity, String location) {}
+    public record InboundRequest(Long productId, String productName, Integer quantity, String location) {}
     public record CountRequest(Integer actualQuantity) {}
     public record LocationRequest(String location) {}
     public record AdjustmentRequest(Integer difference, String reason, Long requestedBy) {}

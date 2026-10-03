@@ -1,14 +1,7 @@
 package com.nguyenhoanglong.controller.staff;
 
-<<<<<<< HEAD
-import com.nguyenhoanglong.dto.ApiResponse;
-import com.nguyenhoanglong.entity.Order;
-import com.nguyenhoanglong.entity.OrderNote;
-import com.nguyenhoanglong.entity.StockReservation;
-=======
 import com.nguyenhoanglong.entity.OrderStatus;
 import com.nguyenhoanglong.entity.OrderStatusHistory;
->>>>>>> main
 import com.nguyenhoanglong.service.SalesOrderService;
 import com.nguyenhoanglong.service.OrderStateMachine;
 
@@ -33,23 +26,23 @@ public class StaffSalesController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<ApiResponse<List<Order>>> allOrders() {
-        return ResponseEntity.ok(ApiResponse.success(service.getAllOrders()));
+    public ResponseEntity<?> allOrders() {
+        return ResponseEntity.ok(service.getAllOrders());
     }
 
     @GetMapping("/orders/new")
-    public ResponseEntity<ApiResponse<List<Order>>> newOrders() {
-        return ResponseEntity.ok(ApiResponse.success(service.getNewOrders()));
+    public ResponseEntity<?> newOrders() {
+        return ResponseEntity.ok(service.getNewOrders());
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<ApiResponse<Order>> orderDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(service.getOrder(id)));
+    public ResponseEntity<?> orderDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getOrder(id));
     }
 
     @GetMapping("/orders/{id}/notes")
-    public ResponseEntity<ApiResponse<List<OrderNote>>> orderNotes(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(service.getOrderNotes(id)));
+    public ResponseEntity<?> orderNotes(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getOrderNotes(id));
     }
 
     @GetMapping("/orders/{id}/status-info")
@@ -69,13 +62,13 @@ public class StaffSalesController {
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
     @PutMapping("/orders/{id}/verify")
-    public ResponseEntity<ApiResponse<Order>> verifyOrder(@PathVariable Long id, @RequestBody VerifyRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(service.verifyOrder(
+    public ResponseEntity<?> verifyOrder(@PathVariable Long id, @RequestBody VerifyRequest request) {
+        return ResponseEntity.ok(service.verifyOrder(
                 id,
                 request.customerName(),
                 request.phone(),
                 request.shippingAddress()
-        )));
+        ));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
@@ -86,32 +79,32 @@ public class StaffSalesController {
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
     @PostMapping("/orders/{id}/confirm")
-    public ResponseEntity<ApiResponse<Order>> confirmOrder(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(service.confirmOrder(id)));
+    public ResponseEntity<?> confirmOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(service.confirmOrder(id));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).VERIFY_ORDER)")
     @PostMapping("/orders/{id}/cancel")
-    public ResponseEntity<ApiResponse<Order>> cancelOrder(@PathVariable Long id, @RequestBody(required = false) CancelRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(service.cancelOrder(id, request == null ? null : request.reason())));
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id, @RequestBody(required = false) CancelRequest request) {
+        return ResponseEntity.ok(service.cancelOrder(id, request == null ? null : request.reason()));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).PROCESS_ORDER_NOTE)")
     @PostMapping("/orders/{id}/notes")
-    public ResponseEntity<ApiResponse<OrderNote>> addNote(@PathVariable Long id, @RequestBody NoteRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(service.addNote(id, request.content(), request.userId())));
+    public ResponseEntity<?> addNote(@PathVariable Long id, @RequestBody NoteRequest request) {
+        return ResponseEntity.ok(service.addNote(id, request.content(), request.userId()));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).REQUEST_STOCK_HOLD)")
     @PostMapping("/orders/{id}/reservations")
-    public ResponseEntity<ApiResponse<StockReservation>> requestReservation(@PathVariable Long id, @RequestBody ReservationRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(service.requestReservation(id, request.productId(), request.quantity())));
+    public ResponseEntity<?> requestReservation(@PathVariable Long id, @RequestBody ReservationRequest request) {
+        return ResponseEntity.ok(service.requestReservation(id, request.productId(), request.quantity()));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MONITOR_ORDER_SLA)")
     @GetMapping("/sla")
-    public ResponseEntity<ApiResponse<List<Order>>> slaWarnings() {
-        return ResponseEntity.ok(ApiResponse.success(service.getNewOrders()));
+    public ResponseEntity<?> slaWarnings() {
+        return ResponseEntity.ok(service.getSlaWarningOrders());
     }
 
     @GetMapping("/statuses")

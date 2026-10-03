@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 public class OrderNote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "note_id", nullable = false, updatable = false)
-    private Long noteId;
+    @Column(name = "note_id")
+    private Long id;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -23,10 +24,10 @@ public class OrderNote {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getNoteId() { return noteId; }
-    public void setNoteId(Long noteId) { this.noteId = noteId; }
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public String getCreatedBy() { return createdBy; }

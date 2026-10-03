@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 public class ShippingException {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "exception_id", nullable = false, updatable = false)
-    private Long exceptionId;
+    @Column(name = "exception_id")
+    private Long id;
 
-    @Column(name = "shipment_id", nullable = false)
-    private Long shipmentId;
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "shipment_id", nullable = false)
+    private Shipment shipment;
 
     @Column(name = "exception_type", nullable = false, length = 100)
     private String exceptionType;
@@ -29,10 +30,10 @@ public class ShippingException {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getExceptionId() { return exceptionId; }
-    public void setExceptionId(Long exceptionId) { this.exceptionId = exceptionId; }
-    public Long getShipmentId() { return shipmentId; }
-    public void setShipmentId(Long shipmentId) { this.shipmentId = shipmentId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Shipment getShipment() { return shipment; }
+    public void setShipment(Shipment shipment) { this.shipment = shipment; }
     public String getExceptionType() { return exceptionType; }
     public void setExceptionType(String exceptionType) { this.exceptionType = exceptionType; }
     public String getDescription() { return description; }

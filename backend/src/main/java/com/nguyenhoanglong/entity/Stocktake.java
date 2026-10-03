@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 public class Stocktake {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stocktake_id", nullable = false, updatable = false)
-    private Long stocktakeId;
+    @Column(name = "stocktake_id")
+    private Long id;
 
     @Column(name = "warehouse_location", nullable = false, length = 100)
     private String warehouseLocation;
@@ -30,8 +30,8 @@ public class Stocktake {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getStocktakeId() { return stocktakeId; }
-    public void setStocktakeId(Long stocktakeId) { this.stocktakeId = stocktakeId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getWarehouseLocation() { return warehouseLocation; }
     public void setWarehouseLocation(String warehouseLocation) { this.warehouseLocation = warehouseLocation; }
     public Long getCreatedBy() { return createdBy; }

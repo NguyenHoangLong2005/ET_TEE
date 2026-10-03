@@ -3,31 +3,19 @@ package com.nguyenhoanglong.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "shipments")
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shipment_id", nullable = false, updatable = false)
-    private Long shipmentId;
+    @Column(name = "shipment_id")
+    private Long id;
 
-<<<<<<< HEAD
-    @Column(name = "id", nullable = false)
-    private UUID id;
-
-    @Column(name = "order_id", nullable = false, unique = true)
-    private Long orderId;
-
-    @Column(name = "carrier", nullable = false, length = 150)
-    private String carrier;
-=======
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"items", "user"})
     @OneToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
->>>>>>> main
 
     @Column(name = "carrier_name", nullable = false, length = 150)
     private String carrierName;
@@ -54,14 +42,10 @@ public class Shipment {
     @Column(name = "cod_reconciled", nullable = false)
     private Boolean codReconciled = false;
 
-    public Long getShipmentId() { return shipmentId; }
-    public void setShipmentId(Long shipmentId) { this.shipmentId = shipmentId; }
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-    public String getCarrier() { return carrier; }
-    public void setCarrier(String carrier) { this.carrier = carrier; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
     public String getCarrierName() { return carrierName; }
     public void setCarrierName(String carrierName) { this.carrierName = carrierName; }
     public String getTrackingCode() { return trackingCode; }

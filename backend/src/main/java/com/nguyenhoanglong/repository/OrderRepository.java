@@ -5,10 +5,6 @@ import com.nguyenhoanglong.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-<<<<<<< HEAD
-import org.springframework.stereotype.Repository;
-import java.util.List;
-=======
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
->>>>>>> main
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -28,8 +23,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
     List<Order> findByStatusInOrderByCreatedAtDesc(List<OrderStatus> statuses);
     List<Order> findAllByOrderByCreatedAtDesc();
-<<<<<<< HEAD
-=======
     List<Order> findByCustomerPhoneOrderByCreatedAtDesc(String customerPhone);
 
     List<Order> findByShopIdOrderByCreatedAtDesc(Long shopId);
@@ -66,5 +59,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Modifying
     @Query("UPDATE Order o SET o.shopId = :shopId WHERE o.shopId IS NULL")
     void backfillShopId(@Param("shopId") Long shopId);
->>>>>>> main
 }

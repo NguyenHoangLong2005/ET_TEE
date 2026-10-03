@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    avoid_print: error
+    unused_import: error
+    prefer_const_constructors: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_locals
+    - require_trailing_commas
+    - unawaited_futures

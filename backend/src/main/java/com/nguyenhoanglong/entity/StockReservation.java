@@ -2,18 +2,18 @@ package com.nguyenhoanglong.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "stock_reservations")
 public class StockReservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "reservation_id", nullable = false, updatable = false)
-    private Long reservationId;
+    @Column(name = "reservation_id")
+    private Long id;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(name = "product_id", nullable = false)
     private Long productId;
@@ -31,10 +31,10 @@ public class StockReservation {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Long getReservationId() { return reservationId; }
-    public void setReservationId(Long reservationId) { this.reservationId = reservationId; }
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
     public Integer getQuantity() { return quantity; }

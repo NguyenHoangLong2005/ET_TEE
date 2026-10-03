@@ -28,10 +28,6 @@ public class SalesOrderService {
     private final InventoryRepository inventoryRepository;
     private final ProductVariantRepository variantRepository;
 
-<<<<<<< HEAD
-    public SalesOrderService(OrderRepository orders, OrderNoteRepository notes, StockReservationRepository reservations) {
-        this.orders = orders; this.notes = notes; this.reservations = reservations;
-=======
     public SalesOrderService(
             OrderRepository orders, 
             OrderNoteRepository notes, 
@@ -85,7 +81,6 @@ public class SalesOrderService {
         if (shopId != null && (order.getShopId() == null || !order.getShopId().equals(shopId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác trên đơn hàng của cửa hàng khác");
         }
->>>>>>> main
     }
 
     private static final List<OrderStatus> PENDING_SALES_STATUSES =
@@ -96,9 +91,6 @@ public class SalesOrderService {
         return shopId == null ? orders.findAllByOrderByCreatedAtDesc() : orders.findByShopIdOrderByCreatedAtDesc(shopId); 
     }
 
-<<<<<<< HEAD
-    public Order getOrder(Long id) { return orders.findById(id).orElseThrow(() -> new IllegalArgumentException("Khong tim thay don hang " + id)); }
-=======
     public List<Order> getNewOrders() {
         Long shopId = resolveShopId();
         return shopId == null ? orders.findByStatusInOrderByCreatedAtDesc(PENDING_SALES_STATUSES) : orders.findByShopIdAndStatusInOrderByCreatedAtDesc(shopId, PENDING_SALES_STATUSES);
@@ -110,23 +102,17 @@ public class SalesOrderService {
         return order;
     }
     
->>>>>>> main
     public List<OrderNote> getOrderNotes(Long id) { getOrder(id); return notes.findByOrderIdOrderByCreatedAtDesc(id); }
 
     @Transactional
     public Order verifyOrder(Long id, String name, String phone, String address) {
         Order order = getOrder(id);
-        if (!PENDING_SALES_STATUSES.contains(order.getStatus())) throw new IllegalArgumentException("Chi xac minh duoc don dang cho xac nhan");
+        if (!PENDING_SALES_STATUSES.contains(order.getStatus())) throw new IllegalArgumentException("Chỉ xác minh được đơn đang chờ xác nhận");
         if (name != null && !name.isBlank()) order.setCustomerName(name.trim());
-<<<<<<< HEAD
-        order.setCustomerPhone(phone);
-        order.setShippingAddress(address);
-=======
         // Guard every field: an update carrying only a name used to null the
         // customer's phone and shipping address on a live order.
         if (phone != null && !phone.isBlank()) order.setPhone(phone.trim());
         if (address != null && !address.isBlank()) order.setShippingAddress(address.trim());
->>>>>>> main
         order.setUpdatedAt(LocalDateTime.now());
         return orders.save(order);
     }
@@ -134,16 +120,12 @@ public class SalesOrderService {
     @Transactional
     public Order confirmOrder(Long id) {
         Order order = getOrder(id);
-<<<<<<< HEAD
-        if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new IllegalArgumentException("Don phai o trang thai pending_confirmation truoc khi xac nhan");
-=======
         String userId = resolveUserId();
         
         stateMachine.validateTransition(order.getStatus(), OrderStatus.CONFIRMED);
         validateInventoryForConfirmation(order);
         
         OrderStatus oldStatus = order.getStatus();
->>>>>>> main
         order.setStatus(OrderStatus.CONFIRMED);
         order.setUpdatedAt(LocalDateTime.now());
         
@@ -156,15 +138,11 @@ public class SalesOrderService {
     @Transactional
     public Order cancelOrder(Long id, String reason) {
         Order order = getOrder(id);
-<<<<<<< HEAD
-        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) throw new IllegalArgumentException("Don da giao hoac da huy khong the huy");
-=======
         String userId = resolveUserId();
         
         stateMachine.validateCancellation(order.getStatus());
         
         OrderStatus oldStatus = order.getStatus();
->>>>>>> main
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelReason(reason != null ? reason : "Khách hủy đơn");
         order.setUpdatedAt(LocalDateTime.now());
@@ -177,10 +155,6 @@ public class SalesOrderService {
         return orders.save(order);
     }
 
-<<<<<<< HEAD
-    public OrderNote addNote(Long orderId, String content, Long userId) {
-        if (content == null || content.isBlank()) throw new IllegalArgumentException("Noi dung ghi chu khong duoc de trong");
-=======
     /**
      * Checkout (OrderService) decrements product_variants.stock/available_quantity
      * for every item it sells. Cancellation used to release the warehouse-side
@@ -212,9 +186,8 @@ public class SalesOrderService {
 
     public OrderNote addNote(Long orderId, String content, String userId) {
         if (content == null || content.isBlank()) throw new IllegalArgumentException("Nội dung ghi chú không được để trống");
->>>>>>> main
         OrderNote note = new OrderNote();
-        note.setOrderId(orderId);
+        note.setOrder(getOrder(orderId));
         note.setContent(content.trim());
         note.setCreatedBy(userId);
         return notes.save(note);
@@ -223,10 +196,6 @@ public class SalesOrderService {
     @Transactional
     public StockReservation requestReservation(Long orderId, Long productId, Integer quantity) {
         Order order = getOrder(orderId);
-<<<<<<< HEAD
-        if (order.getStatus() != OrderStatus.CONFIRMED) throw new IllegalArgumentException("Don phai o trang thai confirmed truoc khi yeu cau giu hang");
-        if (quantity == null || quantity <= 0) throw new IllegalArgumentException("So luong giu phai lon hon 0");
-=======
         String userId = resolveUserId();
         
         if (order.getStatus() != OrderStatus.CONFIRMED) {
@@ -234,9 +203,8 @@ public class SalesOrderService {
         }
         if (quantity == null || quantity <= 0) throw new IllegalArgumentException("Số lượng giữ phải lớn hơn 0");
         
->>>>>>> main
         StockReservation r = new StockReservation();
-        r.setOrderId(orderId);
+        r.setOrder(order);
         r.setProductId(productId);
         r.setQuantity(quantity);
         r.setStatus(ReservationStatus.PENDING);
@@ -246,8 +214,6 @@ public class SalesOrderService {
         
         return reservations.save(r);
     }
-<<<<<<< HEAD
-=======
 
     public List<Order> getSlaWarningOrders() {
         LocalDateTime limit = LocalDateTime.now().plusHours(2);
@@ -374,5 +340,4 @@ public class SalesOrderService {
             boolean isCompleted,
             List<OrderStatus> allowedTransitions
     ) {}
->>>>>>> main
 }

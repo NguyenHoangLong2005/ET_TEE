@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 public class ProofOfDelivery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "proof_id", nullable = false, updatable = false)
-    private Long proofId;
+    @Column(name = "proof_id")
+    private Long id;
 
-    @Column(name = "shipment_id", nullable = false, unique = true)
-    private Long shipmentId;
+    @OneToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "shipment_id", nullable = false, unique = true)
+    private Shipment shipment;
 
     @Column(name = "receiver_name", nullable = false, length = 150)
     private String receiverName;
@@ -26,10 +27,10 @@ public class ProofOfDelivery {
     @Column(name = "delivered_at", nullable = false)
     private LocalDateTime deliveredAt = LocalDateTime.now();
 
-    public Long getProofId() { return proofId; }
-    public void setProofId(Long proofId) { this.proofId = proofId; }
-    public Long getShipmentId() { return shipmentId; }
-    public void setShipmentId(Long shipmentId) { this.shipmentId = shipmentId; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Shipment getShipment() { return shipment; }
+    public void setShipment(Shipment shipment) { this.shipment = shipment; }
     public String getReceiverName() { return receiverName; }
     public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
     public String getImageUrl() { return imageUrl; }

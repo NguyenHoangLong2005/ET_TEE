@@ -3,19 +3,16 @@ package com.nguyenhoanglong.repository;
 import com.nguyenhoanglong.entity.Inventory;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-<<<<<<< HEAD
-import org.springframework.stereotype.Repository;
-=======
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
->>>>>>> main
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
-    Optional<Inventory> findByVariantId(UUID variantId);
+public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<Inventory> findByProductId(Long productId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -35,9 +32,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
 
     @Query("SELECT i FROM Inventory i WHERE i.shopId = :shopId "
             + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")
-    java.util.List<Inventory> findReplenishmentSuggestionsByShopId(@Param("shopId") Long shopId);
+    List<Inventory> findReplenishmentSuggestionsByShopId(@Param("shopId") Long shopId);
 
     @Query("SELECT i FROM Inventory i WHERE (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")
-    java.util.List<Inventory> findAllReplenishmentSuggestions();
+    List<Inventory> findAllReplenishmentSuggestions();
 }
-
