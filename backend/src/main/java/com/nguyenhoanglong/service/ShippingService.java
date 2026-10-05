@@ -64,7 +64,14 @@ public class ShippingService {
      */
     private void transitionOrder(Order order, OrderStatus target, User actor, String reason) {
         OrderStatus from = order.getStatus();
-        stateMachine.validateTransition(from, target);
+        // IllegalStateException has no handler and surfaced as a 500; an order moved on
+        // by another department (e.g. cancelled) is a client-side conflict, not a crash.
+        try {
+            stateMachine.validateTransition(from, target);
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Đơn hàng đang ở trạng thái " + from + ", không thể chuyển sang " + target);
+        }
         order.setStatus(target);
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrderId(order.getId());
@@ -166,6 +173,11 @@ public class ShippingService {
     public Shipment updateTrackingCode(User actor, Long id, String trackingCode) {
         Shipment s = shipment(id);
         enforceShippingShopOwnership(actor, s.getOrder());
+        // Once the carrier is moving the parcel the waybill number is theirs; changing it
+        // afterwards (or on a delivered / reconciled parcel) breaks tracking and COD audit.
+        if (s.getStatus() != ShipmentStatus.PENDING && s.getStatus() != ShipmentStatus.HANDED_OVER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được sửa mã vận đơn trước khi kiện bắt đầu vận chuyển");
+        }
         s.setTrackingCode(requireUniqueTrackingCode(trackingCode, s.getId()));
         return shipments.save(s);
     }
@@ -191,6 +203,14 @@ public class ShippingService {
         // createShipment already requires the order to be HANDED_TO_CARRIER (it is
         // how warehouse marks "ready to ship"), so this event is shipment-level
         // bookkeeping only: it does not itself move the order to a new status.
+        // It had no precondition at all, so a DELIVERED or RETURNED parcel could be
+        // pushed back to HANDED_OVER (and drop out of the COD queue).
+        if (s.getStatus() != ShipmentStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ bàn giao được kiện đang chờ bàn giao");
+        }
+        if (s.getOrder() == null || s.getOrder().getStatus() != OrderStatus.HANDED_TO_CARRIER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn hàng không còn ở trạng thái chờ giao cho hãng vận chuyển");
+        }
         s.setStatus(ShipmentStatus.HANDED_OVER);
         s.setHandoverAt(LocalDateTime.now());
         return shipments.save(s);
@@ -233,6 +253,16 @@ public class ShippingService {
     public ShippingException addException(User actor, Long shipmentId, String type, String description) {
         Shipment s = shipment(shipmentId);
         enforceShippingShopOwnership(actor, s.getOrder());
+        // An exception only makes sense on a parcel that is still on its way. Raising one
+        // on a DELIVERED parcel stranded it: resolving put it back to HANDED_OVER while the
+        // order stayed DELIVERED, and "return to sender" crashed on DELIVERED -> CANCELLED.
+        if (s.getStatus() == ShipmentStatus.EXCEPTION) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kiện hàng đang có ngoại lệ chưa xử lý");
+        }
+        if (s.getStatus() != ShipmentStatus.PENDING && s.getStatus() != ShipmentStatus.HANDED_OVER
+                && s.getStatus() != ShipmentStatus.IN_TRANSIT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kiện hàng đã giao hoặc đã hoàn, không thể báo ngoại lệ");
+        }
         s.setStatus(ShipmentStatus.EXCEPTION);
         shipments.save(s);
 
@@ -294,9 +324,12 @@ public class ShippingService {
         // addException force-sets the shipment to EXCEPTION; put it back where it was so the
         // flow can continue. Always resetting to HANDED_OVER stranded parcels that were already
         // in transit: "start shipping" then asked for SHIPPING -> SHIPPING and was refused.
+        // A parcel that was never handed over goes back to PENDING, not HANDED_OVER,
+        // otherwise resolving an exception silently skipped the handover confirmation.
         if (shipment != null && shipment.getStatus() == ShipmentStatus.EXCEPTION) {
             boolean inTransit = shipment.getOrder() != null && shipment.getOrder().getStatus() == OrderStatus.SHIPPING;
-            shipment.setStatus(inTransit ? ShipmentStatus.IN_TRANSIT : ShipmentStatus.HANDED_OVER);
+            shipment.setStatus(inTransit ? ShipmentStatus.IN_TRANSIT
+                    : shipment.getHandoverAt() != null ? ShipmentStatus.HANDED_OVER : ShipmentStatus.PENDING);
             shipments.save(shipment);
         }
         return exceptions.save(e);
@@ -306,6 +339,9 @@ public class ShippingService {
     public ProofOfDelivery delivered(User actor, Long shipmentId, String receiverName, String imageUrl, String note) {
         Shipment s = shipment(shipmentId);
         enforceShippingShopOwnership(actor, s.getOrder());
+        if (receiverName == null || receiverName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập tên người nhận");
+        }
         // Don chi duoc SHIPPING -> DELIVERED; kien chua xuat phat thi chua the "da giao".
         if (s.getStatus() != ShipmentStatus.IN_TRANSIT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kiện hàng chưa ở trạng thái đang vận chuyển");
@@ -329,7 +365,7 @@ public class ShippingService {
 
         ProofOfDelivery p = new ProofOfDelivery();
         p.setShipment(s);
-        p.setReceiverName(receiverName);
+        p.setReceiverName(receiverName.trim());
         p.setImageUrl(imageUrl);
         p.setNote(note);
         return proofs.save(p);
@@ -392,8 +428,13 @@ public class ShippingService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vận đơn " + (s.getTrackingCode() != null ? s.getTrackingCode() : s.getId()) + " đã được đối soát trong phiếu khác");
             }
 
-            if (targetShopId == null && s.getOrder() != null) {
-                targetShopId = s.getOrder().getShopId();
+            Long shipmentShopId = s.getOrder() != null ? s.getOrder().getShopId() : null;
+            if (targetShopId == null) {
+                targetShopId = shipmentShopId;
+            } else if (!targetShopId.equals(shipmentShopId)) {
+                // An admin batch spanning branches was filed entirely under the first
+                // shipment's shop, so the other branch never saw that money reconciled.
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Một phiếu đối soát chỉ được chứa vận đơn của cùng một chi nhánh");
             }
 
             targetShipments.add(s);

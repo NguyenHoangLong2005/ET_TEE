@@ -63,6 +63,7 @@ public class ProductStatsService {
         // not separate stats fields, so we replace "kids" with individual boy/girl counts.
         Long boysCount = 0L;
         Long girlsCount = 0L;
+        Long unisexCount = 0L;
         for (Object[] row : productRepository.countActiveKidsByGender()) {
             String g = (String) row[0];
             Long c = ((Number) row[1]).longValue();
@@ -70,13 +71,14 @@ public class ProductStatsService {
             String lg = g.toLowerCase();
             if (lg.equals("boy") || lg.equals("boys")) boysCount += c;
             else if (lg.equals("girl") || lg.equals("girls")) girlsCount += c;
+            else if (lg.equals("unisex")) unisexCount += c;
         }
         // Remove the aggregate "kids" key from the returned map and add separate keys.
-        // (Keep "kids" at 0 so the filter sidebar can still show it.)
+        // Unisex items are listed under both boys and girls (see ProductSpecification).
         tg.remove("kids");
-        tg.put("boys", boysCount);
-        tg.put("girls", girlsCount);
-        tg.put("kids", boysCount + girlsCount); // total kids
+        tg.put("boys", boysCount + unisexCount);
+        tg.put("girls", girlsCount + unisexCount);
+        tg.put("kids", boysCount + girlsCount + unisexCount); // total kids
 
         dto.setTargetGroup(tg);
 
@@ -107,24 +109,9 @@ public class ProductStatsService {
         }
         dto.setCategory(cat);
 
-        // sizes
-        Map<String, List<String>> sizesMap = new LinkedHashMap<>();
-        List<String> adultSizes = new java.util.ArrayList<>();
-        List<String> kidsSizes = new java.util.ArrayList<>();
-        
-        for (Object[] row : productRepository.findDistinctSizesAndTargetGroups()) {
-            String size = (String) row[0];
-            String tGroup = (String) row[1];
-            if ("kids".equals(tGroup) || "baby".equals(tGroup) || "boys".equals(tGroup) || "girls".equals(tGroup)) {
-                if (!kidsSizes.contains(size)) kidsSizes.add(size);
-            } else {
-                if (!adultSizes.contains(size) && !"One Size".equals(size)) adultSizes.add(size);
-            }
-        }
-        
-        sizesMap.put("adult", adultSizes);
-        sizesMap.put("kids", kidsSizes);
-        dto.setSizes(sizesMap);
+        // sizes, grouped by kind (letter / number / accessory / kids)
+        dto.setSizes(com.nguyenhoanglong.util.SizeGroups.group(
+                productRepository.findDistinctSizesAndTargetGroups()));
 
         return dto;
     }

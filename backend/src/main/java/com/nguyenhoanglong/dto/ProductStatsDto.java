@@ -10,7 +10,7 @@ public class ProductStatsDto {
     private Map<String, Long> productType = new LinkedHashMap<>();
     /** Counts per category slug. */
     private Map<String, Long> category = new LinkedHashMap<>();
-    /** All available sizes grouped by adult/kids. */
+    /** All available sizes grouped by kind: letter / number / accessory / kids. */
     private Map<String, java.util.List<String>> sizes = new LinkedHashMap<>();
     /** Total active products. */
     private long totalActive;

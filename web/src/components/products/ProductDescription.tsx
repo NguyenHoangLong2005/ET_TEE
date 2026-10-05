@@ -2,13 +2,22 @@
 
 import { useState } from 'react';
 import { Product } from '@/lib/services/productService';
-import { ChevronDown, ChevronUp, Sparkles, Check, ShieldCheck, Sun, Shirt } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+// Only facts stored on the product are shown here; the old hard-coded fit/fabric/origin
+// claims were the same for every item (a dress, a perfume) and were wrong for most of them.
+const TYPE_LABEL: Record<string, string> = {
+  tshirt: 'Áo thun', shirt: 'Áo sơ mi', polo: 'Áo polo', outerwear: 'Áo khoác', pants: 'Quần dài',
+  shorts: 'Quần short', skirt: 'Chân váy', dress: 'Đầm', homewear: 'Đồ mặc nhà / đồ lót', accessories: 'Phụ kiện',
+};
+const GROUP_LABEL: Record<string, string> = {
+  men: 'Nam', women: 'Nữ', kids: 'Trẻ em', family: 'Gia đình', accessories: 'Phụ kiện',
+};
 
 export default function ProductDescription({ product }: { product: Product }) {
   const [openSections, setOpenSections] = useState({
     specs: true,
     desc: true,
-    material: true,
     care: false
   });
 
@@ -16,114 +25,62 @@ export default function ProductDescription({ product }: { product: Product }) {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const specs: [string, string][] = [
+    ['Mã sản phẩm', product.slug.toUpperCase()],
+    ['Thương hiệu', product.brand || ''],
+    ['Loại sản phẩm', TYPE_LABEL[product.productType ?? ''] || product.category?.name || ''],
+    ['Dành cho', GROUP_LABEL[product.targetGroup ?? ''] || ''],
+    ['Chất liệu', product.material || 'Đang cập nhật'],
+  ];
+  const rows = specs.filter(([, value]) => value);
+
   return (
     <div className="mt-8 border-t border-slate-200">
-      
-      {/* 1. Feature Badges Grid */}
-      <div className="py-4 border-b border-slate-200 grid grid-cols-2 gap-3 text-xs">
-        <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-          <Sparkles className="w-4 h-4 text-red-600 shrink-0" />
-          <div>
-            <span className="font-bold text-slate-900 block">Phom dáng Slim Fit</span>
-            <span className="text-slate-500 text-[10px]">Tôn dáng, tôn chiều cao</span>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-          <div>
-            <span className="font-bold text-slate-900 block">Co giãn 4 chiều</span>
-            <span className="text-slate-500 text-[10px]">Thoải mái vận động cả ngày</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-          <Sun className="w-4 h-4 text-blue-500 shrink-0" />
-          <div>
-            <span className="font-bold text-slate-900 block">Thấm hút thoáng khí</span>
-            <span className="text-slate-500 text-[10px]">Khô thoáng, không đọng mồ hôi</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-          <Shirt className="w-4 h-4 text-purple-500 shrink-0" />
-          <div>
-            <span className="font-bold text-slate-900 block">Chống nhăn tự nhiên</span>
-            <span className="text-slate-500 text-[10px]">Tiết kiệm thời gian là/ủi</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Specs Table */}
+      {/* 1. Specs Table */}
       <div className="border-b border-slate-200">
-        <button 
+        <button
           onClick={() => toggle('specs')}
           className="w-full py-4 flex justify-between items-center text-left"
         >
-          <span className="font-bold text-slate-900 uppercase text-xs tracking-wider">Thông số sản phẩm ET.TEE</span>
+          <span className="font-bold text-slate-900 uppercase text-xs tracking-wider">Thông số sản phẩm</span>
           {openSections.specs ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
         </button>
         {openSections.specs && (
           <div className="pb-4 text-xs">
             <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-gray-200 bg-white">
-              <div className="flex py-2.5 px-3 bg-slate-50">
-                <span className="w-1/3 font-bold text-slate-500">Mã sản phẩm</span>
-                <span className="w-2/3 font-semibold text-slate-900 uppercase">{product.slug.toUpperCase()}</span>
-              </div>
-              <div className="flex py-2.5 px-3">
-                <span className="w-1/3 font-bold text-slate-500">Chất liệu chính</span>
-                <span className="w-2/3 text-slate-900">{product.material || '95% Premium Eco-Cotton, 5% Spandex'}</span>
-              </div>
-              <div className="flex py-2.5 px-3 bg-slate-50">
-                <span className="w-1/3 font-bold text-slate-500">Kiểu dáng</span>
-                <span className="w-2/3 text-slate-900">Slim Fit ôm nhẹ vừa vặn</span>
-              </div>
-              <div className="flex py-2.5 px-3">
-                <span className="w-1/3 font-bold text-slate-500">Đặc tính</span>
-                <span className="w-2/3 text-slate-900">Mềm mượt, co giãn linh hoạt, bền màu sau 100 lần giặt</span>
-              </div>
-              <div className="flex py-2.5 px-3 bg-slate-50">
-                <span className="w-1/3 font-bold text-slate-500">Xuất xứ</span>
-                <span className="w-2/3 text-slate-900">Sản xuất tại Việt Nam (ET.TEE Manufacturing)</span>
-              </div>
+              {rows.map(([label, value], i) => (
+                <div key={label} className={`flex py-2.5 px-3 ${i % 2 === 0 ? 'bg-slate-50' : ''}`}>
+                  <span className="w-1/3 font-bold text-slate-500">{label}</span>
+                  <span className="w-2/3 text-slate-900 break-words">{value}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* 3. Detailed Description */}
-      <div className="border-b border-slate-200">
-        <button 
-          onClick={() => toggle('desc')}
-          className="w-full py-4 flex justify-between items-center text-left"
-        >
-          <span className="font-bold text-slate-900 uppercase text-xs tracking-wider">Chi tiết nổi bật</span>
-          {openSections.desc ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-        </button>
-        {openSections.desc && (
-          <div className="pb-4 text-slate-700 text-xs leading-relaxed space-y-2">
-            <p>{product.description}</p>
-            <ul className="space-y-1.5 pt-2">
-              <li className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>Thiết kế tối giản dễ phối đồ đi làm, đi chơi hay dự tiệc sang trọng.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>Đường may chắc chắn, tỉ mỉ theo tiêu chuẩn xuất khẩu Nhật Bản.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>Chất vải thân thiện với làn da nhạy cảm, không kích ứng.</span>
-              </li>
-            </ul>
-          </div>
-        )}
-      </div>
+      {/* 2. Detailed Description */}
+      {product.description && (
+        <div className="border-b border-slate-200">
+          <button
+            onClick={() => toggle('desc')}
+            className="w-full py-4 flex justify-between items-center text-left"
+          >
+            <span className="font-bold text-slate-900 uppercase text-xs tracking-wider">Mô tả sản phẩm</span>
+            {openSections.desc ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+          </button>
+          {openSections.desc && (
+            <div className="pb-4 text-slate-700 text-xs leading-relaxed whitespace-pre-line">
+              {product.description}
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* 4. Care Guide */}
+      {/* 3. Care Guide (general advice, not product-specific) */}
       <div className="border-b border-slate-200">
-        <button 
+        <button
           onClick={() => toggle('care')}
           className="w-full py-4 flex justify-between items-center text-left"
         >
@@ -132,18 +89,19 @@ export default function ProductDescription({ product }: { product: Product }) {
         </button>
         {openSections.care && (
           <div className="pb-4 text-slate-600 text-xs leading-relaxed space-y-2">
+            <p className="text-[11px] text-slate-500">Khuyến nghị chung — ưu tiên hướng dẫn trên nhãn sản phẩm.</p>
             <div className="grid grid-cols-2 gap-2 text-[11px]">
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Giặt máy ở nhiệt độ thường 30°C
+                ✔️ Giặt ở nhiệt độ thường 30°C
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ❌ Không dùng chất tẩy clor mạnh
+                ❌ Không dùng chất tẩy mạnh
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Sấy khô ở nhiệt độ thấp
+                ✔️ Lộn trái khi giặt và phơi
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Ủi/Là ở nhiệt độ tối đa 110°C
+                ✔️ Ủi ở nhiệt độ thấp
               </div>
             </div>
           </div>
@@ -153,4 +111,3 @@ export default function ProductDescription({ product }: { product: Product }) {
     </div>
   );
 }
-

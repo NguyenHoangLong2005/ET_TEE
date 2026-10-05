@@ -87,33 +87,15 @@ export default async function ProductsPage({
   let stats = {
     targetGroup: {} as Record<string, number>,
     productType: {} as Record<string, number>,
-    sizes: { adult: [] as string[], kids: [] as string[] }
+    sizes: {} as { letter?: string[]; number?: string[]; accessory?: string[]; kids?: string[] },
   };
   if (statsPromise.status === 'fulfilled') {
     const apiStats = statsPromise.value;
-    
-    // Sort sizes logically
-    const adultOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
-    const sortedAdult = (apiStats.sizes?.adult || []).sort((a, b) => {
-      const ia = adultOrder.indexOf(a);
-      const ib = adultOrder.indexOf(b);
-      if (ia !== -1 && ib !== -1) return ia - ib;
-      if (ia !== -1) return -1;
-      if (ib !== -1) return 1;
-      return a.localeCompare(b);
-    });
-    
-    const sortedKids = (apiStats.sizes?.kids || []).sort((a, b) => {
-      const numA = parseInt(a);
-      const numB = parseInt(b);
-      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-      return a.localeCompare(b);
-    });
-
+    // Sizes arrive grouped (letter / number / accessory / kids) and sorted by the backend
     stats = {
       targetGroup: apiStats.targetGroup || {},
       productType: apiStats.productType || {},
-      sizes: { adult: sortedAdult, kids: sortedKids }
+      sizes: apiStats.sizes || {},
     };
   }
   
@@ -160,7 +142,7 @@ export default async function ProductsPage({
   if (category) activeFilters.push({ key: 'category', label: `Nhóm: ${category === 'accessories' ? 'Phụ kiện' : category}`, params: ['category'] });
   if (collection && collection !== 'all') activeFilters.push({ key: 'collection', label: `Bộ sưu tập: ${collection}`, params: ['collection'] });
   if (search) activeFilters.push({ key: 'search', label: `Tìm kiếm: "${search}"`, params: ['q'] });
-  if (adultSize) activeFilters.push({ key: 'adultSize', label: `Size người lớn: ${adultSize}`, params: ['adultSize'] });
+  if (adultSize) activeFilters.push({ key: 'adultSize', label: `Size: ${adultSize}`, params: ['adultSize'] });
   if (kidsSize) activeFilters.push({ key: 'kidsSize', label: `Size trẻ em: ${kidsSize}`, params: ['kidsSize'] });
   if (accessorySize) activeFilters.push({ key: 'accessorySize', label: `Size phụ kiện: ${accessorySize}`, params: ['accessorySize'] });
   if (status) {
@@ -201,8 +183,10 @@ export default async function ProductsPage({
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             
-            {/* Sidebar (Mobile Toggle + Desktop Sticky) */}
-            <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24">
+            {/* Sidebar (Mobile Toggle + Desktop Sticky). Capped to the viewport with
+                its own scroll, otherwise a sidebar taller than the screen only
+                reveals its lower filters once the page is scrolled to the end. */}
+            <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain custom-scrollbar lg:pr-1">
               <Suspense fallback={<div className="h-12 lg:h-96 bg-slate-100 rounded-2xl animate-pulse"></div>}>
                 <FilterSidebar stats={stats} />
               </Suspense>

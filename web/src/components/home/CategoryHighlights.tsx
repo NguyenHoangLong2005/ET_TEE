@@ -10,8 +10,8 @@ type CategoryFromApi = {
   name: string;
   slug: string;
   description: string;
-  imageUrl: string | null;
-  parentId: number | null;
+  imageUrl?: string | null;
+  parentId?: number | null;
   displayOrder: number;
   active: boolean;
 };
@@ -43,9 +43,10 @@ export default function CategoryHighlights() {
         if (cancelled) return;
 
         const data = await res.json();
-        // Filter only root categories (parentId is null) that are active
+        // Filter only root categories that are active. The backend omits null
+        // fields (Jackson non_null), so a root's parentId is absent, not null.
         const rootCategories = (data.data || []).filter(
-          (cat: CategoryFromApi) => cat.active && cat.parentId === null
+          (cat: CategoryFromApi) => cat.active && cat.parentId == null
         );
         setCategories(rootCategories);
       } catch (err) {
@@ -74,15 +75,16 @@ export default function CategoryHighlights() {
     // Use imageUrl if available, otherwise use local fallback
     let imgUrl = cat.imageUrl;
     if (!imgUrl) {
-      // Fallback to local images based on category slug
+      // Fallback to local images based on category slug (same banners as
+      // the static fallback below)
       const fallbackImages: Record<string, string> = {
-        'women': '/images/categories/women.webp',
-        'men': '/images/categories/men.webp',
-        'kids': '/images/categories/kids.webp',
-        'family': '/images/categories/family.webp',
-        'accessories': '/images/categories/accessories.webp',
+        'women': '/images/banners/home/banner-1.webp',
+        'men': '/images/banners/home/banner-2.webp',
+        'kids': '/images/banners/home/banner-3.webp',
+        'family': '/images/banners/home/banner-4.webp',
+        'accessories': '/images/banners/home/banner-5.webp',
       };
-      imgUrl = fallbackImages[cat.slug] || '/images/categories/default.webp';
+      imgUrl = fallbackImages[cat.slug] || '/images/banners/home/banner-1.webp';
     }
 
     return {

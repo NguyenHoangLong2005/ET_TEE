@@ -113,8 +113,9 @@ public class ProductController {
     }
 
     @GetMapping("/{slug}/similar")
-    public ResponseEntity<ApiResponse<List<ProductDto>>> getSimilarProducts(@PathVariable String slug) {
-        List<ProductDto> similar = productService.getSimilarProducts(slug);
+    public ResponseEntity<ApiResponse<List<ProductDto>>> getSimilarProducts(
+            @PathVariable String slug, @RequestParam(defaultValue = "10") int limit) {
+        List<ProductDto> similar = productService.getSimilarProducts(slug, Math.max(1, Math.min(limit, 20)));
         return ResponseEntity.ok(ApiResponse.success(similar));
     }
 

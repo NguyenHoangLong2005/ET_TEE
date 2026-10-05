@@ -1,0 +1,7 @@
+sentence-transformers>=3
+torch
+numpy
+pillow
+requests
+psycopg2-binary
+python-dotenv

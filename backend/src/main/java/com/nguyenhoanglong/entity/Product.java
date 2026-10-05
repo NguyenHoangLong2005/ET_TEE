@@ -131,8 +131,11 @@ public class Product {
     @BatchSize(size = 30)
     private List<ProductVariant> variants = new ArrayList<>();
 
+    // Without an explicit order the gallery follows the heap order, which changes whenever a
+    // row is updated, and the storefront uses images[0] as the card/primary picture.
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 30)
+    @OrderBy("sortOrder ASC, id ASC")
     private List<ProductImage> images = new ArrayList<>();
 
     public Product() {}

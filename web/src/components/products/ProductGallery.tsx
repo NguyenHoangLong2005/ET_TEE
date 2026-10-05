@@ -39,9 +39,11 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
   const displayImages = validImages.length > 0 ? validImages : ['/images/products/placeholder.webp'];
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
+    // items-start + a capped, scrollable thumbnail rail: with dozens of photos the rail used to
+    // stretch the main frame to thousands of pixels and the cover-fit photo showed as a grey strip.
+    <div className="flex flex-col md:flex-row md:items-start gap-4">
       {/* Thumbnails */}
-      <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-visible">
+      <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:max-h-[min(80vh,720px)] md:shrink-0">
         {displayImages.map((img, idx) => (
           <button
             key={idx}
