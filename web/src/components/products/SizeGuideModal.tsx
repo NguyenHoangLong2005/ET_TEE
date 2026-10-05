@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, RefreshCcw, Sparkles, CheckCircle2, Ruler, Calculator, ShieldCheck, ChevronRight } from 'lucide-react';
+import { SizeAdvisorService, CONFIDENCE_LABEL, Fit } from '@/lib/services/sizeAdvisorService';
 
 interface SizeGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectSize?: (size: string) => void;
   defaultCategory?: 'nam' | 'nu' | 'tre-em' | 'phu-kien';
+  /** On a product page: advise with that product's own chart and only sizes in stock. */
+  productSlug?: string;
 }
 
 type MainCategory = 'nam' | 'nu' | 'tre-em' | 'phu-kien';
@@ -18,6 +21,7 @@ export default function SizeGuideModal({
   onClose,
   onSelectSize,
   defaultCategory = 'nam',
+  productSlug,
 }: SizeGuideModalProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<MainCategory>(defaultCategory);
@@ -30,6 +34,8 @@ export default function SizeGuideModal({
   const [fitPreference, setFitPreference] = useState<'slim' | 'regular' | 'loose'>('regular');
   const [calculatedSize, setCalculatedSize] = useState<string | null>(null);
   const [calculatedReason, setCalculatedReason] = useState<string>('');
+  const [calculatedDetails, setCalculatedDetails] = useState<string[]>([]);
+  const [calculating, setCalculating] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -45,91 +51,36 @@ export default function SizeGuideModal({
 
   if (!isOpen || !mounted) return null;
 
-  // Calculate size logic
-  const handleCalculate = (e: React.FormEvent) => {
+  // Size advice from the published charts (backend SizeAdvisorService); same answer as the product page.
+  const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault();
-    let size = 'M';
-    let reason = '';
-
-    if (activeTab === 'nam') {
-      if (weight < 54 && height <= 165) {
-        size = 'S';
-        reason = 'Phù hợp với vóc dáng nhỏ gọn (Dưới 54kg & dưới 1m65)';
-      } else if (weight <= 62 && height <= 168) {
-        size = 'M';
-        reason = 'Vừa vặn chuẩn dáng người Việt (55kg - 62kg & 1m60 - 1m68)';
-      } else if (weight <= 70 && height <= 174) {
-        size = 'L';
-        reason = 'Thoải mái và chuẩn dáng (63kg - 70kg & 1m66 - 1m74)';
-      } else if (weight <= 78 && height <= 180) {
-        size = 'XL';
-        reason = 'Rộng rãi phong cách (71kg - 78kg & 1m72 - 1m80)';
-      } else if (weight <= 86 && height <= 185) {
-        size = '2XL';
-        reason = 'Phom dáng lớn 2XL (79kg - 86kg & 1m77 - 1m85)';
-      } else if (weight <= 94) {
-        size = '3XL';
-        reason = 'Phom ngoại cỡ 3XL (87kg - 94kg)';
-      } else if (weight <= 102) {
-        size = '4XL';
-        reason = 'Phom thoải mái 4XL (95kg - 102kg)';
-      } else {
-        size = '5XL';
-        reason = 'Phom cực đại 5XL (Trên 103kg)';
-      }
-
-      if (fitPreference === 'loose' && ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].includes(size)) {
-        const order = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
-        const nextIdx = order.indexOf(size) + 1;
-        if (nextIdx < order.length) {
-          size = order[nextIdx];
-          reason += ' • Đã tăng 1 size theo sở thích mặc rộng rãi';
-        }
-      }
-    } else if (activeTab === 'nu') {
-      if (weight < 45 && height <= 155) {
-        size = 'S';
-        reason = 'Chuẩn phom dáng mảnh mai (Dưới 45kg & dưới 1m55)';
-      } else if (weight <= 52 && height <= 162) {
-        size = 'M';
-        reason = 'Cân đối thanh lịch (46kg - 52kg & 1m56 - 1m62)';
-      } else if (weight <= 60 && height <= 168) {
-        size = 'L';
-        reason = 'Thoải mái dễ vận động (53kg - 60kg & 1m62 - 1m68)';
-      } else if (weight <= 68) {
-        size = 'XL';
-        reason = 'Dáng giấu bụng, dễ mặc (61kg - 68kg)';
-      } else {
-        size = '2XL';
-        reason = 'Phom giấu dáng 2XL (Trên 68kg)';
-      }
-    } else if (activeTab === 'tre-em') {
-      if (height <= 100) {
-        size = '100 (2-3 tuổi)';
-        reason = 'Chiều cao bé dưới 100cm (Nặng 12 - 15kg)';
-      } else if (height <= 110) {
-        size = '110 (4-5 tuổi)';
-        reason = 'Chiều cao bé 100 - 110cm (Nặng 15 - 18kg)';
-      } else if (height <= 120) {
-        size = '120 (6-7 tuổi)';
-        reason = 'Chiều cao bé 110 - 120cm (Nặng 18 - 23kg)';
-      } else if (height <= 130) {
-        size = '130 (8-9 tuổi)';
-        reason = 'Chiều cao bé 120 - 130cm (Nặng 23 - 28kg)';
-      } else if (height <= 140) {
-        size = '140 (10-11 tuổi)';
-        reason = 'Chiều cao bé 130 - 140cm (Nặng 28 - 34kg)';
-      } else {
-        size = '150 (12-13 tuổi)';
-        reason = 'Chiều cao bé 140 - 150cm (Nặng 34 - 40kg)';
-      }
-    } else {
-      size = 'Freesize';
-      reason = 'Phụ kiện ET.TEE thiết kế vừa vặn cho mọi vóc dáng';
+    setCalculatedDetails([]);
+    if (activeTab === 'phu-kien') {
+      setCalculatedSize('Freesize');
+      setCalculatedReason('Phụ kiện không chọn theo số đo cơ thể.');
+      return;
     }
-
-    setCalculatedSize(size);
-    setCalculatedReason(reason);
+    const fit = fitPreference.toUpperCase() as Fit;
+    const body = { height, weight, fit };
+    setCalculating(true);
+    const chart = activeTab === 'nu' ? 'WOMEN' : activeTab === 'tre-em' ? 'KIDS' : subType === 'quan' ? 'MEN_BOTTOM' : 'MEN_TOP';
+    const advice = productSlug
+      ? await SizeAdvisorService.forProduct(productSlug, body)
+      : await SizeAdvisorService.forChart(chart, body);
+    setCalculating(false);
+    SizeAdvisorService.saveBody(body);
+    if (!advice || !advice.size) {
+      setCalculatedSize(null);
+      setCalculatedReason(advice?.reason === 'NO_STOCK'
+        ? 'Sản phẩm này đã hết các size phù hợp.'
+        : 'Chưa gợi ý được size, vui lòng xem bảng size.');
+      return;
+    }
+    setCalculatedSize(advice.size);
+    const notes = [advice.confidence ? CONFIDENCE_LABEL[advice.confidence] : ''];
+    if (!advice.bestInStock && advice.bestSize) notes.push(`Size ${advice.bestSize} hợp nhất nhưng đang hết hàng`);
+    setCalculatedReason(notes.filter(Boolean).join(' · '));
+    setCalculatedDetails(advice.reasons);
   };
 
   const modalContent = (
@@ -197,7 +148,7 @@ export default function SizeGuideModal({
             >
               <Calculator className="w-3.5 h-3.5 text-amber-600" />
               <span>Tính size tự động</span>
-              <span className="bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase">Smart AI</span>
+              <span className="bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase">Theo bảng size</span>
             </button>
             <button
               onClick={() => setActiveView('guide')}
@@ -595,12 +546,15 @@ export default function SizeGuideModal({
                     className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold uppercase rounded-xl tracking-wider shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Calculator className="w-4 h-4" />
-                    <span>Xem Gợi Ý Size Ngay</span>
+                    <span>{calculating ? 'Đang tính…' : 'Xem Gợi Ý Size Ngay'}</span>
                   </button>
                 </form>
               </div>
 
               {/* Calculator Output Display */}
+              {!calculatedSize && calculatedReason && (
+                <p className="text-xs text-slate-600 text-center">{calculatedReason}</p>
+              )}
               {calculatedSize && (
                 <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
@@ -610,9 +564,14 @@ export default function SizeGuideModal({
                   <div className="text-4xl font-black text-amber-400 my-2 tracking-tight">
                     SIZE {calculatedSize}
                   </div>
-                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mb-4">
+                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mb-2">
                     {calculatedReason}
                   </p>
+                  {calculatedDetails.length > 0 && (
+                    <ul className="text-[11px] text-slate-400 max-w-md mx-auto leading-relaxed mb-4 space-y-0.5">
+                      {calculatedDetails.map(d => <li key={d}>{d}</li>)}
+                    </ul>
+                  )}
 
                   {onSelectSize && (
                     <button

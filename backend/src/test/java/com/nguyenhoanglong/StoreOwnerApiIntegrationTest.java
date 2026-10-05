@@ -49,6 +49,9 @@ public class StoreOwnerApiIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ShopRepository shopRepository;
+
     @Test
     @DisplayName("Case 1: Get product, update price & sale price, validate sale < price constraint")
     public void testCase1_GetAndUpdateShopProductConfig() {
@@ -162,8 +165,15 @@ public class StoreOwnerApiIntegrationTest {
     @Test
     @DisplayName("Case 3: Work shift scheduling CRUD operations")
     public void testCase3_WorkShiftsCRUD() {
-        Long shopId = 1L;
-        String userId = "EMP-STAFF-1";
+        // The service only schedules an existing staff member of the same shop ("EMP-STAFF-1" never existed)
+        Shop shop = new Shop();
+        shop.setName("Shop ca lam test " + System.currentTimeMillis());
+        shop.setIsActive(true);
+        Long shopId = shopRepository.save(shop).getId();
+        String userId = userRepository.save(User.builder()
+                .fullName("Nhân viên ca test").email("staff-shift-" + System.currentTimeMillis() + "@test.local")
+                .passwordHash("x").role(Role.SALES_STAFF).shopId(shopId).status("ACTIVE").emailVerified(true)
+                .build()).getId();
 
         // Create shift
         ShopWorkShiftCreateDto createDto = new ShopWorkShiftCreateDto(userId, LocalDate.now().plusDays(1), "MORNING", "Ca sáng trực cửa hàng", "SCHEDULED");

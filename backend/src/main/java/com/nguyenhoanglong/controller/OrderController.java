@@ -27,6 +27,9 @@ public class OrderController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.nguyenhoanglong.service.BehaviorEventService behaviorEventService;
+
     private User getCurrentUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
@@ -38,10 +41,15 @@ public class OrderController {
     @PostMapping("/checkout")
     public ResponseEntity<Map<String, Object>> checkout(
             @RequestHeader(value = "X-Guest-Cart-Token", required = false) String guestToken,
+            @RequestHeader(value = "X-Behavior-Session", required = false) String behaviorSession,
+            @RequestHeader(value = "User-Agent", required = false) String userAgent,
             @RequestBody CheckoutRequest request) {
         
         User user = getCurrentUser();
         OrderResponse orderResponse = orderService.checkout(user, guestToken, request);
+        behaviorEventService.recordPurchase(
+                com.nguyenhoanglong.service.BehaviorEventService.resolveUserKey(user != null ? user.getId() : null, guestToken),
+                orderResponse.getOrderCode(), behaviorSession, userAgent);
         
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

@@ -26,6 +26,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Bucket> registerBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> forgotPasswordBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> checkEmailBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> behaviorEventBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> imageSearchBuckets = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -58,6 +60,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 sendRateLimitResponse(response, "Quá nhiều yêu cầu kiểm tra email. Vui lòng thử lại sau.");
                 return;
             }
+        } else if (uri.equals("/api/search/image") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = imageSearchBuckets.computeIfAbsent(ipAddress, k -> createImageSearchBucket());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều lượt tìm bằng ảnh. Vui lòng thử lại sau.");
+                return;
+            }
+        } else if (uri.equals("/api/events") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = behaviorEventBuckets.computeIfAbsent(ipAddress, k -> createBehaviorEventBucket());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều sự kiện. Vui lòng thử lại sau.");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -78,6 +92,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private Bucket createForgotPasswordBucket() {
         // 3 requests per hour
         Bandwidth limit = Bandwidth.classic(3, Refill.greedy(3, Duration.ofHours(1)));
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    private Bucket createImageSearchBucket() {
+        // 20 photos per minute: each one costs a CLIP image encoding on the embedder
+        Bandwidth limit = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)));
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    private Bucket createBehaviorEventBucket() {
+        // 120 page views per minute: far above real browsing, stops a script flooding the training data
+        Bandwidth limit = Bandwidth.classic(120, Refill.greedy(120, Duration.ofMinutes(1)));
         return Bucket.builder().addLimit(limit).build();
     }
 

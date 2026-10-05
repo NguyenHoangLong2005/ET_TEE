@@ -66,7 +66,7 @@ public class ShippingBranchIsolationIntegrationTest {
         Shipment s = new Shipment();
         s.setOrder(order);
         s.setCarrierName("GHN");
-        s.setTrackingCode("TRK-" + System.currentTimeMillis());
+        s.setTrackingCode("TRK-" + java.util.UUID.randomUUID()); // millis collided when two were created in the same ms
         s.setCodAmount(new BigDecimal("750000"));
         s.setStatus(status);
         return shipmentRepository.save(s);

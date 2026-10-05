@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 
 import SafeImage from '@/components/ui/SafeImage';
 import { formatVnd, roundVnd } from '@/lib/utils/price';
+import CartComplementsStrip from '@/components/cart/CartComplementsStrip';
 
 export default function CartDrawer() {
   const { cart, isDrawerOpen, closeDrawer, updateQuantity, removeItem } = useCart();
@@ -147,6 +148,12 @@ export default function CartDrawer() {
                   </div>
                 </div>
               ))}
+              {isDrawerOpen && (
+                <CartComplementsStrip
+                  cartKey={cart.items.map(i => i.variantId).sort((a, b) => a - b).join(',')}
+                  onNavigate={closeDrawer}
+                />
+              )}
             </div>
           )}
         </div>

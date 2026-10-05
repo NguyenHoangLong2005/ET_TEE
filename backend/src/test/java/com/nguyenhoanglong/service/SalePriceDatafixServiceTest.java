@@ -4,22 +4,29 @@ import com.nguyenhoanglong.entity.Product;
 import com.nguyenhoanglong.entity.ProductVariant;
 import com.nguyenhoanglong.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,6 +36,11 @@ class SalePriceDatafixServiceTest {
 
     @Mock private ProductRepository productRepository;
     @Mock private EntityManager entityManager;
+    // The service syncs variant sale prices with a bulk JPQL UPDATE; setParameter() chains.
+    @Mock(answer = Answers.RETURNS_SELF) private Query variantUpdate;
+
+    // Keeps the Markdown report out of the working tree.
+    @TempDir Path tempDir;
 
     private SalePriceDatafixService service;
 
@@ -62,7 +74,9 @@ class SalePriceDatafixServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new SalePriceDatafixService(productRepository, 0.5, "sale-price-fix-report.md");
+        lenient().when(entityManager.createQuery(anyString())).thenReturn(variantUpdate);
+        lenient().when(variantUpdate.executeUpdate()).thenReturn(1);
+        service = new SalePriceDatafixService(productRepository, 0.5, tempDir.resolve("sale-price-fix-report.md").toString());
         // Inject the mocked EntityManager via reflection so the test can drive
         // flush()/clear() without a real JPA persistence context.
         try {
@@ -141,7 +155,7 @@ class SalePriceDatafixServiceTest {
     @Test
     void only_updates_target_share_of_eligible_products() throws Exception {
         // Construct a NEW service with a smaller targetShare (0.2 = 20%).
-        SalePriceDatafixService s = new SalePriceDatafixService(productRepository, 0.2, "report.md");
+        SalePriceDatafixService s = new SalePriceDatafixService(productRepository, 0.2, tempDir.resolve("report.md").toString());
         java.lang.reflect.Field f = SalePriceDatafixService.class.getDeclaredField("entityManager");
         f.setAccessible(true);
         f.set(s, entityManager);
@@ -164,5 +178,22 @@ class SalePriceDatafixServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new SalePriceDatafixService(productRepository, 1.5, "report.md"))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void syncs_variant_salePrice_to_the_new_product_salePrice() throws Exception {
+        // Cart and checkout bill variant.salePrice: a product-only discount would be shown but not charged.
+        Product p = product(1L, new BigDecimal("100000"), null, "ACTIVE", 2);
+        Product skipped = product(2L, new BigDecimal("100000"), new BigDecimal("80000"), "ACTIVE", 1);
+        when(productRepository.findAll()).thenReturn(List.of(p, skipped));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.run();
+
+        verify(variantUpdate).setParameter("sale", p.getSalePrice());
+        verify(variantUpdate).setParameter("pid", 1L);
+        verify(variantUpdate).setParameter(eq("price"), eq(new BigDecimal("100000")));
+        verify(variantUpdate, never()).setParameter("pid", 2L);
+        verify(variantUpdate, times(1)).executeUpdate();
     }
 }

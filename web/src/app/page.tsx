@@ -4,6 +4,7 @@ import OutfitSection from '@/components/home/OutfitSection';
 import TrustBar from '@/components/home/TrustBar';
 import Newsletter from '@/components/home/Newsletter';
 import MarketingCarousel from '@/components/home/MarketingCarousel';
+import ForYouSection from '@/components/home/ForYouSection';
 import { ProductService } from '@/lib/services/productService';
 import { RecommendationService } from '@/lib/services/recommendationService';
 
@@ -48,6 +49,10 @@ export default async function Home() {
 
       {/* 3. Category Bento Highlights Grid */}
       <CategoryHighlights />
+
+      {/* 3b. Personalised feed (client side: needs the shopper's login / guest token). Renders
+         nothing for a visitor with no browsing history yet. */}
+      <ForYouSection />
 
       {/* 4. Special Deals & Flash Sale (Urgency Driver) */}
       <MarketingCarousel

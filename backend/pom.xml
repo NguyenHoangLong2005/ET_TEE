@@ -107,6 +107,12 @@
 			<artifactId>bucket4j-core</artifactId>
 			<version>8.9.0</version>
 		</dependency>
+		<!-- Sprint 2: chay model SASRec (xuat ONNX tu scripts/sasrec/train.py) cho goi y trang chu -->
+		<dependency>
+			<groupId>com.microsoft.onnxruntime</groupId>
+			<artifactId>onnxruntime</artifactId>
+			<version>1.30.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

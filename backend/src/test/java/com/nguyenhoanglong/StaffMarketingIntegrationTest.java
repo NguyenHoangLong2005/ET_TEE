@@ -44,6 +44,12 @@ public class StaffMarketingIntegrationTest {
     @Autowired
     private ProductPlacementRepository productPlacementRepository;
 
+    @Autowired
+    private ShopRepository shopRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     @DisplayName("Case 1: Campaign date validation - endDate before startDate throws 400")
     public void testCampaignDateValidation() {
@@ -139,11 +145,22 @@ public class StaffMarketingIntegrationTest {
         shopVoucher.setDiscountValue(new BigDecimal("15.00"));
         shopVoucher.setStartDate(LocalDateTime.now().minusDays(1));
         shopVoucher.setEndDate(LocalDateTime.now().plusDays(10));
-        shopVoucher.setShopId(1L);
+        // A real store owner of a real shop: "storeowner@et.tee" never existed, so the creator was
+        // unknown, treated as marketing staff, and the voucher lost its shopId.
+        Shop shop = new Shop();
+        shop.setName("Shop voucher test " + System.currentTimeMillis());
+        shop.setIsActive(true);
+        shop = shopRepository.save(shop);
+        String ownerEmail = "owner-voucher-" + System.currentTimeMillis() + "@test.local";
+        userRepository.save(User.builder()
+                .fullName("Chủ shop test").email(ownerEmail).passwordHash("x")
+                .role(Role.SHOP_OWNER).shopId(shop.getId()).status("ACTIVE").emailVerified(true)
+                .build());
+        shopVoucher.setShopId(shop.getId());
 
-        Voucher created = marketingService.createVoucher(shopVoucher, "storeowner@et.tee");
+        Voucher created = marketingService.createVoucher(shopVoucher, ownerEmail);
         assertEquals("PENDING_APPROVAL", created.getStatus());
-        assertEquals(1L, created.getShopId());
+        assertEquals(shop.getId(), created.getShopId());
     }
 
     @Test

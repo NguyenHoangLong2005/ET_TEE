@@ -48,3 +48,16 @@ logs/
 # uploaded product images
 /backend/uploads/
 backend/uploads/
+
+# Product embedding pipeline: downloaded image cache
+scripts/embeddings/.cache/
+scripts/embeddings/colab_upload/
+scripts/embeddings/colab_output/
+
+# Sprint 7: models promoted by scripts/pipeline/retrain.py and its staging runs
+backend/models-live/
+scripts/pipeline/staging/
+scripts/pipeline/last_run.md
+
+# Python bytecode
+__pycache__/
