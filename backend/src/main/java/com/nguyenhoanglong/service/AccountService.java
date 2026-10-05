@@ -48,7 +48,10 @@ public class AccountService {
         user.setPhone(request.getPhone());
         user.setGender(request.getGender());
         user.setDateOfBirth(request.getDateOfBirth());
-        user.setAvatarUrl(request.getAvatarUrl());
+        // The profile form has no avatar field, so every save used to wipe the avatar.
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl().isBlank() ? null : request.getAvatarUrl().trim());
+        }
         user.setDefaultShippingAddress(request.getDefaultShippingAddress());
 
         // Validate dateOfBirth is not in the future
@@ -152,6 +155,7 @@ public class AccountService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setMustChangePassword(false);
         userRepository.save(user);
     }
 }

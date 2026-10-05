@@ -19,6 +19,21 @@ mobile/.dart_tool/
 mobile/.pub-cache/
 mobile/build/
 
+# Scratch / one-off dev scripts (never commit these)
+web/test*.py
+web/test*.js
+web/fix_*.py
+web/fix_*.sql
+web/refactor_*.py
+web/remove_*.py
+web/add_portal_target.py
+web/run_sql*.py
+web/check_db.sql
+web/diff_*.txt
+web/corrupted_files.txt
+web/users_page_recovered*.txt
+web/script.js
+
 # IDEs & OS Files
 .idea/
 .vscode/
@@ -28,3 +43,37 @@ mobile/build/
 *.log
 .DS_Store
 Thumbs.db
+logs/
+
+# uploaded product images
+/backend/uploads/
+backend/uploads/
+
+# Product embedding pipeline: downloaded image cache
+scripts/embeddings/.cache/
+scripts/embeddings/colab_upload/
+scripts/embeddings/colab_output/
+
+# Sprint 7: models promoted by scripts/pipeline/retrain.py and its staging runs
+backend/models-live/
+scripts/pipeline/staging/
+scripts/pipeline/last_run.md
+
+# Python bytecode
+__pycache__/
+
+# Local-only: catalog backups, crawled third-party data, one-off DB check / crawl / seed scripts
+# and reports written by datafix runs (SalePriceDatafixService writes sale-price-fix-report.md)
+backend/backups/
+backend/report.md
+backend/sale-price-fix-report.md
+scripts/raw_data/
+scripts/catalog_3000_deduped.json
+scripts/products_3000.jsonl
+scripts/yody_products_normalized.json
+scripts/crawl_*.py
+scripts/inspect_*.py
+scripts/check_*.py
+scripts/test_*.py
+scripts/fast_seed.py
+scripts/seed_3000_products_to_db.py

@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "web"],
       "port": 3000
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd backend && (if not exist target\\uds mkdir target\\uds) && set JDK_JAVA_OPTIONS=-Djdk.net.unixdomain.tmpdir=target\\uds&& .\\mvnw.cmd spring-boot:run"],
+      "port": 8081
+    },
+    {
+      "name": "embedder",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["services/embedder/app.py"],
+      "port": 8090
     }
   ]
 }

@@ -15,6 +15,12 @@ export default function ProductReviews({ productId, slug }: { productId: number,
   const [ratingSummary, setRatingSummary] = useState<Record<number, number>>({1:0, 2:0, 3:0, 4:0, 5:0});
   const [averageRating, setAverageRating] = useState<number>(0);
   const [totalReviews, setTotalReviews] = useState<number>(0);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  // The review the customer just wrote. The list is sorted by date and paginated, so a new
+  // review can sit several pages down; pin it on top so it shows up right away.
+  const [myReview, setMyReview] = useState<Review | null>(null);
   
   const [eligibility, setEligibility] = useState<ReviewEligibility | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,10 +43,31 @@ export default function ProductReviews({ productId, slug }: { productId: number,
       setAverageRating(data.averageRating);
       setTotalReviews(data.totalReviews);
       setRatingSummary(data.ratingSummary);
+      setPage(0);
+      setTotalPages(data.totalPages);
     } catch (err) {
       console.error('Failed to fetch reviews', err);
     }
   }, [slug]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const next = page + 1;
+      const data = await ReviewService.getReviewsByProductSlug(slug, next);
+      setReviews(prev => {
+        const seen = new Set(prev.map(r => r.id));
+        return [...prev, ...data.items.filter(r => !seen.has(r.id))];
+      });
+      setPage(next);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      console.error('Failed to load more reviews', err);
+      toast.error('Không thể tải thêm đánh giá');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const checkEligibility = useCallback(async (orderCode?: string, email?: string) => {
     try {
@@ -91,7 +118,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
       const token = getAuthToken();
       if (!token && (!guestOrderCode || !guestEmail)) throw new Error('Không tìm thấy thông tin xác thực');
       
-      await ReviewService.createReview(token, slug, {
+      const created = await ReviewService.createReview(token, slug, {
         orderItemId: eligibility.orderItemId,
         rating,
         content,
@@ -100,6 +127,7 @@ export default function ProductReviews({ productId, slug }: { productId: number,
       });
       
       toast.success('Gửi đánh giá thành công!');
+      setMyReview(created);
       
       setContent('');
       setRating(5);
@@ -113,6 +141,10 @@ export default function ProductReviews({ productId, slug }: { productId: number,
       setIsSubmitting(false);
     }
   };
+
+  const displayedReviews = myReview
+    ? [myReview, ...reviews.filter(r => r.id !== myReview.id)]
+    : reviews;
 
   return (
     <div className="mt-16" id="reviews">
@@ -292,16 +324,21 @@ export default function ProductReviews({ productId, slug }: { productId: number,
 
       {/* Reviews List */}
       <div>
-        <h3 className="font-bold uppercase mb-6">{reviews.length} Bình luận</h3>
-        {reviews.length === 0 ? (
+        <h3 className="font-bold uppercase mb-6">{Math.max(totalReviews, displayedReviews.length)} Bình luận</h3>
+        {displayedReviews.length === 0 ? (
           <p className="text-slate-500 italic py-8 text-center bg-slate-50 rounded-xl border border-slate-100">Chưa có đánh giá nào cho sản phẩm này.</p>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {displayedReviews.map((review) => (
               <div key={review.id} className="border-b border-slate-100 pb-6">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="font-bold text-slate-900">{review.customerNameSnapshot}</p>
+                    <p className="font-bold text-slate-900">
+                      {review.customerNameSnapshot}
+                      {myReview?.id === review.id && (
+                        <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">Đánh giá của bạn</span>
+                      )}
+                    </p>
                     {review.verifiedPurchase && (
                       <span className="flex items-center text-xs text-green-600 mt-1">
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -328,6 +365,18 @@ export default function ProductReviews({ productId, slug }: { productId: number,
                 )}
               </div>
             ))}
+            {page + 1 < totalPages && (
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-full border border-slate-900 px-8 py-3 text-xs font-black uppercase tracking-wider text-slate-900 transition-colors hover:bg-slate-900 hover:text-white disabled:opacity-50"
+                >
+                  {loadingMore ? 'Đang tải...' : 'Xem thêm đánh giá'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

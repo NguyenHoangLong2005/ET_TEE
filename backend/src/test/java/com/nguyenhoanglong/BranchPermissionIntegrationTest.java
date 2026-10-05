@@ -93,24 +93,30 @@ public class BranchPermissionIntegrationTest {
     // 1. SHOP_OWNER tao danh muc / thuong hieu -> 403
     // ------------------------------------------------------------------
 
+    // Chu shop DUOC tao danh muc va thuong hieu (StoreOwnerCategoryController /
+    // ManufacturerController cho phep SHOP_OWNER) - quy tac nghiep vu da chot.
     @Test
-    void shopOwner_taoDanhMuc_bi403() throws Exception {
+    void shopOwner_taoDanhMuc_thanhCong() throws Exception {
         Map<String, Object> body = Map.of("name", "Danh mục lạ");
         mockMvc.perform(post("/api/store-owner/categories")
                         .with(user(ownerA.getEmail()).roles("SHOP_OWNER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated());
+        org.junit.jupiter.api.Assertions.assertTrue(categoryRepository.findAll().stream()
+                .anyMatch(c -> "Danh mục lạ".equals(c.getName())));
     }
 
     @Test
-    void shopOwner_taoThuongHieu_bi403() throws Exception {
+    void shopOwner_taoThuongHieu_thanhCong() throws Exception {
         Map<String, Object> body = Map.of("name", "Xưởng lạ");
         mockMvc.perform(post("/api/manufacturers")
                         .with(user(ownerA.getEmail()).roles("SHOP_OWNER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated());
+        org.junit.jupiter.api.Assertions.assertTrue(manufacturerRepository.findAll().stream()
+                .anyMatch(m -> "Xưởng lạ".equals(m.getName())));
     }
 
     // ------------------------------------------------------------------

@@ -6,11 +6,11 @@ import '../../domain/entities/order_status.dart';
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.label, required this.color});
 
-  const StatusBadge.order(OrderStatus status)
+  StatusBadge.order(OrderStatus status, {super.key})
       : label = status.label,
         color = _fromOrder(status);
 
-  const StatusBadge.shipment(ShipmentStatus status)
+  StatusBadge.shipment(ShipmentStatus status, {super.key})
       : label = status.label,
         color = _fromShipment(status);
 

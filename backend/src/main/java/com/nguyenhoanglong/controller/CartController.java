@@ -1,6 +1,8 @@
 package com.nguyenhoanglong.controller;
 
 import com.nguyenhoanglong.dto.CartDto;
+import com.nguyenhoanglong.repository.UserRepository;
+import com.nguyenhoanglong.service.BehaviorEventService;
 import com.nguyenhoanglong.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     private final CartService cartService;
+    private final BehaviorEventService behaviorEventService;
+    private final UserRepository userRepository;
 
-    public CartController(CartService cartService) {
+    public CartController(CartService cartService, BehaviorEventService behaviorEventService, UserRepository userRepository) {
         this.cartService = cartService;
+        this.behaviorEventService = behaviorEventService;
+        this.userRepository = userRepository;
     }
 
     private String getCurrentUserEmail() {
@@ -37,9 +43,16 @@ public class CartController {
     @PostMapping("/items")
     public ResponseEntity<CartDto.CartResponse> addToCart(
             @RequestHeader(value = "X-Guest-Cart-Token", required = false) String guestToken,
+            @RequestHeader(value = "X-Behavior-Session", required = false) String behaviorSession,
+            @RequestHeader(value = "User-Agent", required = false) String userAgent,
             @Valid @RequestBody CartDto.AddToCartRequest request) {
         String email = getCurrentUserEmail();
-        return ResponseEntity.ok(cartService.addToCart(email, guestToken, request));
+        CartDto.CartResponse cart = cartService.addToCart(email, guestToken, request);
+        // After addToCart's transaction committed: only a successful add is a signal.
+        String userId = email != null ? userRepository.findByEmail(email).map(u -> u.getId()).orElse(null) : null;
+        behaviorEventService.recordAddToCart(BehaviorEventService.resolveUserKey(userId, guestToken),
+                request.getVariantId(), request.getQuantity(), behaviorSession, userAgent);
+        return ResponseEntity.ok(cart);
     }
 
     @PutMapping("/items/{itemId}")

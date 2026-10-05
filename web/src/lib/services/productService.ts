@@ -54,7 +54,7 @@ export interface ProductStats {
   targetGroup: Record<string, number>;
   productType: Record<string, number>;
   category: Record<string, number>;
-  sizes: { adult: string[]; kids: string[] };
+  sizes: { letter?: string[]; number?: string[]; accessory?: string[]; kids?: string[] };
   totalActive: number;
 }
 
@@ -115,9 +115,9 @@ export const ProductService = {
     }
   },
 
-  async getSimilarProducts(slug: string): Promise<Product[]> {
+  async getSimilarProducts(slug: string, limit: number = 10): Promise<Product[]> {
     try {
-      const res = await fetch(`${getBaseUrl()}/api/products/${slug}/similar`);
+      const res = await fetch(`${getBaseUrl()}/api/products/${slug}/similar?limit=${limit}`);
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -164,12 +164,12 @@ export const ProductService = {
         next: { revalidate: 60 }
       });
       if (!res.ok) {
-        return { targetGroup: {}, productType: {}, category: {}, sizes: { adult: [], kids: [] }, totalActive: 0 };
+        return { targetGroup: {}, productType: {}, category: {}, sizes: {}, totalActive: 0 };
       }
       const json = await res.json();
       return json.data as ProductStats;
     } catch {
-      return { targetGroup: {}, productType: {}, category: {}, sizes: { adult: [], kids: [] }, totalActive: 0 };
+      return { targetGroup: {}, productType: {}, category: {}, sizes: {}, totalActive: 0 };
     }
   }
 };

@@ -1,4 +1,4 @@
-import { clearAuthSession, getAuthToken } from "@/lib/auth";
+import { clearAuthSession, getAuthToken, getPasswordChangePath, getStoredUser } from "@/lib/auth";
 import { getApiBaseUrl } from "@/lib/api-config";
 
 const getApiBase = () => getApiBaseUrl();
@@ -11,7 +11,8 @@ const getApiBase = () => getApiBaseUrl();
 // rather than keep a "retry" mechanism that can never succeed.
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
-  if (!headers.has("Content-Type") && options.body) headers.set("Content-Type", "application/json");
+  // For FormData the browser must set Content-Type itself (it carries the multipart boundary).
+  if (!headers.has("Content-Type") && options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
   const token = getAuthToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
@@ -25,7 +26,12 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const payload = await response.json().catch(() => null);
   if (!response.ok || (payload && payload.success === false)) {
     if (response.status === 401) clearAuthSession();
-    if (response.status === 403) throw new Error("Bạn không có quyền thực hiện thao tác này.");
+    if (response.status === 403 && payload?.code === 'PASSWORD_CHANGE_REQUIRED' && typeof window !== 'undefined') {
+      const changePath = getPasswordChangePath(getStoredUser()?.roles?.[0]);
+      if (!window.location.pathname.startsWith(changePath)) window.location.assign(changePath);
+    }
+    // Keep the server's reason (e.g. "đơn đã sang khâu kho") instead of a generic text.
+    if (response.status === 403) throw new Error(payload?.message || "Bạn không có quyền thực hiện thao tác này.");
     throw new Error(payload?.message || payload?.error || `Yêu cầu thất bại (${response.status})`);
   }
 
@@ -45,24 +51,9 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
 export const apiClient = {
   get: <T>(path: string) => apiRequest<T>(path),
-  post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) }),
+  post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body) }),
   put: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PUT", body: body === undefined ? undefined : JSON.stringify(body) }),
   patch: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PATCH", body: body === undefined ? undefined : JSON.stringify(body) }),
   delete: <T>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };
 
-export async function mergeGuestCart() {
-  if (typeof window === "undefined") return;
-  const raw = window.localStorage.getItem("ettee_cart");
-  if (!raw) return;
-  try {
-    const items = JSON.parse(raw).map((item: { id: string; quantity: number }) => ({
-      variantId: item.id,
-      quantity: item.quantity,
-    }));
-    if (items.length) await apiClient.post("/api/cart/merge", { items });
-    window.localStorage.removeItem("ettee_cart");
-  } catch {
-    // Giữ guest cart nếu merge thất bại để không làm mất dữ liệu khách hàng.
-  }
-}

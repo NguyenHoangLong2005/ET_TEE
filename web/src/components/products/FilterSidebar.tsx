@@ -8,9 +8,21 @@ interface FilterSidebarProps {
   stats: {
     targetGroup: Record<string, number>;
     productType: Record<string, number>;
-    sizes: { adult: string[]; kids: string[] };
+    category?: Record<string, number>;
+    sizes: { letter?: string[]; number?: string[]; accessory?: string[]; kids?: string[] };
   };
 }
+
+// Size groups come pre-classified from /api/products/stats. Letter and number
+// sizes share the adultSize param; the backend ORs all three size params.
+// Columns auto-fill with a per-group minimum width (in rem, so it scales with
+// zoom) so long labels like "10-12 tuổi" never overflow their button.
+const SIZE_SECTIONS = [
+  { key: 'letter', param: 'adultSize', label: 'Áo / Quần (chữ)', cols: 'grid-cols-[repeat(auto-fill,minmax(3rem,1fr))]' },
+  { key: 'number', param: 'adultSize', label: 'Size số', cols: 'grid-cols-[repeat(auto-fill,minmax(3rem,1fr))]' },
+  { key: 'kids', param: 'kidsSize', label: 'Trẻ em (chiều cao / tuổi)', cols: 'grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))]' },
+  { key: 'accessory', param: 'accessorySize', label: 'Tất / Giày', cols: 'grid-cols-[repeat(auto-fill,minmax(3.75rem,1fr))]' },
+] as const;
 
 const PRICE_RANGES = [
   { label: 'Dưới 200.000đ', min: undefined, max: 200000 },
@@ -31,6 +43,7 @@ const getProductTypeLabel = (type: string) => {
     'shorts': 'Quần short',
     'jacket': 'Áo khoác',
     'coat': 'Áo khoác',
+    'outerwear': 'Áo khoác',
     'dress': 'Váy',
     'skirt': 'Chân váy',
     'accessory': 'Phụ kiện',
@@ -104,6 +117,8 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
   const currentAdultSizeSet = getParamSet('adultSize');
   const currentKidsSizeSet = getParamSet('kidsSize');
   const currentStatusSet = getParamSet('status');
+  // The header "Phụ kiện" tab links with ?category=accessories
+  const accessoriesChecked = searchParams.get('category') === 'accessories';
 
   // Toggle multi-select checkbox for array parameters
   const toggleMultiFilter = (key: string, value: string) => {
@@ -196,7 +211,18 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
     { id: 'baby', label: 'Em bé', count: stats.targetGroup.baby ?? 0 }
   ].filter(item => item.count > 0);
 
+  const toggleAccessories = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (accessoriesChecked) params.delete('category');
+    else params.set('category', 'accessories');
+    params.delete('page');
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
+  };
+
   const hasActiveSidebarFilters = 
+    accessoriesChecked ||
     currentTargetSet.size > 0 ||
     currentProductTypeSet.size > 0 ||
     currentAdultSizeSet.size > 0 ||
@@ -213,6 +239,11 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
 
   return (
     <>
+      {isPending && (
+        <div className="fixed top-0 left-0 right-0 z-[100] h-0.5 bg-primary/20 overflow-hidden" role="progressbar" aria-label="Đang tải sản phẩm">
+          <div className="h-full w-1/3 bg-primary animate-[filter-progress_1s_ease-in-out_infinite]" />
+        </div>
+      )}
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden w-full flex items-center justify-between mb-4 border-b border-slate-200 pb-4">
         <button 
@@ -268,6 +299,17 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                     </label>
                   );
                 })}
+                <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+                  <input
+                    type="checkbox"
+                    checked={accessoriesChecked}
+                    onChange={toggleAccessories}
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 accent-slate-900 cursor-pointer"
+                  />
+                  <span className={`text-[14px] group-hover:text-primary transition-colors ${accessoriesChecked ? 'font-bold text-slate-900' : 'text-slate-700'}`}>
+                    Phụ kiện{stats.category?.accessories ? <span className="text-slate-400 font-normal"> ({stats.category.accessories})</span> : null}
+                  </span>
+                </label>
               </div>
             )}
           </div>
@@ -315,49 +357,24 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
           </button>
           {expanded.size && (
             <div className="mt-3 space-y-5">
-              {/* Adult sizes */}
-              {stats.sizes.adult && stats.sizes.adult.length > 0 && (
-                <div>
-                  <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">Người lớn</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {stats.sizes.adult.map(size => {
-                      const isChecked = currentAdultSizeSet.has(size);
-                      return (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => toggleMultiFilter('adultSize', size)}
-                          className={`min-h-[38px] border rounded text-[13px] font-bold transition-all ${
-                            isChecked 
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-                              : 'border-slate-200 text-slate-700 hover:border-slate-900 bg-white'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {/* Kids sizes */}
-              {stats.sizes.kids && stats.sizes.kids.length > 0 && (
-                <div>
-                  <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">Trẻ em</span>
-                  <div className="grid grid-cols-4 gap-[6px]">
-                    {stats.sizes.kids
-                      .filter(size => /^\d+$/.test(size))
-                      .map(size => {
-                        const isChecked = currentKidsSizeSet.has(size);
+              {SIZE_SECTIONS.map(({ key, param, label, cols }) => {
+                const sizes = stats.sizes?.[key] ?? [];
+                if (sizes.length === 0) return null;
+                const selected = getParamSet(param);
+                return (
+                  <div key={key}>
+                    <span className="text-[12px] text-slate-500 uppercase font-bold block mb-2">{label}</span>
+                    <div className={`grid ${cols} gap-2`}>
+                      {sizes.map(size => {
+                        const isChecked = selected.has(size);
                         return (
                           <button
                             key={size}
                             type="button"
-                            onClick={() => toggleMultiFilter('kidsSize', size)}
-                            className={`min-h-[34px] border rounded text-[12px] font-bold transition-all ${
-                              isChecked 
-                                ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+                            onClick={() => toggleMultiFilter(param, size)}
+                            className={`min-h-[36px] px-1 border rounded text-[12px] font-bold whitespace-nowrap transition-all ${
+                              isChecked
+                                ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
                                 : 'border-slate-200 text-slate-700 hover:border-slate-900 bg-white'
                             }`}
                           >
@@ -365,9 +382,10 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
                           </button>
                         );
                       })}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           )}
         </div>

@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/staff/support/tickets")
-@PreAuthorize("hasAnyRole('ADMIN', 'CSKH_STAFF')")
+@PreAuthorize("hasAnyRole('ADMIN', 'CSKH_STAFF', 'SHOP_OWNER')")
 public class StaffSupportTicketController {
 
     private final SupportTicketService ticketService;

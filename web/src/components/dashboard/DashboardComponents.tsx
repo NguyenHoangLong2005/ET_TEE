@@ -36,6 +36,8 @@ interface StatCardProps {
   trend?: {
     value: number;
     isPositive: boolean;
+    /** What the change is measured against. Defaults to last week. */
+    label?: string;
   };
   /** Context text below the metric value */
   subtitle?: string | React.ReactNode;
@@ -107,7 +109,7 @@ export function StatCard({
         >
           <span>{trend.isPositive ? '↑' : '↓'}</span>
           <span>{trend.value}%</span>
-          <span className="text-slate-400 font-normal">so với tuần trước</span>
+          <span className="text-slate-400 font-normal">{trend.label ?? 'so với tuần trước'}</span>
         </div>
       )}
 

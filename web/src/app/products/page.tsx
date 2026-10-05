@@ -87,33 +87,15 @@ export default async function ProductsPage({
   let stats = {
     targetGroup: {} as Record<string, number>,
     productType: {} as Record<string, number>,
-    sizes: { adult: [] as string[], kids: [] as string[] }
+    sizes: {} as { letter?: string[]; number?: string[]; accessory?: string[]; kids?: string[] },
   };
   if (statsPromise.status === 'fulfilled') {
     const apiStats = statsPromise.value;
-    
-    // Sort sizes logically
-    const adultOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
-    const sortedAdult = (apiStats.sizes?.adult || []).sort((a, b) => {
-      const ia = adultOrder.indexOf(a);
-      const ib = adultOrder.indexOf(b);
-      if (ia !== -1 && ib !== -1) return ia - ib;
-      if (ia !== -1) return -1;
-      if (ib !== -1) return 1;
-      return a.localeCompare(b);
-    });
-    
-    const sortedKids = (apiStats.sizes?.kids || []).sort((a, b) => {
-      const numA = parseInt(a);
-      const numB = parseInt(b);
-      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-      return a.localeCompare(b);
-    });
-
+    // Sizes arrive grouped (letter / number / accessory / kids) and sorted by the backend
     stats = {
       targetGroup: apiStats.targetGroup || {},
       productType: apiStats.productType || {},
-      sizes: { adult: sortedAdult, kids: sortedKids }
+      sizes: apiStats.sizes || {},
     };
   }
   
@@ -148,31 +130,44 @@ export default async function ProductsPage({
     men: 'Nam', women: 'Nữ', boys: 'Bé trai', girls: 'Bé gái', family: 'Gia đình', baby: 'Em bé'
   };
 
-  const activeFilters = [];
+  const activeFilters: { key: string; label: string; params: string[] }[] = [];
   if (targetGroup) {
     const tgs = targetGroup.split(',').map(t => tgMap[t.trim()] || t.trim());
-    activeFilters.push({ key: 'targetGroup', label: `Danh mục: ${tgs.join(', ')}` });
+    activeFilters.push({ key: 'targetGroup', label: `Danh mục: ${tgs.join(', ')}`, params: ['targetGroup'] });
   }
   if (productType) {
     const types = productType.split(',').map(t => typeMap[t.trim()] || t.trim());
-    activeFilters.push({ key: 'productType', label: `Loại SP: ${types.join(', ')}` });
+    activeFilters.push({ key: 'productType', label: `Loại SP: ${types.join(', ')}`, params: ['productType'] });
   }
-  if (search) activeFilters.push({ key: 'search', label: `Tìm kiếm: "${search}"` });
-  if (adultSize) activeFilters.push({ key: 'adultSize', label: `Size người lớn: ${adultSize}` });
-  if (kidsSize) activeFilters.push({ key: 'kidsSize', label: `Size trẻ em: ${kidsSize}` });
-  if (accessorySize) activeFilters.push({ key: 'accessorySize', label: `Size phụ kiện: ${accessorySize}` });
+  if (category) activeFilters.push({ key: 'category', label: `Nhóm: ${category === 'accessories' ? 'Phụ kiện' : category}`, params: ['category'] });
+  if (collection && collection !== 'all') activeFilters.push({ key: 'collection', label: `Bộ sưu tập: ${collection}`, params: ['collection'] });
+  if (search) activeFilters.push({ key: 'search', label: `Tìm kiếm: "${search}"`, params: ['q'] });
+  if (adultSize) activeFilters.push({ key: 'adultSize', label: `Size: ${adultSize}`, params: ['adultSize'] });
+  if (kidsSize) activeFilters.push({ key: 'kidsSize', label: `Size trẻ em: ${kidsSize}`, params: ['kidsSize'] });
+  if (accessorySize) activeFilters.push({ key: 'accessorySize', label: `Size phụ kiện: ${accessorySize}`, params: ['accessorySize'] });
   if (status) {
     const stMap: Record<string, string> = { sale: 'Đang giảm giá', new: 'Hàng mới', best: 'Bán chạy' };
     const sts = status.split(',').map(s => stMap[s.trim()] || s.trim());
-    activeFilters.push({ key: 'status', label: `Trạng thái: ${sts.join(', ')}` });
+    activeFilters.push({ key: 'status', label: `Trạng thái: ${sts.join(', ')}`, params: ['status'] });
   }
   if (minPrice || maxPrice) {
     let priceLabel = '';
     if (minPrice && maxPrice) priceLabel = `${minPrice.toLocaleString('vi-VN')}đ - ${maxPrice.toLocaleString('vi-VN')}đ`;
     else if (minPrice) priceLabel = `Từ ${minPrice.toLocaleString('vi-VN')}đ`;
     else if (maxPrice) priceLabel = `Dưới ${maxPrice.toLocaleString('vi-VN')}đ`;
-    activeFilters.push({ key: 'price', label: priceLabel });
+    activeFilters.push({ key: 'price', label: priceLabel, params: ['minPrice', 'maxPrice'] });
   }
+
+  // Href that drops the given query params but keeps everything else (sort, other filters).
+  const hrefWithout = (drop: string[]) => {
+    const qs = new URLSearchParams();
+    Object.entries(resolvedSearchParams).forEach(([k, v]) => {
+      if (drop.includes(k) || k === 'page' || v === undefined) return;
+      (Array.isArray(v) ? v : [v]).forEach(item => qs.append(k, item));
+    });
+    const str = qs.toString();
+    return `/products${str ? `?${str}` : ''}`;
+  };
 
   return (
     <>
@@ -188,8 +183,10 @@ export default async function ProductsPage({
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             
-            {/* Sidebar (Mobile Toggle + Desktop Sticky) */}
-            <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24">
+            {/* Sidebar (Mobile Toggle + Desktop Sticky). Capped to the viewport with
+                its own scroll, otherwise a sidebar taller than the screen only
+                reveals its lower filters once the page is scrolled to the end. */}
+            <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain custom-scrollbar lg:pr-1">
               <Suspense fallback={<div className="h-12 lg:h-96 bg-slate-100 rounded-2xl animate-pulse"></div>}>
                 <FilterSidebar stats={stats} />
               </Suspense>
@@ -221,11 +218,17 @@ export default async function ProductsPage({
                 <div className="flex flex-wrap items-center gap-2 mb-8">
                   <span className="text-xs font-semibold text-slate-500 mr-1">Đang lọc theo:</span>
                   {activeFilters.map(filter => (
-                    <div key={filter.key} className="bg-slate-100 text-slate-800 border border-slate-200 px-3 py-1 text-xs font-bold rounded-full flex items-center gap-2">
+                    <Link
+                      key={filter.key}
+                      href={hrefWithout(filter.params)}
+                      aria-label={`Bỏ lọc ${filter.label}`}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 px-3 py-1 text-xs font-bold rounded-full flex items-center gap-2 transition-colors"
+                    >
                       {filter.label}
-                    </div>
+                      <span aria-hidden="true" className="text-slate-500">×</span>
+                    </Link>
                   ))}
-                  <Link href={`/products${targetGroup ? `?targetGroup=${targetGroup}` : ''}`} className="text-xs text-slate-500 hover:text-slate-900 underline font-bold ml-2">
+                  <Link href="/products" className="text-xs text-slate-500 hover:text-slate-900 underline font-bold ml-2">
                     Xóa tất cả
                   </Link>
                 </div>

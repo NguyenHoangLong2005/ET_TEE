@@ -1,13 +1,17 @@
+import { getAuthToken } from "@/lib/auth";
+
 /** All staff requests use Next's same-origin proxy; do not call localhost:8080 from LAN clients. */
 export async function staffRequest<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const token = getAuthToken();
   const response = await fetch(path, {
     cache: "no-store",
     ...init,
     headers: {
       ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init.headers,
     },
   });

@@ -1,7 +1,3 @@
-import 'package:dio/dio.dart';
-
-import '../error/app_exception.dart';
-
 /// Backend wraps every response in ApiResponse<T>:
 /// { success, message, data, timestamp }
 class ApiResponse<T> {

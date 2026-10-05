@@ -14,11 +14,96 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findBySlug(String slug);
 
+    // Tags for a whole listing page in one round-trip each; @BatchSize on the element
+    // collections is not applied, so touching them per product cost 2 queries per item.
+    @Query(value = "SELECT product_id, tag FROM product_style_tags WHERE product_id IN (:ids)", nativeQuery = true)
+    List<Object[]> findStyleTagsByProductIds(@org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
+
+    @Query(value = "SELECT product_id, tag FROM product_recommendation_tags WHERE product_id IN (:ids)", nativeQuery = true)
+    List<Object[]> findRecommendationTagsByProductIds(@org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
+
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.variants")
     List<Product> findAllWithDetails();
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.variants WHERE p.id = :id")
     Optional<Product> findByIdWithDetails(Long id);
+
+    // "Similar"/"outfit" carousels used to load the entire products table
+    // (findAll()) into memory on every product detail page view, just to
+    // pick 4 rows out of it. Push the filter and the LIMIT 4 to the DB.
+    // Fallback for "similar" when the product has no embedding: same product_type and, like the
+    // embedding query, same target_group (null target_group = no filter).
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.productType = :productType AND p.id <> :excludeId " +
+           "AND (:targetGroup IS NULL OR p.targetGroup = :targetGroup)")
+    List<Product> findSimilarActive(@org.springframework.data.repository.query.Param("productType") String productType,
+                                     @org.springframework.data.repository.query.Param("targetGroup") String targetGroup,
+                                     @org.springframework.data.repository.query.Param("excludeId") Long excludeId,
+                                     org.springframework.data.domain.Pageable pageable);
+
+    // pgvector >= 0.8: let the HNSW scan keep going until LIMIT rows pass the WHERE filters. Without it
+    // the index returns only hnsw.ef_search (40) candidates and small target groups (accessories,
+    // family) got fewer than 10 results. is_local = true: only for the current transaction, so it is
+    // safe behind the Supabase transaction pooler. Must run in the same transaction as the query.
+    @Query(value = "SELECT set_config('hnsw.iterative_scan', 'relaxed_order', true)", nativeQuery = true)
+    String enableHnswIterativeScan();
+
+    // Content-based similar items: CLIP vectors in product_embeddings (pgvector, Postgres only -
+    // never called under the H2 test profile). relaxed_order can return rows slightly out of order,
+    // so the CTE is materialized and re-sorted by distance. Returns ids nearest-first; empty when
+    // the product has no embedding yet ("<=> NULL" is NULL for every row).
+    @Query(value = """
+            WITH nn AS MATERIALIZED (
+                SELECT p.id,
+                       pe.embedding <=> (SELECT embedding FROM product_embeddings WHERE product_id = :id) AS distance
+                FROM product_embeddings pe
+                JOIN products p ON p.id = pe.product_id
+                WHERE p.id <> :id
+                  AND p.status = 'ACTIVE'
+                  AND (CAST(:targetGroup AS VARCHAR) IS NULL OR p.target_group = CAST(:targetGroup AS VARCHAR))
+                ORDER BY pe.embedding <=> (SELECT embedding FROM product_embeddings WHERE product_id = :id)
+                LIMIT :limit
+            )
+            SELECT id FROM nn WHERE distance IS NOT NULL ORDER BY distance
+            """, nativeQuery = true)
+    List<Long> findSimilarIdsByEmbedding(@org.springframework.data.repository.query.Param("id") Long id,
+                                         @org.springframework.data.repository.query.Param("targetGroup") String targetGroup,
+                                         @org.springframework.data.repository.query.Param("limit") int limit);
+
+    // "Danh rieng cho ban" fallback when no SASRec model is loaded: nearest ACTIVE products to the
+    // mean CLIP vector of the shopper's recent items (same as ClipRecent in scripts/sasrec/baselines.py).
+    // Postgres only; call enableHnswIterativeScan() first in the same transaction.
+    @Query(value = """
+            WITH q AS (SELECT AVG(embedding) AS v FROM product_embeddings WHERE product_id IN (:recentIds)),
+            nn AS MATERIALIZED (
+                SELECT p.id, pe.embedding <=> q.v AS distance
+                FROM product_embeddings pe
+                JOIN products p ON p.id = pe.product_id
+                CROSS JOIN q
+                WHERE p.status = 'ACTIVE' AND p.id NOT IN (:excludeIds)
+                ORDER BY pe.embedding <=> q.v
+                LIMIT :limit
+            )
+            SELECT id FROM nn WHERE distance IS NOT NULL ORDER BY distance
+            """, nativeQuery = true)
+    List<Long> findNearestToMeanEmbedding(@org.springframework.data.repository.query.Param("recentIds") List<Long> recentIds,
+                                          @org.springframework.data.repository.query.Param("excludeIds") List<Long> excludeIds,
+                                          @org.springframework.data.repository.query.Param("limit") int limit);
+
+    @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.targetGroup = :targetGroup AND p.id <> :excludeId " +
+           "AND (p.productType IS NULL OR :productType IS NULL OR p.productType <> :productType)")
+    List<Product> findOutfitCandidates(@org.springframework.data.repository.query.Param("targetGroup") String targetGroup,
+                                        @org.springframework.data.repository.query.Param("productType") String productType,
+                                        @org.springframework.data.repository.query.Param("excludeId") Long excludeId,
+                                        org.springframework.data.domain.Pageable pageable);
+
+    /** Products carry the manufacturer only as free text (brand), so match on it. */
+    long countByBrandIgnoreCase(String brand);
+
+    /** Products (not deleted) that name this supplier. */
+    long countBySupplierId(Long supplierId);
+
+    /** Products (not deleted) made by this manufacturer. */
+    long countByManufacturerId(Long manufacturerId);
 
     List<Product> findByCategoryId(Long categoryId);
     org.springframework.data.domain.Page<Product> findByCategoryId(Long categoryId, org.springframework.data.domain.Pageable pageable);
@@ -43,8 +128,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p.gender, COUNT(p) FROM Product p WHERE p.status = 'ACTIVE' AND p.targetGroup = 'kids' GROUP BY p.gender")
     java.util.List<Object[]> countActiveKidsByGender();
 
-    // Stats: distinct sizes and their target groups
-    @Query("SELECT DISTINCT v.size, p.targetGroup FROM ProductVariant v JOIN v.product p WHERE p.status = 'ACTIVE' AND v.size IS NOT NULL")
+    // Stats: distinct sizes with the target group and product type they appear on
+    @Query("SELECT DISTINCT v.size, p.targetGroup, p.productType FROM ProductVariant v JOIN v.product p WHERE p.status = 'ACTIVE' AND v.size IS NOT NULL")
     java.util.List<Object[]> findDistinctSizesAndTargetGroups();
 
     @org.springframework.data.jpa.repository.Modifying

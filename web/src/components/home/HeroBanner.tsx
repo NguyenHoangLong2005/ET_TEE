@@ -4,8 +4,20 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/api-config';
+import { isPlaceholderImage, isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
 
-const HERO_SLIDES = [
+type Slide = {
+  id: string;
+  bg: string;
+  href: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+};
+
+const FALLBACK_SLIDES: Slide[] = [
   { 
     id: 'b1', 
     bg: '/images/banners/home/banner-1.webp', 
@@ -63,7 +75,7 @@ const HERO_SLIDES = [
   { 
     id: 'b7', 
     bg: '/images/banners/home/banner-7.webp', 
-    href: '/products?sale=true',
+    href: '/products?status=sale',
     badge: 'MEGA SALE UNTIL 50%',
     title: 'ƯU ĐÃI ĐẶC BIỆT',
     subtitle: 'Săn deal giảm giá trực tiếp - Số lượng sản phẩm có hạn',
@@ -78,22 +90,68 @@ const HERO_SLIDES = [
     subtitle: 'Phối đồ cá nhân hóa nâng tầm gu thời trang của riêng bạn',
     cta: 'Khám Phá Ngay',
   },
-] as const;
+];
 
 const AUTO_PLAY_INTERVAL = 6000;
-const TOTAL = HERO_SLIDES.length;
+const FALLBACK_BG = FALLBACK_SLIDES[0].bg;
 
 export default function HeroBanner() {
+  const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const total = slides.length;
+
+  // Admin/marketing manages real banners at /admin/marketing (position
+  // HOME_HERO), but this carousel always rendered 8 hardcoded slides and
+  // never fetched them, so nothing configured there ever reached the
+  // homepage. Fetch real banners and use them when any are active; keep the
+  // static slides as a fallback so the hero section is never empty.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${getApiBaseUrl()}/api/marketing/banners/HOME_HERO`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        const banners: any[] = Array.isArray(res?.data) ? res.data : [];
+        const next: Slide[] = banners
+          .filter((b) => (b?.status || 'ACTIVE') === 'ACTIVE' && b?.isActive !== false)
+          .map((b, idx) => ({ b, idx, bg: sanitizeImageUrl(b.imageUrl) }))
+          .filter((x): x is { b: any; idx: number; bg: string } => x.bg !== null && !isPlaceholderImage(x.bg))
+          .sort(
+            (a, c) =>
+              (a.b.displayOrder ?? 0) - (c.b.displayOrder ?? 0) ||
+              (c.b.priority ?? 0) - (a.b.priority ?? 0),
+          )
+          .map(({ b, idx, bg }) => ({
+            id: `banner-${b.id ?? idx}`,
+            bg,
+            href: typeof b.linkUrl === 'string' && b.linkUrl.trim() ? b.linkUrl.trim() : '/products',
+            badge: 'NEW',
+            title: b.title || '',
+            subtitle: b.subtitle || '',
+            cta: 'Khám Phá Ngay',
+          }));
+        if (next.length === 0) return;
+        setSlides(next);
+        setCurrent(0);
+      })
+      .catch(() => { /* keep fallback slides */ });
+    return () => controller.abort();
+  }, []);
+
+  // A banner image that fails to load (dead link, 404, blocked host) is
+  // swapped for a local image instead of leaving a blank slide.
+  const [failed, setFailed] = useState<Set<string>>(new Set());
+  const markFailed = useCallback((id: string) => {
+    setFailed((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  }, []);
 
   const goNext = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % TOTAL);
-  }, []);
+    setCurrent((prev) => (prev + 1) % total);
+  }, [total]);
 
   const goPrev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + TOTAL) % TOTAL);
-  }, []);
+    setCurrent((prev) => (prev - 1 + total) % total);
+  }, [total]);
 
   useEffect(() => {
     if (paused) return;
@@ -107,7 +165,7 @@ export default function HeroBanner() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {HERO_SLIDES.map((slide, index) => {
+      {slides.map((slide, index) => {
         const isActive = index === current;
         return (
           <div
@@ -119,11 +177,14 @@ export default function HeroBanner() {
             <Link href={slide.href} className="block w-full h-full relative cursor-pointer group">
               {/* Background Image */}
               <Image
-                src={slide.bg}
+                src={failed.has(slide.id) ? FALLBACK_BG : slide.bg}
                 alt={slide.title}
                 fill
                 priority={index === 0}
                 sizes="100vw"
+                // Remote hosts are not allowlisted in next.config; skip the optimizer.
+                unoptimized={isRemoteImage(slide.bg) && !failed.has(slide.id)}
+                onError={() => markFailed(slide.id)}
                 className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}
@@ -156,15 +217,15 @@ export default function HeroBanner() {
         <div className="w-16 h-[2px] bg-white/30">
           <div 
             className="h-full bg-white transition-all duration-300" 
-            style={{ width: `${((current + 1) / TOTAL) * 100}%` }}
+            style={{ width: `${((current + 1) / total) * 100}%` }}
           />
         </div>
-        <span className="text-white/60">{String(TOTAL).padStart(2, '0')}</span>
+        <span className="text-white/60">{String(total).padStart(2, '0')}</span>
       </div>
 
       {/* Indicator dots for mobile/tablet */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 md:hidden">
-        {HERO_SLIDES.map((_, index) => (
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(index); }}

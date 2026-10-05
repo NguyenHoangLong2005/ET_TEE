@@ -37,6 +37,17 @@ export function normalizeRoleCode(value: string | null | undefined) {
     .replace(/^_+|_+$/g, "");
 }
 
+/**
+ * Trang doi mat khau tam (do admin cap lai) theo loai tai khoan. Khach hang
+ * (USER) khong vao duoc khu /staff, nen phai dung trang cua tai khoan khach.
+ */
+export function getPasswordChangePath(role: string | null | undefined) {
+  const norm = normalizeRoleCode(role);
+  return !norm || norm === "USER" || norm === "CUSTOMER"
+    ? "/account/change-password"
+    : "/staff/change-password";
+}
+
 export function normalizeRoleList(values?: (string | null | undefined)[] | string | null) {
   if (!values) return [];
   const arr = Array.isArray(values) ? values : [values];
@@ -165,11 +176,30 @@ export function getAuthToken(): string | null {
   return window.localStorage.getItem(AUTH_STORAGE.accessToken) || window.sessionStorage.getItem(AUTH_STORAGE.accessToken);
 }
 
+function generateGuestToken(): string {
+  // crypto.randomUUID() only exists in secure contexts (HTTPS or localhost).
+  // Opening the site over a LAN IP (http://192.168.x.x:3000, exactly how the
+  // README says to test on a phone) is an insecure context, so this threw
+  // and silently broke the guest cart entirely. Fall back to crypto.getRandomValues
+  // (available without a secure context) when randomUUID isn't there.
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  return `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export function getGuestCartToken(): string | null {
   if (typeof window === "undefined") return null;
   let token = localStorage.getItem('guest_cart_token');
   if (!token) {
-    token = crypto.randomUUID();
+    token = generateGuestToken();
     localStorage.setItem('guest_cart_token', token);
   }
   return token;

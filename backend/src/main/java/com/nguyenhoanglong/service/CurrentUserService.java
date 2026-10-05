@@ -96,7 +96,7 @@ public class CurrentUserService {
         }
         if (user.getShopId() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Tài khoản của bạn chưa được gán vào chi nhánh nào");
+                    "Tài khoản của bạn chưa được gán vào cửa hàng nào");
         }
         return user.getShopId();
     }

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-import '../storage/token_storage.dart';
+import '../../storage/token_storage.dart';
 
 class AuthInterceptor extends Interceptor {
   AuthInterceptor(this._tokens);

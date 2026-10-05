@@ -1,14 +1,18 @@
 import '../../core/config/app_config.dart';
 import '../../core/network/api_client.dart';
+import '../../core/storage/token_storage.dart';
 import '../../domain/entities/app_role.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl(this._api);
+  AuthRepositoryImpl(this._api, this._tokens);
 
   final ApiClient _api;
+  final TokenStorage _tokens;
 
-  StaffProfile? _cached;
+  StaffProfile? _cachedProfile;
+
+  StaffProfile? get cachedProfile => _cachedProfile;
 
   @override
   Future<void> login(String email, String password) async {
@@ -17,20 +21,24 @@ class AuthRepositoryImpl implements AuthRepository {
       body: {'email': email, 'password': password},
       parse: (raw) => raw as Map<String, dynamic>,
     );
-    final token = data['token'] ?? data['accessToken'];
-    if (token is String && token.isNotEmpty) {
-      await _api.setToken(token);
+
+    final access = (data['accessToken'] ?? data['token']) as String?;
+    if (access == null || access.isEmpty) {
+      throw StateError('LOGIN_RESPONSE_MISSING_TOKEN');
     }
-    final refresh = data['refreshToken'];
+    await _tokens.saveTokens(
+      access: access,
+      refresh: data['refreshToken'] as String?,
+    );
+    await _api.setToken(access);
+
     await currentProfile();
-    if (refresh is String) {
-      // TODO: persist refresh token for silent renewal.
-    }
   }
 
   @override
   Future<void> logout() async {
-    _cached = null;
+    _cachedProfile = null;
+    await _tokens.clear();
     await _api.clearToken();
   }
 
@@ -40,25 +48,30 @@ class AuthRepositoryImpl implements AuthRepository {
       '${AppConfig.authBase}/me',
       parse: (raw) => raw as Map<String, dynamic>,
     );
+
     final roles = (data['roles'] as List<dynamic>? ?? [])
-        .map((e) => AppRole.fromWire(e.toString()))
+        .map((e) => AppRole.fromWire('$e'))
         .whereType<AppRole>()
         .toList();
-    return _cached = StaffProfile(
+
+    return _cachedProfile = StaffProfile(
       id: (data['id'] as num?)?.toInt() ?? 0,
       fullName: data['fullName'] as String? ?? '',
       roles: roles,
-      permissions:
-          (data['permissions'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+      permissions: (data['permissions'] as List<dynamic>? ?? [])
+          .map((e) => '$e')
+          .toList(),
     );
   }
 
   @override
   Future<void> restoreSession() async {
-    final token = await _api.getToken();
+    final token = await _tokens.readAccessToken();
     if (token == null || token.isEmpty) {
       throw StateError('NO_SESSION');
     }
+    // Nap token vao header truoc khi goi /me.
+    await _api.setToken(token);
     await currentProfile();
   }
 }

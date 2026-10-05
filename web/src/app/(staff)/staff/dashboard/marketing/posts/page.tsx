@@ -23,6 +23,7 @@ interface Post {
   title: string;
   slug: string;
   excerpt: string;
+  content?: string;
   coverImageUrl: string;
   status: PostStatus;
   author: string;
@@ -68,9 +69,9 @@ export default function PostManagementPage() {
   });
   const [tagInput, setTagInput] = useState("");
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (silent?: unknown) => {
     try {
-      setIsLoading(true);
+      if (silent !== true) setIsLoading(true);
       const baseUrl = getApiBaseUrl();
       const authHeaders = getAuthHeaders() as Record<string, string>;
       const response = await fetch(`${baseUrl}/api/staff/marketing/posts`, {
@@ -159,7 +160,7 @@ export default function PostManagementPage() {
       
       toast.success(isEdit ? "Đã cập nhật bài viết thành công" : "Đã tạo bài viết mới thành công");
       setIsModalOpen(false);
-      await fetchPosts();
+      await fetchPosts(true);
     } catch (error: any) {
       console.error("Save post failed", error);
       toast.error(error?.message || "Không thể lưu bài viết");
@@ -470,6 +471,19 @@ export default function PostManagementPage() {
                   className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors min-h-[75px]"
                   placeholder="Đoạn mô tả ngắn hiển thị ở danh sách bài viết..."
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">Nội dung bài viết</label>
+                <textarea
+                  value={formData.content || ''}
+                  onChange={(e) => setFormData({...formData, content: e.target.value})}
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors min-h-[220px] leading-relaxed"
+                  placeholder={"Viết nội dung bài viết...\n\n## Tiêu đề mục\nĐoạn văn của mục này.\n\n- Ý thứ nhất\n- Ý thứ hai"}
+                />
+                <p className="text-[11px] text-slate-500">
+                  Cách đoạn bằng một dòng trống. Dòng bắt đầu bằng <code>## </code> là tiêu đề mục, bằng <code>- </code> là gạch đầu dòng.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

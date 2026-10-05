@@ -17,6 +17,8 @@ import com.nguyenhoanglong.exception.ApiException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex) {
         ApiResponse<Void> response = ApiResponse.error(ex.getMessage());
@@ -84,9 +86,39 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    // Client mistakes used to fall through to the generic handler below and come back as
+    // 500 "server error" (e.g. ?minPrice=abc, an unknown URL, a malformed JSON body).
+    @ExceptionHandler({
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class,
+            org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.multipart.MaxUploadSizeExceededException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ex) {
+        String message = ex instanceof org.springframework.web.multipart.MaxUploadSizeExceededException
+                ? "Tệp tải lên quá lớn"
+                : "Dữ liệu gửi lên không hợp lệ";
+        return new ResponseEntity<>(ApiResponse.error(message), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResource(Exception ex) {
+        return new ResponseEntity<>(ApiResponse.error("Không tìm thấy đường dẫn yêu cầu"), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(Exception ex) {
+        return new ResponseEntity<>(ApiResponse.error("Phương thức không được hỗ trợ"), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
-        ApiResponse<Void> response = ApiResponse.error("An internal server error occurred: " + ex.getMessage());
+        // Loi that (stack trace, thong diep SQL/noi bo) chi ghi log server-side.
+        // Tra nguyen van ex.getMessage() ra client la mot kenh lo thong tin
+        // (ten cot, cau truy van, duong dan noi bo) cho bat ky loi khong luong
+        // truoc nao.
+        log.error("Unhandled exception", ex);
+        ApiResponse<Void> response = ApiResponse.error("Đã có lỗi xảy ra ở máy chủ. Vui lòng thử lại sau.");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -25,5 +25,5 @@ enum AppRoleHome {
 
   final String path;
 
-  void go() => context.go(path);
+  void go(BuildContext context) => GoRouter.of(context).go(path);
 }

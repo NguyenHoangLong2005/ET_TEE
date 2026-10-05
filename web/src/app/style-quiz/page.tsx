@@ -6,8 +6,11 @@ import { Sparkles, ArrowRight, Check, RefreshCw, Shirt, UserCheck, Palette, Shop
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import PageHero from '@/components/ui/PageHero';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/lib/api-client';
 
 export default function StyleQuizPage() {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     height: '170',
@@ -19,18 +22,36 @@ export default function StyleQuizPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 3) {
       setStep(step + 1);
-    } else {
-      // Finalize quiz
-      setIsAnalyzing(true);
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        setIsCompleted(true);
-        toast.success('Hồ sơ phong cách AI của bạn đã được khởi tạo!');
-      }, 1200);
+      return;
     }
+    // Finalize quiz. There is no AI/recommendation model reading this data -
+    // this used to just fake a 1.2s "analysis" and claim an "AI profile" was
+    // created without saving anything. Height/weight/fit/style preference do
+    // map onto the real UserMeasurement record (the same one shown at
+    // /account/measurements), so at least save that much truthfully for a
+    // logged-in user instead of discarding the answers.
+    setIsAnalyzing(true);
+    if (user) {
+      try {
+        await apiClient.put('/api/account/measurements', {
+          measurementProfileType: 'SELF_ADULT',
+          heightCm: Number(formData.height),
+          weightKg: Number(formData.weight),
+          fitPreference: formData.bodyType,
+          note: `Style quiz: phong cách=${formData.style}, gam màu=${formData.colorPreference}`,
+        });
+      } catch {
+        // Non-fatal: still show the (locally computed) suggestion below.
+      }
+    }
+    setIsAnalyzing(false);
+    setIsCompleted(true);
+    toast.success(user
+      ? 'Đã lưu số đo của bạn vào hồ sơ tài khoản.'
+      : 'Đã ghi nhận câu trả lời. Đăng nhập để lưu số đo vào hồ sơ của bạn.');
   };
 
   const handleReset = () => {
@@ -228,8 +249,8 @@ export default function StyleQuizPage() {
               <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
               <Sparkles className="w-6 h-6 text-primary absolute inset-0 m-auto animate-pulse" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 uppercase mb-2">AI đang phân tích vóc dáng & phong cách...</h3>
-            <p className="text-slate-500 text-xs max-w-md">Vui lòng chờ trong giây lát. Hệ thống recommendation đang ghép nối hơn 500 mẫu thiết kế ET.TEE cho bạn.</p>
+            <h3 className="text-xl font-black text-slate-900 uppercase mb-2">Đang lưu thông tin của bạn...</h3>
+            <p className="text-slate-500 text-xs max-w-md">Vui lòng chờ trong giây lát.</p>
           </div>
         ) : (() => {
           const h = parseInt(formData.height, 10) || 170;

@@ -1,19 +1,15 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../config/app_config.dart';
 import '../error/app_exception.dart';
 import 'api_response.dart';
 
 class ApiClient {
-  ApiClient(this._dio, this._storage);
+  ApiClient(this._dio);
 
   final Dio _dio;
-  final FlutterSecureStorage _storage;
-
-  static const _tokenKey = 'access_token';
 
   Future<T> get<T>(
     String path, {
@@ -97,12 +93,10 @@ class ApiClient {
     return dio;
   }
 
-  Future<void> setToken(String token) =>
-      _storage.write(key: _tokenKey, value: token);
+  Future<void> setToken(String token) async => _dio.options.headers['Authorization'] =
+      'Bearer $token';
 
-  Future<String?> getToken() => _storage.read(key: _tokenKey);
-
-  Future<void> clearToken() => _storage.delete(key: _tokenKey);
+  Future<void> clearToken() async => _dio.options.headers.remove('Authorization');
 
   bool get isMobile => Platform.isAndroid || Platform.isIOS;
 }

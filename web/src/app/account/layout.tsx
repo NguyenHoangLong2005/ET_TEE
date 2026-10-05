@@ -4,13 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { User, Ruler, Package, Lock, Star, LogOut, Menu, X, ChevronRight, LifeBuoy } from 'lucide-react';
+import { User, Ruler, Package, Lock, Star, LogOut, Menu, X, ChevronRight, LifeBuoy, Ticket } from 'lucide-react';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 
 const navItems = [
   { label: 'Hồ sơ của tôi', path: '/account/profile', icon: User },
   { label: 'Số đo & Kích cỡ', path: '/account/measurements', icon: Ruler },
   { label: 'Lịch sử đơn hàng', path: '/account/orders', icon: Package },
+  { label: 'Voucher của tôi', path: '/account/vouchers', icon: Ticket },
   { label: 'Đổi mật khẩu', path: '/account/change-password', icon: Lock },
   { label: 'Đánh giá của tôi', path: '/account/reviews', icon: Star },
   { label: 'Hỗ trợ & Khiếu nại', path: '/account/tickets', icon: LifeBuoy },
@@ -77,7 +78,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
     name ? name.trim().split(' ').map(w => w[0]).slice(-2).join('').toUpperCase() : 'U';
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full text-slate-900">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 md:pt-4 pb-8 md:pb-12 w-full text-slate-900">
       <PageBreadcrumb items={[{ label: 'Tài khoản', href: '/account/profile' }, { label: activeLabel }]} />
 
       <div className="flex flex-col md:flex-row gap-8 w-full">

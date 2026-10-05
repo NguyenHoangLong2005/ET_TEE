@@ -8,7 +8,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
+public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long>,
+        org.springframework.data.jpa.repository.JpaSpecificationExecutor<ActivityLog> {
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT a.action FROM ActivityLog a WHERE a.action IS NOT NULL ORDER BY a.action")
+    List<String> findDistinctActions();
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT a.targetEntity FROM ActivityLog a WHERE a.targetEntity IS NOT NULL ORDER BY a.targetEntity")
+    List<String> findDistinctTargetEntities();
+
     List<ActivityLog> findByCreatedAtAfter(LocalDateTime createdAt);
 
     // Dem o tang DB thay vi load toan bo log roi filter bang stream.

@@ -132,8 +132,18 @@ public class AdminBackupController {
                 }
             }
 
+            // Columns holding credentials/secrets: writing these into a plaintext
+            // .sql file that sits on local disk (readable via /download/{fileName}
+            // by anyone with MANAGE_BACKUP) turns one backup click into a
+            // password-hash/OTP dump. Redacted rather than exported.
+            Set<String> sensitiveColumns = Set.of(
+                    "password_hash", "otp_hash", "reset_token", "jwt_secret", "otp_code"
+            );
+
             int tableCount = 0;
             long rowCount = 0;
+            List<String> truncatedTables = new ArrayList<>();
+            final int ROW_LIMIT_PER_TABLE = 2000;
 
             for (String tableName : tableNames) {
                 tableCount++;
@@ -142,12 +152,19 @@ public class AdminBackupController {
                 writer.println("-- --------------------------------------------------------");
 
                 try (Statement stmt = conn.createStatement();
-                     ResultSet rs = stmt.executeQuery("SELECT * FROM \"" + tableName + "\" LIMIT 2000")) {
+                     ResultSet rs = stmt.executeQuery("SELECT * FROM \"" + tableName + "\" LIMIT " + (ROW_LIMIT_PER_TABLE + 1))) {
 
                     ResultSetMetaData rsmd = rs.getMetaData();
                     int columnCount = rsmd.getColumnCount();
+                    int tableRowCount = 0;
 
                     while (rs.next()) {
+                        tableRowCount++;
+                        if (tableRowCount > ROW_LIMIT_PER_TABLE) {
+                            truncatedTables.add(tableName);
+                            writer.println("-- Notice: table \"" + tableName + "\" has more than " + ROW_LIMIT_PER_TABLE + " rows; this snapshot is PARTIAL, not a full backup.");
+                            break;
+                        }
                         rowCount++;
                         StringBuilder sb = new StringBuilder();
                         sb.append("INSERT INTO \"").append(tableName).append("\" (");
@@ -157,7 +174,8 @@ public class AdminBackupController {
                         }
                         sb.append(") VALUES (");
                         for (int i = 1; i <= columnCount; i++) {
-                            Object val = rs.getObject(i);
+                            String columnName = rsmd.getColumnName(i).toLowerCase();
+                            Object val = sensitiveColumns.contains(columnName) ? null : rs.getObject(i);
                             if (val == null) {
                                 sb.append("NULL");
                             } else if (val instanceof Number || val instanceof Boolean) {
@@ -179,14 +197,22 @@ public class AdminBackupController {
 
             writer.println("COMMIT;");
             writer.println("-- End of backup snapshot. Total tables: " + tableCount + ", Exported records: " + rowCount);
+            if (!truncatedTables.isEmpty()) {
+                writer.println("-- WARNING: PARTIAL SNAPSHOT. Truncated at " + ROW_LIMIT_PER_TABLE + " rows for: " + String.join(", ", truncatedTables));
+            }
+
+            boolean partial = !truncatedTables.isEmpty();
+            String successMessage = partial
+                    ? "Snapshot " + fileName + " (" + formatFileSize(backupFile.length()) + ") đã tạo, nhưng CHƯA ĐẦY ĐỦ: các bảng sau bị cắt ở " + ROW_LIMIT_PER_TABLE + " dòng: " + String.join(", ", truncatedTables)
+                    : "Snapshot " + fileName + " (" + formatFileSize(backupFile.length()) + ") đã được tạo thành công với " + tableCount + " bảng dữ liệu.";
 
             // Record system notification
             try {
                 SystemNotification notif = new SystemNotification();
-                notif.setType("BACKUP_SUCCESS");
-                notif.setTitle("Sao lưu cơ sở dữ liệu thành công");
-                notif.setMessage("Snapshot " + fileName + " (" + formatFileSize(backupFile.length()) + ") đã được tạo thành công với " + tableCount + " bảng dữ liệu.");
-                notif.setSeverity("SUCCESS");
+                notif.setType(partial ? "BACKUP_PARTIAL" : "BACKUP_SUCCESS");
+                notif.setTitle(partial ? "Sao lưu cơ sở dữ liệu KHÔNG ĐẦY ĐỦ" : "Sao lưu cơ sở dữ liệu thành công");
+                notif.setMessage(successMessage);
+                notif.setSeverity(partial ? "WARNING" : "SUCCESS");
                 notif.setTargetUrl("/admin/backup");
                 notif.setCreatedAt(LocalDateTime.now());
                 notificationRepository.save(notif);
@@ -194,12 +220,14 @@ public class AdminBackupController {
             }
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Tạo bản sao lưu thành công",
+                    "message", successMessage,
                     "fileName", fileName,
                     "size", backupFile.length(),
                     "sizeFormatted", formatFileSize(backupFile.length()),
                     "tableCount", tableCount,
-                    "rowCount", rowCount
+                    "rowCount", rowCount,
+                    "partial", partial,
+                    "truncatedTables", truncatedTables
             ));
 
         } catch (Exception e) {
@@ -265,12 +293,19 @@ public class AdminBackupController {
             return ResponseEntity.notFound().build();
         }
 
-        // Return confirmation info without dropping live DB unconditionally
-        return ResponseEntity.ok(Map.of(
-                "message", "Bản sao lưu " + cleanName + " hợp lệ và đã sẵn sàng phục hồi",
+        // This used to answer {status: "VERIFIED"} for any existing file
+        // without executing a single statement from it - an admin clicking
+        // "Khôi phục" was told the restore succeeded while the database was
+        // never touched. There is no SQL executor wired up here (running an
+        // admin-uploaded/generated .sql file against the live DB from a web
+        // request is also its own can of worms - needs a maintenance-mode
+        // gate and a DBA-reviewed path, not a button). Report the truth
+        // instead of a fabricated success.
+        return ResponseEntity.status(501).body(Map.of(
+                "error", "Khôi phục tự động chưa được cài đặt. Vui lòng áp dụng file " + cleanName +
+                        " thủ công qua công cụ quản trị Postgres (vd: psql, Supabase SQL editor).",
                 "fileName", cleanName,
-                "sizeFormatted", formatFileSize(file.length()),
-                "status", "VERIFIED"
+                "status", "NOT_IMPLEMENTED"
         ));
     }
 }

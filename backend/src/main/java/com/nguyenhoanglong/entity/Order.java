@@ -176,6 +176,7 @@ public class Order {
         if (orderStatus != null) {
             try {
                 this.status = OrderStatus.valueOf(orderStatus);
+                startConfirmationSlaIfNeeded();
             } catch (Exception ignored) {}
         }
     }
@@ -186,6 +187,21 @@ public class Order {
         if (status != null) {
             this.orderStatus = status.name();
         }
+        startConfirmationSlaIfNeeded();
+    }
+
+    /** Thoi han (gio) de nhan vien ban hang xac nhan don ke tu luc don cho xac nhan. */
+    public static final long CONFIRMATION_SLA_HOURS = 4;
+
+    private void startConfirmationSlaIfNeeded() {
+        if (this.status == OrderStatus.PENDING_CONFIRMATION && this.slaDeadline == null) {
+            this.slaDeadline = LocalDateTime.now().plusHours(CONFIRMATION_SLA_HOURS);
+        }
+    }
+
+    @jakarta.persistence.PrePersist
+    void ensureSlaOnCreate() {
+        startConfirmationSlaIfNeeded();
     }
 
     public boolean isSoldCounted() { return soldCounted; }

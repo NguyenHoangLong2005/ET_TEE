@@ -16,8 +16,12 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    // Products are soft-deleted and hidden by @SQLRestriction, but past orders still point at
+    // them. Without IGNORE, loading such an order threw "Unable to find Product" and broke the
+    // whole staff order list. The line keeps its name / price snapshots; product becomes null.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     private Product product;
 
     @Column(name = "variant_id", nullable = false, columnDefinition = "bigint default 0")

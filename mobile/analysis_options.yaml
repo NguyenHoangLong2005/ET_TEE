@@ -8,6 +8,13 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:
@@ -16,5 +23,4 @@ linter:
     - prefer_const_constructors
     - prefer_const_declarations
     - prefer_final_locals
-    - require_trailing_commas
     - unawaited_futures

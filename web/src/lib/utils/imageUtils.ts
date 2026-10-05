@@ -86,3 +86,45 @@ export function getValidHoverImage(product: any): string | undefined {
   }
   return undefined;
 }
+
+/**
+ * Normalizes an admin/API-supplied image URL into something next/image accepts:
+ * an absolute http(s) URL or a root-relative path. Returns null for anything
+ * else (blank, `javascript:`/`data:` schemes, malformed) so callers can fall back.
+ */
+export function sanitizeImageUrl(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  let url = raw.trim();
+  if (!url) return null;
+  if (url.startsWith('//')) url = `https:${url}`;
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      new URL(url);
+      return url;
+    } catch {
+      return null;
+    }
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return null;
+  return url.startsWith('/') ? url : `/${url}`;
+}
+
+/**
+ * Remote hosts are not allowlisted in next.config, and next/image throws on
+ * unknown hosts, so remote images must bypass the optimizer.
+ */
+export function isRemoteImage(src: unknown): boolean {
+  return typeof src === 'string' && /^https?:\/\//i.test(src);
+}
+
+const PLACEHOLDER_IMAGE_HOSTS = ['picsum.photos', 'placehold.co', 'placeholder.com', 'via.placeholder.com', 'dummyimage.com', 'loremflickr.com'];
+
+/** True for stock/test placeholder hosts that must never reach production UI. */
+export function isPlaceholderImage(url: string): boolean {
+  try {
+    const host = new URL(url, 'http://localhost').hostname.toLowerCase();
+    return PLACEHOLDER_IMAGE_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}

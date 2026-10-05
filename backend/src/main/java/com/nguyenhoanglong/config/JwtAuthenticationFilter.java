@@ -2,6 +2,7 @@ package com.nguyenhoanglong.config;
 
 import com.nguyenhoanglong.constant.PermissionConstants;
 import com.nguyenhoanglong.entity.RolePermissionEntity;
+import com.nguyenhoanglong.repository.UserRepository;
 import com.nguyenhoanglong.service.RolePermissionService;
 import com.nguyenhoanglong.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -65,10 +66,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final RolePermissionService rolePermissionService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, RolePermissionService rolePermissionService) {
+    public JwtAuthenticationFilter(JwtService jwtService, RolePermissionService rolePermissionService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.rolePermissionService = rolePermissionService;
+        this.userRepository = userRepository;
+    }
+
+    private static boolean isPasswordChangePath(String uri) {
+        return uri.startsWith("/api/auth/")
+                || uri.startsWith("/api/staff/me/")
+                || uri.equals("/api/account/change-password");
     }
 
     @Override
@@ -91,10 +100,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             userEmail = jwtService.extractUsername(jwt);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.isTokenValid(jwt, userEmail)) {
-                    String role = jwtService.extractRole(jwt);
-                    if (role == null) {
-                        role = "USER";
+                    // Read the account state fresh instead of trusting the token for 24h:
+                    //  - a deleted account has no row and used to stay authenticated;
+                    //  - the role claim kept a demoted / re-assigned employee's old rights;
+                    //  - a password change did not end sessions opened with the old password.
+                    List<Object[]> rows = userRepository.findAuthStateByEmail(userEmail);
+                    if (rows.isEmpty()) {
+                        filterChain.doFilter(request, response);
+                        return;
                     }
+                    Object[] state = rows.get(0);
+                    String status = state[0] != null ? state[0].toString() : null;
+                    if ("BANNED".equals(status) || "LOCKED".equals(status)) {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    if (state[2] instanceof java.time.LocalDateTime changedAt) {
+                        java.util.Date issuedAt = jwtService.extractIssuedAt(jwt);
+                        long changedAtSeconds = changedAt.atZone(java.time.ZoneId.systemDefault()).toEpochSecond();
+                        if (issuedAt == null || issuedAt.getTime() / 1000 < changedAtSeconds) {
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
+                    }
+                    // An account holding an admin-issued temporary password may only change it.
+                    // The flag used to be stored and never checked, so the shared initial
+                    // password stayed usable indefinitely.
+                    if (Boolean.TRUE.equals(state[3]) && !isPasswordChangePath(request.getRequestURI())) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json");
+                        response.setCharacterEncoding("UTF-8");
+                        response.getWriter().write("{\"success\":false,\"code\":\"PASSWORD_CHANGE_REQUIRED\","
+                                + "\"message\":\"Vui lòng đổi mật khẩu tạm thời trước khi tiếp tục.\",\"status\":403}");
+                        return;
+                    }
+                    String role = state[1] != null ? state[1].toString() : "USER";
                     
                     List<GrantedAuthority> authorities = new ArrayList<>();
                     // Add standard role authority

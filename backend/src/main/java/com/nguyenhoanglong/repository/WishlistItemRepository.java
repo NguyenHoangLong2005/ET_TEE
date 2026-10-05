@@ -10,6 +10,11 @@ import java.util.Optional;
 
 @Repository
 public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long> {
+
+    /** See CartItemRepository.deleteByProductId: a wishlist entry of a deleted product breaks the list. */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(value = "DELETE FROM wishlist_items WHERE product_id = :productId", nativeQuery = true)
+    int deleteAllByDeletedProductId(@org.springframework.data.repository.query.Param("productId") Long productId);
     
     List<WishlistItem> findByUserIdOrderByCreatedAtDesc(String userId);
     

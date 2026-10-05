@@ -28,7 +28,18 @@ export default function CareersPage() {
 
   const handleSubmitApp = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(`Cảm ơn ${applicantName}! Hồ sơ ứng tuyển vị trí ${activeJobModal?.title} đã được gửi thành công. Bộ phận Tuyển dụng ET.TEE sẽ liên hệ trong 24h.`);
+    // No backend endpoint exists to receive job applications - this used to
+    // claim "đã được gửi thành công" while discarding the form entirely.
+    // Open a prefilled mailto to the real recruiting inbox instead.
+    const body = [
+      `Vị trí ứng tuyển: ${activeJobModal?.title ?? ''}`,
+      `Họ tên: ${applicantName}`,
+      `Số điện thoại: ${applicantPhone}`,
+      `Email: ${applicantEmail}`,
+      `Link CV: ${cvLink}`,
+    ].join('\n');
+    window.location.href = `mailto:tuyendung@ettee.vn?subject=${encodeURIComponent('[Ứng tuyển] ' + (activeJobModal?.title ?? ''))}&body=${encodeURIComponent(body)}`;
+    toast.success('Đã mở ứng dụng email với hồ sơ của bạn. Vui lòng bấm Gửi để hoàn tất ứng tuyển.');
     setActiveJobModal(null);
     setApplicantName('');
     setApplicantPhone('');

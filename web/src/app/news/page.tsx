@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Newspaper, Clock, Eye, ArrowRight, Tag, Sparkles } from 'lucide-react';
-import { ARTICLES } from '@/data/articles';
 import SafeImage from '@/components/ui/SafeImage';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -10,14 +9,20 @@ export const metadata = {
 };
 
 export default async function NewsPage() {
-  let articles = ARTICLES;
+  // Only posts staff manage in the posts dashboard. The old hardcoded list (data/articles.ts) showed
+  // articles staff could neither see nor delete, and replaced every real post whenever the API failed.
+  let articles: { slug: string; title: string; category: string; date: string; readTime: string; summary: string; img: string; featured: boolean }[] = [];
+  let featuredSlug: string | undefined;
   try {
     const res = await fetch(`${getApiBaseUrl()}/api/marketing/posts`, { next: { revalidate: 60 } });
     if (res.ok) {
       const json = await res.json();
       const livePosts = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-      if (livePosts.length > 0) {
-        articles = livePosts.map((p: any, idx: number) => ({
+      {
+        // Featured = most viewed; ties (e.g. all still at 0) go to the newest post.
+        const ts = (p: any) => new Date(p.publishedAt || p.createdAt || 0).getTime();
+        featuredSlug = [...livePosts].sort((a: any, b: any) => (b.views ?? 0) - (a.views ?? 0) || ts(b) - ts(a))[0]?.slug;
+        articles = livePosts.map((p: any) => ({
           slug: p.slug,
           title: p.title,
           category: (Array.isArray(p.tags) && p.tags[0]) ? p.tags[0] : (typeof p.tags === 'string' && p.tags.trim() ? p.tags.split(',')[0].trim() : 'Tin tức'),
@@ -25,16 +30,14 @@ export default async function NewsPage() {
           readTime: '4 phút đọc',
           summary: p.excerpt || p.title,
           img: p.coverImageUrl || 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop',
-          featured: idx === 0,
+          featured: p.slug === featuredSlug,
         }));
       }
     }
-  } catch {
-    articles = ARTICLES;
-  }
+  } catch {}
 
   const featuredArticle = articles.find(a => a.featured) || articles[0];
-  const regularArticles = articles.filter(a => a.slug !== featuredArticle.slug);
+  const regularArticles = featuredArticle ? articles.filter(a => a.slug !== featuredArticle.slug) : [];
 
   return (
     <main className="min-h-screen bg-slate-50/70 pt-6 pb-24">
@@ -47,22 +50,8 @@ export default async function NewsPage() {
           <span className="font-bold text-slate-900">Tin tức & Blog</span>
         </div>
 
-        {/* Hero Header */}
-        <div className="bg-white text-slate-900 p-8 md:p-12 rounded-3xl mb-10 shadow-md relative overflow-hidden border border-slate-200/80">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-amber-50 text-amber-900 text-xs font-bold uppercase tracking-widest rounded-full border border-amber-200 shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>ET.TEE Fashion & Lifestyle Mag</span>
-            </span>
-            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900">
-              Tin Tức & Bí Quyết Phối Đồ
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Cập nhật những xu hướng thời trang mới nhất, mẹo phối đồ chuẩn dáng và bí quyết giữ trang phục luôn bền đẹp cùng thời gian.
-            </p>
-          </div>
-        </div>
+        {/* The hero block was removed on request; the h1 stays for screen readers and SEO. */}
+        <h1 className="sr-only">Tin tức & Bí quyết phối đồ</h1>
 
         {/* Featured Article Card */}
         {featuredArticle && (
@@ -111,6 +100,12 @@ export default async function NewsPage() {
               </div>
             </Link>
           </div>
+        )}
+
+        {articles.length === 0 && (
+          <p className="rounded-3xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+            Chưa có bài viết nào. Hãy quay lại sau nhé!
+          </p>
         )}
 
         {/* Regular Articles Grid */}

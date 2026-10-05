@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface VoucherRedemptionRepository extends JpaRepository<VoucherRedemption, Long> {
     List<VoucherRedemption> findByVoucherIdAndUserId(Long voucherId, String userId);
+    List<VoucherRedemption> findByOrderCode(String orderCode);
     long countByVoucherIdAndUserId(Long voucherId, String userId);
     long countByVoucherId(Long voucherId);
     boolean existsByVoucherId(Long voucherId);

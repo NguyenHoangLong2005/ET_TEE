@@ -6,17 +6,13 @@ import {
   LayoutDashboard,
   Image as ImageIcon,
   Tag,
-  Megaphone,
-  PackageSearch,
   BarChart3,
 } from 'lucide-react';
 
 const NAV = [
   { href: '/staff/marketing/dashboard',  label: 'Tổng quan',  icon: LayoutDashboard },
-  { href: '/staff/marketing/banners',    label: 'Banner',     icon: ImageIcon },
+  { href: '/staff/dashboard/marketing/homepage', label: 'Trang chủ', icon: ImageIcon },
   { href: '/staff/marketing/vouchers',   label: 'Voucher',    icon: Tag },
-  { href: '/staff/marketing/campaigns',  label: 'Campaign',   icon: Megaphone },
-  { href: '/staff/marketing/placements', label: 'Trưng bày',  icon: PackageSearch },
   { href: '/staff/marketing/analytics',  label: 'Analytics',  icon: BarChart3 },
 ];
 

@@ -3,11 +3,19 @@ import '../entities/order.dart';
 abstract class SalesRepository {
   Future<List<Order>> getNewOrders();
 
-  Future<List<Order>> getSlaWarningOrders();
+  Future<List<Order>> getAllOrders();
 
   Future<Order> getOrderDetail(int orderId);
 
-  Future<Order> verifyOrder(int orderId, Map<String, dynamic> payload);
+  /// Backend hien tai tra danh sach don moi cho /sla, khong phai canh bao SLA.
+  Future<List<Order>> getSlaWarnings();
+
+  Future<Order> verifyOrder(
+    int orderId, {
+    required String customerName,
+    required String phone,
+    required String shippingAddress,
+  });
 
   Future<Order> confirmOrder(int orderId);
 
@@ -17,7 +25,9 @@ abstract class SalesRepository {
 
   Future<List<OrderNote>> listNotes(int orderId);
 
-  Future<void> requestHold(int orderId, Map<String, dynamic> payload);
+  Future<void> requestHold(int orderId, int productId, int quantity);
+
+  Future<List<String>> allowedTransitions(int orderId);
 }
 
 class OrderNote {
@@ -34,11 +44,11 @@ class OrderNote {
   final DateTime? createdAt;
 
   factory OrderNote.fromJson(Map<String, dynamic> json) => OrderNote(
-        id: json['id'] as int,
+        id: (json['id'] as num?)?.toInt() ?? 0,
         content: json['content'] as String? ?? '',
         createdByName: json['createdByName'] as String?,
         createdAt: json['createdAt'] == null
             ? null
-            : DateTime.parse(json['createdAt'] as String),
+            : DateTime.tryParse('${json['createdAt']}'),
       );
 }

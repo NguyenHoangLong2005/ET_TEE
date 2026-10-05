@@ -1,9 +1,9 @@
 import {
   LayoutDashboard, Users, Package, ShoppingCart, Tag,
   Mail, ChevronRight,
-  Warehouse, Truck, Ticket, Megaphone, Layers, FileText,
+  Warehouse, Truck, Ticket, Layers, FileText,
   Store, CreditCard, Sliders, ScrollText, CheckSquare, Building2, MessageSquare,
-  Grid3X3, BarChart3, HardDrive, Cpu, Terminal, Activity, Sparkles, Palette
+  Grid3X3, BarChart3, ClipboardList, PackagePlus, HardDrive, Cpu, Terminal, Activity, Sparkles, Palette
 } from 'lucide-react';
 import React from 'react';
 import { normalizeRoleCode } from '@/lib/auth';
@@ -61,6 +61,12 @@ export const ADMIN_NAV_GROUPS: NavGroupConfig[] = [
     ]
   },
   {
+    groupName: 'DỮ LIỆU DÙNG CHUNG',
+    items: [
+      { label: 'Danh mục Toàn hệ thống', path: '/admin/categories', icon: Tag, allowedRoles: ['ADMIN'] },
+    ]
+  },
+  {
     groupName: 'AI & TÍNH NĂNG MỚI',
     items: [
       { label: 'AI Models & Cấu hình', path: '/admin/ai-config', icon: Cpu, allowedRoles: ['ADMIN'] },
@@ -107,10 +113,11 @@ export const STORE_OWNER_NAV_GROUPS: NavGroupConfig[] = [
   {
     groupName: 'QUẢN LÝ',
     items: [
-      { label: 'Nhân sự Chi nhánh', path: '/store-owner/staff', icon: Users },
+      { label: 'Nhân sự', path: '/store-owner/staff', icon: Users },
       { label: 'Lịch làm việc / Xếp ca', path: '/store-owner/shifts', icon: CheckSquare },
       { label: 'Hàng đợi Phê duyệt', path: '/store-owner/approvals', icon: FileText },
-      { label: 'Nhật ký Chi nhánh', path: '/store-owner/logs', icon: ScrollText },
+      { label: 'Ticket hỗ trợ', path: '/store-owner/tickets', icon: Ticket },
+      { label: 'Nhật ký', path: '/store-owner/logs', icon: ScrollText },
     ]
   }
 ];
@@ -128,18 +135,17 @@ export const STAFF_NAV_GROUPS: Record<string, NavGroupConfig[]> = {
   ],
   warehouse: [
     {
-      groupName: 'KHO HÀNG',
+      groupName: 'XỬ LÝ ĐƠN',
       items: [
         { label: 'Tổng quan', path: '/staff/dashboard/warehouse/dashboard', icon: LayoutDashboard },
-        { label: 'Nhập hàng', path: '/staff/dashboard/warehouse/receiving', icon: Package },
+        { label: 'Xuất hàng', path: '/staff/dashboard/warehouse/fulfillment', icon: Truck },
+      ]
+    },
+    {
+      groupName: 'TỒN KHO',
+      items: [
         { label: 'Tồn kho', path: '/staff/dashboard/warehouse/inventory', icon: Layers },
-        { label: 'Đơn hàng', path: '/staff/dashboard/warehouse/orders', icon: ShoppingCart },
-        { label: 'Giữ hàng', path: '/staff/dashboard/warehouse/reservations', icon: Package },
-        { label: 'Picking', path: '/staff/dashboard/warehouse/picking', icon: Package },
-        { label: 'Packing', path: '/staff/dashboard/warehouse/packing', icon: Package },
-        { label: 'Bàn giao', path: '/staff/dashboard/warehouse/shipments', icon: Truck },
-        { label: 'Kiểm kê', path: '/staff/dashboard/warehouse/stock-count', icon: FileText },
-        { label: 'Điều chỉnh', path: '/staff/dashboard/warehouse/adjustments', icon: Sliders },
+        { label: 'Nhập hàng', path: '/staff/dashboard/warehouse/receiving', icon: PackagePlus },
         { label: 'Đề xuất nhập', path: '/staff/dashboard/warehouse/replenishment', icon: Tag },
       ]
     }
@@ -161,11 +167,10 @@ export const STAFF_NAV_GROUPS: Record<string, NavGroupConfig[]> = {
       groupName: 'MARKETING & KINH DOANH',
       items: [
         { label: 'Tổng quan', path: '/staff/dashboard/marketing', icon: LayoutDashboard },
-        { label: 'Chiến dịch', path: '/staff/dashboard/marketing/campaigns', icon: Megaphone },
-        { label: 'Banner', path: '/staff/dashboard/marketing/banners', icon: FileText },
+        { label: 'Trang chủ', path: '/staff/dashboard/marketing/homepage', icon: LayoutDashboard },
         { label: 'Bài viết', path: '/staff/dashboard/marketing/posts', icon: FileText },
         { label: 'Voucher', path: '/staff/dashboard/marketing/vouchers', icon: Tag },
-        { label: 'Vị trí SP', path: '/staff/dashboard/marketing/product-placement', icon: Grid3X3 },
+        { label: 'Chiến dịch email', path: '/staff/dashboard/marketing/email', icon: Mail },
         { label: 'Hiệu quả', path: '/staff/dashboard/marketing/analytics', icon: BarChart3 },
       ]
     }
@@ -200,34 +205,28 @@ const ALL_ROUTES_REGISTRY: Record<string, { label: string; section: string }> = 
   '/admin/style-guide': { label: 'Design System & UI', section: 'Admin' },
 
   // Store Owner
-  '/store-owner/dashboard': { label: 'Tổng quan Chi nhánh', section: 'Store Owner' },
-  '/store-owner/products': { label: 'Sản phẩm Chi nhánh', section: 'Store Owner' },
-  '/store-owner/orders': { label: 'Đơn hàng Chi nhánh', section: 'Store Owner' },
-  '/store-owner/promotions': { label: 'Khuyến mãi Chi nhánh', section: 'Store Owner' },
-  '/store-owner/categories': { label: 'Danh mục Chi nhánh', section: 'Store Owner' },
-  '/store-owner/inventory': { label: 'Tồn kho Chi nhánh', section: 'Store Owner' },
+  '/store-owner/dashboard': { label: 'Tổng quan', section: 'Store Owner' },
+  '/store-owner/products': { label: 'Sản phẩm', section: 'Store Owner' },
+  '/store-owner/orders': { label: 'Đơn hàng', section: 'Store Owner' },
+  '/store-owner/promotions': { label: 'Khuyến mãi', section: 'Store Owner' },
+  '/store-owner/categories': { label: 'Danh mục', section: 'Store Owner' },
+  '/store-owner/inventory': { label: 'Tồn kho', section: 'Store Owner' },
   '/store-owner/manufacturers': { label: 'Nhà sản xuất', section: 'Store Owner' },
   '/store-owner/suppliers': { label: 'Nhà cung cấp', section: 'Store Owner' },
-  '/store-owner/staff': { label: 'Nhân sự Chi nhánh', section: 'Store Owner' },
+  '/store-owner/staff': { label: 'Nhân sự', section: 'Store Owner' },
   '/store-owner/shifts': { label: 'Lịch làm việc / Xếp ca', section: 'Store Owner' },
   '/store-owner/approvals': { label: 'Hàng đợi Phê duyệt', section: 'Store Owner' },
-  '/store-owner/logs': { label: 'Nhật ký Chi nhánh', section: 'Store Owner' },
+  '/store-owner/logs': { label: 'Nhật ký', section: 'Store Owner' },
 
   // Staff
   '/staff/dashboard/sales': { label: 'Dashboard Bán hàng', section: 'Bán hàng' },
   '/staff/dashboard/sales/orders': { label: 'Đơn hàng Bán hàng', section: 'Bán hàng' },
   '/staff/dashboard/warehouse': { label: 'Dashboard Kho', section: 'Kho hàng' },
   '/staff/dashboard/warehouse/dashboard': { label: 'Tổng quan Kho', section: 'Kho hàng' },
+  '/staff/dashboard/warehouse/fulfillment': { label: 'Xuất hàng', section: 'Kho hàng' },
   '/staff/dashboard/warehouse/receiving': { label: 'Nhập hàng', section: 'Kho hàng' },
   '/staff/dashboard/warehouse/inventory': { label: 'Tồn kho', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/picking': { label: 'Lấy hàng (Picking)', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/packing': { label: 'Đóng gói (Packing)', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/shipments': { label: 'Bàn giao Vận chuyển', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/stock-count': { label: 'Kiểm kê Kho', section: 'Kho hàng' },
   '/staff/dashboard/warehouse/replenishment': { label: 'Đề xuất Nhập hàng', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/adjustments': { label: 'Điều chỉnh Tồn kho', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/reservations': { label: 'Giữ hàng Tạm', section: 'Kho hàng' },
-  '/staff/dashboard/warehouse/orders': { label: 'Đơn hàng Kho', section: 'Kho hàng' },
   '/staff/dashboard/shipping': { label: 'Dashboard Vận chuyển', section: 'Vận chuyển' },
   '/staff/dashboard/shipping/dashboard': { label: 'Tổng quan Vận chuyển', section: 'Vận chuyển' },
   '/staff/dashboard/shipping/orders': { label: 'Kiện hàng Cần giao', section: 'Vận chuyển' },
@@ -235,16 +234,21 @@ const ALL_ROUTES_REGISTRY: Record<string, { label: string; section: string }> = 
   '/staff/dashboard/shipping/cod': { label: 'Đối soát Tiền COD', section: 'Vận chuyển' },
   '/staff/dashboard/shipping/exceptions': { label: 'Sự cố & Ngoại lệ Giao hàng', section: 'Vận chuyển' },
   '/staff/dashboard/marketing': { label: 'Dashboard Marketing', section: 'Marketing' },
-  '/staff/dashboard/marketing/campaigns': { label: 'Chiến dịch Quảng bá', section: 'Marketing' },
-  '/staff/dashboard/marketing/banners': { label: 'Quản lý Banners', section: 'Marketing' },
+  '/staff/dashboard/marketing/homepage': { label: 'Chỉnh sửa Trang chủ', section: 'Marketing' },
   '/staff/dashboard/marketing/posts': { label: 'Bài viết & Tin tức', section: 'Marketing' },
   '/staff/dashboard/marketing/vouchers': { label: 'Mã Giảm giá', section: 'Marketing' },
-  '/staff/dashboard/marketing/product-placement': { label: 'Bố trí Sản phẩm', section: 'Marketing' },
+  '/staff/dashboard/marketing/email': { label: 'Chiến dịch email', section: 'Marketing' },
   '/staff/dashboard/marketing/analytics': { label: 'Hiệu quả Chiến dịch', section: 'Marketing' },
   '/staff/dashboard/cskh': { label: 'Tổng quan CSKH', section: 'CSKH' },
   '/staff/tickets': { label: 'Hàng đợi Tickets CSKH', section: 'CSKH' },
+  '/store-owner/tickets': { label: 'Ticket hỗ trợ', section: 'Store Owner' },
+  '/store-owner/support': { label: 'Xử lý ticket', section: 'Store Owner' },
   '/staff/reviews': { label: 'Duyệt Đánh giá Sản phẩm', section: 'CSKH' },
   '/staff/support': { label: 'Trung tâm Hỗ trợ Khách hàng', section: 'CSKH' },
+
+  // Own account of the signed-in staff member (all staff roles)
+  '/staff/profile': { label: 'Hồ sơ cá nhân', section: 'Tài khoản' },
+  '/staff/change-password': { label: 'Đổi mật khẩu', section: 'Tài khoản' },
 };
 
 /* ───────────────────── PERMISSION VERIFICATION ───────────────────── */
@@ -376,7 +380,7 @@ export function getRouteMetadata(pathname: string): {
     return { title: 'Quản trị Hệ thống', section: 'Admin', breadcrumbs: [{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Tổng quan' }] };
   }
   if (pathname.startsWith('/store-owner')) {
-    return { title: 'Quản lý Chi nhánh', section: 'Store Owner', breadcrumbs: [{ label: 'Store Owner', href: '/store-owner/dashboard' }, { label: 'Tổng quan' }] };
+    return { title: 'Quản lý Cửa hàng', section: 'Store Owner', breadcrumbs: [{ label: 'Store Owner', href: '/store-owner/dashboard' }, { label: 'Tổng quan' }] };
   }
   return { title: 'Quản trị', section: 'Staff', breadcrumbs: [{ label: 'Staff' }, { label: 'Tổng quan' }] };
 }

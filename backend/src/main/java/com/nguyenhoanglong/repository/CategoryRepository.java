@@ -40,4 +40,19 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsBySlugAndIdNot(@Param("slug") String slug, @Param("id") Long id);
 
     boolean existsByParentId(Long parentId);
+
+    /**
+     * Dem don CHUA HOAN TAT co chua san pham thuoc danh muc. Dung native SQL de
+     * van tinh ca san pham da xoa mem (Product co @SQLRestriction se bi JPQL loai),
+     * vi don dang xu ly van tham chieu san pham do.
+     */
+    @Query(value = "SELECT COUNT(DISTINCT o.id) FROM order_items oi " +
+            "JOIN orders o ON o.id = oi.order_id " +
+            "JOIN products p ON p.id = oi.product_id " +
+            "WHERE p.category_id = :categoryId AND o.status IN (:openStatuses)",
+            nativeQuery = true)
+    long countOpenOrdersByCategoryId(@Param("categoryId") Long categoryId,
+                                     @Param("openStatuses") java.util.Collection<String> openStatuses);
+
+    long countByParentId(Long parentId);
 }

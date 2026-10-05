@@ -56,6 +56,8 @@ export default function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // Marketing email consent: unticked by default, never required to register
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -92,7 +94,7 @@ export default function RegisterPage() {
     email: v => !v ? 'Vui lòng nhập email.' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Email không đúng định dạng.' : fieldErrors.email === 'Email đã được sử dụng.' ? fieldErrors.email : '',
     phone: v => !v ? 'Vui lòng nhập số điện thoại.' : !VN_PHONE_RE.test(v.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ (VD: 0901234567).' : '',
     address: v => !v.trim() ? 'Vui lòng nhập địa chỉ giao hàng.' : '',
-    password: v => !v ? 'Vui lòng nhập mật khẩu.' : v.length < 6 ? 'Mật khẩu phải từ 6 ký tự trở lên.' : (COMMON_PASSWORDS.has(v) || COMMON_PASSWORDS.has(v.toLowerCase())) ? 'Mật khẩu quá phổ biến, dễ bị đoán.' : '',
+    password: v => !v ? 'Vui lòng nhập mật khẩu.' : v.length < 8 ? 'Mật khẩu phải từ 8 ký tự trở lên.' : !/[a-zA-Z]/.test(v) || !/[0-9]/.test(v) ? 'Mật khẩu phải có cả chữ và số.' : (COMMON_PASSWORDS.has(v) || COMMON_PASSWORDS.has(v.toLowerCase())) ? 'Mật khẩu quá phổ biến, dễ bị đoán.' : '',
     confirmPassword: v => !v ? 'Vui lòng nhập lại mật khẩu.' : v !== formData.password ? 'Mật khẩu nhập lại không khớp.' : '',
   };
 
@@ -134,6 +136,7 @@ export default function RegisterPage() {
         phone: formData.phone || undefined,
         address: formData.address,
         password: formData.password,
+        marketingOptIn,
       });
       router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
@@ -367,6 +370,19 @@ export default function RegisterPage() {
                 )}
               </div>
             </div>
+
+            <label className="flex items-start gap-3 text-sm text-slate-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={marketingOptIn}
+                onChange={e => setMarketingOptIn(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
+              />
+              <span>
+                Tôi muốn nhận email về ưu đãi và mã giảm giá từ ET.TEE. Có thể hủy bất cứ lúc nào bằng một lần bấm
+                trong email hoặc trong trang tài khoản. (Không bắt buộc)
+              </span>
+            </label>
 
             <div className="pt-2">
               <button

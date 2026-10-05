@@ -105,7 +105,9 @@ public class UserServiceImpl implements UserService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Mã nhân viên đã tồn tại: " + empCode);
             }
         } else {
-            empCode = "EMP-" + (10000 + new Random().nextInt(90000));
+            do {
+                empCode = "EMP-" + (10000 + new Random().nextInt(90000));
+            } while (userRepository.existsByEmployeeCode(empCode));
         }
 
         // Validate Email
@@ -125,10 +127,10 @@ public class UserServiceImpl implements UserService {
         // Validate Role-ShopId Consistency
         Long shopId = validateAndResolveShopId(role, createDto.getShopId());
 
-        // Password
-        String rawPassword = (createDto.getInitialPassword() != null && !createDto.getInitialPassword().trim().isEmpty())
-                ? createDto.getInitialPassword()
-                : "EtTee@123456";
+        // Password. Leaving it blank used to give every such account the same well-known
+        // password; generate a random one instead and return it once.
+        boolean generated = createDto.getInitialPassword() == null || createDto.getInitialPassword().trim().isEmpty();
+        String rawPassword = generated ? generateRandomPassword() : createDto.getInitialPassword();
 
         User newUser = User.builder()
                 .employeeCode(empCode)
@@ -145,7 +147,9 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User saved = userRepository.save(newUser);
-        return mapToUserAdminDto(saved);
+        UserAdminDto dto = mapToUserAdminDto(saved);
+        if (generated) dto.setTemporaryPassword(rawPassword);
+        return dto;
     }
 
     @Override
@@ -241,6 +245,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void deleteUser(String targetUserId, String currentAdminIdOrEmail) {
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với ID: " + targetUserId));
+
+        if (currentAdminIdOrEmail != null &&
+                (currentAdminIdOrEmail.equalsIgnoreCase(targetUser.getId()) ||
+                        currentAdminIdOrEmail.equalsIgnoreCase(targetUser.getEmail()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa tài khoản của chính mình");
+        }
+
+        if (targetUser.getRole() == Role.ADMIN) {
+            long activeAdminCount = userRepository.countByRoleAndStatus(Role.ADMIN, "ACTIVE");
+            if (activeAdminCount <= 1) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa Admin duy nhất còn hoạt động trong hệ thống");
+            }
+        }
+
+        // Xoa mem: cac don hang/danh gia/audit log cu con tham chieu user_id nen
+        // khong the hard-delete ma khong pha vo rang buoc khoa ngoai. Dat
+        // status=BANNED de tai khoan bi khoa vinh vien va khong the dang nhap
+        // (AuthService.login va JwtAuthenticationFilter da chan status nay).
+        targetUser.setStatus("BANNED");
+        targetUser.setLockReason("Tài khoản đã bị xóa bởi quản trị viên");
+        targetUser.setLockedBy(currentAdminIdOrEmail != null ? currentAdminIdOrEmail : "ADMIN");
+        targetUser.setLockedAt(LocalDateTime.now());
+        userRepository.save(targetUser);
+    }
+
+    @Override
+    @Transactional
     public ResetPasswordResponseDto resetUserPassword(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với ID: " + id));
@@ -249,6 +283,10 @@ public class UserServiceImpl implements UserService {
         String tempPassword = generateRandomPassword();
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         user.setMustChangePassword(true);
+        // Mat khau moi do quan ly cap: go khoa tam do dang nhap sai truoc do,
+        // neu khong nguoi dung van bi chan 15 phut du nhap dung mat khau tam.
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
         userRepository.save(user);
 
         return ResetPasswordResponseDto.builder()
@@ -291,7 +329,7 @@ public class UserServiceImpl implements UserService {
         if (SHOP_BOUND_ROLES.contains(role)) {
             if (shopId == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Vai trò " + role.name() + " (Chủ shop / Nhân viên chi nhánh) bắt buộc phải thuộc một Cửa hàng (shopId không được để trống)");
+                        "Vai trò " + role.name() + " (Chủ shop / Nhân viên cửa hàng) bắt buộc phải thuộc một Cửa hàng (shopId không được để trống)");
             }
             return shopId;
         } else {
@@ -344,7 +382,7 @@ public class UserServiceImpl implements UserService {
     private String getRoleDisplayName(Role role) {
         switch (role) {
             case ADMIN: return "Quản trị viên Hệ thống";
-            case SHOP_OWNER: return "Chủ cửa hàng (Chi nhánh)";
+            case SHOP_OWNER: return "Chủ cửa hàng";
             case SALES_STAFF: return "Nhân viên Bán hàng / CSKH";
             case WAREHOUSE_STAFF: return "Nhân viên Quản lý Kho";
             case SHIPPING_STAFF: return "Nhân viên Vận chuyển / Shipper";
@@ -358,9 +396,9 @@ public class UserServiceImpl implements UserService {
     private String getRoleDescription(Role role) {
         switch (role) {
             case ADMIN: return "Toàn quyền quản trị hệ thống, người dùng, phân quyền và danh mục";
-            case SHOP_OWNER: return "Quản lý sản phẩm, tồn kho và nhân sự thuộc chi nhánh shop của mình";
-            case SALES_STAFF: return "Xử lý đơn hàng, hỗ trợ tư vấn khách hàng thuộc chi nhánh shop";
-            case WAREHOUSE_STAFF: return "Kiểm kê hàng hóa, nhập/xuất kho thuộc chi nhánh shop";
+            case SHOP_OWNER: return "Quản lý sản phẩm, tồn kho và nhân sự thuộc cửa hàng của mình";
+            case SALES_STAFF: return "Xử lý đơn hàng, hỗ trợ tư vấn khách hàng thuộc cửa hàng";
+            case WAREHOUSE_STAFF: return "Kiểm kê hàng hóa, nhập/xuất kho thuộc cửa hàng";
             case SHIPPING_STAFF: return "Cập nhật trạng thái giao hàng và tải lên xác nhận giao hàng (POD)";
             case MARKETING_STAFF: return "Tạo chiến dịch, mã giảm giá và quản lý danh mục hiển thị toàn hệ thống";
             default: return "Quyền hạn cơ bản theo vai trò";

@@ -45,6 +45,10 @@ public class CartService {
         ProductVariant variant = productVariantRepository.findById(request.getVariantId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
+        if (variant.getProduct() == null || !"ACTIVE".equals(variant.getProduct().getStatus())) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không còn tồn tại hoặc đã ngừng kinh doanh");
+        }
+
         CartItem existingItem = cart.getItems().stream()
                 .filter(item -> item.getProductVariant().getId().equals(variant.getId()))
                 .findFirst()
@@ -272,7 +276,8 @@ public class CartService {
             imageUrl = product.getImages().get(0).getImageUrl();
         }
 
-        BigDecimal activePrice = variant.getSalePrice() != null ? variant.getSalePrice() : variant.getPrice();
+        BigDecimal activePrice = com.nguyenhoanglong.util.PriceUtils.roundToThousand(
+                variant.getSalePrice() != null ? variant.getSalePrice() : variant.getPrice());
         BigDecimal itemTotal = activePrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
         return new CartDto.CartItemResponse(

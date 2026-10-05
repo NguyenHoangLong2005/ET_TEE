@@ -15,6 +15,9 @@ import java.util.Optional;
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<Inventory> findByProductId(Long productId);
 
+    /** Ton kho cua san pham TAI DUNG chi nhanh (findByProductId khong phan biet chi nhanh). */
+    Optional<Inventory> findByProductIdAndShopId(Long productId, Long shopId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Inventory i WHERE i.productId = :productId")
     Optional<Inventory> findByProductIdWithLock(@Param("productId") Long productId);
@@ -25,6 +28,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     // Dem o tang DB thay vi findAll() roi filter theo shopId trong bo nho.
     long countByShopId(Long shopId);
+
+    java.util.List<Inventory> findByShopId(Long shopId);
 
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.shopId = :shopId "
             + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")

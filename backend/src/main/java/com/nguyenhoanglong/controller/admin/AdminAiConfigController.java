@@ -6,7 +6,6 @@ import com.nguyenhoanglong.entity.SystemNotification;
 import com.nguyenhoanglong.repository.AiModelVersionRepository;
 import com.nguyenhoanglong.repository.FeatureFlagRepository;
 import com.nguyenhoanglong.repository.SystemNotificationRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,46 +31,17 @@ public class AdminAiConfigController {
         this.notificationRepository = notificationRepository;
     }
 
-    @PostConstruct
-    public void initDefaults() {
-        try {
-            if (featureFlagRepository.count() == 0) {
-                createFlag("smart_search", "Tìm kiếm thông minh ngữ nghĩa (Semantic Vector Search)", true);
-                createFlag("personalized_recommendations", "Gợi ý trang phục cá nhân hóa theo phong cách", true);
-                createFlag("virtual_fitting_assistant", "Trợ lý AI tư vấn chọn size & tỷ lệ cơ thể", true);
-                createFlag("similar_products_engine", "Gợi ý sản phẩm phối đồ tương đồng (Visual Outfit)", true);
-                createFlag("stock_demand_forecasting", "Dự báo nhu cầu nhập kho & bán chậm bằng Machine Learning", false);
-            }
-
-            if (modelVersionRepository.count() == 0) {
-                AiModelVersion m1 = new AiModelVersion();
-                m1.setModelName("ET-StyleMatch");
-                m1.setVersion("v2.1-turbo");
-                m1.setActive(true);
-                m1.setDescription("Mô hình gợi ý phối đồ đa tiêu chí kết hợp Contrastive Learning & Fashion-CLIP.");
-                m1.setCreatedAt(LocalDateTime.now().minusDays(15));
-                modelVersionRepository.save(m1);
-
-                AiModelVersion m2 = new AiModelVersion();
-                m2.setModelName("ET-FashionEmbed");
-                m2.setVersion("v1.4.2");
-                m2.setActive(false);
-                m2.setDescription("Mô hình Vector Embedding 512-dim cho phân loại danh mục và thuộc tính vải.");
-                m2.setCreatedAt(LocalDateTime.now().minusDays(30));
-                modelVersionRepository.save(m2);
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void createFlag(String key, String desc, boolean enabled) {
-        FeatureFlag flag = new FeatureFlag();
-        flag.setKey(key);
-        flag.setDescription(desc);
-        flag.setEnabled(enabled);
-        flag.setUpdatedAt(LocalDateTime.now());
-        featureFlagRepository.save(flag);
-    }
+    // This used to auto-seed fictional data on startup: feature flags
+    // claiming "Trợ lý AI tư vấn chọn size" and "Dự báo nhu cầu nhập kho
+    // bằng Machine Learning" exist and are ON, plus a fake model
+    // "ET-StyleMatch v2.1-turbo" described as using "Contrastive Learning &
+    // Fashion-CLIP" - none of which exists anywhere in this codebase (grep
+    // confirms nothing reads FeatureFlag/AiModelVersion to gate any real
+    // behavior). An admin opening this screen would see specific, detailed
+    // claims about AI systems that are pure fiction. Removed the seeding;
+    // the CRUD below is real and still usable once/if an actual feature
+    // flag or model registry is needed, it just starts empty and honest
+    // instead of pre-populated with invented capabilities.
 
     @GetMapping("/feature-flags")
     public ResponseEntity<?> getFeatureFlags() {

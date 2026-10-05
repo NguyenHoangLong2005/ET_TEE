@@ -2,6 +2,7 @@ package com.nguyenhoanglong.repository;
 
 import com.nguyenhoanglong.entity.CampaignAnalytics;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -110,4 +111,8 @@ public interface CampaignAnalyticsRepository extends JpaRepository<CampaignAnaly
 
     @Query("SELECT ca.voucherId, COUNT(ca) FROM CampaignAnalytics ca WHERE ca.voucherId IS NOT NULL AND ca.eventType = 'CONVERSION' GROUP BY ca.voucherId ORDER BY COUNT(ca) DESC")
     List<Object[]> topVouchers();
+
+    @Modifying
+    @Query("DELETE FROM CampaignAnalytics ca WHERE ca.orderId = :orderId AND ca.eventType = 'CONVERSION'")
+    int deleteConversionsByOrderId(@Param("orderId") Long orderId);
 }

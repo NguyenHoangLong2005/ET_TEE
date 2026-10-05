@@ -3,15 +3,27 @@
 import { Mail, Gift, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { CustomerMarketingService } from '@/lib/services/customerMarketingService';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Stores the consent (marketing_subscriptions); every email it leads to carries a one-click
+  // unsubscribe link. No voucher is promised here: the welcome voucher belongs to an account.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    toast.success('Đăng ký nhận tin thành công! Voucher 10% đã gửi vào email.');
-    setEmail('');
+    setSending(true);
+    try {
+      await CustomerMarketingService.subscribeNewsletter(email.trim());
+      toast.success('Đã đăng ký! Bạn sẽ nhận email khi ET.TEE có ưu đãi mới.');
+      setEmail('');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không đăng ký được, vui lòng thử lại.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -22,7 +34,7 @@ export default function Newsletter() {
             ĐĂNG KÝ NHẬN BẢN TIN
           </h2>
           <p className="text-slate-600 text-sm md:text-base mb-8 max-w-md leading-relaxed">
-            Nhận ngay voucher giảm 10% cho đơn hàng đầu tiên. Cập nhật sớm nhất về các bộ sưu tập mới và ưu đãi độc quyền.
+            Cập nhật sớm nhất về các bộ sưu tập mới và ưu đãi độc quyền từ ET.TEE.
           </p>
 
           {/* Subscribe Form */}
@@ -37,6 +49,7 @@ export default function Newsletter() {
             />
             <button 
               type="submit"
+              disabled={sending}
               className="h-12 px-8 bg-black hover:bg-slate-800 text-white font-bold text-sm uppercase tracking-wider transition-colors shrink-0"
             >
               Đăng ký
@@ -44,7 +57,7 @@ export default function Newsletter() {
           </form>
 
           <p className="text-[11px] text-slate-500 mt-6">
-            Bằng cách đăng ký, bạn đồng ý với <a href="/privacy" className="underline hover:text-black transition-colors">Chính sách bảo mật</a> của chúng tôi.
+            Bằng cách đăng ký, bạn đồng ý nhận email ưu đãi và <a href="/privacy" className="underline hover:text-black transition-colors">Chính sách bảo mật</a> của chúng tôi. Hủy bất cứ lúc nào bằng link trong email.
           </p>
         </div>
       </div>

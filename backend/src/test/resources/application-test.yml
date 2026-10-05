@@ -21,6 +21,12 @@ spring:
         format_sql: true
 
 app:
+  # scheduled marketing automations / real email off in tests (they are unit-tested directly)
+  lifecycle:
+    enabled: false
+  marketing:
+    email:
+      enabled: false
   seed:
     demo-accounts:
       # Integration tests log in as the seeded staff accounts.

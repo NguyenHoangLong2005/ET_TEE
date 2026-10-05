@@ -12,11 +12,11 @@ import { useWishlist } from '@/contexts/WishlistContext';
 const MAIN_MENU = [
   { label: 'Nam', href: '/products?targetGroup=men' },
   { label: 'Nữ', href: '/products?targetGroup=women' },
-  { label: 'Bé trai', href: '/products?targetGroup=kids&gender=boy' },
-  { label: 'Bé gái', href: '/products?targetGroup=kids&gender=girl' },
+  { label: 'Bé trai', href: '/products?targetGroup=boys' },
+  { label: 'Bé gái', href: '/products?targetGroup=girls' },
   { label: 'Phụ kiện', href: '/products?category=accessories' },
   { label: 'Gia đình', href: '/products?targetGroup=family' },
-  { label: 'Sale', href: '/products?sale=true', isSale: true },
+  { label: 'Sale', href: '/products?status=sale', isSale: true },
 ];
 
 export default function Header() {
@@ -50,7 +50,7 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setSearchQuery('');
     }
@@ -69,13 +69,14 @@ export default function Header() {
           <div className="mx-auto sm:mx-0 flex items-center gap-2">
             <span>🔥 Freeship toàn quốc đơn từ <strong className="text-amber-300">499.000đ</strong></span>
             <span className="opacity-40">|</span>
-            <Link href="/products?sale=true" className="font-bold underline hover:text-amber-200 transition-colors flex items-center gap-1">
+            <Link href="/products?status=sale" className="font-bold underline hover:text-amber-200 transition-colors flex items-center gap-1">
               <Tag className="w-3 h-3" />
               Săn ngay
             </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-4 text-[11px] text-red-100">
+            <Link href="/news" className="hover:underline">Tin tức</Link>
             <Link href="/stores" className="hover:underline">Hệ thống cửa hàng</Link>
             <Link href="/faq" className="hover:underline">Hỗ trợ 24/7</Link>
           </div>
@@ -281,6 +282,14 @@ export default function Header() {
                   <ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" />
                 </Link>
               ))}
+              <Link
+                href="/news"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-800 hover:bg-slate-100"
+              >
+                Tin tức
+                <ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" />
+              </Link>
             </nav>
 
             <div className="border-t border-slate-100 p-5 space-y-3 bg-slate-50">

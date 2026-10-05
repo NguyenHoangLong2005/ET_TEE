@@ -6,7 +6,7 @@ import {
   ShoppingCart, Clock, CheckCircle2, XCircle, RefreshCw, ArrowRight,
   ChevronRight, PackageCheck, RotateCcw, Truck, AlertTriangle,
 } from "lucide-react";
-import { getApiBaseUrl } from "@/lib/api-config";
+import { staffList } from "@/lib/staff-api";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { StatCard } from "@/components/dashboard/DashboardComponents";
@@ -77,15 +77,8 @@ export default function SalesDashboardPage() {
   const loadOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/staff/sales/orders`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload: unknown = await response.json();
-      const result = Array.isArray(payload)
-        ? payload
-        : payload !== null && typeof payload === "object" && "data" in payload
-          ? (payload as { data: unknown }).data
-          : null;
-      setOrders(Array.isArray(result) ? (result as Order[]) : []);
+      const result = await staffList<Order>("/api/staff/sales/orders");
+      setOrders(result);
     } catch {
       setOrders([]);
     } finally {

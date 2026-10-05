@@ -145,8 +145,7 @@ public class MarketingController {
             BigDecimal subtotal = body.get("subtotal") != null
                     ? new BigDecimal(body.get("subtotal").toString()) : BigDecimal.ZERO;
             String userId = getCurrentUserId();
-            boolean isNewCustomer = Boolean.TRUE.equals(body.get("isNewCustomer"));
-            Voucher voucher = marketingService.validateVoucher(code, subtotal, userId, isNewCustomer);
+            Voucher voucher = marketingService.validateVoucher(code, subtotal, userId);
             Map<String, Object> discount = marketingService.computeDiscount(voucher, subtotal);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -204,6 +203,16 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
+    // Counted from the reader's browser rather than in GET /posts/{slug}: the storefront fetches
+    // that with a 60s Next.js cache, so most reads never reach the backend.
+    @PostMapping("/posts/{slug}/view")
+    public ResponseEntity<Map<String, Object>> recordPostView(@PathVariable String slug) {
+        if (!marketingService.recordPostView(slug)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài viết");
+        }
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
     // ═════════════════════════════════════════════════════════════════════
     // PUBLIC — Track marketing event (impression/click/conversion)
     // ═════════════════════════════════════════════════════════════════════
@@ -211,16 +220,25 @@ public class MarketingController {
     @PostMapping("/public/track")
     public ResponseEntity<Map<String, Object>> publicTrack(@RequestBody Map<String, Object> body) {
         try {
-            Long campaignId = body.get("campaignId") != null ? Long.parseLong(body.get("campaignId").toString()) : null;
             String eventType = (String) body.get("eventType");
+            // CONVERSION (with revenue/orderId) is recorded server-side from the
+            // real checkout flow (OrderService.checkout). This endpoint has no
+            // auth and no order verification, so accepting CONVERSION/revenue
+            // here let anyone fabricate arbitrary "revenue" and poison
+            // campaign analytics. Only allow passive view/click signals.
+            if (!"IMPRESSION".equalsIgnoreCase(eventType) && !"CLICK".equalsIgnoreCase(eventType)) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "eventType không hợp lệ cho endpoint công khai (chỉ chấp nhận IMPRESSION, CLICK)");
+                return ResponseEntity.badRequest().body(response);
+            }
+            Long campaignId = body.get("campaignId") != null ? Long.parseLong(body.get("campaignId").toString()) : null;
             Long bannerId = body.get("bannerId") != null ? Long.parseLong(body.get("bannerId").toString()) : null;
             Long voucherId = body.get("voucherId") != null ? Long.parseLong(body.get("voucherId").toString()) : null;
             String productId = body.get("productId") != null ? body.get("productId").toString() : null;
             String sessionId = (String) body.get("sessionId");
             String userId = getCurrentUserId();
-            Long orderId = body.get("orderId") != null ? Long.parseLong(body.get("orderId").toString()) : null;
-            BigDecimal revenue = body.get("revenue") != null ? new BigDecimal(body.get("revenue").toString()) : null;
-            marketingService.trackEvent(campaignId, eventType, bannerId, voucherId, productId, sessionId, userId, orderId, revenue);
+            marketingService.trackEvent(campaignId, eventType, bannerId, voucherId, productId, sessionId, userId, null, null);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             return ResponseEntity.ok(response);

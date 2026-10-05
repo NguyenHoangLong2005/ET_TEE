@@ -4,6 +4,9 @@ import com.nguyenhoanglong.dto.*;
 import com.nguyenhoanglong.entity.User;
 import com.nguyenhoanglong.repository.UserRepository;
 import com.nguyenhoanglong.service.CskhExtendedService;
+import com.nguyenhoanglong.service.ReviewService;
+import java.util.List;
+import java.util.Map;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +21,12 @@ public class CskhExtendedController {
 
     private final CskhExtendedService cskhExtendedService;
     private final UserRepository userRepository;
+    private final ReviewService reviewService;
 
-    public CskhExtendedController(CskhExtendedService cskhExtendedService, UserRepository userRepository) {
+    public CskhExtendedController(CskhExtendedService cskhExtendedService, UserRepository userRepository, ReviewService reviewService) {
         this.cskhExtendedService = cskhExtendedService;
         this.userRepository = userRepository;
+        this.reviewService = reviewService;
     }
 
     private User getCurrentUser() {
@@ -57,6 +62,25 @@ public class CskhExtendedController {
         User actor = getCurrentUser();
         CskhQuotaStatusDto result = cskhExtendedService.getMyQuotaStatus(actor);
         return ResponseEntity.ok(ApiResponse.success("Lấy hạn mức voucher tri ân thành công", result));
+    }
+
+    @GetMapping("/reviews")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CSKH_STAFF', 'SHOP_OWNER')")
+    public ResponseEntity<List<StaffReviewDto>> getReviewsForStaff() {
+        return ResponseEntity.ok(reviewService.getReviewsForStaff());
+    }
+
+    @PostMapping("/reviews/{id}/reply")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CSKH_STAFF', 'SHOP_OWNER')")
+    public ResponseEntity<StaffReviewDto> replyToReview(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        User actor = getCurrentUser();
+        return ResponseEntity.ok(reviewService.replyToReview(actor.getId(), id, body.get("replyMessage")));
+    }
+
+    @PatchMapping("/reviews/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CSKH_STAFF', 'SHOP_OWNER')")
+    public ResponseEntity<StaffReviewDto> updateReviewVisibility(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(reviewService.updateReviewVisibility(id, body.get("status")));
     }
 
     @GetMapping("/audit-logs")

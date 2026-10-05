@@ -38,6 +38,13 @@ public class SystemNotification {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    /** null = thông báo hệ thống cho admin; khác null = thông báo cá nhân của user đó. */
+    @Column(name = "recipient_user_id", length = 255)
+    private String recipientUserId;
+
+    public String getRecipientUserId() { return recipientUserId; }
+    public void setRecipientUserId(String recipientUserId) { this.recipientUserId = recipientUserId; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

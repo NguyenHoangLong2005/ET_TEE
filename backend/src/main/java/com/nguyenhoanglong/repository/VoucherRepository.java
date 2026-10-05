@@ -24,8 +24,15 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
            "AND (v.endDate IS NULL OR v.endDate >= :now)")
     List<Voucher> findAllActive(@Param("now") java.time.LocalDateTime now);
 
+    /** Vouchers handed to one customer (welcome, win-back, CSKH compensation) still usable now. */
+    @Query("SELECT v FROM Voucher v WHERE v.grantedToCustomerId = :userId "
+            + "AND (v.status IS NULL OR v.status = 'ACTIVE') AND (v.isActive IS NULL OR v.isActive = TRUE) "
+            + "AND (v.endDate IS NULL OR v.endDate >= :now) ORDER BY v.createdAt DESC")
+    List<Voucher> findPersonalActive(@Param("userId") String userId, @Param("now") java.time.LocalDateTime now);
+
     // Loc o tang DB cho man hinh duyet cua chu shop (truoc day dung findAll() roi filter).
-    @Query("SELECT v FROM Voucher v WHERE v.shopId = :shopId "
+    // shopId NULL: created by marketing staff with no shop, which any store owner may approve.
+    @Query("SELECT v FROM Voucher v WHERE (v.shopId = :shopId OR v.shopId IS NULL) "
             + "AND UPPER(COALESCE(v.status, '')) IN ('PENDING', 'PENDING_APPROVAL')")
     List<Voucher> findPendingApprovalByShopId(@Param("shopId") Long shopId);
 
@@ -35,6 +42,11 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     @Query("UPDATE Voucher v SET v.usedCount = COALESCE(v.usedCount, 0) + 1, v.updatedAt = :now " +
            "WHERE v.id = :id AND (v.maxUses IS NULL OR COALESCE(v.usedCount, 0) < v.maxUses)")
     int incrementUsedCountAtomic(@Param("id") Long id, @Param("now") java.time.LocalDateTime now);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Voucher v SET v.usedCount = CASE WHEN COALESCE(v.usedCount, 0) > 0 THEN COALESCE(v.usedCount, 0) - 1 ELSE 0 END, " +
+           "v.updatedAt = :now WHERE v.id = :id")
+    int decrementUsedCountAtomic(@Param("id") Long id, @Param("now") java.time.LocalDateTime now);
 
     boolean existsByCode(String code);
 

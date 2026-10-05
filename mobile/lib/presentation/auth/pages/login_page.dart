@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/di/injector.dart';
+import '../../../core/router/app_router.dart';
+import '../../../domain/repositories/auth_repository.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -13,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -23,14 +28,38 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    // TODO: wire AuthRepository.login and route by primary role.
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-    setState(() => _loading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('TODO: gọi AuthRepository.login')),
-    );
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      await sl<AuthRepository>().login(
+        _emailCtrl.text.trim(),
+        _passwordCtrl.text,
+      );
+      if (!mounted) return;
+      await redirectByRole(context);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _message(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  String _message(Object e) {
+    final text = '$e';
+    if (text.contains('401') || text.toLowerCase().contains('unauthorized')) {
+      return 'Sai email hoặc mật khẩu.';
+    }
+    if (text.contains('403')) return 'Tài khoản đã bị khóa.';
+    if (text.toLowerCase().contains('connection') ||
+        text.toLowerCase().contains('network')) {
+      return 'Không kết nối được tới máy chủ. Kiểm tra backend đã chạy chưa.';
+    }
+    return 'Đăng nhập thất bại: $text';
   }
 
   @override
@@ -58,9 +87,15 @@ class _LoginPageState extends State<LoginPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
+                  if (_error != null) ...[
+                    _ErrorBanner(message: _error!),
+                    const SizedBox(height: 16),
+                  ],
                   TextFormField(
                     controller: _emailCtrl,
+                    enabled: !_loading,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.mail_outline),
@@ -71,7 +106,9 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordCtrl,
+                    enabled: !_loading,
                     obscureText: _obscure,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                       labelText: 'Mật khẩu',
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -103,6 +140,37 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, color: scheme.onErrorContainer, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: scheme.onErrorContainer, fontSize: 13),
+            ),
+          ),
+        ],
       ),
     );
   }

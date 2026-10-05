@@ -55,6 +55,7 @@ class CartServiceTest {
         setField(p, "id", 100L);
         p.setName("Áo phông test");
         p.setSlug("ao-phong-test");
+        p.setStatus("ACTIVE");
 
         variantA = new ProductVariant();
         setField(variantA, "id", 11L);

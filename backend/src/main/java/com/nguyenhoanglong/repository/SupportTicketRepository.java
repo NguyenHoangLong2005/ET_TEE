@@ -20,12 +20,25 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, St
 
     List<SupportTicket> findByCustomerIdOrderByCreatedAtDesc(String customerId);
 
-    @Query("SELECT t FROM SupportTicket t WHERE " +
+    @Query(value = "SELECT t FROM SupportTicket t WHERE " +
            "(:shopIdIsFilter = false OR t.shopId = :shopId) AND " +
            "(:status IS NULL OR t.status = :status) AND " +
            "(:priority IS NULL OR t.priority = :priority) AND " +
            "(:assignedTo IS NULL OR t.assignedTo = :assignedTo) AND " +
-           "(:search IS NULL OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.customerId) LIKE LOWER(CONCAT('%', :search, '%')))")
+           // :search is '' rather than NULL when absent: a NULL String binds as bytea on PostgreSQL
+           // and LOWER(bytea) fails ("function lower(bytea) does not exist"), breaking the page.
+           "(:search = '' OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.customerId) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           // Hang doi CSKH: ticket con mo len truoc, cu nhat truoc (FIFO);
+           // ticket da xong (RESOLVED/CLOSED) xuong cuoi, moi nhat truoc.
+           "ORDER BY CASE WHEN t.status IN ('RESOLVED', 'CLOSED') THEN 1 ELSE 0 END ASC, " +
+           "CASE WHEN t.status IN ('RESOLVED', 'CLOSED') THEN NULL ELSE t.createdAt END ASC, " +
+           "t.createdAt DESC, t.id ASC",
+           countQuery = "SELECT COUNT(t) FROM SupportTicket t WHERE " +
+           "(:shopIdIsFilter = false OR t.shopId = :shopId) AND " +
+           "(:status IS NULL OR t.status = :status) AND " +
+           "(:priority IS NULL OR t.priority = :priority) AND " +
+           "(:assignedTo IS NULL OR t.assignedTo = :assignedTo) AND " +
+           "(:search = '' OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.customerId) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<SupportTicket> findStaffTickets(
             @Param("shopIdIsFilter") boolean shopIdIsFilter,
             @Param("shopId") Long shopId,

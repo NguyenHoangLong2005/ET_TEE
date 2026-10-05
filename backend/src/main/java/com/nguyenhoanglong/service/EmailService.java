@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.nguyenhoanglong.entity.EmailLog;
@@ -23,6 +24,9 @@ public class EmailService {
      * This lets register/reset flows complete in environments where SMTP is unavailable
      * (e.g. local dev). The OTP is still persisted in the DB and surfaced in logs.
      */
+    @Value("${app.mail.log-otp-on-failure:false}")
+    private boolean logOtpOnFailure;
+
     @Value("${app.mail.fail-soft:true}")
     private boolean failSoft;
 
@@ -55,8 +59,13 @@ public class EmailService {
             logEntry.setStatus("SENT");
             emailLogRepository.save(logEntry);
         } catch (MessagingException | MailException e) {
-            log.warn("[{}] Email send failed for {} ({}): {}. OTP={}",
-                    flow, toEmail, e.getClass().getSimpleName(), e.getMessage(), code);
+            log.warn("[{}] Email send failed for {} ({}): {}",
+                    flow, toEmail, e.getClass().getSimpleName(), e.getMessage());
+            // The one-time code must not end up in log files / the admin log viewer by default.
+            // Opt in (dev only) when SMTP is not configured and you need the code to test sign-up.
+            if (logOtpOnFailure) {
+                log.warn("[{}] DEV ONLY - code for {}: {}", flow, toEmail, code);
+            }
 
             logEntry.setStatus("FAILED");
             logEntry.setErrorMessage(e.getMessage());
@@ -72,6 +81,12 @@ public class EmailService {
         }
     }
 
+    // @EnableAsync was configured (AsyncConfig) but never actually used, so
+    // register/forgot-password stayed blocked on SMTP round-trip time and, on
+    // send failure, rolled back the OTP row that had already been
+    // successfully saved (sendOrLog throws on failure, inside the same
+    // @Transactional method). Sending in the background decouples the two.
+    @Async("taskExecutor")
     public void sendVerificationEmail(String toEmail, String code) {
         String html = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #333;'>Chào mừng bạn đến với ET.TEE!</h2>"
@@ -84,6 +99,7 @@ public class EmailService {
         sendOrLog(toEmail, "Mã xác thực tài khoản ET.TEE", html, code, "verify-email");
     }
 
+    @Async("taskExecutor")
     public void sendPasswordResetEmail(String toEmail, String otp) {
         String html = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #333;'>Yêu cầu đặt lại mật khẩu</h2>"

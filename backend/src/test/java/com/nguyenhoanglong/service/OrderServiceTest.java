@@ -48,6 +48,7 @@ class OrderServiceTest {
     @Mock private OrderItemRepository orderItemRepository;
     @Mock private ProductRepository productRepository;
     @Mock private MarketingService marketingService;
+    @Mock private SalesNotificationService salesNotificationService;
 
     @InjectMocks private OrderService orderService;
 
@@ -72,6 +73,7 @@ class OrderServiceTest {
         setField(product, "id", 100L);
         product.setName("Áo test");
         product.setSlug("ao-test");
+        product.setStatus("ACTIVE");
 
         variant = new ProductVariant();
         setField(variant, "id", 11L);

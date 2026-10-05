@@ -17,8 +17,11 @@ public interface ProductService {
     ProductDto getProductById(Long id);
     ProductDto getProductBySlug(String slug);
     
-    List<ProductDto> getSimilarProducts(String slug);
+    List<ProductDto> getSimilarProducts(String slug, int limit);
     List<ProductDto> getOutfits(String slug);
+
+    /** ACTIVE products among ids, keeping the given order (ranked recommendation lists). */
+    List<ProductDto> getActiveProductsInOrder(List<Long> ids);
 
     ProductDto createProduct(ProductDto productDto);
     ProductDto updateProduct(Long id, ProductDto productDto);

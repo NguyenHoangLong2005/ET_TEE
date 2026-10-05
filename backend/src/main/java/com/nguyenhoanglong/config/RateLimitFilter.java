@@ -26,13 +26,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Bucket> registerBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> forgotPasswordBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> checkEmailBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> behaviorEventBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> imageSearchBuckets = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = resolveClientIp(request);
 
         if (uri.equals("/api/auth/login") && request.getMethod().equalsIgnoreCase("POST")) {
             Bucket bucket = loginBuckets.computeIfAbsent(ipAddress, k -> createLoginBucket());
@@ -58,6 +60,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 sendRateLimitResponse(response, "Quá nhiều yêu cầu kiểm tra email. Vui lòng thử lại sau.");
                 return;
             }
+        } else if (uri.equals("/api/search/image") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = imageSearchBuckets.computeIfAbsent(ipAddress, k -> createImageSearchBucket());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều lượt tìm bằng ảnh. Vui lòng thử lại sau.");
+                return;
+            }
+        } else if (uri.equals("/api/events") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = behaviorEventBuckets.computeIfAbsent(ipAddress, k -> createBehaviorEventBucket());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều sự kiện. Vui lòng thử lại sau.");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -81,10 +95,42 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    private Bucket createImageSearchBucket() {
+        // 20 photos per minute: each one costs a CLIP image encoding on the embedder
+        Bandwidth limit = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)));
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    private Bucket createBehaviorEventBucket() {
+        // 120 page views per minute: far above real browsing, stops a script flooding the training data
+        Bandwidth limit = Bandwidth.classic(120, Refill.greedy(120, Duration.ofMinutes(1)));
+        return Bucket.builder().addLimit(limit).build();
+    }
+
     private Bucket createCheckEmailBucket() {
         // 10 requests per minute
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         return Bucket.builder().addLimit(limit).build();
+    }
+
+    /**
+     * The Next.js server proxies every /api/** request to this backend, so
+     * request.getRemoteAddr() is always the Next server's own address and
+     * every visitor to the site shared one login/register/forgot-password
+     * bucket. Only trust the X-Forwarded-For header when the direct TCP peer
+     * is our own reverse proxy (loopback) - otherwise a direct caller could
+     * spoof the header to dodge the limit entirely.
+     */
+    private String resolveClientIp(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        boolean fromTrustedProxy = "127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr) || "::1".equals(remoteAddr);
+        if (fromTrustedProxy) {
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            if (forwardedFor != null && !forwardedFor.isBlank()) {
+                return forwardedFor.split(",")[0].trim();
+            }
+        }
+        return remoteAddr;
     }
 
     private void sendRateLimitResponse(HttpServletResponse response, String message) throws IOException {

@@ -15,8 +15,22 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // There is no backend endpoint to receive this form (no guest support
+    // channel exists yet - CustomerTicketController requires a logged-in
+    // user). Claiming "gửi thành công" here would just discard the message.
+    // Open the user's mail client with the content prefilled instead of
+    // lying about a submission that never happened.
+    const body = [
+      `Họ tên: ${name}`,
+      `Số điện thoại: ${phone}`,
+      `Email: ${email}`,
+      `Chủ đề: ${topic}`,
+      '',
+      message,
+    ].join('\n');
+    window.location.href = `mailto:cskh@ettee.vn?subject=${encodeURIComponent('[Liên hệ website] ' + topic)}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
-    toast.success('Gửi thắc mắc thành công! ET.TEE sẽ phản hồi quý khách trong thời gian sớm nhất.');
+    toast.success('Đã mở ứng dụng email của bạn với nội dung liên hệ. Vui lòng bấm Gửi để hoàn tất.');
   };
 
   return (
@@ -88,9 +102,10 @@ export default function ContactPage() {
             {submitted ? (
               <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-900 text-center space-y-3">
                 <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                <h3 className="font-bold text-base">ET.TEE Đã Nhận Được Yêu Cầu!</h3>
+                <h3 className="font-bold text-base">Đã Mở Ứng Dụng Email Của Bạn</h3>
                 <p className="text-xs text-emerald-700 leading-relaxed">
-                  Cảm ơn bạn đã liên hệ. Đội ngũ chuyên viên tư vấn sẽ gọi lại hoặc phản hồi qua Email trong thời gian ngắn nhất.
+                  Vui lòng kiểm tra ứng dụng email (hoặc cửa sổ vừa mở) và bấm Gửi để hoàn tất liên hệ tới cskh@ettee.vn.
+                  Nếu không thấy gì mở ra, hãy gọi trực tiếp theo số hotline bên trên.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}

@@ -46,7 +46,7 @@ export default function StoreOwnerLogsPage() {
         setLogs(res);
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Không thể tải nhật ký hoạt động chi nhánh.');
+      toast.error(err?.message || 'Không thể tải nhật ký hoạt động.');
     } finally {
       setLoading(false);
     }
@@ -121,9 +121,8 @@ export default function StoreOwnerLogsPage() {
 
         {/* Top Control Bar */}
         <PageHeader
-          title="Nhật ký Hoạt động Chi nhánh"
-          subtitle="Lịch sử thao tác và audit log của các nhân viên thuộc chi nhánh quản lý."
-          badge="CHI NHÁNH"
+          title="Nhật ký Hoạt động"
+          subtitle="Lịch sử thao tác và audit log của các nhân viên thuộc cửa hàng quản lý."
           actions={
             <Button
               variant="secondary"
@@ -168,7 +167,7 @@ export default function StoreOwnerLogsPage() {
             onPageChange: (p) => setPage(p),
           }}
           emptyTitle="Không có nhật ký hoạt động nào"
-          emptyMessage="Chưa có hành vi ghi log nào được ghi nhận cho chi nhánh."
+          emptyMessage="Chưa có hành vi ghi log nào được ghi nhận ."
         />
 
       </div>

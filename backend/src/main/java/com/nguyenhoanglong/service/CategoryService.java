@@ -24,6 +24,8 @@ public interface CategoryService {
 
     void deleteCategory(Long id);
 
+    CategoryDeleteCheckDto checkDelete(Long id);
+
     StoreCategoryConfigDto getStoreCategoryConfig(Long shopId);
 
     StoreCategoryConfigDto updateStoreCategoryConfig(Long shopId, List<Long> categoryIds);

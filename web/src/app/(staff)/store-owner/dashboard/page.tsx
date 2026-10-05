@@ -16,7 +16,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import {
   TrendingUp, ShoppingBag, Package, AlertTriangle,
   RefreshCw, ArrowUpRight, ChevronRight, BarChart2,
-  Clock, CheckCircle2, XCircle, RotateCcw, Layers, Users, Tag
+  Clock, CheckCircle2, XCircle, RotateCcw, Layers, Users, Tag, Hand
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -38,6 +38,7 @@ interface DashboardData {
   refundedOrders?: number;
   // Revenue by day (last 7 days)
   dailyRevenue?: Array<{ date: string; revenue: number; orders: number }>;
+  range?: { from: string; to: string; days: number; granularity: 'day' | 'month' };
   // Recent orders
   recentOrders?: Array<{
     id: number;
@@ -52,6 +53,46 @@ interface DashboardData {
 }
 
 /* ─── Helpers ────────────────────────────────────────────── */
+const toInput = (d: Date) => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+type Preset = 'today' | '7d' | '30d' | '90d' | 'thisMonth' | 'lastMonth' | 'custom';
+
+const PRESETS: { key: Exclude<Preset, 'custom'>; label: string }[] = [
+  { key: 'today', label: 'Hôm nay' },
+  { key: '7d', label: '7 ngày' },
+  { key: '30d', label: '30 ngày' },
+  { key: '90d', label: '90 ngày' },
+  { key: 'thisMonth', label: 'Tháng này' },
+  { key: 'lastMonth', label: 'Tháng trước' },
+];
+
+function rangeOf(preset: Exclude<Preset, 'custom'>): { from: string; to: string } {
+  const today = new Date();
+  const daysBack = (n: number) => { const d = new Date(); d.setDate(d.getDate() - (n - 1)); return d; };
+  switch (preset) {
+    case 'today': return { from: toInput(today), to: toInput(today) };
+    case '7d': return { from: toInput(daysBack(7)), to: toInput(today) };
+    case '30d': return { from: toInput(daysBack(30)), to: toInput(today) };
+    case '90d': return { from: toInput(daysBack(90)), to: toInput(today) };
+    case 'thisMonth': return { from: toInput(new Date(today.getFullYear(), today.getMonth(), 1)), to: toInput(today) };
+    case 'lastMonth': return {
+      from: toInput(new Date(today.getFullYear(), today.getMonth() - 1, 1)),
+      to: toInput(new Date(today.getFullYear(), today.getMonth(), 0)),
+    };
+  }
+}
+
+const fmtRangeDate = (iso: string) => {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+};
+
+const rangeInputClass =
+  'ui-control h-9 px-3 bg-white border border-slate-200 rounded-lg font-sans text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary';
+
 const fmtCurrency = (v?: number) =>
   typeof v === 'number' ? v.toLocaleString('vi-VN') + ' ₫' : '—';
 
@@ -139,12 +180,17 @@ export default function StoreOwnerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSync, setLastSync] = useState(new Date());
+  const [preset, setPreset] = useState<Preset>('30d');
+  const [customRange, setCustomRange] = useState(() => rangeOf('30d'));
+  const range = preset === 'custom' ? customRange : rangeOf(preset);
+  const rangeValid = !!range.from && !!range.to && range.from <= range.to;
 
   const load = useCallback(async () => {
+    if (!rangeValid) return; // custom range still incomplete / reversed
     setRefreshing(true);
     try {
       const [metricsRes, ordersRes] = await Promise.allSettled([
-        apiClient.get<any>('/api/store-owner/dashboard'),
+        apiClient.get<any>(`/api/store-owner/dashboard?from=${range.from}&to=${range.to}`),
         apiClient.get<any>('/api/store-owner/orders?page=0&size=5')
       ]);
 
@@ -196,20 +242,22 @@ export default function StoreOwnerDashboardPage() {
 
       setData({
         totalRevenue: totalRev,
-        revenueChange: rawMetrics?.revenueChange ?? 12.5,
+        // Only the backend's real comparison with the previous period; no made-up default.
+        revenueChange: typeof rawMetrics?.revenueChange === 'number' ? rawMetrics.revenueChange : undefined,
         totalOrders: totalOrd,
         pendingOrders: pendingOrd,
         confirmedOrders: confirmedOrd,
         completedOrders: deliveredOrd,
         cancelledOrders: cancelledOrd,
-        refundedOrders: rawMetrics?.refundedOrders ?? 0,
+        refundedOrders: typeof ordersObj.refunded === 'number' ? ordersObj.refunded : (rawMetrics?.refundedOrders ?? 0),
         totalProducts: totalProd,
         lowStockCount: lowStock,
         pendingPromotions: pendingAppr,
         staffCount: staffTotal,
         dailyRevenue: daily,
+        range: rawMetrics?.range,
         recentOrders: recent,
-        shopName: rawMetrics?.shopName || 'Chi nhánh ET.TEE Store'
+        shopName: rawMetrics?.shopName || 'ET.TEE Store'
       });
     } catch (e: any) {
       console.error('Store owner dashboard load error:', e);
@@ -219,7 +267,8 @@ export default function StoreOwnerDashboardPage() {
       setRefreshing(false);
       setLastSync(new Date());
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range.from, range.to, rangeValid]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -274,9 +323,13 @@ export default function StoreOwnerDashboardPage() {
 
         {/* ─── Control Bar ─── */}
         <PageHeader
-          title={`${greeting}, ${firstName} 👋`}
-          subtitle={`${data?.shopName || 'Tổng quan Chi nhánh'} · Đồng bộ lúc ${lastSync.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
-          badge="CHI NHÁNH"
+          title={
+            <span className="inline-flex items-center gap-2.5">
+              {greeting}, {firstName}
+              <Hand className="w-6 h-6 text-amber-500 -rotate-12" aria-hidden="true" />
+            </span>
+          }
+          subtitle={`${data?.shopName || 'Tổng quan '} · Đồng bộ lúc ${lastSync.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
           actions={
             <Button
               variant="secondary"
@@ -289,6 +342,57 @@ export default function StoreOwnerDashboardPage() {
           }
         />
 
+        {/* ─── Khoảng thời gian ─── */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 space-y-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-slate-500 mr-1">Khoảng thời gian:</span>
+            {PRESETS.map((pr) => (
+              <button
+                key={pr.key}
+                type="button"
+                onClick={() => setPreset(pr.key)}
+                className={`ui-control-medium h-8 px-3.5 rounded-full border font-sans transition-colors ${
+                  preset === pr.key
+                    ? 'border-slate-900 bg-slate-900 text-white'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                }`}
+              >
+                {pr.label}
+              </button>
+            ))}
+            <span className="hidden md:block h-6 w-px bg-slate-200 mx-1" aria-hidden="true" />
+            {/* Từ + Đến stay together on one line; the whole pair wraps as a unit if space runs out */}
+            <div className="flex flex-nowrap items-center gap-3 whitespace-nowrap">
+            <label className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-500">Từ</span>
+              <input
+                type="date"
+                value={range.from}
+                max={range.to || undefined}
+                onChange={(e) => { setCustomRange({ from: e.target.value, to: range.to }); setPreset('custom'); }}
+                className={rangeInputClass}
+              />
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-500">Đến</span>
+              <input
+                type="date"
+                value={range.to}
+                min={range.from || undefined}
+                max={toInput(new Date())}
+                onChange={(e) => { setCustomRange({ from: range.from, to: e.target.value }); setPreset('custom'); }}
+                className={rangeInputClass}
+              />
+            </label>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500">
+            {rangeValid
+              ? <>Đơn tạo từ <strong className="text-slate-700">{fmtRangeDate(range.from)}</strong> đến <strong className="text-slate-700">{fmtRangeDate(range.to)}</strong>. Doanh thu chỉ tính đơn đã giao.</>
+              : 'Chọn đủ ngày bắt đầu và kết thúc (ngày bắt đầu không sau ngày kết thúc).'}
+          </p>
+        </div>
+
         {/* ─── Metric Cards ─── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
@@ -299,7 +403,9 @@ export default function StoreOwnerDashboardPage() {
             trend={data?.revenueChange !== undefined ? {
               value: Math.abs(Number(data.revenueChange.toFixed(1))),
               isPositive: (data.revenueChange ?? 0) >= 0,
+              label: 'so với kỳ trước',
             } : undefined}
+            subtitle={loading ? undefined : data?.revenueChange === undefined ? 'Đơn đã giao trong kỳ · chưa có kỳ trước để so sánh' : 'Đơn đã giao trong kỳ'}
           />
           <StatCard
             title="Đơn hàng"
@@ -334,7 +440,7 @@ export default function StoreOwnerDashboardPage() {
             { href: '/store-owner/staff',        icon: Users,       label: 'Nhân sự',        sub: 'Quản lý & đánh giá',  color: 'text-slate-400' },
             { href: '/store-owner/shifts',       icon: Clock,       label: 'Xếp ca',         sub: 'Lịch làm việc ca',    color: 'text-slate-400' },
             { href: '/store-owner/suppliers',    icon: Tag,         label: 'Nhà cung ứng',   sub: 'Vải & phụ liệu may',  color: 'text-slate-400' },
-            { href: '/store-owner/logs',         icon: Layers,      label: 'Nhật ký Shop',   sub: 'Audit log chi nhánh', color: 'text-slate-400' },
+            { href: '/store-owner/logs',         icon: Layers,      label: 'Nhật ký Shop',   sub: 'Audit log', color: 'text-slate-400' },
           ].map((item) => (
             <Link key={item.href} href={item.href}
               className="relative bg-white border border-slate-200 rounded-xl p-3.5 hover:bg-slate-50 hover:border-slate-300 hover:shadow-flat transition-all group shadow-2xs block">
@@ -357,15 +463,19 @@ export default function StoreOwnerDashboardPage() {
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-flat p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Doanh thu 7 ngày qua</h2>
-                <p className="text-[11px] text-slate-500 mt-0.5">Biểu đồ doanh thu theo ngày</p>
+                <h2 className="text-sm font-semibold text-slate-900">
+                  Doanh thu theo {data?.range?.granularity === 'month' ? 'tháng' : 'ngày'}
+                </h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {rangeValid ? `${fmtRangeDate(range.from)} – ${fmtRangeDate(range.to)}` : 'Biểu đồ doanh thu'}
+                </p>
               </div>
               <TrendingUp className="w-4 h-4 text-slate-400" />
             </div>
             {loading ? (
               <div className="h-40 bg-slate-200 rounded-lg animate-pulse" />
             ) : (
-              <BarChart data={data?.dailyRevenue || []} />
+              <BarChart data={data?.dailyRevenue || []} valueSuffix=" ₫" />
             )}
           </div>
 
@@ -373,7 +483,7 @@ export default function StoreOwnerDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-flat p-5 space-y-4">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">Tỉ lệ đơn hàng</h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">Phân tích trạng thái đơn</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Trạng thái các đơn tạo trong kỳ</p>
             </div>
             {loading ? (
               <div className="h-32 bg-slate-200 rounded-lg animate-pulse" />
@@ -437,7 +547,7 @@ export default function StoreOwnerDashboardPage() {
             loading={loading}
             rowKey={(order) => order.id}
             emptyTitle="Chưa có đơn hàng nào"
-            emptyMessage="Chi nhánh hiện chưa có giao dịch phát sinh gần đây."
+            emptyMessage="Cửa hàng hiện chưa có giao dịch phát sinh gần đây."
           />
         </div>
 

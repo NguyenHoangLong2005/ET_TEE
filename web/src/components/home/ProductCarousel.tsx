@@ -12,9 +12,11 @@ interface ProductCarouselProps {
   viewAllLink?: string;
   bgColor?: string;
   products: Product[];
+  /** Render inside a page that already provides the container/vertical spacing (e.g. PDP). */
+  embedded?: boolean;
 }
 
-export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor = 'bg-white', products }: ProductCarouselProps) {
+export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor = 'bg-white', products, embedded = false }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -44,8 +46,8 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
   if (!products || products.length === 0) return null;
 
   return (
-    <section className={`py-12 md:py-16 ${bgColor}`}>
-      <div className="container mx-auto px-4 xl:px-8">
+    <section className={embedded ? 'mb-16' : `py-12 md:py-16 ${bgColor}`}>
+      <div className={embedded ? '' : 'container mx-auto px-4 xl:px-8'}>
         {/* Header */}
         <div className="flex items-end justify-between mb-8 border-b border-slate-200 pb-3">
           <div>

@@ -264,20 +264,43 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    /** Trang thai don con dang xu ly (chua giao xong / chua dong). */
+    private static final List<String> OPEN_ORDER_STATUSES = List.of(
+            "PENDING_PAYMENT", "PENDING_CONFIRMATION", "CONFIRMED", "PICKING", "PACKED",
+            "HANDED_TO_CARRIER", "SHIPPING", "RETURN_REQUESTED");
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryDeleteCheckDto checkDelete(Long id) {
+        categoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Danh mục không tồn tại"));
+
+        // productRepository.findByCategoryId chi tra ve san pham con hoat dong:
+        // Product co @SQLRestriction("status <> 'DELETED'") nen san pham da bi
+        // xoa mem khong con tinh la "dang dung" danh muc nay.
+        long children = categoryRepository.countByParentId(id);
+        long products = productRepository.findByCategoryId(id).size();
+        long openOrders = categoryRepository.countOpenOrdersByCategoryId(id, OPEN_ORDER_STATUSES);
+
+        String reason = null;
+        if (children > 0) {
+            reason = "Danh mục đang có " + children + " danh mục con. Vui lòng xóa hoặc chuyển danh mục con trước.";
+        } else if (openOrders > 0) {
+            reason = "Có " + openOrders + " đơn hàng chưa hoàn tất chứa sản phẩm thuộc danh mục này. Hãy hoàn tất hoặc hủy các đơn đó trước.";
+        } else if (products > 0) {
+            reason = "Danh mục đang chứa " + products + " sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.";
+        }
+        return new CategoryDeleteCheckDto(reason == null, reason, children, products, openOrders);
+    }
+
     @Override
     public void deleteCategory(Long id) {
         Category existing = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Danh mục không tồn tại"));
 
-        if (categoryRepository.existsByParentId(id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa danh mục đang có danh mục con. Vui lòng xóa danh mục con trước.");
-        }
-
-        // productRepository.findByCategoryId chi tra ve san pham con hoat dong:
-        // Product co @SQLRestriction("status <> 'DELETED'") nen san pham da bi
-        // xoa mem khong con tinh la "dang dung" danh muc nay.
-        if (!productRepository.findByCategoryId(id).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa danh mục đang chứa sản phẩm. Vui lòng chuyển sản phẩm sang danh mục khác trước.");
+        CategoryDeleteCheckDto check = checkDelete(id);
+        if (!check.isCanDelete()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Không thể xóa danh mục. " + check.getReason());
         }
 
         existing.setDeletedAt(java.time.LocalDateTime.now());

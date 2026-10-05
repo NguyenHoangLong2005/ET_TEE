@@ -1,126 +1,126 @@
-import '../entities/order.dart';
-
 abstract class WarehouseRepository {
-  Future<List<InventoryItem>> getInventory({String? query});
+  Future<List<InventoryItem>> getInventory();
 
-  Future<List<InboundOrder>> getInboundOrders();
+  Future<List<InboundOrder>> getInboundHistory();
 
-  Future<InboundOrder> getInboundDetail(int id);
+  Future<List<Map<String, dynamic>>> getWarehouseOrders();
 
-  Future<void> confirmInbound(int id, Map<String, dynamic> countPayload);
+  Future<List<Map<String, dynamic>>> getCatalogProducts();
 
-  Future<void> updateLocation(int inventoryId, String locationCode);
+  Future<InventoryItem> inbound({
+    required int productId,
+    required String productName,
+    required int quantity,
+    String? location,
+  });
 
-  Future<List<InventoryAdjustment>> getAdjustments({String? status});
+  Future<Map<String, dynamic>> countInbound(
+    int inventoryId,
+    int actualQuantity,
+  );
 
-  Future<void> createAdjustment(int inventoryId, Map<String, dynamic> payload);
+  Future<InventoryItem> updateLocation(int inventoryId, String location);
+
+  Future<List<InventoryAdjustment>> getAdjustments();
+
+  Future<InventoryAdjustment> createAdjustment(
+    int inventoryId, {
+    required int difference,
+    required String reason,
+  });
 
   Future<void> approveAdjustment(int id);
 
   Future<List<StockReservation>> getReservations();
 
-  Future<void> approveReservation(int id);
+  Future<void> approveReservation(String reservationId);
 
-  Future<void> rejectReservation(int id, String reason);
+  Future<void> rejectReservation(String reservationId, String reason);
 
   Future<void> startPicking(int orderId);
 
   Future<void> completePicking(int orderId);
 
-  Future<void> pack(int orderId, Map<String, dynamic> payload);
+  Future<void> pack(int orderId);
 
-  Future<void> saveLabel(int orderId);
+  Future<Map<String, dynamic>> getLabelInfo(int orderId);
 
-  Future<String> labelUrl(int orderId);
-
-  Future<void> handover(int orderId, Map<String, dynamic> payload);
+  Future<void> handover(int orderId);
 
   Future<List<Stocktake>> getStocktakes();
 
+  Future<Stocktake> createStocktake({
+    required String warehouseLocation,
+    required int createdBy,
+  });
+
+  Future<Stocktake> submitStocktake(int id, int actualQuantity);
+
   Future<List<ReplenishmentItem>> getReplenishment();
+
+  Future<void> proposeRestock({
+    required int inventoryId,
+    required int quantity,
+    String? note,
+  });
+
+  Future<List<Map<String, dynamic>>> getRestockRequests();
 }
 
 class InventoryItem {
   const InventoryItem({
     required this.id,
+    required this.productId,
     required this.productName,
-    this.variantName,
-    this.sku,
-    this.locationCode,
-    this.quantity = 0,
-    this.reservedQuantity = 0,
+    this.warehouseLocation,
+    this.quantityOnHand = 0,
+    this.quantityReserved = 0,
+    this.reorderLevel = 10,
   });
 
   final int id;
+  final int productId;
   final String productName;
-  final String? variantName;
-  final String? sku;
-  final String? locationCode;
-  final int quantity;
-  final int reservedQuantity;
+  final String? warehouseLocation;
+  final int quantityOnHand;
+  final int quantityReserved;
+  final int reorderLevel;
 
-  int get available => quantity - reservedQuantity;
+  int get available => quantityOnHand - quantityReserved;
+
+  bool get isLowStock => available <= reorderLevel;
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
-        id: json['id'] as int,
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        productId: (json['productId'] as num?)?.toInt() ?? 0,
         productName: json['productName'] as String? ?? '',
-        variantName: json['variantName'] as String?,
-        sku: json['sku'] as String?,
-        locationCode: json['locationCode'] as String?,
-        quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-        reservedQuantity: (json['reservedQuantity'] as num?)?.toInt() ?? 0,
+        warehouseLocation: json['warehouseLocation'] as String?,
+        quantityOnHand: (json['quantityOnHand'] as num?)?.toInt() ?? 0,
+        quantityReserved: (json['quantityReserved'] as num?)?.toInt() ?? 0,
+        reorderLevel: (json['reorderLevel'] as num?)?.toInt() ?? 10,
       );
 }
 
 class InboundOrder {
   const InboundOrder({
     required this.id,
-    required this.inboundCode,
     required this.status,
-    this.supplierName,
-    this.expectedDate,
-    this.lines = const [],
+    this.location,
+    this.createdAt,
   });
 
   final int id;
-  final String inboundCode;
   final String status;
-  final String? supplierName;
-  final DateTime? expectedDate;
-  final List<InboundLine> lines;
+  final String? location;
+  final DateTime? createdAt;
 
   factory InboundOrder.fromJson(Map<String, dynamic> json) => InboundOrder(
-        id: json['id'] as int,
-        inboundCode: json['inboundCode'] as String? ?? '',
+        id: (json['id'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? '',
-        supplierName: json['supplierName'] as String?,
-        expectedDate: json['expectedDate'] == null
+        location: json['location'] as String? ?? json['warehouseLocation'] as String?,
+        createdAt: json['createdAt'] == null
             ? null
-            : DateTime.parse(json['expectedDate'] as String),
-        lines: (json['lines'] as List<dynamic>? ?? [])
-            .map((e) => InboundLine.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
-}
-
-class InboundLine {
-  const InboundLine({
-    required this.productName,
-    required this.expectedQuantity,
-    this.actualQuantity,
-  });
-
-  final String productName;
-  final int expectedQuantity;
-  final int? actualQuantity;
-
-  int? get difference =>
-      actualQuantity == null ? null : actualQuantity! - expectedQuantity;
-
-  factory InboundLine.fromJson(Map<String, dynamic> json) => InboundLine(
-        productName: json['productName'] as String? ?? '',
-        expectedQuantity: (json['expectedQuantity'] as num?)?.toInt() ?? 0,
-        actualQuantity: (json['actualQuantity'] as num?)?.toInt(),
+            : DateTime.tryParse('${json['createdAt']}'),
       );
 }
 
@@ -129,32 +129,39 @@ class InventoryAdjustment {
     required this.id,
     required this.status,
     required this.reason,
-    this.quantityDelta = 0,
+    this.difference = 0,
     this.requestedByName,
     this.approvedByName,
+    this.createdAt,
   });
 
   final int id;
   final String status;
   final String reason;
-  final int quantityDelta;
+  final int difference;
   final String? requestedByName;
   final String? approvedByName;
+  final DateTime? createdAt;
+
+  bool get isPending => status == 'PENDING';
 
   factory InventoryAdjustment.fromJson(Map<String, dynamic> json) =>
       InventoryAdjustment(
-        id: json['id'] as int,
+        id: (json['id'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? '',
         reason: json['reason'] as String? ?? '',
-        quantityDelta: (json['quantityDelta'] as num?)?.toInt() ?? 0,
+        difference: (json['difference'] as num?)?.toInt() ?? 0,
         requestedByName: json['requestedByName'] as String?,
         approvedByName: json['approvedByName'] as String?,
+        createdAt: json['createdAt'] == null
+            ? null
+            : DateTime.tryParse('${json['createdAt']}'),
       );
 }
 
 class StockReservation {
   const StockReservation({
-    required this.reservationId,
+    required this.id,
     required this.orderId,
     required this.status,
     this.productName,
@@ -162,16 +169,18 @@ class StockReservation {
     this.rejectReason,
   });
 
-  final String reservationId;
+  final int id;
   final int orderId;
   final String status;
   final String? productName;
   final int quantity;
   final String? rejectReason;
 
+  bool get isPending => status == 'PENDING';
+
   factory StockReservation.fromJson(Map<String, dynamic> json) =>
       StockReservation(
-        reservationId: json['reservationId']?.toString() ?? '',
+        id: (json['id'] as num?)?.toInt() ?? 0,
         orderId: (json['orderId'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? '',
         productName: json['productName'] as String?,
@@ -184,40 +193,44 @@ class Stocktake {
   const Stocktake({
     required this.id,
     required this.status,
-    this.locationCode,
-    this.countedAt,
+    this.warehouseLocation,
+    this.createdAt,
   });
 
   final int id;
   final String status;
-  final String? locationCode;
-  final DateTime? countedAt;
+  final String? warehouseLocation;
+  final DateTime? createdAt;
 
   factory Stocktake.fromJson(Map<String, dynamic> json) => Stocktake(
-        id: json['id'] as int,
+        id: (json['id'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? '',
-        locationCode: json['locationCode'] as String?,
-        countedAt: json['countedAt'] == null
+        warehouseLocation: json['warehouseLocation'] as String?,
+        createdAt: json['createdAt'] == null
             ? null
-            : DateTime.parse(json['countedAt'] as String),
+            : DateTime.tryParse('${json['createdAt']}'),
       );
 }
 
 class ReplenishmentItem {
   const ReplenishmentItem({
+    required this.id,
     required this.productName,
-    required this.currentQuantity,
-    required this.suggestedQuantity,
+    required this.available,
+    required this.reorderLevel,
   });
 
+  final int id;
   final String productName;
-  final int currentQuantity;
-  final int suggestedQuantity;
+  final int available;
+  final int reorderLevel;
 
   factory ReplenishmentItem.fromJson(Map<String, dynamic> json) =>
       ReplenishmentItem(
+        id: (json['id'] as num?)?.toInt() ?? 0,
         productName: json['productName'] as String? ?? '',
-        currentQuantity: (json['currentQuantity'] as num?)?.toInt() ?? 0,
-        suggestedQuantity: (json['suggestedQuantity'] as num?)?.toInt() ?? 0,
+        available: ((json['quantityOnHand'] as num?)?.toInt() ?? 0) -
+            ((json['quantityReserved'] as num?)?.toInt() ?? 0),
+        reorderLevel: (json['reorderLevel'] as num?)?.toInt() ?? 10,
       );
 }

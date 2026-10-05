@@ -186,6 +186,21 @@ textarea {
   font: inherit;
 }
 
+/* The rule above is UNLAYERED, so in Tailwind v4 it beats the layered utilities: text-sm / font-medium
+ * on a <button>, <input> or <select> are silently ignored and the control renders at the parent size.
+ * These classes are unlayered too (a class beats an element selector), so a control can opt in to a
+ * real size. Use them together with the usual utilities for colour, padding and borders. */
+.ui-control {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+}
+.ui-control-medium {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
 img {
   max-width: 100%;
   display: block;
@@ -445,4 +460,9 @@ img {
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;
+}
+
+@keyframes filter-progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
 }

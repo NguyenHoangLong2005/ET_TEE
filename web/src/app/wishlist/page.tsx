@@ -5,7 +5,6 @@ import ProductCard from '@/components/ui/ProductCard';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
-import PageHero from '@/components/ui/PageHero';
 
 export default function WishlistPage() {
   const { wishlistItems } = useWishlist();
@@ -13,13 +12,7 @@ export default function WishlistPage() {
   return (
     <main className="min-h-screen bg-slate-50/50 pt-6 pb-20">
       <div className="container mx-auto px-4 xl:px-8 max-w-6xl">
-        <PageBreadcrumb items={[{ label: 'Trang chủ', href: '/' }, { label: 'Mục yêu thích' }]} />
-
-        <PageHero
-          badgeText="Danh sách lưu trữ"
-          title="Mục yêu thích"
-          subtitle="Những sản phẩm thời trang bạn đã thả tim và lưu lại để xem hoặc mua sau."
-        />
+        <PageBreadcrumb items={[{ label: 'Mục yêu thích' }]} />
 
         {wishlistItems.length === 0 ? (
           <div className="bg-slate-50/60 border border-dashed border-slate-200/80 rounded-3xl p-12 md:p-16 text-center max-w-2xl mx-auto">

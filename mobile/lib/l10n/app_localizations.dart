@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-import 'l10n.dart';
-
 /// Bản tạm cho app_localizations khi chưa chạy `flutter gen-l10n`.
 /// Thay bằng file sinh tự động sau khi có arb/.
 class AppLocalizations {

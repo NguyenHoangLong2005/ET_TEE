@@ -4,6 +4,7 @@ import OutfitSection from '@/components/home/OutfitSection';
 import TrustBar from '@/components/home/TrustBar';
 import Newsletter from '@/components/home/Newsletter';
 import MarketingCarousel from '@/components/home/MarketingCarousel';
+import ForYouSection from '@/components/home/ForYouSection';
 import { ProductService } from '@/lib/services/productService';
 import { RecommendationService } from '@/lib/services/recommendationService';
 
@@ -37,7 +38,9 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    // RootLayoutWrapper already renders a <main> around every page's
+    // children, so this used to nest a second <main> landmark inside it.
+    <div className="min-h-screen bg-white">
       {/* 1. High Impact Seasonal Hero Banner */}
       <HeroBanner />
 
@@ -46,6 +49,10 @@ export default async function Home() {
 
       {/* 3. Category Bento Highlights Grid */}
       <CategoryHighlights />
+
+      {/* 3b. Personalised feed (client side: needs the shopper's login / guest token). Renders
+         nothing for a visitor with no browsing history yet. */}
+      <ForYouSection />
 
       {/* 4. Special Deals & Flash Sale (Urgency Driver) */}
       <MarketingCarousel
@@ -67,11 +74,14 @@ export default async function Home() {
         fallback={newProducts}
       />
 
-      {/* 6. AI Personalized Recommendations */}
+      {/* This section's data (forYouProducts) is fetched server-side with no
+         user/session context - it's the same best-seller list for every
+         visitor, not personalized to anyone. The old copy ("Dành Riêng Cho
+         Bạn" / "cá nhân hóa bởi trợ lý thời trang AI") claimed the opposite. */}
       <MarketingCarousel
         placementKey="HOME_RECOMMENDED"
-        title="Dành Riêng Cho Bạn"
-        subtitle="Gợi ý trang phục cá nhân hóa bởi trợ lý thời trang AI"
+        title="Được Yêu Thích Nhất"
+        subtitle="Những sản phẩm đang bán chạy và được nhiều khách hàng lựa chọn"
         viewAllLink="/products"
         bgColor="bg-slate-50"
         fallback={forYouProducts.length > 0 ? forYouProducts : newProducts}
@@ -92,6 +102,6 @@ export default async function Home() {
 
       {/* 9. Newsletter & Exclusive Voucher Incentives */}
       <Newsletter />
-    </main>
+    </div>
   );
 }

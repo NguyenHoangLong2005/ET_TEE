@@ -5,7 +5,7 @@ import { getRoleDisplayName } from '@/lib/auth';
 import {
   LogOut, ChevronDown, User, KeyRound, HelpCircle, Bell, Home,
   CheckCircle2, AlertTriangle, AlertCircle, HardDrive, Sparkles,
-  Shield, ExternalLink, X,
+  Shield, ExternalLink, X, Star,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -42,12 +42,14 @@ export default function StaffHeader() {
 
   const { title: pageTitle, section: sectionName } = getRouteMetadata(pathname);
   const isAdmin = pathname.startsWith('/admin');
+  // Admin xem thông báo hệ thống; các role khác xem thông báo cá nhân (vd: đánh giá hiệu suất).
+  const notifApiBase = isAdmin ? '/api/admin/notifications' : '/api/notifications/me';
 
   const fetchNotifications = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!user) return;
     try {
       setLoadingNotifs(true);
-      const res: any = await apiClient.get('/api/admin/notifications');
+      const res: any = await apiClient.get(notifApiBase);
       if (res && res.notifications) {
         setNotifications(res.notifications);
         setUnreadCount(res.unreadCount || 0);
@@ -57,7 +59,7 @@ export default function StaffHeader() {
     } finally {
       setLoadingNotifs(false);
     }
-  }, [isAdmin]);
+  }, [user, notifApiBase]);
 
   useEffect(() => {
     fetchNotifications();
@@ -86,7 +88,7 @@ export default function StaffHeader() {
   const handleNotificationClick = async (notif: SystemNotificationItem) => {
     if (!notif.isRead) {
       try {
-        await apiClient.patch(`/api/admin/notifications/${notif.id}/read`, {});
+        await apiClient.patch(`${notifApiBase}/${notif.id}/read`, {});
         setNotifications((prev) =>
           prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
         );
@@ -103,7 +105,7 @@ export default function StaffHeader() {
 
   const handleMarkAllRead = async () => {
     try {
-      await apiClient.post('/api/admin/notifications/mark-all-read', {});
+      await apiClient.post(`${notifApiBase}/mark-all-read`, {});
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
       toast.success('Đã đánh dấu tất cả thông báo là đã đọc');
@@ -114,6 +116,7 @@ export default function StaffHeader() {
 
   // Notification icon: semantic only, default muted
   const getNotifIcon = (type: string, severity: string) => {
+    if (type === 'PERFORMANCE_EVALUATION') return <Star className="w-4 h-4" style={{ color: '#D97706' }} />;
     if (type.includes('BACKUP')) return <HardDrive className="w-4 h-4 text-slate-400" />;
     if (type.includes('AI') || type.includes('AUDIT') && severity !== 'DANGER')
       return <Sparkles className="w-4 h-4 text-slate-400" />;
@@ -184,7 +187,7 @@ export default function StaffHeader() {
                 if (!showNotifications) fetchNotifications();
               }}
               className="relative p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              aria-label="Thông báo hệ thống"
+              aria-label="Thông báo"
               aria-expanded={showNotifications}
             >
               <Bell className="w-4 h-4" />
@@ -231,7 +234,7 @@ export default function StaffHeader() {
                     <div className="p-6 text-center text-xs text-slate-400">Đang tải thông báo...</div>
                   ) : notifications.length === 0 ? (
                     <div className="p-6 text-center text-xs text-slate-400">
-                      Không có thông báo hệ thống nào.
+                      Không có thông báo nào.
                     </div>
                   ) : (
                     notifications.map((notif) => (
@@ -255,7 +258,7 @@ export default function StaffHeader() {
                               {formatRelativeTime(notif.createdAt)}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-slate-500 line-clamp-4 leading-relaxed">
                             {notif.message}
                           </p>
                         </div>
@@ -270,15 +273,17 @@ export default function StaffHeader() {
                   )}
                 </div>
 
-                <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50">
-                  <Link
-                    href="/admin/audit-logs"
-                    onClick={() => setShowNotifications(false)}
-                    className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
-                  >
-                    Xem lịch sử Audit toàn hệ thống <ExternalLink className="w-3 h-3" />
-                  </Link>
-                </div>
+                {isAdmin && (
+                  <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50">
+                    <Link
+                      href="/admin/audit-logs"
+                      onClick={() => setShowNotifications(false)}
+                      className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
+                    >
+                      Xem lịch sử Audit toàn hệ thống <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>

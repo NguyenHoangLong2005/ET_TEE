@@ -99,12 +99,12 @@ public class SalePriceDatafixService {
             // Pick a uniform discount in [10%, 30%]
             double discountPercent = 0.10 + rng.nextDouble() * 0.20;
             BigDecimal multiplier = BigDecimal.valueOf(1.0 - discountPercent);
-            BigDecimal newSalePrice = price.multiply(multiplier).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal newSalePrice = com.nguyenhoanglong.util.PriceUtils.roundToThousand(price.multiply(multiplier)).setScale(2, RoundingMode.HALF_UP);
 
             // Make absolutely sure it is strictly less than price; if rounding
             // pushed it equal, drop one cent.
             if (newSalePrice.compareTo(price) >= 0) {
-                newSalePrice = price.subtract(BigDecimal.ONE).setScale(2, RoundingMode.HALF_UP);
+                newSalePrice = price.subtract(BigDecimal.valueOf(1000)).setScale(2, RoundingMode.HALF_UP);
             }
             if (newSalePrice.signum() <= 0) {
                 // Should never happen for prices >= 1.00, but guard anyway.
@@ -114,21 +114,19 @@ public class SalePriceDatafixService {
 
             BigDecimal oldPrice = price;
             BigDecimal oldSalePrice = p.getSalePrice();
-            // We only update the product-level salePrice / isSale flag here.
-            // Variant-level salePrice is intentionally NOT touched because:
-            //   1. The storefront ProductCard badge reads from product.salePrice
-            //      (see web/src/components/ui/ProductCard.tsx, originalPrice).
-            //   2. Touching every variant in a 483-product table triggers an
-            //      N+1 lazy-load + cascade=ALL, orphanRemoval=true re-attach
-            //      cycle that stalls the JPA session.
-            // OrderService.checkout() already falls back from variant.salePrice
-            // to variant.price, so the missing per-variant override has no
-            // negative impact on the user-visible price.
-            int variantsTouched = 0;
-
             p.setSalePrice(newSalePrice);
             p.setIsSale(true);
             Product saved = productRepository.save(p);
+            // The cart and checkout charge variant.salePrice, so a product-only discount is
+            // advertised but never billed. A bulk UPDATE avoids loading the variant collection
+            // (cascade=ALL + orphanRemoval made per-entity writes stall the session).
+            int variantsTouched = entityManager.createQuery(
+                            "UPDATE ProductVariant v SET v.salePrice = :sale "
+                                    + "WHERE v.product.id = :pid AND v.price = :price")
+                    .setParameter("sale", newSalePrice)
+                    .setParameter("pid", p.getId())
+                    .setParameter("price", price)
+                    .executeUpdate();
             // Force the UPDATE to hit the DB now so we don't depend on the
             // outer @Transactional commit ordering.
             entityManager.flush();
@@ -144,7 +142,7 @@ public class SalePriceDatafixService {
                     oldSalePrice,
                     newSalePrice,
                     discountPercent * 100.0,
-                    0
+                    variantsTouched
             ));
         }
 

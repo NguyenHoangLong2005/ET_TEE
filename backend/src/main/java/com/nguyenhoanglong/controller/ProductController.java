@@ -69,7 +69,8 @@ public class ProductController {
             sortOrder = Sort.by(Sort.Direction.DESC, "id");
         }
 
-        Pageable pageable = PageRequest.of(Math.max(0, page - 1), pageSize, sortOrder);
+        int boundedPageSize = Math.min(Math.max(pageSize, 1), 100);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), boundedPageSize, sortOrder);
 
         PaginatedResponseDto<ProductDto> result = productService.getProducts(
                 q, targetGroup, gender, productType, category, collection, color, adultSize, kidsSize, accessorySize, minPrice, maxPrice, status, pageable
@@ -83,10 +84,20 @@ public class ProductController {
         return switch (key) {
             case "price-asc"  -> Sort.by(Sort.Direction.ASC,  "price");
             case "price-desc" -> Sort.by(Sort.Direction.DESC, "price");
+            // isBestSeller is a manually-set flag, not actual sales; ranking by
+            // it means "bestseller" sort didn't reflect what actually sold.
+            // soldCount is the real, incrementally-maintained counter
+            // (ProductRepository.incrementSoldCount, updated at checkout).
             case "best-seller", "bestseller", "best" ->
-                    Sort.by(Sort.Direction.DESC, "isBestSeller").and(Sort.by(Sort.Direction.DESC, "id"));
+                    Sort.by(Sort.Direction.DESC, "soldCount").and(Sort.by(Sort.Direction.DESC, "id"));
+            // Sorted by ascending salePrice, so "biggest discount first" actually
+            // put the cheapest items first regardless of how big their discount
+            // was (no % / amount-off column exists to sort by directly, and
+            // computing it needs a CriteriaBuilder expression this simple
+            // Sort-by-property call can't express). Sorting isSale first at
+            // least keeps genuinely discounted items ahead of non-sale ones.
             case "discount-desc" ->
-                    Sort.by(Sort.Direction.ASC,  "salePrice").and(Sort.by(Sort.Direction.DESC, "price"));
+                    Sort.by(Sort.Direction.DESC, "isSale").and(Sort.by(Sort.Direction.DESC, "price"));
             case "newest" ->
                     Sort.by(Sort.Direction.DESC, "isNew").and(Sort.by(Sort.Direction.DESC, "id"));
             default -> Sort.by(Sort.Direction.DESC, "id");
@@ -102,8 +113,9 @@ public class ProductController {
     }
 
     @GetMapping("/{slug}/similar")
-    public ResponseEntity<ApiResponse<List<ProductDto>>> getSimilarProducts(@PathVariable String slug) {
-        List<ProductDto> similar = productService.getSimilarProducts(slug);
+    public ResponseEntity<ApiResponse<List<ProductDto>>> getSimilarProducts(
+            @PathVariable String slug, @RequestParam(defaultValue = "10") int limit) {
+        List<ProductDto> similar = productService.getSimilarProducts(slug, Math.max(1, Math.min(limit, 20)));
         return ResponseEntity.ok(ApiResponse.success(similar));
     }
 

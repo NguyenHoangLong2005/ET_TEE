@@ -1,338 +1,222 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  BarChart3, TrendingUp, Eye, MousePointer, DollarSign,
-  Tag, Megaphone, Image as ImageIcon, ArrowUp, ArrowDown, Minus, Loader2
-} from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
-import { DataTable, Column } from "@/components/ui/DataTable";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getAuthHeaders } from "@/lib/auth";
-import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type DateRange = "today" | "7d" | "30d" | "all";
+type RangeKey = "today" | "7d" | "30d" | "90d" | "all";
 
-interface CampaignStat {
-  rank: number;
-  name: string;
-  impressions: number;
-  clicks: number;
-  ctr: number;
-  conversions: number;
-  revenue: number;
-  trend?: "up" | "down" | "flat";
-}
+type BannerStat = { bannerId?: number; name: string; position: string; impressions: number; clicks: number; ctr: number };
+type VoucherStat = { code: string; name?: string; used: number; totalDiscount: number; avgOrder: number };
+type Data = {
+  impressions: number; clicks: number; ctr: number; conversions: number;
+  conversionRate: number; revenue: number; vouchersUsed: number;
+  banners: BannerStat[]; vouchers: VoucherStat[];
+};
 
-interface VoucherStat {
-  code: string;
-  name?: string;
-  used: number;
-  totalDiscount: number;
-  avgOrder: number;
-  convRate: number;
-}
+const RANGES: { key: RangeKey; label: string; days?: number }[] = [
+  { key: "today", label: "Hôm nay", days: 0 },
+  { key: "7d", label: "7 ngày", days: 7 },
+  { key: "30d", label: "30 ngày", days: 30 },
+  { key: "90d", label: "90 ngày", days: 90 },
+  { key: "all", label: "Tất cả" },
+];
 
-interface BannerStat {
-  name: string;
-  position: string;
-  impressions: number;
-  clicks: number;
-  ctr: number;
-}
+const POSITION_LABEL: Record<string, string> = {
+  HOME_HERO: "Đầu trang chủ", HERO: "Đầu trang chủ", HOME_MID: "Giữa trang chủ",
+  CATEGORY_TOP: "Đầu danh mục", PRODUCT_DETAIL: "Chi tiết sản phẩm", MIDDLE: "Giữa trang", POPUP: "Popup",
+};
 
-interface AnalyticsData {
-  impressions: number;
-  clicks: number;
-  ctr: number;
-  revenue: number;
-  conversions: number;
-  vouchersUsed: number;
-  campaigns: CampaignStat[];
-  vouchers: VoucherStat[];
-  banners: BannerStat[];
-}
+const EMPTY: Data = {
+  impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversionRate: 0,
+  revenue: 0, vouchersUsed: 0, banners: [], vouchers: [],
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmtNum(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString("vi-VN");
+const fmtNum = (n: number) => Number(n || 0).toLocaleString("vi-VN");
+const fmtMoney = (n: number) =>
+  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M₫` : `${Number(n || 0).toLocaleString("vi-VN")}₫`;
+const fmtPct = (n: number) => `${Number(n || 0).toFixed(1)}%`;
+
+/** Local date-time without zone/millis, e.g. 2026-09-30T00:00:00 (what the API's ISO.DATE_TIME accepts). */
+function sinceFor(days?: number): string | null {
+  if (days === undefined) return null;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  if (days === 0) d.setHours(0, 0, 0, 0);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
-function fmtMoney(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M₫`;
-  return `${n.toLocaleString("vi-VN")}₫`;
-}
-
-function TrendIcon({ trend }: { trend?: "up" | "down" | "flat" }) {
-  if (trend === "up") return <ArrowUp className="w-3.5 h-3.5 text-emerald-500 inline shrink-0" />;
-  if (trend === "down") return <ArrowDown className="w-3.5 h-3.5 text-rose-500 inline shrink-0" />;
-  return <Minus className="w-3.5 h-3.5 text-slate-400 inline shrink-0" />;
-}
-
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min(Math.round((value / max) * 100), 100) : 0;
-  return (
-    <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-      <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
-
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MarketingAnalyticsPage() {
-  const [range, setRange] = useState<DateRange>("7d");
+  const [range, setRange] = useState<RangeKey>("30d");
+  const [data, setData] = useState<Data>(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    impressions: 0,
-    clicks: 0,
-    ctr: 0,
-    revenue: 0,
-    conversions: 0,
-    vouchersUsed: 0,
-    campaigns: [],
-    vouchers: [],
-    banners: [],
-  });
+  const [failed, setFailed] = useState(false);
 
-  const fetchAnalytics = useCallback(async (selectedRange: DateRange) => {
+  const load = useCallback(async () => {
     setLoading(true);
+    setFailed(false);
     try {
-      const baseUrl = getApiBaseUrl();
-      const headers = getAuthHeaders() as Record<string, string>;
-
-      let since = "";
-      const now = new Date();
-      if (selectedRange === "today") {
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-        since = startOfDay.toISOString();
-      } else if (selectedRange === "7d") {
-        const d = new Date(now.getTime() - 7 * 86400000);
-        since = d.toISOString();
-      } else if (selectedRange === "30d") {
-        const d = new Date(now.getTime() - 30 * 86400000);
-        since = d.toISOString();
-      }
-
-      const url = since
-        ? `${baseUrl}/api/staff/marketing/analytics/overview?since=${encodeURIComponent(since)}`
-        : `${baseUrl}/api/staff/marketing/analytics/overview`;
-
-      const res = await fetch(url, { headers, cache: "no-store" });
-      if (!res.ok) throw new Error(`Lỗi tải dữ liệu hiệu quả (HTTP ${res.status})`);
-      const json = await res.json();
-      const d = json?.data ?? json ?? {};
-
-      setAnalytics({
+      const since = sinceFor(RANGES.find(r => r.key === range)?.days);
+      const url = `${getApiBaseUrl()}/api/staff/marketing/analytics/overview${since ? `?since=${since}` : ""}`;
+      const res = await fetch(url, { headers: getAuthHeaders() as Record<string, string>, cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      const d = j?.data ?? j ?? {};
+      setData({
         impressions: Number(d.impressions ?? 0),
         clicks: Number(d.clicks ?? 0),
         ctr: Number(d.ctr ?? 0),
-        revenue: Number(d.revenue ?? 0),
         conversions: Number(d.conversions ?? 0),
+        conversionRate: Number(d.conversionRate ?? 0),
+        revenue: Number(d.revenue ?? 0),
         vouchersUsed: Number(d.vouchersUsed ?? 0),
-        campaigns: Array.isArray(d.campaigns) ? d.campaigns : [],
-        vouchers: Array.isArray(d.vouchers) ? d.vouchers : [],
         banners: Array.isArray(d.banners) ? d.banners : [],
+        vouchers: Array.isArray(d.vouchers) ? d.vouchers : [],
       });
-    } catch (err: any) {
-      toast.error(err?.message || "Không thể tải dữ liệu hiệu quả marketing");
+    } catch (e: any) {
+      setFailed(true);
+      toast.error(`Không tải được dữ liệu hiệu quả (${e?.message ?? "lỗi"})`);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [range]);
 
-  useEffect(() => {
-    void fetchAnalytics(range);
-  }, [range, fetchAnalytics]);
+  useEffect(() => { void load(); }, [load]);
 
-  const maxImpressions = analytics.campaigns.length > 0
-    ? Math.max(...analytics.campaigns.map(c => c.impressions || 1))
-    : 1;
-
-  const maxBannerImpressions = analytics.banners.length > 0
-    ? Math.max(...analytics.banners.map(b => b.impressions || 1))
-    : 1;
-
-  const voucherColumns: Column<VoucherStat>[] = [
-    {
-      key: 'code',
-      header: 'Mã Voucher',
-      render: (v) => (
-        <span className="font-mono font-bold text-xs bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200">
-          {v.code}
-        </span>
-      )
-    },
-    {
-      key: 'used',
-      header: 'Đã Dùng',
-      render: (v) => <span className="font-bold text-slate-800">{v.used.toLocaleString()}</span>
-    },
-    {
-      key: 'totalDiscount',
-      header: 'Tổng Giảm Giá',
-      render: (v) => <span className="font-semibold text-rose-600">{fmtMoney(v.totalDiscount)}</span>
-    },
-    {
-      key: 'avgOrder',
-      header: 'Giá Trị ĐH Trung Bình',
-      render: (v) => <span className="text-slate-600 font-medium">{fmtMoney(v.avgOrder)}</span>
-    },
-    {
-      key: 'convRate',
-      header: 'Tỷ Lệ Thành Công',
-      render: (v) => (
-        <span className="font-bold text-emerald-600">
-          {v.convRate}%
-        </span>
-      )
-    }
+  const kpis = [
+    { label: "Lượt hiển thị", value: fmtNum(data.impressions) },
+    { label: "Lượt click", value: fmtNum(data.clicks), sub: `CTR ${fmtPct(data.ctr)}` },
+    // Conversions are voucher orders, not banner clicks, so a "per click" rate is meaningless (it hit 125%).
+    { label: "Đơn từ khuyến mãi", value: fmtNum(data.conversions), sub: "Đơn có dùng voucher" },
+    { label: "Doanh thu", value: fmtMoney(data.revenue) },
+    { label: "Voucher đã dùng", value: fmtNum(data.vouchersUsed) },
   ];
 
-  return (
-    <main className="min-h-screen bg-slate-50/60 p-6 text-slate-800 md:p-8 font-sans antialiased">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <PageHeader
-          title="Hiệu Quả Marketing"
-          subtitle="Thống kê tổng hợp số liệu thực tế về chiến dịch, banner quảng cáo, và voucher"
-          breadcrumbs={[
-            { label: 'Staff Hub', href: '/staff/dashboard' },
-            { label: 'Marketing', href: '/staff/dashboard/marketing' },
-            { label: 'Hiệu quả' }
-          ]}
-          actions={
-            <div className="flex gap-1 rounded-xl bg-slate-100 border border-slate-200 p-1">
-              {([["today", "Hôm nay"], ["7d", "7 ngày"], ["30d", "30 ngày"], ["all", "Tất cả"]] as [DateRange, string][]).map(([val, label]) => (
-                <button key={val} onClick={() => setRange(val)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${range === val
-                    ? "bg-purple-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"}`}
-                >{label}</button>
-              ))}
-            </div>
-          }
-        />
+  const maxImp = Math.max(1, ...data.banners.map(b => b.impressions));
+  const noTracking = !loading && !failed && data.impressions === 0 && data.clicks === 0;
 
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex items-center justify-center py-4 text-purple-600 text-sm gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Đang cập nhật số liệu thời gian thực...</span>
+  const th = "px-4 py-2 text-xs font-medium text-slate-500";
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="border-l-4 border-red-600 pl-3 text-xl font-semibold">Hiệu quả marketing</h1>
+          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm">
+            {RANGES.map(r => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRange(r.key)}
+                className={`rounded-md px-3 py-1 ${range === r.key ? "bg-red-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {failed && (
+          <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Không tải được dữ liệu.
+            <button type="button" onClick={() => void load()} className="font-medium underline">Thử lại</button>
           </div>
         )}
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {[
-            { label: "Lượt hiển thị", value: fmtNum(analytics.impressions), icon: Eye, color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
-            { label: "Lượt click", value: fmtNum(analytics.clicks), icon: MousePointer, color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
-            { label: "CTR TB", value: `${analytics.ctr}%`, icon: TrendingUp, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
-            { label: "Doanh thu KM", value: fmtMoney(analytics.revenue), icon: DollarSign, color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-            { label: "Chuyển đổi", value: fmtNum(analytics.conversions), icon: Megaphone, color: "text-purple-700", bg: "bg-purple-50 border-purple-200" },
-            { label: "Voucher dùng", value: fmtNum(analytics.vouchersUsed), icon: Tag, color: "text-rose-700", bg: "bg-rose-50 border-rose-200" },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className={`rounded-2xl border p-4 bg-white shadow-sm ${bg}`}>
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className={`w-4 h-4 ${color}`} />
-                <span className="text-[11px] text-slate-600 font-semibold leading-tight">{label}</span>
-              </div>
-              <p className={`text-xl font-extrabold ${color}`}>{value}</p>
+        <section className="grid grid-cols-2 divide-x divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white lg:grid-cols-5 lg:divide-y-0">
+          {kpis.map(k => (
+            <div key={k.label} className="border-t-2 border-red-600 p-4 first:border-t-2">
+              <p className="text-xs text-slate-500">{k.label}</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-red-700">{loading ? "…" : k.value}</p>
+              <p className="mt-0.5 h-4 text-xs text-slate-400">{loading ? "" : k.sub ?? ""}</p>
             </div>
           ))}
-        </div>
+        </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Campaign Performance */}
-          <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-purple-600" />
-                <h2 className="text-sm font-semibold text-slate-900">Chiến dịch nổi bật</h2>
-              </div>
-              <span className="text-xs text-slate-500">{analytics.campaigns.length} chiến dịch</span>
-            </div>
-            <div className="p-4 space-y-4">
-              {analytics.campaigns.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 text-xs">
-                  Chưa có dữ liệu chiến dịch trong khoảng thời gian này
-                </div>
-              ) : (
-                analytics.campaigns.map(c => (
-                  <div key={c.rank} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs font-bold text-slate-400 w-4 shrink-0">#{c.rank}</span>
-                        <span className="font-semibold text-slate-800 text-sm truncate">{c.name}</span>
-                        <TrendIcon trend={c.trend} />
-                      </div>
-                      <span className="text-xs font-bold text-purple-700 shrink-0">{fmtNum(c.impressions)} lượt</span>
-                    </div>
-                    <ProgressBar value={c.impressions} max={maxImpressions} color="bg-purple-600" />
-                    <div className="flex gap-4 text-[11px] text-slate-500 font-medium">
-                      <span>👁 {fmtNum(c.impressions)}</span>
-                      <span>🖱 {fmtNum(c.clicks)}</span>
-                      <span>CTR {c.ctr}%</span>
-                      <span>🛒 {c.conversions}</span>
-                      <span className="text-amber-700 font-bold">{fmtMoney(c.revenue)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        {noTracking && (
+          <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+            Chưa có lượt xem hoặc click nào được ghi nhận trong khoảng thời gian này.
+          </p>
+        )}
 
-          {/* Banner Performance */}
-          <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-rose-600" />
-                <h2 className="text-sm font-semibold text-slate-900">Hiệu quả Banner</h2>
-              </div>
-              <span className="text-xs text-slate-500">{analytics.banners.length} banner</span>
+        {/* Banners */}
+        <section className="rounded-lg border border-slate-200 bg-white">
+          <h2 className="border-b border-slate-100 px-4 py-2.5 text-sm font-medium">Banner</h2>
+          {data.banners.length === 0 ? (
+            <p className="p-6 text-center text-sm text-slate-500">Chưa có dữ liệu banner.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left">
+                  <tr className="border-b border-slate-100">
+                    <th className={th}>Banner</th>
+                    <th className={th}>Vị trí</th>
+                    <th className={`${th} w-48`}>Hiển thị</th>
+                    <th className={`${th} text-right`}>Click</th>
+                    <th className={`${th} text-right`}>CTR</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.banners.map((b, i) => (
+                    <tr key={b.bannerId ?? i}>
+                      <td className="px-4 py-2.5 font-medium">{b.name}</td>
+                      <td className="px-4 py-2.5 text-slate-500">{POSITION_LABEL[b.position] ?? b.position}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-red-600" style={{ width: `${Math.round((b.impressions / maxImp) * 100)}%` }} />
+                          </div>
+                          <span className="w-12 text-right tabular-nums">{fmtNum(b.impressions)}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtNum(b.clicks)}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtPct(b.ctr)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="p-4 space-y-4">
-              {analytics.banners.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 text-xs">
-                  Chưa có dữ liệu banner trong khoảng thời gian này
-                </div>
-              ) : (
-                analytics.banners.map((b, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-800 text-sm truncate">{b.name}</p>
-                        <span className="text-[10px] font-mono text-slate-500">{b.position}</span>
-                      </div>
-                      <span className="text-xs font-bold text-rose-600 shrink-0">CTR {b.ctr}%</span>
-                    </div>
-                    <ProgressBar value={b.impressions} max={maxBannerImpressions} color="bg-rose-600" />
-                    <div className="flex gap-4 text-[11px] text-slate-500 font-medium">
-                      <span>👁 {fmtNum(b.impressions)}</span>
-                      <span>🖱 {fmtNum(b.clicks)}</span>
-                      <span>CTR {b.ctr}%</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+          )}
+        </section>
 
-        {/* Voucher Usage */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-amber-600" />
-            <h2 className="text-sm font-semibold text-slate-900">Sử dụng Voucher</h2>
-          </div>
-          <DataTable<VoucherStat>
-            columns={voucherColumns}
-            data={analytics.vouchers}
-            rowKey={(v) => v.code}
-            emptyTitle="Không có dữ liệu voucher"
-            emptyMessage="Chưa có lượt sử dụng voucher nào trong khoảng thời gian này."
-          />
-        </div>
+        {/* Vouchers */}
+        <section className="rounded-lg border border-slate-200 bg-white">
+          <h2 className="border-b border-slate-100 px-4 py-2.5 text-sm font-medium">Voucher</h2>
+          {data.vouchers.length === 0 ? (
+            <p className="p-6 text-center text-sm text-slate-500">Chưa có voucher nào.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left">
+                  <tr className="border-b border-slate-100">
+                    <th className={th}>Mã</th>
+                    <th className={`${th} text-right`}>Lượt dùng</th>
+                    <th className={`${th} text-right`}>Tổng giảm</th>
+                    <th className={`${th} text-right`}>Giá trị đơn TB</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.vouchers.map(v => (
+                    <tr key={v.code}>
+                      <td className="px-4 py-2.5">
+                        <span className="font-mono font-medium">{v.code}</span>
+                        {v.name && <span className="ml-2 text-slate-500">{v.name}</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtNum(v.used)}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{v.used > 0 ? fmtMoney(Number(v.totalDiscount)) : "—"}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{v.used > 0 ? fmtMoney(Number(v.avgOrder)) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

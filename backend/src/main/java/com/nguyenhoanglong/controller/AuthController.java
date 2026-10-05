@@ -2,6 +2,8 @@ package com.nguyenhoanglong.controller;
 
 import com.nguyenhoanglong.dto.AuthDto;
 import com.nguyenhoanglong.service.AuthService;
+import com.nguyenhoanglong.service.BehaviorEventService;
+import com.nguyenhoanglong.service.MarketingSubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,16 +21,31 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final BehaviorEventService behaviorEventService;
+    private final MarketingSubscriptionService marketingSubscriptions;
 
-    public AuthController(AuthService authService, UserRepository userRepository) {
+    public AuthController(AuthService authService, UserRepository userRepository, BehaviorEventService behaviorEventService,
+                          MarketingSubscriptionService marketingSubscriptions) {
         this.authService = authService;
         this.userRepository = userRepository;
+        this.behaviorEventService = behaviorEventService;
+        this.marketingSubscriptions = marketingSubscriptions;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AuthDto.RegisterRequest request) {
         try {
             String message = authService.register(request);
+            if (Boolean.TRUE.equals(request.getMarketingOptIn())) {
+                // consent ticked on the sign-up form; never fails the registration itself
+                try {
+                    String userId = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                            .or(() -> userRepository.findByEmail(request.getEmail())).map(u -> u.getId()).orElse(null);
+                    marketingSubscriptions.subscribe(request.getEmail(), userId, MarketingSubscriptionService.SOURCE_REGISTER);
+                } catch (RuntimeException ignored) {
+                    // invalid email would already have failed registration
+                }
+            }
             Map<String, String> response = new HashMap<>();
             response.put("message", message);
             return ResponseEntity.ok(response);
@@ -43,6 +60,7 @@ public class AuthController {
     public ResponseEntity<?> verifyEmail(@Valid @RequestBody AuthDto.VerifyEmailRequest request) {
         try {
             AuthDto.AuthResponse response = authService.verifyEmail(request);
+            mergeGuestBehavior(request.getGuestToken(), response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -68,8 +86,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthDto.LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            String ipAddress = httpRequest.getRemoteAddr();
+            String ipAddress = com.nguyenhoanglong.util.ClientIpResolver.resolve(httpRequest);
             AuthDto.AuthResponse response = authService.login(request, ipAddress);
+            mergeGuestBehavior(request.getGuestToken(), response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -136,6 +155,13 @@ public class AuthController {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /** Same moment AuthService merges the guest cart / wishlist: the browsing history follows too. */
+    private void mergeGuestBehavior(String guestToken, AuthDto.AuthResponse response) {
+        if (response != null && response.getToken() != null) {
+            behaviorEventService.mergeGuestIntoUser(guestToken, response.getUserId());
         }
     }
 }

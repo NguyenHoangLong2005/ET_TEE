@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/lib/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
+import { getPasswordChangePath } from '@/lib/auth';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export default function LoginPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const captchaRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false);
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [userCaptcha, setUserCaptcha] = useState('');
@@ -42,7 +44,9 @@ export default function LoginPage() {
   const captchaErrId = `${uid}-captcha-err`;
 
   const generateCaptchaCode = () => {
-    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    // Chỉ dùng chữ số: bộ gõ Telex/VNI (Unikey...) biến đổi chữ cái ở tầng hệ điều hành
+    // ("qw" -> "qư") nên trang web không thể chặn được; số thì không bị ảnh hưởng.
+    const chars = '23456789';
     let code = '';
     for (let i = 0; i < 6; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -61,8 +65,8 @@ export default function LoginPage() {
   };
 
   const validateEmail = (value: string) => {
-    if (!value) return 'Vui lòng nhập email.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Email không đúng định dạng.';
+    if (!value.trim()) return 'Vui lòng nhập email hoặc username.';
+    if (value.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Email không đúng định dạng.';
     return '';
   };
 
@@ -90,6 +94,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Enter in the captcha field calls this directly, bypassing the disabled
+    // submit button, so guard against duplicate in-flight login requests
+    // (a ref, since state updates aren't visible to a rapid second keypress).
+    if (submittingRef.current) return;
     const emailErr = validateEmail(formData.email);
     const passwordErr = validatePassword(formData.password);
     const captchaErr = validateCaptcha(userCaptcha);
@@ -112,6 +120,7 @@ export default function LoginPage() {
 
     setServerError('');
     setNeedsVerification(false);
+    submittingRef.current = true;
     setIsLoading(true);
 
     try {
@@ -140,10 +149,21 @@ export default function LoginPage() {
         authService.clearPendingCartMergeWarnings();
       }
 
+      // Temporary (admin-issued) password: the server refuses everything else until it is changed.
+      if (res.mustChangePassword) {
+        toast.info('Vui lòng đổi mật khẩu tạm thời trước khi sử dụng hệ thống.');
+        router.push(getPasswordChangePath(userRole));
+        return;
+      }
+
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get('redirect');
-      
-      if (redirect) {
+      // Only allow same-site relative paths. A value like "//evil.com" or
+      // "https://evil.com" is protocol-relative/absolute and would send an
+      // authenticated user straight off-site right after login.
+      const isSafeRedirect = !!redirect && redirect.startsWith('/') && !redirect.startsWith('//');
+
+      if (isSafeRedirect) {
         router.push(redirect);
       } else {
         const roleRedirectMap: Record<string, string> = {
@@ -165,16 +185,13 @@ export default function LoginPage() {
         if (dashboardPath) {
           router.push(dashboardPath);
         } else {
-          setTimeout(async () => {
-            const { getStoredUser } = await import('@/lib/auth');
-            const storedUser = getStoredUser();
-            const storedRole = storedUser?.roles?.[0]?.toUpperCase().replace(/^ROLE_/, '');
-            const storedDashboard = storedRole ? roleRedirectMap[storedRole] : null;
-            
-            if (storedDashboard && window.location.pathname === '/auth/login') {
-              router.push(storedDashboard);
-            }
-          }, 100);
+          // login() has already stored the user, so re-check the stored role
+          // in case the login response/JWT didn't carry one.
+          const { getStoredUser } = await import('@/lib/auth');
+          const storedRole = getStoredUser()?.roles?.[0]?.toUpperCase().replace(/^ROLE_/, '');
+          // Customers have no dashboard: send them to the storefront rather
+          // than leaving them stuck on the login page.
+          router.push((storedRole && roleRedirectMap[storedRole]) || '/');
         }
       }
     } catch (err: any) {
@@ -186,6 +203,7 @@ export default function LoginPage() {
         setServerError(err.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
       }
     } finally {
+      submittingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -229,15 +247,15 @@ export default function LoginPage() {
             {/* Email Field */}
             <div>
               <label htmlFor={emailId} className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Email
+                Email hoặc Username
               </label>
               <div className="relative">
                 <input
                   id={emailId}
                   ref={emailRef}
-                  type="email"
+                  type="text"
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                   aria-invalid={!!fieldErrors.email}
                   aria-describedby={fieldErrors.email ? emailErrId : undefined}
                   className={`appearance-none block w-full px-4 py-3 border rounded-xl shadow-xs placeholder-slate-400 focus:outline-none text-sm ${
@@ -341,8 +359,17 @@ export default function LoginPage() {
                         : 'border-slate-300 focus:ring-2 focus:ring-primary/40 focus:border-primary'
                     }`}
                     value={userCaptcha}
+                    lang="en"
+                    inputMode="text"
+                    spellCheck={false}
+                    autoCorrect="off"
+                    autoCapitalize="characters"
                     onChange={e => {
-                      setUserCaptcha(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6));
+                      // Dán / bàn phím ảo: bỏ dấu tiếng Việt thay vì xóa mất ký tự.
+                      const plain = e.target.value
+                        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                        .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+                      setUserCaptcha(plain.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6));
                       if (fieldErrors.captcha) setFieldErrors(prev => ({ ...prev, captcha: undefined }));
                     }}
                     onBlur={() => handleBlur('captcha')}
@@ -350,7 +377,22 @@ export default function LoginPage() {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleSubmit(e);
+                        return;
                       }
+                      if (e.ctrlKey || e.metaKey || e.altKey) return;
+                      // Lấy ký tự theo phím vật lý để bộ gõ Telex/VNI không biến "s", "w", "aa"... thành dấu.
+                      const m = /^(?:Key([A-Z])|Digit([0-9])|Numpad([0-9]))$/.exec(e.code);
+                      if (!m) return;
+                      e.preventDefault();
+                      const ch = m[1] || m[2] || m[3];
+                      const input = e.currentTarget;
+                      const start = input.selectionStart ?? userCaptcha.length;
+                      const end = input.selectionEnd ?? userCaptcha.length;
+                      const next = (userCaptcha.slice(0, start) + ch + userCaptcha.slice(end)).slice(0, 6);
+                      setUserCaptcha(next);
+                      if (fieldErrors.captcha) setFieldErrors(prev => ({ ...prev, captcha: undefined }));
+                      const caret = Math.min(start + 1, 6);
+                      requestAnimationFrame(() => input.setSelectionRange(caret, caret));
                     }}
                   />
                 </div>

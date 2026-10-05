@@ -35,4 +35,7 @@ public interface ReviewRepository extends JpaRepository<ProductReview, Long> {
     List<Object[]> getRatingSummaryByProductSlug(@Param("slug") String slug);
     
     boolean existsByOrderItemId(Long orderItemId);
+
+    @Query("SELECT r FROM ProductReview r JOIN FETCH r.product p WHERE r.deletedAt IS NULL ORDER BY r.createdAt DESC")
+    List<ProductReview> findAllForStaff();
 }

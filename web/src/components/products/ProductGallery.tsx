@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { isRemoteImage } from '@/lib/utils/imageUtils';
 import { useSearchParams } from 'next/navigation';
 
 export default function ProductGallery({ images }: { images: { imageUrl: string, colorCode?: string, colorHex?: string, isPrimary?: boolean }[] }) {
@@ -38,9 +39,11 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
   const displayImages = validImages.length > 0 ? validImages : ['/images/products/placeholder.webp'];
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
+    // items-start + a capped, scrollable thumbnail rail: with dozens of photos the rail used to
+    // stretch the main frame to thousands of pixels and the cover-fit photo showed as a grey strip.
+    <div className="flex flex-col md:flex-row md:items-start gap-4">
       {/* Thumbnails */}
-      <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-visible">
+      <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:max-h-[min(80vh,720px)] md:shrink-0">
         {displayImages.map((img, idx) => (
           <button
             key={idx}
@@ -51,6 +54,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
           >
             <Image
               src={img}
+              unoptimized={isRemoteImage(img)}
               alt={`Thumbnail ${idx + 1}`}
               fill
               sizes="64px"
@@ -70,6 +74,7 @@ export default function ProductGallery({ images }: { images: { imageUrl: string,
         <Image
           key={fadeKey}
           src={mainImage || displayImages[0]}
+          unoptimized={isRemoteImage(mainImage || displayImages[0])}
           alt="Product Main Image"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"

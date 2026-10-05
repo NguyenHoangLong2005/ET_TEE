@@ -2,6 +2,7 @@ package com.nguyenhoanglong.repository;
 
 import com.nguyenhoanglong.entity.MarketingPost;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,4 +28,9 @@ public interface MarketingPostRepository extends JpaRepository<MarketingPost, Lo
     List<MarketingPost> searchPosts(@Param("status") String status, @Param("query") String query);
 
     long countByStatus(String status);
+
+    // Atomic so concurrent readers don't overwrite each other's increment.
+    @Modifying
+    @Query("UPDATE MarketingPost p SET p.views = p.views + 1 WHERE p.slug = :slug AND p.status = 'PUBLISHED'")
+    int incrementViewsBySlug(@Param("slug") String slug);
 }

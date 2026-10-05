@@ -25,6 +25,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     private final TicketMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final SystemNotificationRepository notificationRepository;
 
     private static final Map<String, Set<String>> ALLOWED_TRANSITIONS = Map.of(
             "OPEN", Set.of("IN_PROGRESS", "ESCALATED", "RESOLVED", "CLOSED"),
@@ -37,7 +38,9 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     public SupportTicketServiceImpl(SupportTicketRepository ticketRepository,
                                     TicketMessageRepository messageRepository,
                                     UserRepository userRepository,
-                                    OrderRepository orderRepository) {
+                                    OrderRepository orderRepository,
+                                    SystemNotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
         this.ticketRepository = ticketRepository;
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
@@ -53,21 +56,22 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     public PaginatedResponseDto<SupportTicketDto> getStaffTickets(User actor, int page, int size, String status, Integer priority, String assignedTo, String search) {
         validateStaffAccess(actor);
 
-        boolean isBranchStaff = actor.getRole() == Role.CSKH_STAFF;
+        boolean isBranchStaff = actor.getRole() != Role.ADMIN;
         Long staffShopId = actor.getShopId();
 
         if (isBranchStaff && staffShopId == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản CSKH_STAFF chưa được gán chi nhánh");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được gán chi nhánh");
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        // Thu tu (hang doi) nam trong ORDER BY cua findStaffTickets; khong truyen Sort them.
+        Pageable pageable = PageRequest.of(page, size);
         Page<SupportTicket> ticketPage = ticketRepository.findStaffTickets(
                 isBranchStaff,
                 staffShopId,
-                status,
+                (status == null || status.isBlank()) ? null : status.trim(),
                 priority,
-                assignedTo,
-                search,
+                (assignedTo == null || assignedTo.isBlank()) ? null : assignedTo.trim(),
+                search == null ? "" : search.trim(), // never null, see findStaffTickets
                 pageable
         );
 
@@ -99,16 +103,12 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     public SupportTicketDetailDto createStaffTicket(User actor, CreateTicketDto dto) {
         validateStaffAccess(actor);
 
-        Long resolvedShopId = dto.getShopId();
-        if (dto.getOrderId() != null) {
-            Order order = orderRepository.findById(dto.getOrderId()).orElse(null);
-            if (order != null) {
-                // If order has shopId or voucherId, map accordingly
-                resolvedShopId = dto.getShopId();
-            }
-        }
+        Long resolvedShopId = resolveShopFromOrder(dto.getOrderId(), dto.getShopId());
 
-        if (actor.getRole() == Role.CSKH_STAFF) {
+        if (actor.getRole() != Role.ADMIN) {
+            if (dto.getOrderId() != null && resolvedShopId != null && !resolvedShopId.equals(actor.getShopId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể tạo ticket cho đơn hàng thuộc chi nhánh khác");
+            }
             resolvedShopId = actor.getShopId();
         }
 
@@ -235,11 +235,19 @@ public class SupportTicketServiceImpl implements SupportTicketService {
             }
 
             if (targetStaff.getRole() == Role.CSKH_STAFF) {
+                // A head-office ticket (customer question with no order, shopId null) could never be
+                // handed to any CSKH agent, so only ADMIN could ever answer one. The admin now routes
+                // it: the ticket moves to the assignee's branch.
+                if (ticket.getShopId() == null && actor.getRole() == Role.ADMIN && targetStaff.getShopId() != null) {
+                    ticket.setShopId(targetStaff.getShopId());
+                }
                 if (targetStaff.getShopId() == null || !targetStaff.getShopId().equals(ticket.getShopId())) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể gán ticket cho nhân viên CSKH cùng chi nhánh");
                 }
             }
             ticket.setAssignedTo(targetStaff.getId());
+            notifyUser(targetStaff.getId(), "TICKET_ASSIGNED", "Bạn được phân công ticket",
+                    "[" + ticket.getTicketCode() + "] " + ticket.getSubject(), "INFO");
         }
 
         if (dto.getEscalatedTo() != null) {
@@ -257,6 +265,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
             }
             ticket.setEscalatedTo(targetManager.getId());
             ticket.setStatus("ESCALATED");
+            notifyUser(targetManager.getId(), "TICKET_ESCALATED", "Ticket được leo thang lên bạn",
+                    "[" + ticket.getTicketCode() + "] " + ticket.getSubject(), "WARNING");
         }
 
         ticket = ticketRepository.save(ticket);
@@ -327,7 +337,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         Order order = orderRepository.findById(dto.getOrderId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng ID: " + dto.getOrderId()));
 
-        if (actor.getRole() == Role.CSKH_STAFF) {
+        if (actor.getRole() != Role.ADMIN) {
             if (actor.getShopId() == null || order.getShopId() == null || !actor.getShopId().equals(order.getShopId())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể liên kết đơn hàng thuộc chi nhánh khác vào ticket này");
             }
@@ -359,13 +369,15 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     @Override
     @Transactional
     public SupportTicketDetailDto createCustomerTicket(User customer, CreateTicketDto dto) {
-        Long resolvedShopId = dto.getShopId();
+        // Don hang lien ket phai la cua chinh khach; chi nhanh xu ly suy ra tu don hang.
+        Long resolvedShopId = null;
         if (dto.getOrderId() != null) {
-            Order order = orderRepository.findById(dto.getOrderId()).orElse(null);
-            if (order != null) {
-                // In order entity, if order is associated with shop
-                resolvedShopId = dto.getShopId();
+            Order order = orderRepository.findById(dto.getOrderId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy đơn hàng được chọn"));
+            if (order.getUser() == null || !customer.getId().equals(order.getUser().getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Đơn hàng này không thuộc tài khoản của bạn");
             }
+            resolvedShopId = order.getShopId();
         }
 
         String ticketCode = generateTicketCode();
@@ -377,10 +389,12 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .channel("CHAT")
                 .subject(dto.getSubject())
                 .status("OPEN")
-                .priority(dto.getPriority() != null ? dto.getPriority() : 3)
+                .priority(dto.getPriority() != null ? Math.min(Math.max(dto.getPriority(), 1), 5) : 3)
                 .build();
 
         ticket = ticketRepository.save(ticket);
+        notifyTicketHandlers(ticket, "TICKET_NEW", "Có ticket hỗ trợ mới",
+                "[" + ticket.getTicketCode() + "] " + ticket.getSubject(), "INFO");
 
         TicketMessage initialMsg = TicketMessage.builder()
                 .ticketId(ticket.getId())
@@ -432,6 +446,12 @@ public class SupportTicketServiceImpl implements SupportTicketService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket hỗ trợ này đã đóng. Vui lòng tạo yêu cầu hỗ trợ mới nếu bạn cần trợ giúp thêm.");
         }
 
+        if (ticket.getStatus().equalsIgnoreCase("RESOLVED")) {
+            ticket.setStatus("IN_PROGRESS");
+            ticket.setResolvedAt(null);
+            ticketRepository.save(ticket);
+        }
+
         TicketMessage msg = TicketMessage.builder()
                 .ticketId(ticket.getId())
                 .senderType("CUSTOMER")
@@ -442,6 +462,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .build();
 
         msg = messageRepository.save(msg);
+        notifyTicketHandlers(ticket, "TICKET_CUSTOMER_REPLY", "Khách hàng vừa phản hồi ticket",
+                "[" + ticket.getTicketCode() + "] " + ticket.getSubject(), "INFO");
         return toMessageDto(msg);
     }
 
@@ -450,8 +472,8 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     // ----------------------------------------------------
 
     private void validateStaffAccess(User actor) {
-        if (actor == null || (actor.getRole() != Role.ADMIN && actor.getRole() != Role.CSKH_STAFF)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ có nhân viên CSKH hoặc ADMIN mới có quyền thực hiện thao tác này");
+        if (actor == null || (actor.getRole() != Role.ADMIN && actor.getRole() != Role.CSKH_STAFF && actor.getRole() != Role.SHOP_OWNER)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ có nhân viên CSKH, chủ cửa hàng hoặc ADMIN mới có quyền thực hiện thao tác này");
         }
     }
 
@@ -461,7 +483,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     private void enforceStaffTicketOwnership(User actor, SupportTicket ticket) {
-        if (actor.getRole() == Role.CSKH_STAFF) {
+        if (actor.getRole() != Role.ADMIN) {
             Long staffShopId = actor.getShopId();
             if (staffShopId == null || ticket.getShopId() == null || !ticket.getShopId().equals(staffShopId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xử lý ticket thuộc chi nhánh khác hoặc ticket Hội sở");
@@ -472,6 +494,45 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     private void enforceCustomerOwnership(User customer, SupportTicket ticket) {
         if (ticket.getCustomerId() == null || !ticket.getCustomerId().equals(customer.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập hoặc thao tác trên ticket hỗ trợ này");
+        }
+    }
+
+    private Long resolveShopFromOrder(Long orderId, Long fallback) {
+        if (orderId == null) return fallback;
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy đơn hàng ID: " + orderId));
+        return order.getShopId() != null ? order.getShopId() : fallback;
+    }
+
+    /** Nguoi xu ly: nguoi duoc giao; neu chua giao thi CSKH cua chi nhanh; ticket Hoi so thi ADMIN. */
+    private void notifyTicketHandlers(SupportTicket ticket, String type, String title, String message, String severity) {
+        try {
+            if (ticket.getAssignedTo() != null) {
+                notifyUser(ticket.getAssignedTo(), type, title, message, severity);
+                return;
+            }
+            List<User> recipients = ticket.getShopId() != null
+                    ? userRepository.findByShopId(ticket.getShopId()).stream()
+                            .filter(u -> u.getRole() == Role.CSKH_STAFF && "ACTIVE".equalsIgnoreCase(u.getStatus()))
+                            .collect(Collectors.toList())
+                    : userRepository.findByRoleAndStatus(Role.ADMIN, "ACTIVE");
+            for (User u : recipients) notifyUser(u.getId(), type, title, message, severity);
+        } catch (Exception ignored) {
+            // Thong bao that bai khong duoc lam hong thao tac chinh.
+        }
+    }
+
+    private void notifyUser(String userId, String type, String title, String message, String severity) {
+        try {
+            SystemNotification n = new SystemNotification();
+            n.setType(type);
+            n.setTitle(title);
+            n.setMessage(message);
+            n.setSeverity(severity);
+            n.setTargetUrl("/staff/tickets");
+            n.setRecipientUserId(userId);
+            notificationRepository.save(n);
+        } catch (Exception ignored) {
         }
     }
 

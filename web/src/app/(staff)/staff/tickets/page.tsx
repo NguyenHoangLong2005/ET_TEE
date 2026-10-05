@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import PermissionGuard from "@/components/auth/PermissionGuard";
@@ -41,6 +42,10 @@ const fmtDate = (s?: string) => {
 };
 
 export default function CskhTicketsPage() {
+  // Also served at /store-owner/tickets: links must stay in the owner's area, or the layout swaps
+  // the owner's sidebar for the CSKH one.
+  const isStoreOwnerArea = (usePathname() || '').startsWith('/store-owner');
+  const base = isStoreOwnerArea ? '/store-owner' : '/staff';
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -159,7 +164,7 @@ export default function CskhTicketsPage() {
       align: 'right',
       render: (t) => (
         <Link
-          href={`/staff/support?ticketId=${t.id}`}
+          href={`${base}/support?ticketId=${t.id}`}
           className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition"
         >
           <span>Xử lý</span>
@@ -175,25 +180,29 @@ export default function CskhTicketsPage() {
         <PageHeader
           title="Quản Lý Tickets CSKH"
           subtitle="Theo dõi và điều phối yêu cầu khiếu nại, hỗ trợ giải đáp khách hàng"
-          breadcrumbs={[
-            { label: 'Staff Hub', href: '/staff/dashboard' },
-            { label: 'CSKH', href: '/staff/support' },
-            { label: 'Tickets' }
-          ]}
+          breadcrumbs={isStoreOwnerArea
+            ? [{ label: 'Store Owner', href: '/store-owner/dashboard' }, { label: 'Ticket hỗ trợ' }]
+            : [
+                { label: 'Staff Hub', href: '/staff/dashboard' },
+                { label: 'CSKH', href: '/staff/support' },
+                { label: 'Tickets' }
+              ]}
           actions={
             <div className="flex items-center gap-2">
-              <Link href="/staff/support">
+              <Link href={`${base}/support`}>
                 <Button variant="outline" size="sm" className="flex items-center gap-1.5">
                   <HelpCircle className="w-4 h-4 text-teal-600" />
                   <span>CSKH Workbench</span>
                 </Button>
               </Link>
-              <Link href="/staff/reviews">
-                <Button variant="outline" size="sm" className="flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-amber-500" />
-                  <span>Đánh giá sản phẩm</span>
-                </Button>
-              </Link>
+              {!isStoreOwnerArea && (
+                <Link href="/staff/reviews">
+                  <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                    <Star className="w-4 h-4 text-amber-500" />
+                    <span>Đánh giá sản phẩm</span>
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant="primary"
                 size="sm"
