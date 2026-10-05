@@ -170,6 +170,7 @@ export const STAFF_NAV_GROUPS: Record<string, NavGroupConfig[]> = {
         { label: 'Trang chủ', path: '/staff/dashboard/marketing/homepage', icon: LayoutDashboard },
         { label: 'Bài viết', path: '/staff/dashboard/marketing/posts', icon: FileText },
         { label: 'Voucher', path: '/staff/dashboard/marketing/vouchers', icon: Tag },
+        { label: 'Chiến dịch email', path: '/staff/dashboard/marketing/email', icon: Mail },
         { label: 'Hiệu quả', path: '/staff/dashboard/marketing/analytics', icon: BarChart3 },
       ]
     }
@@ -236,6 +237,7 @@ const ALL_ROUTES_REGISTRY: Record<string, { label: string; section: string }> = 
   '/staff/dashboard/marketing/homepage': { label: 'Chỉnh sửa Trang chủ', section: 'Marketing' },
   '/staff/dashboard/marketing/posts': { label: 'Bài viết & Tin tức', section: 'Marketing' },
   '/staff/dashboard/marketing/vouchers': { label: 'Mã Giảm giá', section: 'Marketing' },
+  '/staff/dashboard/marketing/email': { label: 'Chiến dịch email', section: 'Marketing' },
   '/staff/dashboard/marketing/analytics': { label: 'Hiệu quả Chiến dịch', section: 'Marketing' },
   '/staff/dashboard/cskh': { label: 'Tổng quan CSKH', section: 'CSKH' },
   '/staff/tickets': { label: 'Hàng đợi Tickets CSKH', section: 'CSKH' },

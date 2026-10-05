@@ -43,7 +43,15 @@ public class MailService {
     }
 
     /** Sends an HTML email and records the outcome in email_logs (used for order status updates). */
-    public void sendHtml(String toEmail, String subject, String html) {
+    public EmailLog sendHtml(String toEmail, String subject, String html) {
+        return sendHtml(toEmail, subject, html, java.util.Map.of());
+    }
+
+    /**
+     * Same, with extra MIME headers (marketing mail adds List-Unsubscribe). Returns the saved log:
+     * its status says whether it went out, its tracking token links opens back to the sender.
+     */
+    public EmailLog sendHtml(String toEmail, String subject, String html, java.util.Map<String, String> headers) {
         EmailLog emailLog = new EmailLog();
         emailLog.setRecipient(toEmail);
         emailLog.setSubject(subject);
@@ -56,6 +64,7 @@ public class MailService {
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(withTrackingPixel(html, emailLog.getTrackingToken()), true);
+            for (var h : headers.entrySet()) message.setHeader(h.getKey(), h.getValue());
             mailSender.send(message);
             emailLog.setStatus("SENT");
         } catch (Exception e) {
@@ -68,6 +77,7 @@ public class MailService {
         } catch (Exception ex) {
             logger.error("Failed to save email log to DB", ex);
         }
+        return emailLog;
     }
 
     public void sendOrderConfirmation(String toEmail, String orderCode, Double totalAmount, String paymentMethod, String bankDetailsHtml) {

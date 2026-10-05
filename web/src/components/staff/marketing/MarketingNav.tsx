@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/staff/dashboard/marketing/homepage", label: "Trang chủ" },
   { href: "/staff/dashboard/marketing/posts", label: "Bài viết" },
   { href: "/staff/dashboard/marketing/vouchers", label: "Voucher" },
+  { href: "/staff/dashboard/marketing/email", label: "Email" },
   { href: "/staff/dashboard/marketing/analytics", label: "Hiệu quả" },
 ];
 

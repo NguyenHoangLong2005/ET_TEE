@@ -3,19 +3,27 @@
 import { Mail, Gift, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { CustomerMarketingService } from '@/lib/services/customerMarketingService';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Stores the consent (marketing_subscriptions); every email it leads to carries a one-click
+  // unsubscribe link. No voucher is promised here: the welcome voucher belongs to an account.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    // There is no newsletter backend (no subscriber storage, no voucher
-    // auto-issued/emailed on signup) - this used to claim a voucher had
-    // been sent when nothing was stored or sent anywhere. Until that exists,
-    // don't promise a delivery that never happens.
-    toast.info('Cảm ơn bạn đã quan tâm! Tính năng đăng ký nhận bản tin đang được hoàn thiện.');
-    setEmail('');
+    setSending(true);
+    try {
+      await CustomerMarketingService.subscribeNewsletter(email.trim());
+      toast.success('Đã đăng ký! Bạn sẽ nhận email khi ET.TEE có ưu đãi mới.');
+      setEmail('');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không đăng ký được, vui lòng thử lại.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -41,6 +49,7 @@ export default function Newsletter() {
             />
             <button 
               type="submit"
+              disabled={sending}
               className="h-12 px-8 bg-black hover:bg-slate-800 text-white font-bold text-sm uppercase tracking-wider transition-colors shrink-0"
             >
               Đăng ký
@@ -48,7 +57,7 @@ export default function Newsletter() {
           </form>
 
           <p className="text-[11px] text-slate-500 mt-6">
-            Bằng cách đăng ký, bạn đồng ý với <a href="/privacy" className="underline hover:text-black transition-colors">Chính sách bảo mật</a> của chúng tôi.
+            Bằng cách đăng ký, bạn đồng ý nhận email ưu đãi và <a href="/privacy" className="underline hover:text-black transition-colors">Chính sách bảo mật</a> của chúng tôi. Hủy bất cứ lúc nào bằng link trong email.
           </p>
         </div>
       </div>

@@ -56,6 +56,8 @@ export default function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // Marketing email consent: unticked by default, never required to register
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -134,6 +136,7 @@ export default function RegisterPage() {
         phone: formData.phone || undefined,
         address: formData.address,
         password: formData.password,
+        marketingOptIn,
       });
       router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
@@ -367,6 +370,19 @@ export default function RegisterPage() {
                 )}
               </div>
             </div>
+
+            <label className="flex items-start gap-3 text-sm text-slate-600 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={marketingOptIn}
+                onChange={e => setMarketingOptIn(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
+              />
+              <span>
+                Tôi muốn nhận email về ưu đãi và mã giảm giá từ ET.TEE. Có thể hủy bất cứ lúc nào bằng một lần bấm
+                trong email hoặc trong trang tài khoản. (Không bắt buộc)
+              </span>
+            </label>
 
             <div className="pt-2">
               <button
