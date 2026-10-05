@@ -30,6 +30,7 @@ public class SalesOrderService {
     private final MarketingService marketingService;
     private final SoldCountService soldCountService;
     private final OrderStockService orderStockService;
+    private final ShipmentRepository shipmentRepository;
 
     public SalesOrderService(
             OrderRepository orders, 
@@ -43,7 +44,8 @@ public class SalesOrderService {
             ProductVariantRepository variantRepository,
             MarketingService marketingService,
             SoldCountService soldCountService,
-            OrderStockService orderStockService) {
+            OrderStockService orderStockService,
+            ShipmentRepository shipmentRepository) {
         this.orders = orders;
         this.notes = notes;
         this.reservations = reservations;
@@ -56,6 +58,7 @@ public class SalesOrderService {
         this.marketingService = marketingService;
         this.soldCountService = soldCountService;
         this.orderStockService = orderStockService;
+        this.shipmentRepository = shipmentRepository;
     }
 
     private Long resolveShopId() {
@@ -403,6 +406,15 @@ public class SalesOrderService {
         if (!isManagerRole() && !SALES_CANCELLABLE_STATUSES.contains(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Đơn đã chuyển sang khâu kho/vận chuyển, nhân viên bán hàng không thể hủy. Vui lòng liên hệ quản lý cửa hàng.");
+        }
+        // Once a waybill exists the parcel belongs to the shipping flow. Cancelling here
+        // left the shipment live (PENDING/IN_TRANSIT) on a CANCELLED order and restocked
+        // goods still sitting with the courier; it must go exception -> return to sender.
+        if (shipmentRepository.findByOrderId(order.getId())
+                .filter(sh -> sh.getStatus() != ShipmentStatus.RETURNED)
+                .isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Đơn đã có vận đơn. Vui lòng báo ngoại lệ và hoàn hàng về kho ở bộ phận vận chuyển thay vì hủy trực tiếp.");
         }
         
         OrderStatus oldStatus = order.getStatus();

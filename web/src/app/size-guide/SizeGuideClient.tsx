@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { SizeAdvisorService, CONFIDENCE_LABEL, Fit } from '@/lib/services/sizeAdvisorService';
 import { Ruler, Calculator, Sparkles, CheckCircle2, ShieldCheck, HelpCircle, RefreshCcw, Truck } from 'lucide-react';
 
 export default function SizeGuideClient() {
@@ -14,21 +15,17 @@ export default function SizeGuideClient() {
   const [fit, setFit] = useState<'slim' | 'regular' | 'loose'>('regular');
   const [suggestedSize, setSuggestedSize] = useState<string | null>(null);
 
-  const calculateSize = (e: React.FormEvent) => {
-    e.preventDefault();
-    let size = 'M';
-    if (weight < 54 && height <= 165) size = 'S';
-    else if (weight <= 62 && height <= 168) size = 'M';
-    else if (weight <= 70 && height <= 174) size = 'L';
-    else if (weight <= 78 && height <= 180) size = 'XL';
-    else if (weight <= 86) size = '2XL';
-    else size = '3XL';
+  const [details, setDetails] = useState<string[]>([]);
 
-    if (fit === 'loose' && size !== '3XL') {
-      const order = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-      size = order[order.indexOf(size) + 1] || size;
-    }
-    setSuggestedSize(size);
+  // Same advice as the product pages (backend SizeAdvisorService, published charts below).
+  const calculateSize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const chart = activeTab === 'nu' ? 'WOMEN' : activeTab === 'tre-em' ? 'KIDS' : subType === 'quan' ? 'MEN_BOTTOM' : 'MEN_TOP';
+    const body = { height, weight, fit: fit.toUpperCase() as Fit };
+    SizeAdvisorService.saveBody(body);
+    const advice = await SizeAdvisorService.forChart(chart, body);
+    setSuggestedSize(advice?.size ?? null);
+    setDetails(advice?.size ? [advice.confidence ? CONFIDENCE_LABEL[advice.confidence] : '', ...advice.reasons].filter(Boolean) : []);
   };
 
   return (
@@ -51,8 +48,8 @@ export default function SizeGuideClient() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Chuẩn Form Dáng Việt</h3>
-            <p className="text-xs text-slate-500">Đo đạc thực tế trên 100.000 vóc dáng</p>
+            <h3 className="font-bold text-slate-900 text-sm">Gợi Ý Theo Bảng Size</h3>
+            <p className="text-xs text-slate-500">Đối chiếu số đo của bạn với bảng size bên dưới</p>
           </div>
         </div>
 
@@ -74,7 +71,7 @@ export default function SizeGuideClient() {
             <Calculator className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-black uppercase text-slate-900">Công Cụ Gợi Ý Size Thông Minh</h2>
+            <h2 className="text-xl font-black uppercase text-slate-900">Công Cụ Gợi Ý Size Theo Bảng Số Đo</h2>
             <p className="text-xs text-slate-500">Nhập chiều cao & cân nặng để hệ thống tự động tính toán size phù hợp nhất</p>
           </div>
         </div>
@@ -133,7 +130,9 @@ export default function SizeGuideClient() {
             <div>
               <span className="text-xs font-bold uppercase tracking-widest block text-slate-900">Kích Thước Khuyên Dùng</span>
               <div className="text-3xl font-black tracking-tight text-slate-950">SIZE {suggestedSize}</div>
-              <p className="text-xs text-slate-900 font-medium mt-1">Phù hợp hoàn hảo với chiều cao {height}cm và cân nặng {weight}kg</p>
+              {details.map(d => (
+                <p key={d} className="text-xs text-slate-900 font-medium mt-1">{d}</p>
+              ))}
             </div>
             <Link
               href="/products"

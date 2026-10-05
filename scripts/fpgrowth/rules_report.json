@@ -1,0 +1,310 @@
+{
+  "version": "fpgrowth-segment@202610041835",
+  "orders": 1683,
+  "multi_item_orders": 673,
+  "params": {
+    "min_support": 0.004,
+    "min_confidence": 0.05,
+    "min_lift": 1.1,
+    "max_antecedent": 2,
+    "test_share": 0.2,
+    "dry_run": false
+  },
+  "eval": {
+    "samples": {
+      "all": 316,
+      "complement": 209
+    },
+    "hr@10": {
+      "all": {
+        "FP-Growth (nhom) + ban chay trong nhom": 0.05379746835443038,
+        "FP-Growth, bo tran gia": 0.06645569620253164,
+        "Ban chay toan shop": 0.0759493670886076
+      },
+      "complement": {
+        "FP-Growth (nhom) + ban chay trong nhom": 0.08133971291866028,
+        "FP-Growth, bo tran gia": 0.10047846889952153,
+        "Ban chay toan shop": 0.09569377990430622
+      }
+    },
+    "complement_segment_hit@3": {
+      "FP-Growth": 0.3827751196172249,
+      "Nhom ban chay nhat (khong luat)": 0.291866028708134,
+      "Gio khop it nhat 1 luat (do phu)": 0.5598086124401914,
+      "FP-Growth, khong back-off": 0.17703349282296652,
+      "Nhom ban chay CUNG nhom khach (back-off thuan)": 0.3684210526315789
+    }
+  },
+  "rules": [
+    {
+      "antecedent": [
+        "men:shirt"
+      ],
+      "consequent": "men:outerwear",
+      "support": 0.0042,
+      "confidence": 0.1346,
+      "lift": 3.84
+    },
+    {
+      "antecedent": [
+        "men:outerwear"
+      ],
+      "consequent": "men:shirt",
+      "support": 0.0042,
+      "confidence": 0.1186,
+      "lift": 3.84
+    },
+    {
+      "antecedent": [
+        "men:pants"
+      ],
+      "consequent": "men:polo",
+      "support": 0.0083,
+      "confidence": 0.1077,
+      "lift": 2.517
+    },
+    {
+      "antecedent": [
+        "men:polo"
+      ],
+      "consequent": "men:pants",
+      "support": 0.0083,
+      "confidence": 0.1944,
+      "lift": 2.517
+    },
+    {
+      "antecedent": [
+        "men:polo"
+      ],
+      "consequent": "men:shorts",
+      "support": 0.0077,
+      "confidence": 0.1806,
+      "lift": 2.268
+    },
+    {
+      "antecedent": [
+        "men:shorts"
+      ],
+      "consequent": "men:polo",
+      "support": 0.0077,
+      "confidence": 0.097,
+      "lift": 2.268
+    },
+    {
+      "antecedent": [
+        "men:tshirt"
+      ],
+      "consequent": "men:outerwear",
+      "support": 0.0077,
+      "confidence": 0.0783,
+      "lift": 2.234
+    },
+    {
+      "antecedent": [
+        "men:outerwear"
+      ],
+      "consequent": "men:tshirt",
+      "support": 0.0077,
+      "confidence": 0.2203,
+      "lift": 2.234
+    },
+    {
+      "antecedent": [
+        "women:outerwear"
+      ],
+      "consequent": "women:shirt",
+      "support": 0.0048,
+      "confidence": 0.1143,
+      "lift": 2.211
+    },
+    {
+      "antecedent": [
+        "women:shirt"
+      ],
+      "consequent": "women:outerwear",
+      "support": 0.0048,
+      "confidence": 0.092,
+      "lift": 2.211
+    },
+    {
+      "antecedent": [
+        "women:shirt"
+      ],
+      "consequent": "women:pants",
+      "support": 0.0089,
+      "confidence": 0.1724,
+      "lift": 2.149
+    },
+    {
+      "antecedent": [
+        "women:pants"
+      ],
+      "consequent": "women:shirt",
+      "support": 0.0089,
+      "confidence": 0.1111,
+      "lift": 2.149
+    },
+    {
+      "antecedent": [
+        "men:pants"
+      ],
+      "consequent": "men:tshirt",
+      "support": 0.016,
+      "confidence": 0.2077,
+      "lift": 2.106
+    },
+    {
+      "antecedent": [
+        "men:tshirt"
+      ],
+      "consequent": "men:pants",
+      "support": 0.016,
+      "confidence": 0.1627,
+      "lift": 2.106
+    },
+    {
+      "antecedent": [
+        "unisex:shorts"
+      ],
+      "consequent": "women:shorts",
+      "support": 0.0048,
+      "confidence": 0.1739,
+      "lift": 2.005
+    },
+    {
+      "antecedent": [
+        "women:shorts"
+      ],
+      "consequent": "unisex:shorts",
+      "support": 0.0048,
+      "confidence": 0.0548,
+      "lift": 2.005
+    },
+    {
+      "antecedent": [
+        "men:homewear"
+      ],
+      "consequent": "men:tshirt",
+      "support": 0.0089,
+      "confidence": 0.1807,
+      "lift": 1.832
+    },
+    {
+      "antecedent": [
+        "men:tshirt"
+      ],
+      "consequent": "men:homewear",
+      "support": 0.0089,
+      "confidence": 0.0904,
+      "lift": 1.832
+    },
+    {
+      "antecedent": [
+        "kids:tshirt"
+      ],
+      "consequent": "unisex:tshirt",
+      "support": 0.0059,
+      "confidence": 0.2273,
+      "lift": 1.779
+    },
+    {
+      "antecedent": [
+        "men:tshirt"
+      ],
+      "consequent": "men:shorts",
+      "support": 0.0131,
+      "confidence": 0.1325,
+      "lift": 1.665
+    },
+    {
+      "antecedent": [
+        "men:shorts"
+      ],
+      "consequent": "men:tshirt",
+      "support": 0.0131,
+      "confidence": 0.1642,
+      "lift": 1.665
+    },
+    {
+      "antecedent": [
+        "women:outerwear"
+      ],
+      "consequent": "women:pants",
+      "support": 0.0042,
+      "confidence": 0.1,
+      "lift": 1.247
+    },
+    {
+      "antecedent": [
+        "women:pants"
+      ],
+      "consequent": "women:outerwear",
+      "support": 0.0042,
+      "confidence": 0.0519,
+      "lift": 1.247
+    },
+    {
+      "antecedent": [
+        "men:homewear"
+      ],
+      "consequent": "men:shorts",
+      "support": 0.0048,
+      "confidence": 0.0964,
+      "lift": 1.211
+    },
+    {
+      "antecedent": [
+        "men:shorts"
+      ],
+      "consequent": "men:homewear",
+      "support": 0.0048,
+      "confidence": 0.0597,
+      "lift": 1.211
+    },
+    {
+      "antecedent": [
+        "women:pants"
+      ],
+      "consequent": "women:tshirt",
+      "support": 0.0107,
+      "confidence": 0.1333,
+      "lift": 1.175
+    },
+    {
+      "antecedent": [
+        "women:tshirt"
+      ],
+      "consequent": "women:pants",
+      "support": 0.0107,
+      "confidence": 0.0942,
+      "lift": 1.175
+    },
+    {
+      "antecedent": [
+        "men:pants"
+      ],
+      "consequent": "men:shorts",
+      "support": 0.0071,
+      "confidence": 0.0923,
+      "lift": 1.159
+    },
+    {
+      "antecedent": [
+        "men:shorts"
+      ],
+      "consequent": "men:pants",
+      "support": 0.0071,
+      "confidence": 0.0896,
+      "lift": 1.159
+    },
+    {
+      "antecedent": [
+        "men:polo"
+      ],
+      "consequent": "men:tshirt",
+      "support": 0.0048,
+      "confidence": 0.1111,
+      "lift": 1.127
+    }
+  ]
+}

@@ -114,19 +114,43 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> getSimilarProducts(String slug) {
+    public List<ProductDto> getSimilarProducts(String slug, int limit) {
         Product product = productRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
 
-        if (product.getProductType() == null) {
-            return List.of();
+        // Content-based: nearest CLIP embeddings (image 0.7 + text 0.3), see
+        // scripts/embeddings/colab_product_embeddings.ipynb. Same target_group only (men/women/kids...).
+        productRepository.enableHnswIterativeScan();
+        List<Long> ids = productRepository.findSimilarIdsByEmbedding(
+                product.getId(), product.getTargetGroup(), limit);
+        Map<Long, Product> byId = productRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        List<Product> similar = new ArrayList<>();
+        ids.forEach(id -> { if (byId.containsKey(id)) similar.add(byId.get(id)); });
+
+        // Fallback / top-up with the old rule (same product_type, same target_group) when the product
+        // has no embedding yet (added after the last pipeline run) or its group has too few products.
+        if (similar.size() < limit && product.getProductType() != null) {
+            java.util.Set<Long> seen = new java.util.HashSet<>(ids);
+            productRepository.findSimilarActive(product.getProductType(), product.getTargetGroup(), product.getId(),
+                            org.springframework.data.domain.PageRequest.of(0, limit + seen.size()))
+                    .stream()
+                    .filter(p -> seen.add(p.getId()))
+                    .limit(limit - similar.size())
+                    .forEach(similar::add);
         }
 
-        // Simple rule based recommendation
-        List<Product> similar = productRepository.findSimilarActive(
-                product.getProductType(), product.getId(), org.springframework.data.domain.PageRequest.of(0, 4));
-
         return similar.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDto> getActiveProductsInOrder(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        Map<Long, Product> byId = productRepository.findAllById(ids).stream()
+                .filter(p -> "ACTIVE".equals(p.getStatus()))
+                .collect(Collectors.toMap(Product::getId, p -> p));
+        return ids.stream().filter(byId::containsKey).map(id -> mapToDto(byId.get(id))).collect(Collectors.toList());
     }
 
     @Override
@@ -275,6 +299,21 @@ public class ProductServiceImpl implements ProductService {
         for (ProductDto item : items) {
             item.setVariants(byProduct.getOrDefault(item.getId(), new ArrayList<>()));
         }
+
+        Map<Long, List<String>> style = groupTags(productRepository.findStyleTagsByProductIds(ids));
+        Map<Long, List<String>> recommendation = groupTags(productRepository.findRecommendationTagsByProductIds(ids));
+        for (ProductDto item : items) {
+            item.setStyleTags(style.getOrDefault(item.getId(), new ArrayList<>()));
+            item.setRecommendationTags(recommendation.getOrDefault(item.getId(), new ArrayList<>()));
+        }
+    }
+
+    private static Map<Long, List<String>> groupTags(List<Object[]> rows) {
+        Map<Long, List<String>> byProduct = new HashMap<>();
+        for (Object[] row : rows) {
+            byProduct.computeIfAbsent(((Number) row[0]).longValue(), k -> new ArrayList<>()).add((String) row[1]);
+        }
+        return byProduct;
     }
 
     private ProductDto mapToDto(Product product) {
@@ -344,8 +383,9 @@ public class ProductServiceImpl implements ProductService {
                 .isSale(product.getIsSale())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
-                .styleTags(product.getStyleTags() != null ? product.getStyleTags() : new ArrayList<>())
-                .recommendationTags(product.getRecommendationTags() != null ? product.getRecommendationTags() : new ArrayList<>())
+                // Listings fill tags in bulk (attachVariantSummaries); only the detail view loads them here.
+                .styleTags(includeVariants && product.getStyleTags() != null ? product.getStyleTags() : new ArrayList<>())
+                .recommendationTags(includeVariants && product.getRecommendationTags() != null ? product.getRecommendationTags() : new ArrayList<>())
                 .variants(variantDtos)
                 .images(imageDtos)
                 .averageRating(product.getAverageRating() != null ? Math.round(product.getAverageRating() * 10.0) / 10.0 : 0.0)

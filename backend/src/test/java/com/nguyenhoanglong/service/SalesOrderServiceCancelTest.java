@@ -12,6 +12,7 @@ import com.nguyenhoanglong.repository.OrderRepository;
 import com.nguyenhoanglong.repository.OrderStatusHistoryRepository;
 import com.nguyenhoanglong.repository.ProductRepository;
 import com.nguyenhoanglong.repository.ProductVariantRepository;
+import com.nguyenhoanglong.repository.ShipmentRepository;
 import com.nguyenhoanglong.repository.StockReservationRepository;
 import com.nguyenhoanglong.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +48,7 @@ class SalesOrderServiceCancelTest {
     @Mock private ProductVariantRepository variantRepository;
     @Mock private MarketingService marketingService;
     @Mock private SoldCountService soldCountService;
+    @Mock private ShipmentRepository shipmentRepository;
 
     private SalesOrderService service;
 
@@ -55,7 +57,7 @@ class SalesOrderServiceCancelTest {
         service = new SalesOrderService(
                 orders, notes, reservations, productRepository, userRepository,
                 new OrderStateMachine(), historyRepository, inventoryRepository, variantRepository,
-                marketingService, soldCountService, new OrderStockService(variantRepository, inventoryRepository));
+                marketingService, soldCountService, new OrderStockService(variantRepository, inventoryRepository), shipmentRepository);
     }
 
     @Test

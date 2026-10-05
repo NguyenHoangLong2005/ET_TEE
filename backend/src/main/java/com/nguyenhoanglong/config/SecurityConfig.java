@@ -109,6 +109,12 @@ public class SecurityConfig {
                     "/api/payment-methods/**",
                     // 1x1 image in order emails (open tracking); fetched by mail clients
                     "/api/track/**",
+                    // storefront VIEW beacon (guests included); BehaviorEventController
+                    "/api/events",
+                    // personalised home feed for guests too (keyed by the guest token); RecommendationController
+                    "/api/recommendations/**",
+                    // Sprint 5 search by phrase / photo; SearchController
+                    "/api/search/**",
                     // uploaded product images shown on the storefront (read-only static files)
                     "/api/uploads/**",
                     "/health",

@@ -10,6 +10,7 @@ import { CartService } from '@/lib/services/cartService';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import SizeGuideModal from '@/components/products/SizeGuideModal';
+import SizeSuggestionChip from './SizeSuggestionChip';
 import StoreStockModal from '@/components/products/StoreStockModal';
 
 // Checkout and the cart check availableQuantity; max(stock, available) showed items as
@@ -246,6 +247,16 @@ export default function ProductInfo({ product }: { product: Product }) {
                 Hướng dẫn chọn size
               </button>
             </div>
+            <SizeSuggestionChip
+              slug={product.slug}
+              refreshKey={showSizeGuide}
+              onSelect={(sz) => {
+                // chart labels say 2XL, the catalogue sells XXL
+                const match = availableSizes.find(s => s === sz || (sz === '2XL' && s === 'XXL')) ?? sz;
+                setSelectedSize(match);
+                setError('');
+              }}
+            />
             <div className="flex flex-wrap gap-2">
               {availableSizes.map(size => {
                 const hasStock = !selectedColor || sizeHasStockForColor(selectedColor, size);
@@ -375,8 +386,9 @@ export default function ProductInfo({ product }: { product: Product }) {
       <SizeGuideModal
         isOpen={showSizeGuide}
         onClose={() => setShowSizeGuide(false)}
+        productSlug={product.slug}
         onSelectSize={(sz) => {
-          setSelectedSize(sz);
+          setSelectedSize(availableSizes.find(s => s === sz || (sz === '2XL' && s === 'XXL')) ?? sz);
           setError('');
           toast.success(`Đã tự động chọn Size ${sz}`);
         }}

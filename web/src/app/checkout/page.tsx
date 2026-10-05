@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { getAuthHeaders } from '@/lib/auth';
+import { behaviorSessionHeader } from '@/lib/services/behaviorTracking';
 import { getApiBaseUrl } from '@/lib/api-config';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import SafeImage from '@/components/ui/SafeImage';
 import { formatVnd } from '@/lib/utils/price';
+import VoucherCard from '@/components/vouchers/VoucherCard';
+import { CustomerMarketingService, VoucherOption } from '@/lib/services/customerMarketingService';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -35,13 +38,17 @@ export default function CheckoutPage() {
   const [voucherInfo, setVoucherInfo] = useState<{ discountAmount: number; finalTotal: number; name: string; freeShipping: boolean } | null>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  // Codes this shopper can use on this cart, best first (public + their personal vouchers)
+  const [voucherOptions, setVoucherOptions] = useState<VoucherOption[]>([]);
 
   // itemTotal is computed by the server from the price rounded to the thousand, the same
   // price checkout charges. Summing raw salePrice/price here showed a different total.
   const calculateSubtotal = () => (cart?.items || []).reduce((sum, item) => sum + item.itemTotal, 0);
 
-  const applyVoucher = async () => {
-    if (!formData.voucherCode.trim()) {
+  const applyVoucher = async (codeOverride?: string) => {
+    const code = (codeOverride ?? formData.voucherCode).trim().toUpperCase();
+    if (codeOverride) setFormData(prev => ({ ...prev, voucherCode: code }));
+    if (!code) {
       setVoucherInfo(null);
       setVoucherError(null);
       return;
@@ -52,7 +59,7 @@ export default function CheckoutPage() {
       const res = await fetch(`${getApiBaseUrl()}/api/marketing/vouchers/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(getAuthHeaders() as Record<string, string>) },
-        body: JSON.stringify({ code: formData.voucherCode.trim().toUpperCase(), subtotal: calculateSubtotal() }),
+        body: JSON.stringify({ code, subtotal: calculateSubtotal() }),
       });
       const json = await res.json();
       if (json.success) {
@@ -120,6 +127,17 @@ export default function CheckoutPage() {
     })();
     return () => { cancelled = true; };
   }, [user]);
+
+  // Re-ranked whenever the cart total changes (minimum-order conditions depend on it)
+  const cartTotal = calculateSubtotal();
+  useEffect(() => {
+    if (cartTotal <= 0) return;
+    let cancelled = false;
+    CustomerMarketingService.vouchersForMe(cartTotal).then(opts => {
+      if (!cancelled) setVoucherOptions(opts.filter(o => o.usable).slice(0, 3));
+    });
+    return () => { cancelled = true; };
+  }, [cartTotal, user]);
 
   useEffect(() => {
     const fetchBankConfig = async () => {
@@ -206,7 +224,7 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const headers = getAuthHeaders(true);
+      const headers = getAuthHeaders(true, behaviorSessionHeader());
 
       // formData.voucherCode used to be sent verbatim even when the user
       // typed a code but never clicked "Áp dụng" (or it failed validation),
@@ -546,6 +564,14 @@ export default function CheckoutPage() {
             {/* Voucher */}
             <div className="mt-6 border-t border-slate-200 pt-6">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-900 mb-2">Mã giảm giá</label>
+              {!voucherInfo && voucherOptions.length > 0 && (
+                <div className="mb-3 space-y-2">
+                  <p className="text-xs text-slate-500">Mã bạn dùng được cho đơn này, có lợi nhất trước:</p>
+                  {voucherOptions.map((v, i) => (
+                    <VoucherCard key={v.code} voucher={v} highlight={i === 0} onApply={code => applyVoucher(code)} />
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -565,7 +591,7 @@ export default function CheckoutPage() {
                 />
                 <button
                   type="button"
-                  onClick={applyVoucher}
+                  onClick={() => applyVoucher()}
                   disabled={voucherLoading || !formData.voucherCode.trim()}
                   className="shrink-0 whitespace-nowrap h-11 px-5 rounded-xl bg-slate-900 text-white text-xs font-bold uppercase tracking-wider hover:bg-primary transition-colors disabled:opacity-40"
                 >

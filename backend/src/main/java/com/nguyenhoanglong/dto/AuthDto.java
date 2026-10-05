@@ -29,8 +29,12 @@ public class AuthDto {
                 message = "Mật khẩu phải có cả chữ và số")
         private String password;
         private String guestToken;
+        /** Unticked by default: marketing email only with explicit consent. */
+        private Boolean marketingOptIn;
         public String getGuestToken() { return guestToken; }
         public void setGuestToken(String guestToken) { this.guestToken = guestToken; }
+        public Boolean getMarketingOptIn() { return marketingOptIn; }
+        public void setMarketingOptIn(Boolean marketingOptIn) { this.marketingOptIn = marketingOptIn; }
 
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }

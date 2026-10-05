@@ -7,6 +7,7 @@ import ProductInfo from '@/components/products/ProductInfo';
 import ProductDescription from '@/components/products/ProductDescription';
 import ProductReviews from '@/components/products/ProductReviews';
 import ProductRecommendations from '@/components/products/ProductRecommendations';
+import ProductViewTracker from '@/components/products/ProductViewTracker';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import { Suspense } from 'react';
 
@@ -98,6 +99,7 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <ProductViewTracker productId={product.id} />
       <div className="container mx-auto px-4 xl:px-8">
         
         {/* Breadcrumbs */}

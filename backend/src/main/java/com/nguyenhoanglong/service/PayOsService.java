@@ -46,7 +46,10 @@ public class PayOsService {
     private final String frontendUrl;
     private final BankTransferPaymentService bankTransferPaymentService;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    // Built on first PayOS call, not with the bean: HttpClient opens a loopback socket for its
+    // selector, and where that is refused (sandboxed / locked-down Windows) an eager client took the
+    // whole application context down even though PayOS is optional and usually unconfigured.
+    private volatile HttpClient http;
 
     public PayOsService(@Value("${app.payment.payos.client-id:}") String clientId,
                         @Value("${app.payment.payos.api-key:}") String apiKey,
@@ -153,9 +156,23 @@ public class PayOsService {
         return res.path("data");
     }
 
+    private HttpClient http() {
+        HttpClient client = http;
+        if (client == null) {
+            synchronized (this) {
+                client = http;
+                if (client == null) {
+                    client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+                    http = client;
+                }
+            }
+        }
+        return client;
+    }
+
     private JsonNode call(HttpRequest.Builder builder) {
         try {
-            HttpResponse<String> res = http.send(builder
+            HttpResponse<String> res = http().send(builder
                     .timeout(Duration.ofSeconds(15))
                     .header("x-client-id", clientId)
                     .header("x-api-key", apiKey)

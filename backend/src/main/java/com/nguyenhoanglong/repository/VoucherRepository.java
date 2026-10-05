@@ -24,6 +24,12 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
            "AND (v.endDate IS NULL OR v.endDate >= :now)")
     List<Voucher> findAllActive(@Param("now") java.time.LocalDateTime now);
 
+    /** Vouchers handed to one customer (welcome, win-back, CSKH compensation) still usable now. */
+    @Query("SELECT v FROM Voucher v WHERE v.grantedToCustomerId = :userId "
+            + "AND (v.status IS NULL OR v.status = 'ACTIVE') AND (v.isActive IS NULL OR v.isActive = TRUE) "
+            + "AND (v.endDate IS NULL OR v.endDate >= :now) ORDER BY v.createdAt DESC")
+    List<Voucher> findPersonalActive(@Param("userId") String userId, @Param("now") java.time.LocalDateTime now);
+
     // Loc o tang DB cho man hinh duyet cua chu shop (truoc day dung findAll() roi filter).
     // shopId NULL: created by marketing staff with no shop, which any store owner may approve.
     @Query("SELECT v FROM Voucher v WHERE (v.shopId = :shopId OR v.shopId IS NULL) "

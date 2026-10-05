@@ -1,0 +1,6 @@
+sentence-transformers>=3
+torch
+pillow
+fastapi
+uvicorn
+python-multipart

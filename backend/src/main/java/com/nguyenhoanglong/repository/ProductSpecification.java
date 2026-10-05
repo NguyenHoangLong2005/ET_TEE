@@ -102,12 +102,14 @@ public class ProductSpecification {
                 List<Predicate> tgPredicates = new ArrayList<>();
                 for (String tg : tgArray) {
                     tg = tg.trim();
+                    // Unisex kids' items belong under both "Bé trai" and "Bé gái".
                     if ("boys".equalsIgnoreCase(tg)) {
                         tgPredicates.add(criteriaBuilder.and(
                                 criteriaBuilder.equal(root.get("targetGroup"), "kids"),
                                 criteriaBuilder.or(
                                         criteriaBuilder.equal(root.get("gender"), "boy"),
-                                        criteriaBuilder.equal(root.get("gender"), "boys")
+                                        criteriaBuilder.equal(root.get("gender"), "boys"),
+                                        criteriaBuilder.equal(root.get("gender"), "unisex")
                                 )
                         ));
                     } else if ("girls".equalsIgnoreCase(tg)) {
@@ -115,7 +117,8 @@ public class ProductSpecification {
                                 criteriaBuilder.equal(root.get("targetGroup"), "kids"),
                                 criteriaBuilder.or(
                                         criteriaBuilder.equal(root.get("gender"), "girl"),
-                                        criteriaBuilder.equal(root.get("gender"), "girls")
+                                        criteriaBuilder.equal(root.get("gender"), "girls"),
+                                        criteriaBuilder.equal(root.get("gender"), "unisex")
                                 )
                         ));
                     } else {
@@ -192,29 +195,47 @@ public class ProductSpecification {
                     predicates.add(criteriaBuilder.equal(criteriaBuilder.lower(variantsJoin.get("color")), color.toLowerCase()));
                 }
 
-                if (adultSize != null && !adultSize.trim().isEmpty()) {
-                    String[] sizes = adultSize.split(",");
-                    if (sizes.length == 1) {
-                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
-                    } else {
-                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
+                // The three size params are just sidebar sections over the same
+                // variant.size column: OR them together (ANDing them on one variant
+                // row could never match), and let a letter size cover its +/- variants.
+                java.util.Set<String> sizes = new java.util.LinkedHashSet<>();
+                for (String param : new String[] { adultSize, kidsSize }) {
+                    if (param == null) continue;
+                    for (String size : param.split(",")) {
+                        if (!size.isBlank()) sizes.addAll(com.nguyenhoanglong.util.SizeGroups.expandForFilter(size));
                     }
                 }
-                if (kidsSize != null && !kidsSize.trim().isEmpty()) {
-                    String[] sizes = kidsSize.split(",");
-                    if (sizes.length == 1) {
-                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
-                    } else {
-                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
+                // Sock/shoe sizes only count on accessory products (waist 36 is not
+                // shoe 36), and a single size also matches the sock ranges containing it
+                java.util.Set<String> accessorySizes = new java.util.LinkedHashSet<>();
+                if (accessorySize != null) {
+                    for (String size : accessorySize.split(",")) {
+                        if (!size.isBlank()) accessorySizes.addAll(com.nguyenhoanglong.util.SizeGroups.expandAccessoryForFilter(size));
                     }
                 }
-                if (accessorySize != null && !accessorySize.trim().isEmpty()) {
-                    String[] sizes = accessorySize.split(",");
-                    if (sizes.length == 1) {
-                        predicates.add(criteriaBuilder.equal(variantsJoin.get("size"), sizes[0].trim()));
-                    } else {
-                        predicates.add(variantsJoin.get("size").in((Object[]) sizes));
-                    }
+
+                // coalesce so a NULL productType/targetGroup still counts as "not accessory"
+                Predicate isAccessory = criteriaBuilder.or(
+                        criteriaBuilder.equal(criteriaBuilder.coalesce(root.<String>get("productType"), ""), "accessories"),
+                        criteriaBuilder.equal(criteriaBuilder.coalesce(root.<String>get("targetGroup"), ""), "accessories"));
+                // Plain numbers in adultSize/kidsSize are waist/height sizes, never shoe sizes
+                java.util.Set<String> numericSizes = new java.util.LinkedHashSet<>();
+                sizes.removeIf(size -> size.matches("\\d+") && numericSizes.add(size));
+
+                List<Predicate> sizePredicates = new ArrayList<>();
+                if (!sizes.isEmpty()) {
+                    sizePredicates.add(variantsJoin.get("size").in(sizes));
+                }
+                if (!numericSizes.isEmpty()) {
+                    sizePredicates.add(criteriaBuilder.and(
+                            variantsJoin.get("size").in(numericSizes), criteriaBuilder.not(isAccessory)));
+                }
+                if (!accessorySizes.isEmpty()) {
+                    sizePredicates.add(criteriaBuilder.and(
+                            variantsJoin.get("size").in(accessorySizes), isAccessory));
+                }
+                if (!sizePredicates.isEmpty()) {
+                    predicates.add(criteriaBuilder.or(sizePredicates.toArray(new Predicate[0])));
                 }
             }
 

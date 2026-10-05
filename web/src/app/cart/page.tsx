@@ -328,8 +328,8 @@ export default function CartPage() {
       {/* Recommendations */}
       <div className="border-t border-slate-100 pt-16">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Có thể bạn sẽ thích</h2>
-          <p className="text-slate-500 text-xs mt-1 font-medium">Những đề xuất trang phục được lựa chọn bởi AI</p>
+          <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Thường được mua kèm</h2>
+          <p className="text-slate-500 text-xs mt-1 font-medium">Món bổ trợ cho giỏ hàng, dựa trên những gì khách hàng hay mua cùng nhau</p>
         </div>
         <CartRecommendations cartItems={cart?.items || []} />
       </div>

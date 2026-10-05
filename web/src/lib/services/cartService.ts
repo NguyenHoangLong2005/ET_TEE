@@ -23,6 +23,7 @@ export type CartData = {
 
 import { getApiBaseUrl } from '@/lib/api-config';
 import { getAuthHeaders } from '@/lib/auth';
+import { behaviorSessionHeader } from '@/lib/services/behaviorTracking';
 
 const getBaseUrl = () => {
   return getApiBaseUrl();
@@ -51,7 +52,7 @@ export const CartService = {
     try {
       const res = await fetch(`${getBaseUrl()}/api/cart/items`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: { ...getHeaders(), ...behaviorSessionHeader() },
         body: JSON.stringify({ variantId, quantity })
       });
 

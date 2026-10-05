@@ -35,6 +35,7 @@ public class CorsConfig {
                 HttpHeaders.ACCEPT,
                 HttpHeaders.AUTHORIZATION,
                 "X-Guest-Cart-Token",
+                "X-Behavior-Session",
                 "X-Shop-Id"
         ));
         config.setExposedHeaders(Arrays.asList(
