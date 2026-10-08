@@ -12,6 +12,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   StaffProfile? _cachedProfile;
 
+  @override
   StaffProfile? get cachedProfile => _cachedProfile;
 
   @override
@@ -49,13 +50,22 @@ class AuthRepositoryImpl implements AuthRepository {
       parse: (raw) => raw as Map<String, dynamic>,
     );
 
-    final roles = (data['roles'] as List<dynamic>? ?? [])
-        .map((e) => AppRole.fromWire('$e'))
-        .whereType<AppRole>()
-        .toList();
+    // /api/auth/me tra `role` (don) hoac `roles` (mang).
+    final roles = <AppRole>[];
+    final roleWire = data['role'] as String?;
+    if (roleWire != null) {
+      final role = AppRole.fromWire(roleWire);
+      if (role != null) roles.add(role);
+    }
+    for (final e in (data['roles'] as List<dynamic>? ?? [])) {
+      final role = AppRole.fromWire('$e');
+      if (role != null && !roles.contains(role)) roles.add(role);
+    }
+
+    final uid = data['userId'] ?? data['id'];
 
     return _cachedProfile = StaffProfile(
-      id: (data['id'] as num?)?.toInt() ?? 0,
+      id: uid == null ? 0 : (uid is num ? uid.toInt() : int.tryParse('$uid') ?? 0),
       fullName: data['fullName'] as String? ?? '',
       roles: roles,
       permissions: (data['permissions'] as List<dynamic>? ?? [])

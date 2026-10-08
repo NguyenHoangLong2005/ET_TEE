@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/widgets/role_shell.dart';
 import '../../../../core/widgets/stat_card.dart';
 import '../controllers/warehouse_controller.dart';
@@ -108,61 +109,70 @@ class _WarehouseHomePageState extends State<WarehouseHomePage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       children: [
-          const _SectionTitle('Vận hành'),
-          _tile(
-            icon: Icons.checklist_outlined,
-            title: 'Đơn cần xử lý',
-            subtitle: 'Lấy hàng, đóng gói, in tem, bàn giao',
-            badge: _controller.orders.isEmpty ? null : '${_controller.orders.length}',
-            onTap: () => _open(const WarehouseOrdersPage()),
+        const _SectionTitle('Vận hành'),
+        _tile(
+          icon: Icons.checklist_outlined,
+          title: 'Đơn cần xử lý',
+          subtitle: 'Lấy hàng, đóng gói, in tem, bàn giao',
+          badge: _controller.orders.isEmpty
+              ? null
+              : '${_controller.orders.length}',
+          requireAny: const ['PICK_PACK_LABEL', 'HANDOVER_SHIPPING'],
+          onTap: () => _open(const WarehouseOrdersPage()),
+        ),
+        _tile(
+          icon: Icons.move_to_inbox_outlined,
+          title: 'Nhập kho & kiểm đếm',
+          subtitle: 'Ghi nhận hàng nhập, đếm số lượng thực tế',
+          permission: 'INBOUND_STOCK',
+          onTap: () => _open(
+            const WarehouseInventoryPage(mode: WarehouseMode.inbound),
           ),
-          _tile(
-            icon: Icons.move_to_inbox_outlined,
-            title: 'Nhập kho & kiểm đếm',
-            subtitle: 'Ghi nhận hàng nhập, đếm số lượng thực tế',
-            onTap: () => _open(
-              const WarehouseInventoryPage(mode: WarehouseMode.inbound),
-            ),
+        ),
+        _tile(
+          icon: Icons.inventory_2_outlined,
+          title: 'Tồn kho & vị trí',
+          subtitle: 'Xem tồn kho, đổi vị trí lưu hàng',
+          permission: 'MANAGE_STOCK_LOCATION',
+          onTap: () => _open(
+            const WarehouseInventoryPage(mode: WarehouseMode.location),
           ),
-          _tile(
-            icon: Icons.inventory_2_outlined,
-            title: 'Tồn kho & vị trí',
-            subtitle: 'Xem tồn kho, đổi vị trí lưu hàng',
-            onTap: () => _open(
-              const WarehouseInventoryPage(mode: WarehouseMode.location),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const _SectionTitle('Duyệt & kiểm kê'),
-          _tile(
-            icon: Icons.lock_outline,
-            title: 'Giữ hàng cho đơn',
-            subtitle: 'Duyệt hoặc từ chối yêu cầu giữ hàng',
-            badge: pendingHolds == 0 ? null : '$pendingHolds',
-            onTap: () => _open(const WarehouseReservationsPage()),
-          ),
-          _tile(
-            icon: Icons.tune,
-            title: 'Điều chỉnh chênh lệch',
-            subtitle: 'Tạo phiếu điều chỉnh, cần được duyệt',
-            badge: pendingAdjust == 0 ? null : '$pendingAdjust',
-            onTap: () => _open(const WarehouseAdjustmentsPage()),
-          ),
-          _tile(
-            icon: Icons.fact_check_outlined,
-            title: 'Kiểm kê tồn kho',
-            subtitle: 'Tạo phiếu kiểm kê và ghi nhận số thực tế',
-            onTap: () => _open(const WarehouseStocktakePage()),
-          ),
-          _tile(
-            icon: Icons.trending_up,
-            title: 'Đề xuất nhập thêm',
-            subtitle: 'Danh sách mã hàng cần nhập thêm',
-            badge: _controller.lowStockCount == 0
-                ? null
-                : '${_controller.lowStockCount}',
-            onTap: () => _open(const WarehouseReplenishmentPage()),
-          ),
+        ),
+        const SizedBox(height: 16),
+        const _SectionTitle('Duyệt & kiểm kê'),
+        _tile(
+          icon: Icons.lock_outline,
+          title: 'Giữ hàng cho đơn',
+          subtitle: 'Duyệt hoặc từ chối yêu cầu giữ hàng',
+          badge: pendingHolds == 0 ? null : '$pendingHolds',
+          permission: 'HOLD_STOCK_ORDER',
+          onTap: () => _open(const WarehouseReservationsPage()),
+        ),
+        _tile(
+          icon: Icons.tune,
+          title: 'Điều chỉnh chênh lệch',
+          subtitle: 'Tạo phiếu điều chỉnh, cần được duyệt',
+          badge: pendingAdjust == 0 ? null : '$pendingAdjust',
+          permission: 'ADJUST_STOCK',
+          onTap: () => _open(const WarehouseAdjustmentsPage()),
+        ),
+        _tile(
+          icon: Icons.fact_check_outlined,
+          title: 'Kiểm kê tồn kho',
+          subtitle: 'Tạo phiếu kiểm kê và ghi nhận số thực tế',
+          permission: 'COUNT_STOCK',
+          onTap: () => _open(const WarehouseStocktakePage()),
+        ),
+        _tile(
+          icon: Icons.trending_up,
+          title: 'Đề xuất nhập thêm',
+          subtitle: 'Danh sách mã hàng cần nhập thêm',
+          badge: _controller.lowStockCount == 0
+              ? null
+              : '${_controller.lowStockCount}',
+          permission: 'PROPOSE_RESTOCK',
+          onTap: () => _open(const WarehouseReplenishmentPage()),
+        ),
       ],
     );
   }
@@ -172,9 +182,11 @@ class _WarehouseHomePageState extends State<WarehouseHomePage> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    String? permission,
+    List<String> requireAny = const [],
     String? badge,
   }) {
-    return Card(
+    final tile = Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(icon),
@@ -186,6 +198,13 @@ class _WarehouseHomePageState extends State<WarehouseHomePage> {
         onTap: onTap,
       ),
     );
+    return permission == null && requireAny.isEmpty
+        ? tile
+        : PermissionGate(
+            permission: permission,
+            requireAny: requireAny,
+            child: tile,
+          );
   }
 }
 

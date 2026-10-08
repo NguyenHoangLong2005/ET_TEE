@@ -25,13 +25,6 @@ public class CartService {
     private final UserRepository userRepository;
     private final ProductVariantRepository productVariantRepository;
 
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, UserRepository userRepository, ProductVariantRepository productVariantRepository) {
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.userRepository = userRepository;
-        this.productVariantRepository = productVariantRepository;
-    }
-
     @Transactional
     public CartDto.CartResponse getCart(String userEmail, String guestToken) {
         Cart cart = getOrCreateCart(userEmail, guestToken);

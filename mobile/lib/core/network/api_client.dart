@@ -32,6 +32,26 @@ class ApiClient {
   }) =>
       _send<T>(() => _dio.put<dynamic>(path, data: body), parse);
 
+  Future<T> upload<T>(
+    String path, {
+    required File file,
+    required String field,
+    T Function(dynamic raw)? parse,
+    void Function(int sent, int total)? onSendProgress,
+  }) async {
+    final form = FormData.fromMap({
+      field: await MultipartFile.fromFile(file.path),
+    });
+    return _send<T>(
+      () => _dio.post<dynamic>(
+        path,
+        data: form,
+        onSendProgress: onSendProgress,
+      ),
+      parse,
+    );
+  }
+
   Future<T> _send<T>(
     Future<Response<dynamic>> Function() call,
     T Function(dynamic raw)? parse,
@@ -40,17 +60,24 @@ class ApiClient {
       final res = await call();
       final body = res.data;
       if (body is Map<String, dynamic>) {
-        final parsed = ApiResponse<dynamic>.fromJson(
-          body,
-          parse ?? (dynamic raw) => raw,
-        );
-        if (!parsed.success) {
-          throw AppException(
-            parsed.message,
-            statusCode: res.statusCode,
+        // Endpoint bọc ApiResponse: { success, message, data, timestamp }.
+        final success = body['success'];
+        if (success is bool) {
+          final parsed = ApiResponse<dynamic>.fromJson(
+            body,
+            parse ?? (dynamic raw) => raw,
           );
+          if (!parsed.success) {
+            throw AppException(
+              parsed.message,
+              statusCode: res.statusCode,
+            );
+          }
+          return parsed.data as T;
         }
-        return parsed.data as T;
+        // Auth + staff endpoint tra JSON thô, khong bóc ApiResponse.
+        final raw = parse != null ? parse(body) : body;
+        return raw as T;
       }
       return body as T;
     } on DioException catch (e) {
@@ -93,10 +120,11 @@ class ApiClient {
     return dio;
   }
 
-  Future<void> setToken(String token) async => _dio.options.headers['Authorization'] =
-      'Bearer $token';
+  Future<void> setToken(String token) async =>
+      _dio.options.headers['Authorization'] = 'Bearer $token';
 
-  Future<void> clearToken() async => _dio.options.headers.remove('Authorization');
+  Future<void> clearToken() async =>
+      _dio.options.headers.remove('Authorization');
 
   bool get isMobile => Platform.isAndroid || Platform.isIOS;
 }

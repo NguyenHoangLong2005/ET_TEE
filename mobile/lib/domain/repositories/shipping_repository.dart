@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../entities/order_status.dart';
 
 abstract class ShippingRepository {
@@ -36,11 +38,14 @@ abstract class ShippingRepository {
 
   Future<void> submitProofOfDelivery(int shipmentId, PodProof proof);
 
+  Future<String> uploadProofImage(File image);
+
   Future<List<PendingCod>> getPendingCod();
 
   Future<void> reconcileCod(int shipmentId);
 
-  Future<List<CodReconciliation>> getReconciliations({int page = 0, int size = 20});
+  Future<List<CodReconciliation>> getReconciliations(
+      {int page = 0, int size = 20});
 
   Future<Map<String, dynamic>> getReconciliationDetail(int id);
 }

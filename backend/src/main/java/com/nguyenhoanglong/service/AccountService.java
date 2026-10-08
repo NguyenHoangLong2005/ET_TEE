@@ -20,12 +20,6 @@ public class AccountService {
     private final UserMeasurementRepository measurementRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AccountService(UserRepository userRepository, UserMeasurementRepository measurementRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.measurementRepository = measurementRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     public ProfileResponse getProfile(User user) {
         ProfileResponse response = new ProfileResponse();
         response.setId(user.getId());

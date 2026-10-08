@@ -14,6 +14,7 @@ class WarehouseController extends BaseController {
   List<Stocktake> _stocktakes = const [];
   List<ReplenishmentItem> _replenishment = const [];
   List<Map<String, dynamic>> _catalog = const [];
+  List<ProductVariantOption> _productVariants = const [];
 
   List<InventoryItem> get inventory => _inventory;
   List<InboundOrder> get inboundHistory => _inboundHistory;
@@ -23,6 +24,7 @@ class WarehouseController extends BaseController {
   List<Stocktake> get stocktakes => _stocktakes;
   List<ReplenishmentItem> get replenishment => _replenishment;
   List<Map<String, dynamic>> get catalog => _catalog;
+  List<ProductVariantOption> get productVariants => _productVariants;
 
   List<InventoryAdjustment> get pendingAdjustments =>
       _adjustments.where((a) => a.isPending).toList();
@@ -62,8 +64,19 @@ class WarehouseController extends BaseController {
         _replenishment = await _repo.getReplenishment();
       });
 
-  Future<void> loadCatalog() => run(() async {
+  Future<void> loadInboundData() => run(() async {
         _catalog = await _repo.getCatalogProducts();
+        _inboundHistory = await _repo.getInboundHistory();
+      });
+
+  Future<void> loadProductVariants(int productId) => run(() async {
+        _productVariants = const [];
+        _productVariants = await _repo.getProductVariants(productId);
+      });
+
+  Future<void> loadAdjustmentData() => run(() async {
+        _inventory = await _repo.getInventory();
+        _adjustments = await _repo.getAdjustments();
       });
 
   Future<void> refreshAll() async {
@@ -79,6 +92,7 @@ class WarehouseController extends BaseController {
     required String productName,
     required int quantity,
     String? location,
+    int? variantId,
   }) =>
       _guard(() async {
         await _repo.inbound(
@@ -86,6 +100,7 @@ class WarehouseController extends BaseController {
           productName: productName,
           quantity: quantity,
           location: location,
+          variantId: variantId,
         );
         await loadInventory();
       }, 'Đã nhập kho');
@@ -116,12 +131,6 @@ class WarehouseController extends BaseController {
         await loadAdjustments();
       }, 'Đã gửi phiếu điều chỉnh, cần duyệt');
 
-  Future<String?> approveAdjustment(int id) => _guard(() async {
-        await _repo.approveAdjustment(id);
-        await loadAdjustments();
-        await loadInventory();
-      }, 'Đã duyệt điều chỉnh');
-
   Future<String?> approveReservation(int id) => _guard(() async {
         await _repo.approveReservation('$id');
         await loadReservations();
@@ -141,11 +150,6 @@ class WarehouseController extends BaseController {
         await _repo.completePicking(orderId);
         await loadOrders();
       }, 'Đã hoàn tất lấy hàng');
-
-  Future<String?> pack(int orderId) => _guard(() async {
-        await _repo.pack(orderId);
-        await loadOrders();
-      }, 'Đã đóng gói');
 
   Future<Map<String, dynamic>?> labelInfo(int orderId) async {
     Map<String, dynamic>? result;
@@ -192,7 +196,8 @@ class WarehouseController extends BaseController {
       }, 'Đã gửi đề xuất nhập thêm');
 
   /// Chay thao tac ghi, tra ve thong bao thanh cong hoac loi de hien SnackBar.
-  Future<String?> _guard(Future<void> Function() action, String? success) async {
+  Future<String?> _guard(
+      Future<void> Function() action, String? success) async {
     try {
       await action();
       return success;

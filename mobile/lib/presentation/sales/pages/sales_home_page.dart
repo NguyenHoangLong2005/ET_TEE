@@ -5,11 +5,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/widgets/role_shell.dart';
 import '../../../../core/widgets/stat_card.dart';
 import '../../../../core/widgets/status_badge.dart';
 import '../../../../domain/entities/order.dart';
 import '../../../../domain/entities/order_status.dart';
+import '../../../../domain/repositories/auth_repository.dart';
 import '../controllers/sales_controller.dart';
 import '../widgets/sla_badge.dart';
 import 'order_detail_page.dart';
@@ -49,8 +51,10 @@ class _SalesHomePageState extends State<SalesHomePage>
   /// Tai ca 3 danh sach o mot lan: don moi, SLA va tat ca don.
   Future<void> _loadEverything() async {
     await _controller.loadNewOrders();
-    await _controller.loadSlaWarnings();
     await _controller.loadAllOrders();
+    if (sl<AuthRepository>().cachedProfile?.has('MONITOR_ORDER_SLA') ?? false) {
+      await _controller.loadSlaWarnings();
+    }
   }
 
   @override
@@ -66,12 +70,17 @@ class _SalesHomePageState extends State<SalesHomePage>
           icon: Icons.inbox_outlined,
           onTap: () => _tabs.animateTo(0),
         ),
-        StatCard(
-          label: 'Vượt SLA',
-          value: '${_controller.slaWarnings.length}',
-          icon: Icons.schedule,
-          color: _controller.slaWarnings.isEmpty ? null : AppColors.statusCancelled,
-          onTap: () => _tabs.animateTo(3),
+        PermissionGate(
+          permission: 'MONITOR_ORDER_SLA',
+          child: StatCard(
+            label: 'Cảnh báo SLA',
+            value: '${_controller.slaWarnings.length}',
+            icon: Icons.schedule,
+            color: _controller.slaWarnings.isEmpty
+                ? null
+                : AppColors.statusCancelled,
+            onTap: () => _tabs.animateTo(3),
+          ),
         ),
       ],
       bottom: TabBar(
@@ -91,8 +100,14 @@ class _SalesHomePageState extends State<SalesHomePage>
               children: [
                 _NewOrdersTab(controller: _controller),
                 _AllOrdersTab(controller: _controller),
-                _NotesTab(controller: _controller),
-                _SlaTab(controller: _controller),
+                PermissionGate(
+                  permission: 'PROCESS_ORDER_NOTE',
+                  child: _NotesTab(controller: _controller),
+                ),
+                PermissionGate(
+                  permission: 'MONITOR_ORDER_SLA',
+                  child: _SlaTab(controller: _controller),
+                ),
               ],
             ),
     );
@@ -172,22 +187,26 @@ class _NotesTab extends StatefulWidget {
 }
 
 class _NotesTabState extends State<_NotesTab> {
-  final _orderIdCtrl = TextEditingController();
   final _contentCtrl = TextEditingController();
+  int? _selectedOrderId;
 
   @override
   void dispose() {
-    _orderIdCtrl.dispose();
     _contentCtrl.dispose();
     super.dispose();
   }
 
+  Future<void> _selectOrder(int? id) async {
+    setState(() => _selectedOrderId = id);
+    if (id != null) await widget.controller.loadNotes(id);
+  }
+
   Future<void> _add() async {
-    final id = int.tryParse(_orderIdCtrl.text.trim());
+    final id = _selectedOrderId;
     final content = _contentCtrl.text.trim();
     if (id == null || content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cần nhập mã đơn và nội dung ghi chú')),
+        const SnackBar(content: Text('Chọn đơn hàng và nhập nội dung ghi chú')),
       );
       return;
     }
@@ -212,13 +231,25 @@ class _NotesTabState extends State<_NotesTab> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              TextField(
-                controller: _orderIdCtrl,
-                keyboardType: TextInputType.number,
+              DropdownButtonFormField<int>(
+                initialValue: _selectedOrderId,
+                isExpanded: true,
                 decoration: const InputDecoration(
-                  labelText: 'Mã đơn (id)',
-                  prefixIcon: Icon(Icons.tag),
+                  labelText: 'Chọn đơn hàng',
+                  prefixIcon: Icon(Icons.receipt_long_outlined),
                 ),
+                items: widget.controller.allOrders
+                    .map(
+                      (order) => DropdownMenuItem<int>(
+                        value: order.id,
+                        child: Text(
+                          '${order.orderCode} · ${order.customerName ?? 'Khách hàng'}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _selectOrder,
               ),
               const SizedBox(height: 12),
               TextField(
@@ -331,9 +362,7 @@ class _OrderCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    order.isSlaBreached
-                        ? Icons.error_outline
-                        : Icons.schedule,
+                    order.isSlaBreached ? Icons.error_outline : Icons.schedule,
                     size: 14,
                     color: order.isSlaBreached
                         ? AppColors.statusCancelled
@@ -364,7 +393,8 @@ class _OrderCard extends StatelessWidget {
                         ? null
                         : () => Navigator.of(context).push(
                               MaterialPageRoute<void>(
-                                builder: (_) => OrderDetailPage(orderId: order.id),
+                                builder: (_) =>
+                                    OrderDetailPage(orderId: order.id),
                               ),
                             ),
                     child: const Text('Xem'),
@@ -372,25 +402,29 @@ class _OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: FilledButton(
-                    onPressed: busy
-                        ? null
-                        : () async {
-                            final result = await controller.confirmOrder(order.id);
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(result ?? 'Đã xác nhận đơn'),
-                              ),
-                            );
-                          },
-                    child: busy
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Xác nhận'),
+                  child: PermissionGate(
+                    permission: 'VERIFY_ORDER',
+                    child: FilledButton(
+                      onPressed: busy
+                          ? null
+                          : () async {
+                              final result =
+                                  await controller.confirmOrder(order.id);
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result ?? 'Đã xác nhận đơn'),
+                                ),
+                              );
+                            },
+                      child: busy
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Xác nhận'),
+                    ),
                   ),
                 ),
               ],

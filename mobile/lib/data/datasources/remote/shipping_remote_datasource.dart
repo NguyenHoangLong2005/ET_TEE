@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_client.dart';
 import '../../../domain/repositories/shipping_repository.dart';
@@ -16,7 +18,9 @@ class ShippingRemoteDataSource {
       '$_base/ready-orders',
       parse: (raw) => raw as List<dynamic>,
     );
-    return data.map((e) => ReadyPackage.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => ReadyPackage.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   // ─── Ma van don ───────────────────────────────────────────────────────────
@@ -26,7 +30,9 @@ class ShippingRemoteDataSource {
       '$_base/shipments',
       parse: (raw) => raw as List<dynamic>,
     );
-    return data.map((e) => Shipment.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => Shipment.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Shipment> getShipment(int id) async {
@@ -56,7 +62,8 @@ class ShippingRemoteDataSource {
     return Shipment.fromJson(data);
   }
 
-  Future<Shipment> attachTrackingCode(int shipmentId, String trackingCode) async {
+  Future<Shipment> attachTrackingCode(
+      int shipmentId, String trackingCode) async {
     final data = await _api.put<Map<String, dynamic>>(
       '$_base/shipments/$shipmentId/tracking-code',
       body: {'trackingCode': trackingCode},
@@ -122,6 +129,20 @@ class ShippingRemoteDataSource {
     );
   }
 
+  Future<String> uploadProofImage(File image) async {
+    final data = await _api.upload<Map<String, dynamic>>(
+      '$_base/proof-image',
+      file: image,
+      field: 'file',
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
+    final url = data['url'] as String?;
+    if (url == null || url.isEmpty) {
+      throw const FormatException('Máy chủ không trả về URL ảnh bằng chứng');
+    }
+    return url;
+  }
+
   // ─── Doi soat COD ─────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getPendingCod() async {
@@ -136,7 +157,8 @@ class ShippingRemoteDataSource {
     await _api.post<dynamic>('$_base/cod/$shipmentId/reconcile');
   }
 
-  Future<List<CodReconciliation>> getReconciliations({int page = 0, int size = 20}) async {
+  Future<List<CodReconciliation>> getReconciliations(
+      {int page = 0, int size = 20}) async {
     final data = await _api.get<List<dynamic>>(
       '$_base/cod/reconciliations',
       query: {'page': page, 'size': size},

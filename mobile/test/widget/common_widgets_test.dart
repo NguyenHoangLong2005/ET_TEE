@@ -30,9 +30,9 @@ void main() {
 
     testWidgets('khong bat loi khi khong co onTap', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
-            body: const StatCard(
+            body: StatCard(
               label: 'Vượt SLA',
               value: '0',
               icon: Icons.schedule,

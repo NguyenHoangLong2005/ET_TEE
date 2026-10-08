@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../domain/repositories/shipping_repository.dart';
 import '../datasources/remote/shipping_remote_datasource.dart';
 
@@ -38,7 +40,8 @@ class ShippingRepositoryImpl implements ShippingRepository {
       _remote.confirmHandover(shipmentId);
 
   @override
-  Future<void> startShipping(int shipmentId) => _remote.startShipping(shipmentId);
+  Future<void> startShipping(int shipmentId) =>
+      _remote.startShipping(shipmentId);
 
   @override
   Future<List<ShippingException>> getExceptions() => _remote.getExceptions();
@@ -70,6 +73,10 @@ class ShippingRepositoryImpl implements ShippingRepository {
   @override
   Future<void> submitProofOfDelivery(int shipmentId, PodProof proof) =>
       _remote.submitProofOfDelivery(shipmentId, proof);
+
+  @override
+  Future<String> uploadProofImage(File image) =>
+      _remote.uploadProofImage(image);
 
   @override
   Future<List<PendingCod>> getPendingCod() async {

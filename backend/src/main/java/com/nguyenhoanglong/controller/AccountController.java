@@ -30,12 +30,6 @@ public class AccountController {
     private final ReviewService reviewService;
     private final UserRepository userRepository;
 
-    public AccountController(AccountService accountService, ReviewService reviewService, UserRepository userRepository) {
-        this.accountService = accountService;
-        this.reviewService = reviewService;
-        this.userRepository = userRepository;
-    }
-
     private User getCurrentUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {

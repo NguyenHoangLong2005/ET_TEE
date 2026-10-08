@@ -116,7 +116,7 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8081
 
 ## Việc chưa làm
 
-- Gọi API thật trong các trang (hiện là khung + TODO).
-- `GET /api/staff/sales/sla` trên backend đang trả `getNewOrders()` chứ không phải danh sách cảnh báo SLA; logic thật nằm ở `SalesOrderService.getSlaWarningOrders()` và chưa được gọi.
-- Backend không có RBAC server-side trong build hiện tại; app phải tự ẩn/hiện chức năng theo `permissions` từ `GET /api/auth/me`.
-- Backend chưa phân biệt `PICKING` và `PACKING` — cả `picking/complete` và `packing` đều chuyển thẳng sang `PACKED`.
+- Các màn hình nghiệp vụ gọi API backend trực tiếp; thao tác được ẩn theo `permissions` từ `GET /api/auth/me` và vẫn được backend kiểm tra quyền.
+- Ảnh bằng chứng giao hàng được tải qua `POST /api/staff/shipping/proof-image`, sau đó URL trả về được gắn vào bằng chứng giao hàng.
+- Duyệt phiếu điều chỉnh tồn kho là quyền của chủ cửa hàng (`APPROVE_SHOP_PROMO`), không phải quyền của nhân viên kho; mobile chỉ tạo phiếu và theo dõi trạng thái chờ duyệt.
+- Backend hiện chuyển đơn sang `PACKED` sau thao tác đóng gói; picking và packing chưa có trạng thái trung gian riêng.

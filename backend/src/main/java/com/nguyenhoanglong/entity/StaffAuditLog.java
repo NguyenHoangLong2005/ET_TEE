@@ -17,8 +17,6 @@ public class StaffAuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public StaffAuditLog() {}
-
     public StaffAuditLog(User staff, User actor, String action, String oldValue, String newValue) {
         this.staff = staff;
         this.actor = actor;

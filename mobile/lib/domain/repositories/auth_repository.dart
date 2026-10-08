@@ -1,6 +1,8 @@
 import '../entities/app_role.dart';
 
 abstract class AuthRepository {
+  StaffProfile? get cachedProfile;
+
   Future<void> login(String email, String password);
 
   Future<void> logout();

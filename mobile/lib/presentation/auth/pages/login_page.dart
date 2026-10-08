@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/router/app_router.dart';
+import '../../../domain/entities/app_role.dart';
 import '../../../domain/repositories/auth_repository.dart';
 
+/// Màn hình vào ứng dụng. Không có form đăng nhập: chọn vai trò để dùng tài
+/// khoản demo tương ứng, hoặc tự động khôi phục phiên đã lưu.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -12,54 +15,66 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _obscure = true;
-  bool _loading = false;
+  static const _demoPassword = 'Demo@123456';
+
+  static const _roles = [
+    (AppRole.salesStaff, 'Nhân viên Bán hàng', 'sales@et.tee',
+        Icons.point_of_sale_outlined),
+    (AppRole.warehouseStaff, 'Nhân viên Kho', 'warehouse@et.tee',
+        Icons.warehouse_outlined),
+    (AppRole.shippingStaff, 'Nhân viên Vận chuyển', 'shipping@et.tee',
+        Icons.local_shipping_outlined),
+  ];
+
+  bool _booting = true;
   String? _error;
 
   @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _boot();
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  /// Đã có token hợp lệ -> vào thẳng màn hình theo vai trò, không cần chọn.
+  Future<void> _boot() async {
+    try {
+      await sl<AuthRepository>().restoreSession();
+      if (!mounted) return;
+      await redirectByRole(context);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _booting = false);
+    }
+  }
 
+  Future<void> _loginAs(String email) async {
     setState(() {
-      _loading = true;
+      _booting = true;
       _error = null;
     });
-
     try {
-      await sl<AuthRepository>().login(
-        _emailCtrl.text.trim(),
-        _passwordCtrl.text,
-      );
+      await sl<AuthRepository>().login(email, _demoPassword);
       if (!mounted) return;
       await redirectByRole(context);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = _message(e));
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      setState(() {
+        _booting = false;
+        _error = _message(e);
+      });
     }
   }
 
   String _message(Object e) {
     final text = '$e';
     if (text.contains('401') || text.toLowerCase().contains('unauthorized')) {
-      return 'Sai email hoặc mật khẩu.';
+      return 'Sai tài khoản hoặc mật khẩu demo.';
     }
-    if (text.contains('403')) return 'Tài khoản đã bị khóa.';
     if (text.toLowerCase().contains('connection') ||
         text.toLowerCase().contains('network')) {
       return 'Không kết nối được tới máy chủ. Kiểm tra backend đã chạy chưa.';
     }
-    return 'Đăng nhập thất bại: $text';
+    return 'Không vào được: $text';
   }
 
   @override
@@ -69,74 +84,48 @@ class _LoginPageState extends State<LoginPage> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'ET Tee Staff',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Đăng nhập để bắt đầu ca làm việc',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  if (_error != null) ...[
-                    _ErrorBanner(message: _error!),
-                    const SizedBox(height: 16),
-                  ],
-                  TextFormField(
-                    controller: _emailCtrl,
-                    enabled: !_loading,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.mail_outline),
-                    ),
-                    validator: (v) =>
-                        (v == null || !v.contains('@')) ? 'Email không hợp lệ' : null,
-                  ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'ET Tee Staff',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Chọn vai trò để bắt đầu ca làm việc',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                if (_error != null) ...[
+                  _ErrorBanner(message: _error!),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordCtrl,
-                    enabled: !_loading,
-                    obscureText: _obscure,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      labelText: 'Mật khẩu',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
+                ],
+                if (_booting)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: CircularProgressIndicator(),
+                  )
+                else
+                  for (final (_, label, email, icon) in _roles)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: FilledButton.icon(
+                        onPressed: () => _loginAs(email),
+                        icon: Icon(icon),
+                        label: Text(label),
                       ),
                     ),
-                    onFieldSubmitted: (_) => _submit(),
-                    validator: (v) => (v == null || v.length < 6)
-                        ? 'Mật khẩu tối thiểu 6 ký tự'
-                        : null,
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _loading ? null : _submit,
-                    child: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Đăng nhập'),
-                  ),
-                ],
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tài khoản demo: ${_roles.first.$3} / $_demoPassword',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
             ),
           ),
         ),

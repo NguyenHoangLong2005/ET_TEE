@@ -19,12 +19,6 @@ public class CartController {
     private final BehaviorEventService behaviorEventService;
     private final UserRepository userRepository;
 
-    public CartController(CartService cartService, BehaviorEventService behaviorEventService, UserRepository userRepository) {
-        this.cartService = cartService;
-        this.behaviorEventService = behaviorEventService;
-        this.userRepository = userRepository;
-    }
-
     private String getCurrentUserEmail() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {

@@ -4,6 +4,7 @@ import '../../../../core/di/injector.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
 import '../../../../domain/repositories/warehouse_repository.dart';
 import '../controllers/warehouse_controller.dart';
 
@@ -40,7 +41,8 @@ class _WarehouseReservationsPageState extends State<WarehouseReservationsPage> {
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _approve(StockReservation r) async {
@@ -69,14 +71,22 @@ class _WarehouseReservationsPageState extends State<WarehouseReservationsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _controller.isLoading ? null : _controller.loadReservations,
+            onPressed:
+                _controller.isLoading ? null : _controller.loadReservations,
           ),
         ],
       ),
       body: _controller.isLoading && items.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : items.isEmpty
-              ? const EmptyState(message: 'Không có yêu cầu giữ hàng nào.')
+              ? _controller.errorMessage == null
+                  ? const EmptyState(
+                      message: 'Không có yêu cầu giữ hàng nào.',
+                    )
+                  : ErrorRetryView(
+                      message: _controller.errorMessage!,
+                      onRetry: () => _controller.loadReservations(),
+                    )
               : RefreshIndicator(
                   onRefresh: _controller.loadReservations,
                   child: ListView.separated(
@@ -96,7 +106,9 @@ class _WarehouseReservationsPageState extends State<WarehouseReservationsPage> {
                                   Expanded(
                                     child: Text(
                                       'Đơn #${r.orderId}',
-                                      style: Theme.of(context).textTheme.titleMedium,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
                                     ),
                                   ),
                                   Chip(
@@ -114,22 +126,25 @@ class _WarehouseReservationsPageState extends State<WarehouseReservationsPage> {
                                 ),
                               if (r.isPending) ...[
                                 const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: FilledButton(
-                                        onPressed: () => _approve(r),
-                                        child: const Text('Duyệt'),
+                                PermissionGate(
+                                  permission: 'HOLD_STOCK_ORDER',
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: FilledButton(
+                                          onPressed: () => _approve(r),
+                                          child: const Text('Duyệt'),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: () => _reject(r),
-                                        child: const Text('Từ chối'),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => _reject(r),
+                                          child: const Text('Từ chối'),
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ],
@@ -203,7 +218,7 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
     super.initState();
     _controller.addListener(_onChange);
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _controller.loadAdjustments(),
+      (_) => _controller.loadAdjustmentData(),
     );
   }
 
@@ -221,11 +236,8 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _approveAdjustment(InventoryAdjustment a) async {
-    _toast(await _controller.approveAdjustment(a.id) ?? 'Đã duyệt');
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _create() async {
@@ -242,10 +254,10 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
     }
     _toast(
       await _controller.createAdjustment(
-        id,
-        difference: difference,
-        reason: reason,
-      ) ??
+            id,
+            difference: difference,
+            reason: reason,
+          ) ??
           'Đã gửi phiếu điều chỉnh',
     );
   }
@@ -260,7 +272,8 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _controller.isLoading ? null : _controller.loadAdjustments,
+            onPressed:
+                _controller.isLoading ? null : _controller.loadAdjustments,
           ),
         ],
       ),
@@ -301,10 +314,13 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
                     decoration: const InputDecoration(labelText: 'Lý do'),
                   ),
                   const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: _create,
-                    icon: const Icon(Icons.send_outlined),
-                    label: const Text('Gửi phiếu điều chỉnh'),
+                  PermissionGate(
+                    permission: 'ADJUST_STOCK',
+                    child: FilledButton.icon(
+                      onPressed: _create,
+                      icon: const Icon(Icons.send_outlined),
+                      label: const Text('Gửi phiếu điều chỉnh'),
+                    ),
                   ),
                 ],
               ),
@@ -315,7 +331,14 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
             child: _controller.isLoading && items.isEmpty
                 ? const ListSkeleton(itemCount: 4)
                 : items.isEmpty
-                    ? const EmptyState(message: 'Chưa có phiếu điều chỉnh nào.')
+                    ? _controller.errorMessage == null
+                        ? const EmptyState(
+                            message: 'Chưa có phiếu điều chỉnh nào.',
+                          )
+                        : ErrorRetryView(
+                            message: _controller.errorMessage!,
+                            onRetry: () => _controller.loadAdjustmentData(),
+                          )
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: items.length,
@@ -332,9 +355,10 @@ class _WarehouseAdjustmentsPageState extends State<WarehouseAdjustmentsPage> {
                               ),
                               isThreeLine: true,
                               trailing: a.isPending
-                                  ? FilledButton.tonal(
-                                      onPressed: () => _approveAdjustment(a),
-                                      child: const Text('Duyệt'),
+                                  ? const Text(
+                                      'Chờ chủ cửa hàng duyệt',
+                                      textAlign: TextAlign.end,
+                                      style: TextStyle(fontSize: 11),
                                     )
                                   : null,
                             ),

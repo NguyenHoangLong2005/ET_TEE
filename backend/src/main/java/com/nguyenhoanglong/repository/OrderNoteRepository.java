@@ -2,13 +2,11 @@ package com.nguyenhoanglong.repository;
 
 import com.nguyenhoanglong.entity.OrderNote;
 import org.springframework.data.jpa.repository.JpaRepository;
-<<<<<<< HEAD
-import org.springframework.stereotype.Repository;
-=======
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.util.Collection;
->>>>>>> a95c916c376b319b54c00d23038a28964e6de658
 import java.util.List;
 
 @Repository

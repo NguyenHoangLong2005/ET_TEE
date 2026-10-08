@@ -4,6 +4,8 @@ import '../../../../core/di/injector.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
+import '../../../../domain/repositories/auth_repository.dart';
 import '../../../../domain/repositories/warehouse_repository.dart';
 import '../controllers/warehouse_controller.dart';
 
@@ -18,16 +20,14 @@ class WarehouseStocktakePage extends StatefulWidget {
 class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
   late final WarehouseController _controller = sl<WarehouseController>();
   final _locationCtrl = TextEditingController();
-  int _createdBy = 0;
+  final int? _createdBy = sl<AuthRepository>().cachedProfile?.id;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onChange);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.loadStocktakes();
-      _controller.loadInventory();
-    });
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _controller.loadStocktakes());
   }
 
   @override
@@ -43,20 +43,26 @@ class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _create() async {
     final location = _locationCtrl.text.trim();
+    final createdBy = _createdBy;
     if (location.isEmpty) {
       _toast('Cần nhập vị trí cần kiểm kê');
       return;
     }
+    if (createdBy == null) {
+      _toast('Không xác định được tài khoản đang đăng nhập');
+      return;
+    }
     _toast(
       await _controller.createStocktake(
-        warehouseLocation: location,
-        createdBy: _createdBy,
-      ) ??
+            warehouseLocation: location,
+            createdBy: createdBy,
+          ) ??
           'Đã tạo phiếu kiểm kê',
     );
   }
@@ -82,7 +88,8 @@ class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _controller.isLoading ? null : _controller.loadStocktakes,
+            onPressed:
+                _controller.isLoading ? null : _controller.loadStocktakes,
           ),
         ],
       ),
@@ -97,22 +104,22 @@ class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
                 children: [
                   TextField(
                     controller: _locationCtrl,
-                    decoration: const InputDecoration(labelText: 'Vị trí kiểm kê'),
+                    decoration:
+                        const InputDecoration(labelText: 'Vị trí kiểm kê'),
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    initialValue: '0',
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'ID người kiểm kê',
+                  Text(
+                    'Người kiểm kê: ${sl<AuthRepository>().cachedProfile?.fullName ?? 'Nhân viên'}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  PermissionGate(
+                    permission: 'COUNT_STOCK',
+                    child: FilledButton.icon(
+                      onPressed: _createdBy == null ? null : _create,
+                      icon: const Icon(Icons.add_task),
+                      label: const Text('Tạo phiếu kiểm kê'),
                     ),
-                    onChanged: (v) => _createdBy = int.tryParse(v.trim()) ?? 0,
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: _create,
-                    icon: const Icon(Icons.add_task),
-                    label: const Text('Tạo phiếu kiểm kê'),
                   ),
                 ],
               ),
@@ -123,7 +130,14 @@ class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
             child: _controller.isLoading && items.isEmpty
                 ? const ListSkeleton(itemCount: 4)
                 : items.isEmpty
-                    ? const EmptyState(message: 'Chưa có phiếu kiểm kê nào.')
+                    ? _controller.errorMessage == null
+                        ? const EmptyState(
+                            message: 'Chưa có phiếu kiểm kê nào.',
+                          )
+                        : ErrorRetryView(
+                            message: _controller.errorMessage!,
+                            onRetry: () => _controller.loadStocktakes(),
+                          )
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: items.length,
@@ -138,9 +152,12 @@ class _WarehouseStocktakePageState extends State<WarehouseStocktakePage> {
                               ),
                               isThreeLine: true,
                               trailing: s.status != 'COMPLETED'
-                                  ? OutlinedButton(
-                                      onPressed: () => _submitCount(s),
-                                      child: const Text('Nhập số'),
+                                  ? PermissionGate(
+                                      permission: 'COUNT_STOCK',
+                                      child: OutlinedButton(
+                                        onPressed: () => _submitCount(s),
+                                        child: const Text('Nhập số'),
+                                      ),
                                     )
                                   : const Icon(Icons.check, size: 18),
                             ),
@@ -186,7 +203,8 @@ class _ActualDialogState extends State<_ActualDialog> {
           child: const Text('Hủy'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(int.tryParse(_ctrl.text.trim())),
+          onPressed: () =>
+              Navigator.of(context).pop(int.tryParse(_ctrl.text.trim())),
           child: const Text('Lưu'),
         ),
       ],

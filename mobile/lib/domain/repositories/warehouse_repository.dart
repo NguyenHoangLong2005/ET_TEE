@@ -7,11 +7,14 @@ abstract class WarehouseRepository {
 
   Future<List<Map<String, dynamic>>> getCatalogProducts();
 
+  Future<List<ProductVariantOption>> getProductVariants(int productId);
+
   Future<InventoryItem> inbound({
     required int productId,
     required String productName,
     required int quantity,
     String? location,
+    int? variantId,
   });
 
   Future<Map<String, dynamic>> countInbound(
@@ -29,8 +32,6 @@ abstract class WarehouseRepository {
     required String reason,
   });
 
-  Future<void> approveAdjustment(int id);
-
   Future<List<StockReservation>> getReservations();
 
   Future<void> approveReservation(String reservationId);
@@ -40,8 +41,6 @@ abstract class WarehouseRepository {
   Future<void> startPicking(int orderId);
 
   Future<void> completePicking(int orderId);
-
-  Future<void> pack(int orderId);
 
   Future<Map<String, dynamic>> getLabelInfo(int orderId);
 
@@ -101,23 +100,68 @@ class InventoryItem {
       );
 }
 
+class ProductVariantOption {
+  const ProductVariantOption({
+    required this.id,
+    this.sku,
+    this.color,
+    this.size,
+    this.availableQuantity,
+  });
+
+  final int id;
+  final String? sku;
+  final String? color;
+  final String? size;
+  final int? availableQuantity;
+
+  String get label {
+    final attributes =
+        [color, size].whereType<String>().where((v) => v.isNotEmpty);
+    final text = attributes.join(' / ');
+    return text.isEmpty ? (sku ?? 'Biến thể #$id') : text;
+  }
+
+  factory ProductVariantOption.fromJson(Map<String, dynamic> json) =>
+      ProductVariantOption(
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        sku: json['sku'] as String?,
+        color: json['color'] as String?,
+        size: json['size'] as String?,
+        availableQuantity: (json['availableQuantity'] as num?)?.toInt(),
+      );
+}
+
 class InboundOrder {
   const InboundOrder({
     required this.id,
     required this.status,
+    this.productName,
+    this.quantity,
     this.location,
+    this.supplier,
+    this.note,
     this.createdAt,
   });
 
   final int id;
   final String status;
+  final String? productName;
+  final int? quantity;
   final String? location;
+  final String? supplier;
+  final String? note;
   final DateTime? createdAt;
 
   factory InboundOrder.fromJson(Map<String, dynamic> json) => InboundOrder(
         id: (json['id'] as num?)?.toInt() ?? 0,
         status: json['status'] as String? ?? '',
-        location: json['location'] as String? ?? json['warehouseLocation'] as String?,
+        productName: json['productName'] as String?,
+        quantity: (json['quantity'] as num?)?.toInt(),
+        location:
+            json['location'] as String? ?? json['warehouseLocation'] as String?,
+        supplier: json['supplier'] as String?,
+        note: json['note'] as String?,
         createdAt: json['createdAt'] == null
             ? null
             : DateTime.tryParse('${json['createdAt']}'),

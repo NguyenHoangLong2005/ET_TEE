@@ -16,7 +16,9 @@ class WarehouseRemoteDataSource {
       '$_base/inventory',
       parse: (raw) => raw as List<dynamic>,
     );
-    return data.map((e) => InventoryItem.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => InventoryItem.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<InboundOrder>> getInboundHistory() async {
@@ -46,6 +48,7 @@ class WarehouseRemoteDataSource {
     required String productName,
     required int quantity,
     String? location,
+    int? variantId,
   }) async {
     final data = await _api.post<Map<String, dynamic>>(
       '$_base/inbound',
@@ -54,6 +57,7 @@ class WarehouseRemoteDataSource {
         'productName': productName,
         'quantity': quantity,
         'location': location,
+        if (variantId != null) 'variantId': variantId,
       },
       parse: (raw) => raw as Map<String, dynamic>,
     );
@@ -66,6 +70,16 @@ class WarehouseRemoteDataSource {
       parse: (raw) => raw as List<dynamic>,
     );
     return data.cast<Map<String, dynamic>>();
+  }
+
+  Future<List<ProductVariantOption>> getProductVariants(int productId) async {
+    final data = await _api.get<List<dynamic>>(
+      '$_base/products/$productId/variants',
+      parse: (raw) => raw as List<dynamic>,
+    );
+    return data
+        .map((e) => ProductVariantOption.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>> countInbound(
@@ -113,10 +127,6 @@ class WarehouseRemoteDataSource {
     return InventoryAdjustment.fromJson(data);
   }
 
-  Future<void> approveAdjustment(int id) async {
-    await _api.post<dynamic>('$_base/adjustments/$id/approve');
-  }
-
   // ─── Giu hang cho don ──────────────────────────────────────────────────────
 
   Future<List<StockReservation>> getReservations() async {
@@ -150,10 +160,6 @@ class WarehouseRemoteDataSource {
     await _api.post<dynamic>('$_base/orders/$orderId/picking/complete');
   }
 
-  Future<void> pack(int orderId) async {
-    await _api.post<dynamic>('$_base/orders/$orderId/packing');
-  }
-
   Future<Map<String, dynamic>> getLabelInfo(int orderId) async {
     return _api.get<Map<String, dynamic>>(
       '$_base/orders/$orderId/label',
@@ -172,7 +178,9 @@ class WarehouseRemoteDataSource {
       '$_base/stocktakes',
       parse: (raw) => raw as List<dynamic>,
     );
-    return data.map((e) => Stocktake.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => Stocktake.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Stocktake> createStocktake({

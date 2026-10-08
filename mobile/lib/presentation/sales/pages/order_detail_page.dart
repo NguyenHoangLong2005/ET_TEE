@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/di/injector.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/widgets/status_badge.dart';
+import '../../../../domain/entities/order.dart';
 import '../../../../domain/entities/order_status.dart';
 import '../controllers/sales_controller.dart';
 
@@ -25,17 +27,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
-  final _productCtrl = TextEditingController();
   final _qtyCtrl = TextEditingController();
   final _cancelCtrl = TextEditingController();
 
   bool _prefilled = false;
+  int? _selectedHoldProductId;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onChange);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _controller.openOrder(widget.orderId));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _controller.openOrder(widget.orderId));
   }
 
   @override
@@ -46,7 +49,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
     _noteCtrl.dispose();
-    _productCtrl.dispose();
     _qtyCtrl.dispose();
     _cancelCtrl.dispose();
     super.dispose();
@@ -97,13 +99,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   }
 
   Future<void> _requestHold() async {
-    final productId = int.tryParse(_productCtrl.text.trim());
+    final productId = _selectedHoldProductId;
     final qty = int.tryParse(_qtyCtrl.text.trim());
     if (productId == null || qty == null || qty <= 0) {
-      _toast('Cần nhập mã sản phẩm và số lượng hợp lệ');
+      _toast('Chọn sản phẩm trong đơn và nhập số lượng hợp lệ');
       return;
     }
-    final result = await _controller.requestHold(widget.orderId, productId, qty);
+    final result =
+        await _controller.requestHold(widget.orderId, productId, qty);
     if (!mounted) return;
     _toast(result ?? 'Đã gửi yêu cầu giữ hàng');
   }
@@ -142,6 +145,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final result = await _controller.confirmOrder(widget.orderId);
     if (!mounted) return;
     _toast(result ?? 'Đã xác nhận đơn');
+  }
+
+  List<OrderLine> _holdProducts(Order order) {
+    final byProductId = <int, OrderLine>{};
+    for (final item in order.items) {
+      if (item.productId > 0) {
+        byProductId.putIfAbsent(item.productId, () => item);
+      }
+    }
+    return byProductId.values.toList();
+  }
+
+  String _variantLabel(OrderLine item) {
+    final variant = [item.color, item.size]
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .join(' / ');
+    return variant.isEmpty ? '' : ' · $variant';
   }
 
   @override
@@ -211,129 +232,172 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ),
           ),
           const SizedBox(height: 16),
-          _Section(
-            title: 'Xác minh thông tin nhận hàng',
-            child: Column(
-              children: [
-                TextField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Tên người nhận'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Số điện thoại'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _addressCtrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Địa chỉ nhận hàng'),
-                ),
-                const SizedBox(height: 12),
-                FilledButton.icon(
-                  onPressed: busy ? null : _verify,
-                  icon: const Icon(Icons.verified_outlined),
-                  label: const Text('Lưu thông tin đã xác minh'),
-                ),
-              ],
+          PermissionGate(
+            permission: 'VERIFY_ORDER',
+            child: _Section(
+              title: 'Xác minh thông tin nhận hàng',
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _nameCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Tên người nhận'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration:
+                        const InputDecoration(labelText: 'Số điện thoại'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _addressCtrl,
+                    maxLines: 3,
+                    decoration:
+                        const InputDecoration(labelText: 'Địa chỉ nhận hàng'),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: busy ? null : _verify,
+                    icon: const Icon(Icons.verified_outlined),
+                    label: const Text('Lưu thông tin đã xác minh'),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          _Section(
-            title: 'Xác nhận / Hủy đơn',
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: busy ? null : _confirm,
-                        icon: const Icon(Icons.check_circle_outline),
-                        label: const Text('Xác nhận'),
+          PermissionGate(
+            permission: 'VERIFY_ORDER',
+            child: _Section(
+              title: 'Xác nhận / Hủy đơn',
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: busy ? null : _confirm,
+                          icon: const Icon(Icons.check_circle_outline),
+                          label: const Text('Xác nhận'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _cancelCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Lý do hủy đơn'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : _cancel,
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text('Hủy đơn hàng'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          PermissionGate(
+            permission: 'REQUEST_STOCK_HOLD',
+            child: _Section(
+              title: 'Yêu cầu giữ hàng',
+              child: Column(
+                children: [
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedHoldProductId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Sản phẩm trong đơn',
+                    ),
+                    items: _holdProducts(order)
+                        .map(
+                          (item) => DropdownMenuItem<int>(
+                            value: item.productId,
+                            child: Text(
+                              '${item.productName} · SL ${item.quantity}'
+                              '${_variantLabel(item)}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedHoldProductId = value),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _qtyCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(labelText: 'Số lượng giữ'),
+                  ),
+                  if (order.items.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'Đơn chưa có thông tin sản phẩm để tạo yêu cầu giữ hàng.',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _cancelCtrl,
-                  decoration: const InputDecoration(labelText: 'Lý do hủy đơn'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: busy ? null : _cancel,
-                  icon: const Icon(Icons.cancel_outlined),
-                  label: const Text('Hủy đơn hàng'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _Section(
-            title: 'Yêu cầu giữ hàng',
-            child: Column(
-              children: [
-                TextField(
-                  controller: _productCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Mã sản phẩm',
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : _requestHold,
+                    icon: const Icon(Icons.lock_outline),
+                    label: const Text('Gửi yêu cầu giữ hàng'),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _qtyCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Số lượng giữ'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: busy ? null : _requestHold,
-                  icon: const Icon(Icons.lock_outline),
-                  label: const Text('Gửi yêu cầu giữ hàng'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          _Section(
-            title: 'Ghi chú xử lý',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextField(
-                  controller: _noteCtrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Nội dung ghi chú'),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: busy ? null : _addNote,
-                  icon: const Icon(Icons.note_add_outlined),
-                  label: const Text('Thêm ghi chú'),
-                ),
-                const SizedBox(height: 12),
-                if (_controller.notes.isEmpty)
-                  const Text(
-                    'Chưa có ghi chú nào.',
-                    style: TextStyle(fontSize: 13),
-                  )
-                else
-                  ..._controller.notes.map(
-                    (n) => ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(n.content, style: const TextStyle(fontSize: 13)),
-                      subtitle: Text(
-                        '${n.createdByName ?? ''} · '
-                        '${Formatters.dateTime(n.createdAt)}',
-                        style: const TextStyle(fontSize: 11),
+          PermissionGate(
+            permission: 'PROCESS_ORDER_NOTE',
+            child: _Section(
+              title: 'Ghi chú xử lý',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _noteCtrl,
+                    maxLines: 3,
+                    decoration:
+                        const InputDecoration(labelText: 'Nội dung ghi chú'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : _addNote,
+                    icon: const Icon(Icons.note_add_outlined),
+                    label: const Text('Thêm ghi chú'),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_controller.notes.isEmpty)
+                    const Text(
+                      'Chưa có ghi chú nào.',
+                      style: TextStyle(fontSize: 13),
+                    )
+                  else
+                    ..._controller.notes.map(
+                      (n) => ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(n.content,
+                            style: const TextStyle(fontSize: 13)),
+                        subtitle: Text(
+                          '${n.createdByName ?? ''} · '
+                          '${Formatters.dateTime(n.createdAt)}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

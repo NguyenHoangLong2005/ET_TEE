@@ -1,14 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injector.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/widgets/role_shell.dart';
 import '../../../../core/widgets/stat_card.dart';
 import '../../../../core/widgets/status_badge.dart';
 import '../../../../domain/entities/order_status.dart';
+import '../../../../domain/repositories/auth_repository.dart';
 import '../../../../domain/repositories/shipping_repository.dart';
 import '../controllers/shipping_controller.dart';
 
@@ -45,7 +50,8 @@ class _ShippingHomePageState extends State<ShippingHomePage>
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// Tai ca 4 nhom du lieu o mot lan: kien sang sang, van don, ngoai le, COD.
@@ -53,7 +59,12 @@ class _ShippingHomePageState extends State<ShippingHomePage>
     await _controller.loadReadyPackages();
     await _controller.loadShipments();
     await _controller.loadExceptions();
-    await _controller.loadCod();
+    final profile = sl<AuthRepository>().cachedProfile;
+    if (profile != null &&
+        profile.has('RECONCILE_COD') &&
+        profile.has('MANAGE_WAYBILL')) {
+      await _controller.loadCod();
+    }
   }
 
   @override
@@ -185,7 +196,8 @@ class _ReadyTab extends StatelessWidget {
                       ),
                       if (p.isCod)
                         Chip(
-                          label: Text('COD ${Formatters.currency(p.codAmount)}'),
+                          label:
+                              Text('COD ${Formatters.currency(p.codAmount)}'),
                           visualDensity: VisualDensity.compact,
                         ),
                     ],
@@ -196,12 +208,15 @@ class _ReadyTab extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: FilledButton.icon(
-                          onPressed: controller.isBusy(p.orderId)
-                              ? null
-                              : () => _createShipment(context, p),
-                          icon: const Icon(Icons.qr_code_2_outlined),
-                          label: const Text('Tạo vận đơn'),
+                        child: PermissionGate(
+                          permission: 'MANAGE_WAYBILL',
+                          child: FilledButton.icon(
+                            onPressed: controller.isBusy(p.orderId)
+                                ? null
+                                : () => _createShipment(context, p),
+                            icon: const Icon(Icons.qr_code_2_outlined),
+                            label: const Text('Tạo vận đơn'),
+                          ),
                         ),
                       ),
                     ],
@@ -245,13 +260,29 @@ class _ShipmentsTab extends StatelessWidget {
   }
 
   Future<void> _submitPod(BuildContext context, Shipment s) async {
-    final proof = await showDialog<PodProof>(
+    final form = await showDialog<_PodForm>(
       context: context,
       builder: (ctx) => const _PodDialog(),
     );
-    if (proof == null) return;
+    if (form == null) return;
+
+    String imageUrl;
+    try {
+      imageUrl = await controller.uploadPodImage(s.id, File(form.image.path));
+    } catch (error) {
+      onToast('Không tải được ảnh bằng chứng: $error');
+      return;
+    }
     onToast(
-      await controller.submitPod(s.id, proof) ?? 'Đã gửi bằng chứng giao hàng',
+      await controller.submitPod(
+            s.id,
+            PodProof(
+              receiverName: form.receiverName,
+              imageUrl: imageUrl,
+              note: form.note,
+            ),
+          ) ??
+          'Đã gửi bằng chứng giao hàng',
     );
   }
 
@@ -290,44 +321,63 @@ class _ShipmentsTab extends StatelessWidget {
                   ),
                   Text('Hãng: ${s.carrierName ?? '—'}'),
                   Text('Mã vận đơn: ${s.trackingCode ?? '—'}'),
-                  if (s.isCod)
-                    Text('COD: ${Formatters.currency(s.codAmount)}'),
+                  if (s.isCod) Text('COD: ${Formatters.currency(s.codAmount)}'),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       if (s.trackingCode == null)
-                        OutlinedButton(
-                          onPressed: busy ? null : () => _attachTracking(context, s),
-                          child: const Text('Gắn mã vận đơn'),
+                        PermissionGate(
+                          permission: 'MANAGE_WAYBILL',
+                          child: OutlinedButton(
+                            onPressed:
+                                busy ? null : () => _attachTracking(context, s),
+                            child: const Text('Gắn mã vận đơn'),
+                          ),
                         ),
                       if (s.status == ShipmentStatus.pending ||
                           s.status == ShipmentStatus.handedOver)
-                        FilledButton.tonal(
-                          onPressed: busy ? null : () => _confirmHandover(s),
-                          child: const Text('Xác nhận bàn giao'),
+                        PermissionGate(
+                          permission: 'CONFIRM_HANDOVER',
+                          alsoRequire: const ['MANAGE_WAYBILL'],
+                          child: FilledButton.tonal(
+                            onPressed: busy ? null : () => _confirmHandover(s),
+                            child: const Text('Xác nhận bàn giao'),
+                          ),
                         ),
                       if (s.status == ShipmentStatus.handedOver)
-                        FilledButton.tonal(
-                          onPressed: busy ? null : () => _startShipping(s),
-                          child: const Text('Bắt đầu giao'),
+                        PermissionGate(
+                          permission: 'MANAGE_WAYBILL',
+                          child: FilledButton.tonal(
+                            onPressed: busy ? null : () => _startShipping(s),
+                            child: const Text('Bắt đầu giao'),
+                          ),
                         ),
                       if (s.status == ShipmentStatus.inTransit ||
                           s.status == ShipmentStatus.handedOver)
-                        OutlinedButton.icon(
-                          onPressed: busy ? null : () => _submitPod(context, s),
-                          icon: const Icon(Icons.photo_camera_outlined),
-                          label: const Text('Bằng chứng giao hàng'),
+                        PermissionGate(
+                          permission: 'UPLOAD_POD',
+                          alsoRequire: const ['MANAGE_WAYBILL'],
+                          child: OutlinedButton.icon(
+                            onPressed:
+                                busy ? null : () => _submitPod(context, s),
+                            icon: const Icon(Icons.photo_camera_outlined),
+                            label: const Text('Bằng chứng giao hàng'),
+                          ),
                         ),
                       if (s.status == ShipmentStatus.inTransit ||
                           s.status == ShipmentStatus.handedOver)
-                        TextButton.icon(
-                          onPressed: busy
-                              ? null
-                              : () => _createException(context, s),
-                          icon: const Icon(Icons.report_problem_outlined),
-                          label: const Text('Báo ngoại lệ'),
+                        PermissionGate(
+                          permission: 'UPDATE_SHIPPING_EXCEPTION',
+                          alsoRequire: const ['MANAGE_WAYBILL'],
+                          child: TextButton.icon(
+                            onPressed: busy
+                                ? null
+                                : () => _createException(context, s),
+                            icon: const Icon(Icons.report_problem_outlined),
+                            label: const Text('Báo ngoại lệ'),
+                          ),
                         ),
                     ],
                   ),
@@ -348,10 +398,10 @@ class _ShipmentsTab extends StatelessWidget {
     if (result == null) return;
     onToast(
       await controller.createException(
-        shipmentId: s.id,
-        type: result.$1,
-        description: result.$2,
-      ) ??
+            shipmentId: s.id,
+            type: result.$1,
+            description: result.$2,
+          ) ??
           'Đã ghi nhận ngoại lệ',
     );
   }
@@ -365,7 +415,8 @@ class _ExceptionsTab extends StatelessWidget {
 
   Future<void> _resolve(ShippingException e, int shipmentId) async {
     onToast(
-      await controller.resolveException(shipmentId, e.id) ?? 'Đã xử lý ngoại lệ',
+      await controller.resolveException(shipmentId, e.id) ??
+          'Đã xử lý ngoại lệ',
     );
   }
 
@@ -409,9 +460,13 @@ class _ExceptionsTab extends StatelessWidget {
                   if (e.isOpen && e.shipmentId != null)
                     Align(
                       alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => _resolve(e, shipmentId),
-                        child: const Text('Đánh dấu đã xử lý'),
+                      child: PermissionGate(
+                        permission: 'UPDATE_SHIPPING_EXCEPTION',
+                        alsoRequire: const ['MANAGE_WAYBILL'],
+                        child: TextButton(
+                          onPressed: () => _resolve(e, shipmentId),
+                          child: const Text('Đánh dấu đã xử lý'),
+                        ),
                       ),
                     ),
                 ],
@@ -438,68 +493,73 @@ class _CodTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final pending = controller.pendingCod;
 
-    return RefreshIndicator(
-      onRefresh: controller.loadCod,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.payments_outlined),
-              title: const Text('Tổng COD chờ đối soát'),
-              subtitle: Text(
-                '${pending.length} kiện · '
-                '${Formatters.currency(controller.pendingCodTotal)}',
-                style: const TextStyle(fontSize: 15),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (pending.isEmpty)
-            const EmptyState(
-              message: 'Không có COD nào chờ đối soát.',
-              icon: Icons.receipt_long_outlined,
-            )
-          else
-            ...pending.map(
-              (c) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text(c.orderCode ?? 'Kiện #${c.shipmentId}'),
-                  subtitle: Text(
-                    'Hãng: ${c.carrierName ?? '—'}\n'
-                    '${Formatters.currency(c.codAmount)}',
-                  ),
-                  isThreeLine: true,
-                  trailing: FilledButton.tonal(
-                    onPressed: controller.isBusy(c.shipmentId)
-                        ? null
-                        : () => _reconcile(c),
-                    child: const Text('Đối soát'),
-                  ),
+    return PermissionGate(
+      permission: 'RECONCILE_COD',
+      alsoRequire: const ['MANAGE_WAYBILL'],
+      child: RefreshIndicator(
+        onRefresh: controller.loadCod,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.payments_outlined),
+                title: const Text('Tổng COD chờ đối soát'),
+                subtitle: Text(
+                  '${pending.length} kiện · '
+                  '${Formatters.currency(controller.pendingCodTotal)}',
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
             ),
-          const SizedBox(height: 24),
-          Text('Lịch sử đối soát', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          if (controller.reconciliations.isEmpty)
-            const Text('Chưa có phiếu đối soát nào.')
-          else
-            ...controller.reconciliations.map(
-              (r) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text(r.reconciliationCode),
-                  subtitle: Text(
-                    '${Formatters.currency(r.totalCodAmount)} · '
-                    '${r.reconciledByName ?? '—'} · '
-                    '${Formatters.dateTime(r.reconciledAt)}',
+            const SizedBox(height: 16),
+            if (pending.isEmpty)
+              const EmptyState(
+                message: 'Không có COD nào chờ đối soát.',
+                icon: Icons.receipt_long_outlined,
+              )
+            else
+              ...pending.map(
+                (c) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(c.orderCode ?? 'Kiện #${c.shipmentId}'),
+                    subtitle: Text(
+                      'Hãng: ${c.carrierName ?? '—'}\n'
+                      '${Formatters.currency(c.codAmount)}',
+                    ),
+                    isThreeLine: true,
+                    trailing: FilledButton.tonal(
+                      onPressed: controller.isBusy(c.shipmentId)
+                          ? null
+                          : () => _reconcile(c),
+                      child: const Text('Đối soát'),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+            const SizedBox(height: 24),
+            Text('Lịch sử đối soát',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (controller.reconciliations.isEmpty)
+              const Text('Chưa có phiếu đối soát nào.')
+            else
+              ...controller.reconciliations.map(
+                (r) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(r.reconciliationCode),
+                    subtitle: Text(
+                      '${Formatters.currency(r.totalCodAmount)} · '
+                      '${r.reconciledByName ?? '—'} · '
+                      '${Formatters.dateTime(r.reconciledAt)}',
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -595,16 +655,25 @@ class _PodDialog extends StatefulWidget {
 }
 
 class _PodDialogState extends State<_PodDialog> {
+  final _picker = ImagePicker();
   final _nameCtrl = TextEditingController();
-  final _urlCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
+  XFile? _image;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _urlCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final image = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1600,
+    );
+    if (image != null && mounted) setState(() => _image = image);
   }
 
   @override
@@ -620,13 +689,51 @@ class _PodDialogState extends State<_PodDialog> {
               decoration: const InputDecoration(labelText: 'Tên người nhận'),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _urlCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Ảnh chụp (URL)',
-                helperText: 'Nhập URL ảnh sau khi tải lên',
+            if (_image != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(_image!.path),
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              Container(
+                height: 96,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.photo_camera_outlined, size: 32),
               ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: const Text('Chụp ảnh'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Thư viện'),
+                  ),
+                ),
+              ],
             ),
+            if (_image == null)
+              Text(
+                'Cần đính kèm ảnh xác nhận giao hàng.',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             const SizedBox(height: 12),
             TextField(
               controller: _noteCtrl,
@@ -643,24 +750,34 @@ class _PodDialogState extends State<_PodDialog> {
         ),
         FilledButton(
           onPressed: () {
-            if (_nameCtrl.text.trim().isEmpty) return;
+            if (_nameCtrl.text.trim().isEmpty || _image == null) return;
             Navigator.of(context).pop(
-              PodProof(
+              _PodForm(
                 receiverName: _nameCtrl.text.trim(),
-                imageUrl: _urlCtrl.text.trim().isEmpty
-                    ? null
-                    : _urlCtrl.text.trim(),
+                image: _image!,
                 note: _noteCtrl.text.trim().isEmpty
                     ? null
                     : _noteCtrl.text.trim(),
               ),
             );
           },
-          child: const Text('Gửi'),
+          child: const Text('Gửi xác nhận'),
         ),
       ],
     );
   }
+}
+
+class _PodForm {
+  const _PodForm({
+    required this.receiverName,
+    required this.image,
+    this.note,
+  });
+
+  final String receiverName;
+  final XFile image;
+  final String? note;
 }
 
 class _ExceptionDialog extends StatefulWidget {
@@ -671,7 +788,12 @@ class _ExceptionDialog extends StatefulWidget {
 }
 
 class _ExceptionDialogState extends State<_ExceptionDialog> {
-  static const _types = ['KHONG_NHAN', 'SAI_DIA_CHI', 'HANG_HONG', 'KHONG_THANH_TOAN'];
+  static const _types = [
+    'KHONG_NHAN',
+    'SAI_DIA_CHI',
+    'HANG_HONG',
+    'KHONG_THANH_TOAN'
+  ];
 
   String _type = _types.first;
   final _descCtrl = TextEditingController();
@@ -712,7 +834,8 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
           child: const Text('Hủy'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop((_type, _descCtrl.text.trim())),
+          onPressed: () =>
+              Navigator.of(context).pop((_type, _descCtrl.text.trim())),
           child: const Text('Gửi'),
         ),
       ],

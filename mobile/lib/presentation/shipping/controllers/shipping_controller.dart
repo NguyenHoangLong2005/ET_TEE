@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../core/state/base_controller.dart';
 import '../../../domain/entities/order_status.dart';
 import '../../../domain/repositories/shipping_repository.dart';
@@ -91,7 +93,8 @@ class ShippingController extends BaseController {
         await loadShipments();
       }, 'Đã gắn mã vận đơn');
 
-  Future<String?> confirmHandover(int shipmentId) => _guard(shipmentId, () async {
+  Future<String?> confirmHandover(int shipmentId) =>
+      _guard(shipmentId, () async {
         await _repo.confirmHandover(shipmentId);
         await loadShipments();
         await loadReadyPackages();
@@ -136,6 +139,17 @@ class ShippingController extends BaseController {
         await _repo.submitProofOfDelivery(shipmentId, proof);
         await loadShipments();
       }, 'Đã gửi bằng chứng giao hàng');
+
+  Future<String> uploadPodImage(int shipmentId, File image) async {
+    _busyIds.add(shipmentId);
+    notifyListeners();
+    try {
+      return await _repo.uploadProofImage(image);
+    } finally {
+      _busyIds.remove(shipmentId);
+      notifyListeners();
+    }
+  }
 
   Future<String?> reconcileCod(int shipmentId) => _guard(shipmentId, () async {
         await _repo.reconcileCod(shipmentId);

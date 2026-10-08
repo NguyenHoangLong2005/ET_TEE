@@ -23,21 +23,34 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
-        backgroundColor: scheme.surface,
+        backgroundColor: brightness == Brightness.light
+            ? AppColors.surfaceLight
+            : AppColors.surfaceDark,
         foregroundColor: scheme.onSurface,
+        titleTextStyle: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 21,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          side: BorderSide(color: scheme.outlineVariant),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(

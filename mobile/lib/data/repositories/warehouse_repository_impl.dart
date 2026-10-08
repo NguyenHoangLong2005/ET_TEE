@@ -21,21 +21,28 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
       _remote.getCatalogProducts();
 
   @override
+  Future<List<ProductVariantOption>> getProductVariants(int productId) =>
+      _remote.getProductVariants(productId);
+
+  @override
   Future<InventoryItem> inbound({
     required int productId,
     required String productName,
     required int quantity,
     String? location,
+    int? variantId,
   }) =>
       _remote.inbound(
         productId: productId,
         productName: productName,
         quantity: quantity,
         location: location,
+        variantId: variantId,
       );
 
   @override
-  Future<Map<String, dynamic>> countInbound(int inventoryId, int actualQuantity) =>
+  Future<Map<String, dynamic>> countInbound(
+          int inventoryId, int actualQuantity) =>
       _remote.countInbound(inventoryId, actualQuantity);
 
   @override
@@ -43,7 +50,8 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
       _remote.updateLocation(inventoryId, location);
 
   @override
-  Future<List<InventoryAdjustment>> getAdjustments() => _remote.getAdjustments();
+  Future<List<InventoryAdjustment>> getAdjustments() =>
+      _remote.getAdjustments();
 
   @override
   Future<InventoryAdjustment> createAdjustment(
@@ -56,9 +64,6 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
         difference: difference,
         reason: reason,
       );
-
-  @override
-  Future<void> approveAdjustment(int id) => _remote.approveAdjustment(id);
 
   @override
   Future<List<StockReservation>> getReservations() => _remote.getReservations();
@@ -76,9 +81,6 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
 
   @override
   Future<void> completePicking(int orderId) => _remote.completePicking(orderId);
-
-  @override
-  Future<void> pack(int orderId) => _remote.pack(orderId);
 
   @override
   Future<Map<String, dynamic>> getLabelInfo(int orderId) =>

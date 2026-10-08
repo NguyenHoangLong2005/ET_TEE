@@ -45,7 +45,7 @@ VALUES
   (2, NULL, 'Ao nu',       'ao-nu',       'Ao nua cac loai',          NULL, TRUE, 2),
   (3, NULL, 'Quan',        'quan',        'Jean, quan tay, short',   NULL, TRUE, 3),
   (4, NULL, 'Phu kien',    'phu-kien',    'Mu, tui, phu kien',       NULL, TRUE, 4)
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 
 -- ------------------------------------------------------------
@@ -68,7 +68,7 @@ VALUES
   (4, 'Tui xach canvas', 'tui-xach-canvas',
    'Tui xach canvas de vai, dung tich 20L', 'ET.TEE', 199000, NULL, 4, 'UNISEX', 'Canvas', 'Casual',
    'active', now(), now(), FALSE, FALSE, FALSE, 3, 4.1)
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 
 -- ------------------------------------------------------------
@@ -116,61 +116,61 @@ ON CONFLICT (product_id) DO NOTHING;
 -- ------------------------------------------------------------
 INSERT INTO orders
   (id, order_code, user_id, shop_id, customer_name, customer_phone, customer_email,
-   shipping_address, shipping_address_snapshot, status, order_status,
-   payment_method, payment_status, subtotal, shipping_fee, discount_total, total_amount,
-   note, created_at, updated_at)
+   shipping_address, status, order_status, payment_method,
+   payment_status, subtotal, shipping_fee, discount_total,
+   total_amount, cancel_reason, created_at, updated_at)
 VALUES
-  (101, 'ET-DEMO-0101', '11111111-aaaa-4aaa-8aaa-111111111111', 1,
+(101, 'ET-DEMO-0101', '11111111-aaaa-4aaa-8aaa-111111111111', 1,
    'Nguyen Van An', '0901110001', 'khach01@et.tee',
-   '12 Le Loi, Q1, TPHCM', '12 Le Loi, Q1, TPHCM',
+   '12 Le Loi, Q1, TPHCM',
    'PENDING_CONFIRMATION', 'PENDING_CONFIRMATION', 'COD', 'UNPAID',
    547000, 30000, 0, 577000, NULL, now(), now()),
 
-  (102, 'ET-DEMO-0102', '22222222-bbbb-4bbb-222222222222', 1,
+  (102, 'ET-DEMO-0102', '22222222-bbbb-4bbb-8bbb-222222222222', 1,
    'Tran Thi Binh', '0901110002', 'khach02@et.tee',
-   '45 Nguyen Hue, Q1, TPHCM', '45 Nguyen Hue, Q1, TPHCM',
+   '45 Nguyen Hue, Q1, TPHCM',
    'PENDING_CONFIRMATION', 'PENDING_CONFIRMATION', 'BANK_TRANSFER', 'PAID',
    299000, 30000, 0, 329000, 'Khach yeu cau goi truoc', now(), now()),
 
-  (103, 'ET-DEMO-0103', '33333333-cccc-4ccc-333333333333', 1,
+  (103, 'ET-DEMO-0103', '33333333-cccc-4ccc-8ccc-333333333333', 1,
    'Le Van Cuong', '0901110003', 'khach03@et.tee',
-   '78 Dien Bien Phu, Q5, TPHCM', '78 Dien Bien Phu, Q5, TPHCM',
+   '78 Dien Bien Phu, Q5, TPHCM',
    'CONFIRMED', 'CONFIRMED', 'COD', 'UNPAID',
    998000, 30000, 0, 1028000, NULL, now(), now()),
 
   (104, 'ET-DEMO-0104', '11111111-aaaa-4aaa-8aaa-111111111111', 1,
    'Nguyen Van An', '0901110001', 'khach01@et.tee',
-   '12 Le Loi, Q1, TPHCM', '12 Le Loi, Q1, TPHCM',
+   '12 Le Loi, Q1, TPHCM',
    'PICKING', 'PICKING', 'COD', 'UNPAID',
    299000, 30000, 0, 329000, NULL, now(), now()),
 
-  (105, 'ET-DEMO-0105', '22222222-bbbb-4bbb-222222222222', 1,
+  (105, 'ET-DEMO-0105', '22222222-bbbb-4bbb-8bbb-222222222222', 1,
    'Tran Thi Binh', '0901110002', 'khach02@et.tee',
-   '45 Nguyen Hue, Q1, TPHCM', '45 Nguyen Hue, Q1, TPHCM',
+   '45 Nguyen Hue, Q1, TPHCM',
    'PACKED', 'PACKED', 'COD', 'UNPAID',
    399000, 30000, 0, 429000, 'Dong goi ky, giu that', now(), now()),
 
-  (106, 'ET-DEMO-0106', '33333333-cccc-4ccc-333333333333', 1,
+  (106, 'ET-DEMO-0106', '33333333-cccc-4ccc-8ccc-333333333333', 1,
    'Le Van Cuong', '0901110003', 'khach03@et.tee',
-   '78 Dien Bien Phu, Q5, TPHCM', '78 Dien Bien Phu, Q5, TPHCM',
+   '78 Dien Bien Phu, Q5, TPHCM',
    'SHIPPING', 'SHIPPING', 'COD', 'UNPAID',
    699000, 30000, 0, 729000, NULL, now(), now()),
 
   (107, 'ET-DEMO-0107', '11111111-aaaa-4aaa-8aaa-111111111111', 1,
    'Nguyen Van An', '0901110001', 'khach01@et.tee',
-   '12 Le Loi, Q1, TPHCM', '12 Le Loi, Q1, TPHCM',
+   '12 Le Loi, Q1, TPHCM',
    'DELIVERED', 'DELIVERED', 'COD', 'PAID',
    598000, 30000, 0, 628000, 'Da giao thanh cong', now() - interval '3 days', now() - interval '2 days'),
 
-  (108, 'ET-DEMO-0108', '22222222-bbbb-4bbb-222222222222', 1,
+  (108, 'ET-DEMO-0108', '22222222-bbbb-4bbb-8bbb-222222222222', 1,
    'Tran Thi Binh', '0901110002', 'khach02@et.tee',
-   '45 Nguyen Hue, Q1, TPHCM', '45 Nguyen Hue, Q1, TPHCM',
+   '45 Nguyen Hue, Q1, TPHCM',
    'CANCELLED', 'CANCELLED', 'COD', 'UNPAID',
    199000, 30000, 0, 229000, NULL, now(), now()),
   -- SLA da het han: de kiem tra canh bao SLA cua ban hang.
-  (109, 'ET-DEMO-0109', '33333333-cccc-4ccc-333333333333', 1,
+  (109, 'ET-DEMO-0109', '33333333-cccc-4ccc-8ccc-333333333333', 1,
    'Le Van Cuong', '0901110003', 'khach03@et.tee',
-   '78 Dien Bien Phu, Q5, TPHCM', '78 Dien Bien Phu, Q5, TPHCM',
+   '78 Dien Bien Phu, Q5, TPHCM',
    'PENDING_CONFIRMATION', 'PENDING_CONFIRMATION', 'COD', 'UNPAID',
    299000, 30000, 0, 329000, 'Khach lien he nhieu lan, uu tien', now(), now())
 ON CONFLICT (order_code) DO NOTHING;
