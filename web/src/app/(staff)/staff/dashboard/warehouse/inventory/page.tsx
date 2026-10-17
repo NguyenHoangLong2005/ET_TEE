@@ -102,7 +102,7 @@ export default function WarehouseInventoryPage() {
     {
       key: "status",
       header: "Trạng thái",
-      render: (a) => <StatusBadge status={a.status} label={a.status === "APPROVED" ? "Đã duyệt" : "Chờ duyệt"} />,
+      render: (a) => <StatusBadge status={a.status} label={a.status === "APPROVED" ? "Đã duyệt" : "Từ chối"} />,
     },
   ];
 
@@ -122,6 +122,16 @@ export default function WarehouseInventoryPage() {
     e.preventDefault();
     if (!selectedItem || !locationInput.trim()) return;
     setBusy(selectedItem.id); setError("");
+    if (locationInput.trim().length > 20) {
+      toast.error("Vị trí kho quá dài, vui lòng rút gọn dưới 20 ký tự");
+      setBusy(null);
+      return;
+    }
+    if (!/^[A-Z0-9\-]+$/.test(locationInput.trim())) {
+      toast.error("Vị trí kho chỉ được chứa chữ hoa, số và dấu gạch ngang");
+      setBusy(null);
+      return;
+    }
     try {
       await staffAction(`/api/staff/warehouse/inventory/${selectedItem.id}/location`, "PUT", { location: locationInput.trim() });
       toast.success(`Đã cập nhật vị trí kho cho ${selectedItem.productName}`);
@@ -156,6 +166,22 @@ export default function WarehouseInventoryPage() {
     }
     if (!reasonInput.trim()) {
       toast.error("Vui lòng nhập lý do điều chỉnh");
+      return;
+    }
+    if (reasonInput.trim().length < 5) {
+      toast.error("Lý do điều chỉnh quá ngắn, vui lòng mô tả chi tiết hơn");
+      return;
+    }
+    if (reasonInput.trim().length > 200) {
+      toast.error("Lý do điều chỉnh quá dài, vui lòng rút gọn dưới 200 ký tự");
+      return;
+    }
+    if (reasonInput.trim().toLowerCase().includes("test")) {
+      toast.error("Lý do điều chỉnh không được chứa từ 'test'");
+      return;
+    }
+    if (reasonInput.trim().toLowerCase().includes("abc")) {
+      toast.error("Lý do điều chỉnh không được chứa ký tự đặc biệt)");
       return;
     }
 
