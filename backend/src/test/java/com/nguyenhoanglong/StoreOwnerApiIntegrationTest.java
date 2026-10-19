@@ -223,6 +223,190 @@ public class StoreOwnerApiIntegrationTest {
         assertFalse(evals.isEmpty());
     }
 
+    @Autowired
+    private com.nguyenhoanglong.service.MarketingService marketingService;
+
+    @Autowired
+    private SystemNotificationRepository notificationRepository;
+
+    @Autowired
+    private com.nguyenhoanglong.service.SalesNotificationService salesNotificationService;
+
+    private User user(String prefix, Role role, Long shopId) {
+        User u = new User();
+        u.setEmail(prefix + "-" + System.nanoTime() + "@test.local");
+        u.setFullName("Test " + role.name());
+        u.setPasswordHash("hashed_pwd");
+        u.setStatus("ACTIVE");
+        u.setRole(role);
+        u.setShopId(shopId);
+        return userRepository.save(u);
+    }
+
+    private List<SystemNotification> bell(User u) {
+        return notificationRepository.findTop20ByRecipientUserIdOrderByCreatedAtDesc(u.getId());
+    }
+
+    @Test
+    @DisplayName("Case 6: Voucher request rings the owner; revision / approval ring the marketing staff who sent it")
+    public void testCase6_ApprovalNotifications() {
+        Long shopId = 9_100L + (System.nanoTime() % 1000);
+        User owner = user("owner", Role.SHOP_OWNER, shopId);
+        User marketer = user("mkt", Role.MARKETING_STAFF, shopId);
+
+        Voucher v = new Voucher();
+        v.setCode("NOTIF-" + System.nanoTime());
+        v.setName("Voucher thông báo");
+        v.setType("FIXED");
+        v.setDiscountValue(new BigDecimal("30000"));
+        Voucher created = marketingService.createVoucher(v, marketer.getEmail());
+        assertEquals("PENDING_APPROVAL", created.getStatus());
+        assertTrue(bell(owner).stream().anyMatch(n -> "APPROVAL_REQUEST".equals(n.getType())
+                && n.getMessage().contains(created.getCode())));
+
+        // Revision needs a note, then reaches the staff member who created the voucher.
+        assertThrows(ResponseStatusException.class, () -> storeOwnerService.processVoucherApproval(shopId, created.getId(),
+                new StoreApprovalActionDto("VOUCHER", "REVISION_REQUESTED", " "), owner.getEmail()));
+        storeOwnerService.processVoucherApproval(shopId, created.getId(),
+                new StoreApprovalActionDto("VOUCHER", "REVISION_REQUESTED", "Giảm giá quá cao"), owner.getEmail());
+        assertEquals("REVISION_REQUESTED", voucherRepository.findById(created.getId()).orElseThrow().getStatus());
+        assertTrue(bell(marketer).stream().anyMatch(n -> "APPROVAL_REVISION_REQUESTED".equals(n.getType())
+                && n.getMessage().contains("Giảm giá quá cao")));
+
+        // Editing it (the form always sends the entity's default ACTIVE status) resubmits it to the owner.
+        Voucher edit = new Voucher();
+        edit.setType("FIXED");
+        edit.setDiscountValue(new BigDecimal("20000"));
+        assertEquals("PENDING_APPROVAL", marketingService.updateVoucher(created.getId(), edit, marketer.getEmail()).getStatus());
+        assertTrue(bell(owner).stream().anyMatch(n -> n.getTitle().contains("chờ duyệt lại")));
+
+        storeOwnerService.processVoucherApproval(shopId, created.getId(),
+                new StoreApprovalActionDto("VOUCHER", "APPROVED", null), owner.getEmail());
+        assertTrue(bell(marketer).stream().anyMatch(n -> "APPROVAL_APPROVED".equals(n.getType())));
+    }
+
+    @Test
+    @DisplayName("Case 8: Staff edit / delete of an approved voucher waits for the owner; the live voucher is untouched until then")
+    public void testCase8_VoucherChangeRequests() {
+        Long shopId = 9_300L + (System.nanoTime() % 1000);
+        User owner = user("owner", Role.SHOP_OWNER, shopId);
+        User marketer = user("mkt", Role.MARKETING_STAFF, shopId);
+
+        Voucher v = new Voucher();
+        v.setCode("LIVE-" + System.nanoTime());
+        v.setName("Voucher đang chạy");
+        v.setType("FIXED");
+        v.setDiscountValue(new BigDecimal("10000"));
+        Voucher created = marketingService.createVoucher(v, marketer.getEmail());
+        storeOwnerService.processVoucherApproval(shopId, created.getId(),
+                new StoreApprovalActionDto("VOUCHER", "APPROVED", null), owner.getEmail());
+
+        // Edit: becomes a request, live voucher keeps its value.
+        Voucher edit = new Voucher();
+        edit.setType("FIXED");
+        edit.setDiscountValue(new BigDecimal("90000"));
+        var outcome = marketingService.editVoucher(created.getId(), edit, marketer.getEmail());
+        assertTrue(outcome.awaitingApproval());
+        Voucher live = voucherRepository.findById(created.getId()).orElseThrow();
+        assertEquals(0, new BigDecimal("10000").compareTo(live.getDiscountValue()));
+        assertEquals("ACTIVE", live.getStatus());
+        assertTrue(bell(owner).stream().anyMatch(n -> n.getMessage().contains("10000 → 90000")));
+
+        // Only one pending change at a time; delete is blocked meanwhile.
+        ResponseStatusException conflict = assertThrows(ResponseStatusException.class,
+                () -> marketingService.removeVoucher(created.getId(), marketer.getEmail()));
+        assertEquals(HttpStatus.CONFLICT, conflict.getStatusCode());
+
+        StoreApprovalItemDto item = storeOwnerService.getPendingApprovals(shopId).stream()
+                .filter(a -> "VOUCHER_UPDATE".equals(a.getType())).findFirst().orElseThrow();
+        storeOwnerService.processApprovalAction(shopId, item.getApprovalId(),
+                new StoreApprovalActionDto(null, "APPROVED", null), owner.getEmail());
+        assertEquals(0, new BigDecimal("90000").compareTo(voucherRepository.findById(created.getId()).orElseThrow().getDiscountValue()));
+        assertTrue(bell(marketer).stream().anyMatch(n -> "APPROVAL_APPROVED".equals(n.getType())
+                && n.getMessage().contains("Yêu cầu sửa")));
+
+        // Cancelling via the status endpoint can't skip the delete approval.
+        assertThrows(ResponseStatusException.class,
+                () -> marketingService.updateVoucherStatus(created.getId(), "CANCELLED", marketer.getEmail()));
+
+        // Delete: rejected keeps the voucher, approved removes it.
+        assertTrue(marketingService.removeVoucher(created.getId(), marketer.getEmail()).awaitingApproval());
+        String deleteId = storeOwnerService.getPendingApprovals(shopId).stream()
+                .filter(a -> "VOUCHER_DELETE".equals(a.getType())).findFirst().orElseThrow().getApprovalId();
+        storeOwnerService.processApprovalAction(shopId, deleteId,
+                new StoreApprovalActionDto(null, "REJECTED", "Voucher vẫn đang hiệu quả"), owner.getEmail());
+        assertTrue(voucherRepository.findById(created.getId()).isPresent());
+        assertTrue(bell(marketer).stream().anyMatch(n -> "APPROVAL_REJECTED".equals(n.getType())
+                && n.getMessage().contains("Voucher vẫn đang hiệu quả")));
+
+        marketingService.removeVoucher(created.getId(), marketer.getEmail());
+        String deleteAgain = storeOwnerService.getPendingApprovals(shopId).stream()
+                .filter(a -> "VOUCHER_DELETE".equals(a.getType())).findFirst().orElseThrow().getApprovalId();
+        storeOwnerService.processApprovalAction(shopId, deleteAgain,
+                new StoreApprovalActionDto(null, "APPROVED", null), owner.getEmail());
+        assertTrue(voucherRepository.findById(created.getId()).isEmpty());
+
+        // Owners change their vouchers directly.
+        Voucher own = new Voucher();
+        own.setCode("OWN-" + System.nanoTime());
+        own.setName("Voucher chủ shop");
+        own.setType("FIXED");
+        own.setDiscountValue(new BigDecimal("5000"));
+        Voucher ownCreated = marketingService.createVoucher(own, owner.getEmail());
+        assertFalse(marketingService.editVoucher(ownCreated.getId(), edit, owner.getEmail()).awaitingApproval());
+    }
+
+    @Test
+    @DisplayName("Case 9: A rejected voucher's bell opens its edit form; saving the fix resubmits it to the owner")
+    public void testCase9_RejectedVoucherResubmit() {
+        Long shopId = 9_400L + (System.nanoTime() % 1000);
+        User owner = user("owner", Role.SHOP_OWNER, shopId);
+        User marketer = user("mkt", Role.MARKETING_STAFF, shopId);
+
+        Voucher v = new Voucher();
+        v.setCode("REJ-" + System.nanoTime());
+        v.setName("Voucher bị từ chối");
+        v.setType("FIXED");
+        v.setDiscountValue(new BigDecimal("80000"));
+        Voucher created = marketingService.createVoucher(v, marketer.getEmail());
+        storeOwnerService.processVoucherApproval(shopId, created.getId(),
+                new StoreApprovalActionDto("VOUCHER", "REJECTED", "Mức giảm quá cao"), owner.getEmail());
+
+        SystemNotification rejected = bell(marketer).stream()
+                .filter(n -> "APPROVAL_REJECTED".equals(n.getType())).findFirst().orElseThrow();
+        assertEquals("/staff/dashboard/marketing/vouchers?edit=" + created.getId(), rejected.getTargetUrl());
+        assertTrue(rejected.getMessage().contains("gửi lại"));
+
+        int ownerBellBefore = bell(owner).size();
+        Voucher fix = new Voucher();
+        fix.setType("FIXED");
+        fix.setDiscountValue(new BigDecimal("30000"));
+        var outcome = marketingService.editVoucher(created.getId(), fix, marketer.getEmail());
+        assertFalse(outcome.awaitingApproval()); // a draft, edited in place
+        assertEquals("PENDING_APPROVAL", outcome.voucher().getStatus());
+        assertEquals(ownerBellBefore + 1, bell(owner).size());
+        assertTrue(storeOwnerService.getPendingApprovals(shopId).stream()
+                .anyMatch(a -> ("VOUCHER-" + created.getId()).equals(a.getApprovalId())));
+    }
+
+    @Test
+    @DisplayName("Case 7: New orders ring sales staff, not the store owner")
+    public void testCase7_NewOrderBellSkipsOwner() {
+        Long shopId = 9_200L + (System.nanoTime() % 1000);
+        User owner = user("owner", Role.SHOP_OWNER, shopId);
+        User sales = user("sales", Role.SALES_STAFF, shopId);
+
+        Order order = new Order();
+        order.setShopId(shopId);
+        order.setOrderCode("ORD-NOTIF-" + System.nanoTime());
+        order.setCustomerName("Khách test");
+        order.setTotalAmount(100000.0);
+        salesNotificationService.notifyNewOrderAwaitingConfirmation(order);
+
+        assertEquals(1, bell(sales).size());
+        assertTrue(bell(owner).isEmpty());
+    }
+
     @Test
     @DisplayName("Case 5: Fetch shop audit logs")
     public void testCase5_AuditLogs() {

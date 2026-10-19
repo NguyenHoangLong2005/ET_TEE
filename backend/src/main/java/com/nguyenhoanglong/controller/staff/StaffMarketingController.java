@@ -102,8 +102,9 @@ public class StaffMarketingController {
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PutMapping("/vouchers/{id}")
     public ResponseEntity<Voucher> updateVoucher(@PathVariable Long id, @Valid @RequestBody Voucher voucher) {
-        Voucher updated = marketingService.updateVoucher(id, voucher, getCurrentUserIdentifier());
-        return ResponseEntity.ok(updated);
+        // A live voucher comes back unchanged (pendingChange=UPDATE) until the store owner approves.
+        Voucher result = marketingService.editVoucher(id, voucher, getCurrentUserIdentifier()).voucher();
+        return ResponseEntity.ok(result);
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
@@ -117,8 +118,9 @@ public class StaffMarketingController {
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @DeleteMapping("/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> deleteVoucher(@PathVariable Long id) {
-        marketingService.deleteVoucher(id);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Đã xóa voucher"));
+        boolean pending = marketingService.removeVoucher(id, getCurrentUserIdentifier()).awaitingApproval();
+        return ResponseEntity.ok(Map.of("success", true, "pendingApproval", pending,
+                "message", pending ? "Đã gửi yêu cầu xóa voucher, chờ chủ cửa hàng duyệt" : "Đã xóa voucher"));
     }
 
     // ═════════════════════════════════════════════════════════════════════

@@ -43,6 +43,12 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
     private final SupplierRepository supplierRepository;
     private final com.nguyenhoanglong.service.CurrentUserService currentUserService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.nguyenhoanglong.service.ApprovalNotificationService approvalNotifications;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.nguyenhoanglong.service.MarketingService marketingService;
+
     public StoreOwnerServiceImpl(ProductVariantRepository variantRepository,
                                  ManufacturerRepository manufacturerRepository,
                                  SupplierRepository supplierRepository,
@@ -362,10 +368,13 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     }
 
     @Override
-    @Transactional
-    public StoreProductFormDto createProduct(StoreProductFormDto f) {
+    @Transactional(readOnly = true)
+    public void validateNewProduct(StoreProductFormDto f) {
         validateProductForm(f);
+        validateNewVariants(f);
+    }
 
+    private void validateNewVariants(StoreProductFormDto f) {
         if (f.variants == null || f.variants.isEmpty()) {
             throw bad("Cần ít nhất một biến thể (màu/size) để có thể bán sản phẩm");
         }
@@ -378,6 +387,13 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             if (variantRepository.existsBySku(sku)) throw new ResponseStatusException(HttpStatus.CONFLICT, "SKU đã tồn tại: " + sku);
             if (v.stock == null || v.stock < 0) throw bad("Tồn kho của SKU " + sku + " phải từ 0 trở lên");
         }
+    }
+
+    @Override
+    @Transactional
+    public StoreProductFormDto createProduct(StoreProductFormDto f) {
+        validateProductForm(f);
+        validateNewVariants(f);
 
         String base = trimToNull(f.slug) != null ? toSlug(f.slug) : toSlug(f.name);
         if (base.isEmpty()) base = "san-pham";
@@ -585,6 +601,21 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
                     .build());
         }
 
+        // Marketing staff edit / delete of an approved voucher: the voucher keeps running until decided.
+        for (VoucherChangeRequest r : marketingService.getPendingVoucherChanges(shopId)) {
+            boolean delete = "DELETE".equals(r.getAction());
+            String code = voucherRepository.findById(r.getVoucherId()).map(Voucher::getCode).orElse("#" + r.getVoucherId());
+            items.add(StoreApprovalItemDto.builder()
+                    .approvalId("VOUCHER_CHANGE-" + r.getId())
+                    .type(delete ? "VOUCHER_DELETE" : "VOUCHER_UPDATE")
+                    .title((delete ? "Xóa mã giảm giá: " : "Sửa mã giảm giá: ") + code)
+                    .description(r.getSummary())
+                    .requestedBy(r.getRequestedBy())
+                    .status(r.getStatus())
+                    .createdAt(r.getCreatedAt())
+                    .build());
+        }
+
         // Warehouse "Đề xuất nhập hàng": saved as PENDING but never surfaced here before.
         for (RestockRequest r : restockRequestRepository.findByShopIdAndStatusOrderByCreatedAtDesc(shopId, "PENDING")) {
             items.add(StoreApprovalItemDto.builder()
@@ -603,13 +634,23 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         return items;
     }
 
+    /** APPROVED | REJECTED | REVISION_REQUESTED; tu choi va yeu cau chinh sua phai co ghi chu de nhan vien biet sua gi. */
+    private static String approvalAction(StoreApprovalActionDto actionDto) {
+        String action = actionDto.getAction() != null ? actionDto.getAction().trim().toUpperCase() : "";
+        if (!Set.of("APPROVED", "REJECTED", "REVISION_REQUESTED").contains(action)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanh dong phe duyet khong hop le");
+        }
+        if (!"APPROVED".equals(action) && (actionDto.getNote() == null || actionDto.getNote().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "REJECTED".equals(action) ? "Vui lòng nhập lý do từ chối" : "Vui lòng ghi rõ nội dung cần chỉnh sửa");
+        }
+        return action;
+    }
+
     @Override
     @Transactional
     public StoreApprovalItemDto processRestockApproval(Long shopId, Long requestId, StoreApprovalActionDto actionDto, String actorIdOrEmail) {
-        String actionStr = (actionDto.getAction() != null) ? actionDto.getAction().trim().toUpperCase() : "";
-        if (!"APPROVED".equals(actionStr) && !"REJECTED".equals(actionStr)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanh dong phe duyet khong hop le");
-        }
+        String actionStr = approvalAction(actionDto);
         RestockRequest r = restockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đề xuất nhập hàng #" + requestId));
         if (shopId != null && !shopId.equals(r.getShopId())) {
@@ -623,6 +664,9 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         r.setReviewedAt(LocalDateTime.now());
         r.setReviewNote(actionDto.getNote() != null && !actionDto.getNote().isBlank() ? actionDto.getNote().trim() : null);
         restockRequestRepository.save(r);
+        approvalNotifications.notifyRequesterOfDecision(r.getRequestedBy(),
+                "Đề xuất nhập " + r.getQuantity() + " " + r.getProductName(), actionStr, r.getReviewNote(),
+                com.nguyenhoanglong.service.WarehouseService.WAREHOUSE_REPLENISHMENT_URL);
 
         return StoreApprovalItemDto.builder()
                 .approvalId("RESTOCK-" + r.getId())
@@ -638,10 +682,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     @Override
     @Transactional
     public StoreApprovalItemDto processVoucherApproval(Long shopId, Long voucherId, StoreApprovalActionDto actionDto, String actorIdOrEmail) {
-        String actionStr = (actionDto.getAction() != null) ? actionDto.getAction().trim().toUpperCase() : "";
-        if (!"APPROVED".equals(actionStr) && !"REJECTED".equals(actionStr)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanh dong phe duyet khong hop le");
-        }
+        String actionStr = approvalAction(actionDto);
 
         Voucher voucher = voucherRepository.findById(voucherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Khong tim thay Voucher voi ID: " + voucherId));
@@ -660,12 +701,18 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             voucher.setStatus("ACTIVE");
             voucher.setIsActive(true);
         } else {
-            voucher.setStatus("REJECTED");
+            // REJECTED la ket thuc; REVISION_REQUESTED tro ve nhan vien sua roi tu dong gui duyet lai.
+            voucher.setStatus(actionStr);
             voucher.setIsActive(false);
         }
         voucher.setUpdatedBy(actorIdOrEmail);
         voucher.setUpdatedAt(LocalDateTime.now());
         voucherRepository.save(voucher);
+        // Rejected or sent back: the bell opens the voucher's edit form; saving it resubmits it.
+        approvalNotifications.notifyRequesterOfDecision(voucher.getCreatedBy(),
+                "Mã giảm giá " + voucher.getCode(), actionStr, actionDto.getNote(),
+                com.nguyenhoanglong.service.MarketingService.voucherUrl(voucher.getId(), !"APPROVED".equals(actionStr)),
+                "Bấm để sửa voucher và gửi lại chủ cửa hàng duyệt.");
 
         return StoreApprovalItemDto.builder()
                 .approvalId("VOUCHER-" + voucher.getId())
@@ -681,10 +728,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     @Override
     @Transactional
     public StoreApprovalItemDto processInventoryAdjustmentApproval(Long shopId, Long adjustmentId, StoreApprovalActionDto actionDto, String actorIdOrEmail) {
-        String actionStr = (actionDto.getAction() != null) ? actionDto.getAction().trim().toUpperCase() : "";
-        if (!"APPROVED".equals(actionStr) && !"REJECTED".equals(actionStr)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanh dong phe duyet khong hop le");
-        }
+        String actionStr = approvalAction(actionDto);
 
         InventoryAdjustment adj = inventoryAdjustmentRepository.findById(adjustmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Khong tim thay phieu dieu chinh kho ID: " + adjustmentId));
@@ -707,11 +751,14 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
                 inventoryRepository.save(inv);
             }
         } else {
-            adj.setStatus("REJECTED");
+            adj.setStatus(actionStr);
         }
         inventoryAdjustmentRepository.save(adj);
 
         String prodName = (adj.getInventory() != null) ? adj.getInventory().getProductName() : "San pham";
+        approvalNotifications.notifyRequesterOfDecision(adj.getRequesterUserId(),
+                "Điều chỉnh tồn kho " + prodName + " (" + (adj.getDifference() > 0 ? "+" : "") + adj.getDifference() + ")",
+                actionStr, actionDto.getNote(), com.nguyenhoanglong.service.WarehouseService.WAREHOUSE_INVENTORY_URL);
         return StoreApprovalItemDto.builder()
                 .approvalId("INV_ADJ-" + adj.getId())
                 .type("INVENTORY_ADJUSTMENT")
@@ -726,6 +773,20 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     @Override
     @Transactional
     public StoreApprovalItemDto processApprovalAction(Long shopId, String approvalId, StoreApprovalActionDto actionDto, String actorIdOrEmail) {
+        if (approvalId.startsWith("VOUCHER_CHANGE-")) {
+            String action = approvalAction(actionDto);
+            VoucherChangeRequest r = marketingService.decideVoucherChange(shopId,
+                    parseIdFromApprovalId(approvalId, "VOUCHER_CHANGE-"), action, actionDto.getNote(), actorIdOrEmail);
+            return StoreApprovalItemDto.builder()
+                    .approvalId(approvalId)
+                    .type("DELETE".equals(r.getAction()) ? "VOUCHER_DELETE" : "VOUCHER_UPDATE")
+                    .title("Yêu cầu sửa/xóa voucher #" + r.getVoucherId())
+                    .description(r.getSummary())
+                    .requestedBy(r.getRequestedBy())
+                    .status(r.getStatus())
+                    .createdAt(r.getCreatedAt())
+                    .build();
+        }
         if (approvalId.startsWith("VOUCHER-") || "VOUCHER".equalsIgnoreCase(actionDto.getType())) {
             Long voucherId = parseIdFromApprovalId(approvalId, "VOUCHER-");
             return processVoucherApproval(shopId, voucherId, actionDto, actorIdOrEmail);

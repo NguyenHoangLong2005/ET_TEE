@@ -33,6 +33,12 @@ public class WarehouseService {
     private final SupplierRepository suppliers;
     private final ProductVariantRepository variants;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ApprovalNotificationService approvalNotifications;
+
+    public static final String WAREHOUSE_INVENTORY_URL = "/staff/dashboard/warehouse/inventory";
+    public static final String WAREHOUSE_REPLENISHMENT_URL = "/staff/dashboard/warehouse/replenishment";
+
     public WarehouseService(
             InventoryRepository inventories, 
             StockReservationRepository reservations, 
@@ -250,8 +256,12 @@ public class WarehouseService {
         a.setDifference(difference);
         a.setReason(cleanReason);
         a.setStatus("PENDING");
+        a.setRequesterUserId(requesterUserId);
         log.info("Inventory adjustment requested: id {} diff {} reason {} requestedBy {}", id, difference, reason, requesterUserId);
-        return adjustments.save(a);
+        InventoryAdjustment saved = adjustments.save(a);
+        approvalNotifications.notifyOwnersOfRequest(target.getShopId(), "Yêu cầu điều chỉnh tồn kho mới",
+                target.getProductName() + ": " + (difference > 0 ? "+" : "") + difference + ". Lý do: " + cleanReason);
+        return saved;
     }
 
     @Transactional
@@ -289,7 +299,11 @@ public class WarehouseService {
         a.setStatus("APPROVED");
 
         log.info("Inventory adjustment approved: id {} new qty {} approvedBy {}", id, next, approverUserId);
-        return adjustments.save(a);
+        InventoryAdjustment saved = adjustments.save(a);
+        approvalNotifications.notifyRequesterOfDecision(a.getRequesterUserId(),
+                "Điều chỉnh tồn kho " + i.getProductName() + " (" + (a.getDifference() > 0 ? "+" : "") + a.getDifference() + ")",
+                "APPROVED", null, WAREHOUSE_INVENTORY_URL);
+        return saved;
     }
 
     // ========== Stock Reservation Operations ==========
@@ -521,7 +535,10 @@ public class WarehouseService {
         r.setShopId(inv.getShopId());
         r.setRequestedBy(resolveUserId());
         log.info("Restock requested: inventory {} qty {}", inv.getId(), quantity);
-        return restockRequests.save(r);
+        RestockRequest saved = restockRequests.save(r);
+        approvalNotifications.notifyOwnersOfRequest(inv.getShopId(), "Đề xuất nhập hàng mới",
+                inv.getProductName() + ": " + quantity + " sản phẩm" + (saved.getNote() != null ? ". Ghi chú: " + saved.getNote() : "."));
+        return saved;
     }
 
     public List<RestockRequest> getRestockRequests() {

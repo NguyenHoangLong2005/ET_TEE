@@ -338,11 +338,14 @@ public class MarketingController {
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @PutMapping("/admin/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> updateVoucher(@PathVariable Long id, @Valid @RequestBody Voucher voucher) {
-        Voucher updated = marketingService.updateVoucher(id, voucher, getCurrentUserIdentifier());
+        MarketingService.VoucherChangeOutcome outcome = marketingService.editVoucher(id, voucher, getCurrentUserIdentifier());
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("message", "Cập nhật voucher thành công");
-        response.put("data", updated);
+        response.put("message", outcome.awaitingApproval()
+                ? "Đã gửi yêu cầu sửa voucher, chờ chủ cửa hàng duyệt"
+                : "Cập nhật voucher thành công");
+        response.put("pendingApproval", outcome.awaitingApproval());
+        response.put("data", outcome.voucher());
         return ResponseEntity.ok(response);
     }
 
@@ -360,10 +363,11 @@ public class MarketingController {
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @DeleteMapping("/admin/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> deleteVoucher(@PathVariable Long id) {
-        marketingService.deleteVoucher(id);
+        boolean pending = marketingService.removeVoucher(id, getCurrentUserIdentifier()).awaitingApproval();
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("message", "Xóa voucher thành công");
+        response.put("message", pending ? "Đã gửi yêu cầu xóa voucher, chờ chủ cửa hàng duyệt" : "Xóa voucher thành công");
+        response.put("pendingApproval", pending);
         return ResponseEntity.ok(response);
     }
 

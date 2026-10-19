@@ -26,14 +26,10 @@ public class AdminSystemController {
     @PostConstruct
     public void initDefaultSettings() {
         try {
+            // Payment toggles, shipping fees and maintenance mode used to be seeded here for an
+            // admin page that nothing read (checkout always offers COD + bank transfer, the fee is
+            // always 0). Removed with that page; see V20261012000000__drop_unused_system_settings.
             Map<String, String> defaults = new LinkedHashMap<>();
-            defaults.put("payment_momo_enabled", "true");
-            defaults.put("payment_cod_enabled", "true");
-            defaults.put("payment_vnpay_enabled", "true");
-            defaults.put("shipping_free_threshold", "500000");
-            defaults.put("shipping_standard_fee", "30000");
-            defaults.put("shipping_express_fee", "50000");
-            defaults.put("system_maintenance_mode", "false");
             defaults.put("brand_hotline", "1900 6868");
             defaults.put("brand_email", "support@ettee.vn");
 

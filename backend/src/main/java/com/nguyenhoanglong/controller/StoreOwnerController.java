@@ -22,10 +22,13 @@ public class StoreOwnerController {
 
     private final StoreOwnerService storeOwnerService;
     private final CurrentUserService currentUserService;
+    private final com.nguyenhoanglong.service.ProductImportService productImportService;
 
-    public StoreOwnerController(StoreOwnerService storeOwnerService, CurrentUserService currentUserService) {
+    public StoreOwnerController(StoreOwnerService storeOwnerService, CurrentUserService currentUserService,
+                                com.nguyenhoanglong.service.ProductImportService productImportService) {
         this.storeOwnerService = storeOwnerService;
         this.currentUserService = currentUserService;
+        this.productImportService = productImportService;
     }
 
     /**
@@ -93,6 +96,32 @@ public class StoreOwnerController {
     public ResponseEntity<ApiResponse<StoreProductFormDto>> updateProduct(
             @PathVariable Long productId, @RequestBody StoreProductFormDto body) {
         return ResponseEntity.ok(ApiResponse.success("Đã cập nhật sản phẩm", storeOwnerService.updateProduct(productId, body)));
+    }
+
+    /**
+     * Bulk create from a CSV / XLSX file. dryRun=true (default) only checks the file and
+     * reports per product; dryRun=false creates every valid product and skips the rest.
+     */
+    @PostMapping(value = "/products/import", consumes = "multipart/form-data")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ProductImportReportDto>> importProducts(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            @RequestParam(defaultValue = "true") boolean dryRun) {
+        ProductImportReportDto report = productImportService.importProducts(file, dryRun);
+        String message = !report.fileErrors.isEmpty() ? "File không hợp lệ"
+                : dryRun ? "Đã kiểm tra " + report.totalProducts + " sản phẩm"
+                : "Đã tạo " + report.createdProducts + "/" + report.totalProducts + " sản phẩm";
+        return ResponseEntity.ok(ApiResponse.success(message, report));
+    }
+
+    @GetMapping("/products/import/template")
+    @PreAuthorize("hasAnyRole('SHOP_OWNER', 'ADMIN')")
+    public ResponseEntity<byte[]> downloadImportTemplate() {
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"mau-nhap-san-pham.xlsx\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(productImportService.buildTemplate());
     }
 
     @GetMapping("/products/{productId}/delete-check")

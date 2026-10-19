@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-/** Gui thong bao ca nhan (chuong) cho nhan vien ban hang cua chi nhanh khi co don moi can xac nhan. */
+/**
+ * Gui thong bao ca nhan (chuong) cho nhan vien ban hang cua chi nhanh khi co don moi can xac nhan.
+ * Chu cua hang khong nhan: chuong cua chu shop danh cho cac yeu cau can phe duyet (ApprovalNotificationService).
+ */
 @Service
 public class SalesNotificationService {
     private static final Logger log = LoggerFactory.getLogger(SalesNotificationService.class);
-    private static final Set<Role> RECIPIENT_ROLES = Set.of(Role.SALES_STAFF, Role.SHOP_OWNER);
+    private static final Set<Role> RECIPIENT_ROLES = Set.of(Role.SALES_STAFF);
 
     private final UserRepository userRepository;
     private final SystemNotificationRepository notificationRepository;

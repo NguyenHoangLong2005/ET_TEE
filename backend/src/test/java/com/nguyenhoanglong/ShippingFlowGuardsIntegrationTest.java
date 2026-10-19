@@ -119,4 +119,27 @@ public class ShippingFlowGuardsIntegrationTest {
         Shipment orphan = shipment(OrderStatus.CANCELLED, ShipmentStatus.IN_TRANSIT);
         assertBadRequest(() -> shippingService.delivered(actor, orphan.getId(), "Anh A", null, null));
     }
+
+    @Test
+    @Transactional
+    @DisplayName("Exception without type or description is recorded as OTHER with an empty description")
+    void exceptionDefaults() {
+        User actor = staff();
+        Shipment s = shipment(OrderStatus.SHIPPING, ShipmentStatus.IN_TRANSIT);
+        ShippingException e = shippingService.addException(actor, s.getId(), null, "   ");
+        assertEquals("OTHER", e.getExceptionType());
+        assertEquals("", e.getDescription());
+        assertEquals(ShipmentStatus.EXCEPTION, shipmentRepository.findById(s.getId()).orElseThrow().getStatus());
+    }
+
+    // Not @Transactional: the service's own transaction must roll back on its own.
+    @Test
+    @DisplayName("A failed exception insert does not leave the parcel stuck in EXCEPTION")
+    void failedExceptionInsertRollsBackShipment() {
+        User actor = staff();
+        Shipment s = shipment(OrderStatus.SHIPPING, ShipmentStatus.IN_TRANSIT);
+        String tooLongType = "X".repeat(200); // exception_type is VARCHAR(100)
+        assertThrows(RuntimeException.class, () -> shippingService.addException(actor, s.getId(), tooLongType, "x"));
+        assertEquals(ShipmentStatus.IN_TRANSIT, shipmentRepository.findById(s.getId()).orElseThrow().getStatus());
+    }
 }
