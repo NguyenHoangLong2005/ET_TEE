@@ -32,16 +32,37 @@ Không giới hạn thì torch trên Windows tạo quá nhiều luồng: một c
 
 ## Đánh giá — [results.md](results.md)
 
-30 câu hỏi tự nhiên viết tay, cố ý không lặp lại nguyên tên trong catalog. "Đúng" = đúng loại sản phẩm
-và nhóm khách (thêm từ khóa nếu câu hỏi yêu cầu, ví dụ "jean").
+30 câu hỏi tự nhiên viết tay, cố ý không lặp lại nguyên tên trong catalog, cộng 20 câu kiểm chứng viết
+ngày 2026-10-07. "Đúng" = đúng loại sản phẩm và nhóm khách (thêm từ khóa nếu câu hỏi yêu cầu, ví dụ "jean").
 
-| Cách tìm | P@10 | nDCG@10 | Câu không ra kết quả |
+| Cách tìm | P@10 (30 câu) | P@10 (20 câu kiểm chứng) | Câu không ra kết quả |
 |---|---:|---:|---:|
-| Từ khóa (cách cũ) | 0.203 | 0.233 | **14/30** |
-| Chỉ vector trộn | 0.240 | 0.249 | 0/30 |
-| Chỉ vector văn bản riêng | 0.207 | 0.223 | 0/30 |
-| **RRF: từ khóa + vector trộn (bản phục vụ)** | **0.350** | **0.379** | 0/30 |
-| RRF: từ khóa + văn bản + vector trộn | 0.270 | 0.271 | 0/30 |
+| Từ khóa (cách cũ) | 0.203 | 0.330 | **14/30**, 6/20 |
+| Chỉ vector trộn | 0.240 | 0.195 | 0 |
+| RRF: từ khóa + văn bản + vector trộn | 0.270 | 0.240 | 0 |
+| RRF: từ khóa + vector trộn (bản phục vụ cũ) | 0.350 | 0.320 | 0 |
+| RRF từ khóa ×2 + vector trộn **đã căn giữa** | 0.443 | 0.505 | 0 |
+| **… + ưu tiên đúng loại / nhóm khách (bản phục vụ từ 2026-10-07)** | **0.760** | **0.730** | 0 |
+
+### Sửa 2026-10-07: vài sản phẩm "hub" chiếm đầu mọi kết quả
+
+Vector văn bản CLIP của câu hỏi nằm gần một nhóm nhỏ sản phẩm (tất nam cổ trung, quần soóc jean nữ,
+chân váy nỉ…) bất kể câu hỏi là gì, và RRF cho hạng 1 của danh sách vector điểm ngang hạng 1 của từ khóa,
+nên chúng chen lên đầu. `SemanticSearchService` giờ:
+
+1. trừ vector trung bình của 30 cụm từ mua sắm chung (`CENTER_PHRASES`) khỏi vector câu hỏi rồi xếp theo
+   tích vô hướng — bỏ hướng "câu nào cũng giống" (cách giảm hubness quen thuộc). Thử thêm CSLS (phạt từng
+   sản phẩm theo độ "hub") thì kém hơn, không dùng;
+2. cho danh sách từ khóa trọng số ×2 trong RRF;
+3. đưa sản phẩm đúng loại / nhóm khách được nhắc trong câu ("váy", "áo khoác", "nữ", "bé"…) lên trước,
+   giữ nguyên thứ tự bên trong mỗi phần.
+
+Bộ 20 câu kiểm chứng được viết **sau** khi thấy lỗi nhưng **trước** khi chọn cách sửa; còn danh sách từ
+nhận diện loại/nhóm thì viết sau khi đã xem cả hai bộ, nên con số 0.73–0.76 vẫn lạc quan hơn thực tế.
+Tìm bằng ảnh không đổi (ảnh → ảnh vốn đã đúng).
+
+Lưu ý khi thử bằng `curl` trong Git Bash trên Windows: câu tiếng Việt truyền qua dòng lệnh có thể bị sai
+mã hóa trước khi tới backend và cho kết quả vô nghĩa. Thử bằng trình duyệt hoặc `eval_search.py`.
 
 ### Đọc kết quả cho trung thực
 

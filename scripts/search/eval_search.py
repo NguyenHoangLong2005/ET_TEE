@@ -64,6 +64,78 @@ QUERIES = [
 ]
 
 
+# Bo kiem chung: viet SAU khi thay loi "hub" (2026-10-07), khong dung de chon tham so - chi de bao cao.
+HOLDOUT = [
+    ('đầm dự tiệc sang trọng', W, {'dress'}, None),
+    ('áo khoác chống nắng', ANY, {'outerwear'}, None),
+    ('quần short bé trai', K, {'shorts'}, None),
+    ('áo polo nữ', W, {'polo'}, None),
+    ('quần tây nam công sở', M, {'pants'}, None),
+    ('đồ lót nam', M, {'homewear', 'pants', 'accessories'}, r'lót|boxer|brief|sịp'),
+    ('chân váy xếp ly', W, {'skirt'}, None),
+    ('áo sơ mi kẻ caro', ANY, {'shirt'}, r'kẻ|caro|sọc|flannel'),
+    ('áo thun in hình cho bé', K, {'tshirt'}, None),
+    ('quần jogger thể thao', ANY, {'pants'}, r'jogger|thể thao|active'),
+    ('váy liền thân nữ', W, {'dress'}, None),
+    ('áo khoác gió trẻ em', K, {'outerwear'}, None),
+    ('bộ đồ ngủ nữ', W, {'homewear'}, None),
+    ('áo ba lỗ nam', M, {'tshirt'}, r'ba lỗ|tanktop|tank top|sát nách'),
+    ('quần jean ống rộng', ANY, {'pants'}, r'jean|denim|bò'),
+    ('khăn quàng cổ', ANY, {'accessories'}, r'khăn'),
+    ('áo nỉ mùa đông nam', M, {'outerwear', 'tshirt'}, r'nỉ|giữ nhiệt|len'),
+    ('quần short jean nữ', W, {'shorts'}, r'jean|denim|bò'),
+    ('áo đôi gia đình', {'family'}, {'tshirt', 'shirt', 'polo', 'outerwear'}, None),
+    ('áo sơ mi trẻ em', K, {'shirt'}, None),
+]
+
+# Cau chung de lay huong "moi cau hoi" (tru di truoc khi tim vector) - giong SemanticSearchService.CENTER_PHRASES
+CENTER_PHRASES = ['áo', 'quần', 'thời trang', 'quần áo', 'đồ mặc hằng ngày', 'sản phẩm mới', 'trang phục', 'đồ đẹp',
+                  'mặc đi chơi', 'đồ đi làm', 'phụ kiện', 'đồ trẻ em', 'đồ nam', 'đồ nữ', 'màu đen', 'màu trắng',
+                  'cotton', 'giá rẻ', 'mùa hè', 'mùa đông', 'áo thun', 'áo sơ mi', 'quần dài', 'váy', 'áo khoác',
+                  'đồ thể thao', 'đồ ngủ', 'tất', 'mũ', 'túi']
+
+# Giong SemanticSearchService.TYPE_INTENTS / GROUP_INTENTS
+TYPES = [
+    (r'chân váy', {'skirt'}), (r'(?<!chân )(váy|đầm)', {'dress', 'skirt'}),
+    (r'áo khoác|áo gió|chống nắng|cardigan|áo nỉ|hoodie|blazer', {'outerwear'}),
+    (r'sơ mi', {'shirt'}), (r'polo', {'polo'}), (r'áo thun|áo phông|ba lỗ|tank ?top|áo tập', {'tshirt'}),
+    (r'quần (short|đùi|soóc|sooc|sọt)', {'shorts'}),
+    (r'quần (tây|jean|dài|jogger|âu|kaki|bò|ống)|quần chạy', {'pants'}),
+    (r'đồ ngủ|mặc (ở )?nhà|đồ bộ|pijama|pyjama|đồ lót|quần lót', {'homewear'}),
+    (r'\b(tất(?! cả)|vớ|mũ|nón|túi|khăn|giày|dép|guốc|sandal|thắt lưng|phụ kiện)\b', {'accessories'}),
+]
+GROUPS = [
+    (r'cả nhà|gia đình|đồ đôi|áo đôi', {'family'}),
+    (r'\bbé|trẻ em|em bé|cho con|học sinh|đi học', {'kids'}),
+    (r'\b(nữ|phụ nữ|vợ|mẹ|con gái|chị em)\b', {'women'}),
+    (r'\b((?<!việt )nam|chồng|bố|ba(?! lỗ)|đàn ông|con trai)\b', {'men'}),
+]
+
+
+def intent(q):
+    ql = q.lower()
+    t = next((v for pat, v in TYPES if re.search(pat, ql)), None)
+    g = next((v for pat, v in GROUPS if re.search(pat, ql)), None)
+    return t, g
+
+
+def boost(info, q, ids):
+    t, g = intent(q)
+    if not t and not g:
+        return ids
+    def ok(p):
+        tg, pt, _ = info[p]
+        return (t is None or pt in t) and (g is None or tg in g or (tg == 'family' and 'kids' not in g))
+    return [p for p in ids if ok(p)] + [p for p in ids if not ok(p)]
+
+
+def nearest_ip(cur, vec, n):
+    lit = to_pgvector(vec)
+    cur.execute("""SELECT p.id FROM product_embeddings e JOIN products p ON p.id = e.product_id WHERE p.status = 'ACTIVE'
+                    ORDER BY e.embedding <#> %s::vector LIMIT %s""", (lit, n))
+    return [r[0] for r in cur.fetchall()]
+
+
 def embed(text):
     req = urllib.request.Request(f'{EMBEDDER}/embed/text', data=json.dumps({'text': text}).encode(),
                                  headers={'Content-Type': 'application/json'})
@@ -113,14 +185,42 @@ def main():
         'Tu khoa (hien tai)': lambda q, v: keyword(cur, q, POOL),
         'Vector tron anh+text (Sprint 1)': lambda q, v: nearest(cur, 'product_embeddings', v, POOL),
         'Vector van ban (Sprint 5)': lambda q, v: nearest(cur, 'product_text_embeddings', v, POOL),
-        'RRF: tu khoa + tron (BAN PHUC VU)': lambda q, v: rrf(keyword(cur, q, POOL),
-                                                                   nearest(cur, 'product_embeddings', v, POOL)),
         'RRF: tu khoa + van ban + tron (da thu, bi loai)': lambda q, v: rrf(keyword(cur, q, POOL),
                                                                  nearest(cur, 'product_text_embeddings', v, POOL),
                                                                  nearest(cur, 'product_embeddings', v, POOL)),
+        'RRF: tu khoa + tron (ban cu, truoc 2026-10-07)': lambda q, v: rrf(keyword(cur, q, POOL),
+                                                                   nearest(cur, 'product_embeddings', v, POOL)),
+        'RRF tu khoa x2 + tron da can giua': lambda q, v: rrf(keyword(cur, q, POOL),
+                                                              nearest_ip(cur, list(np.array(v) - center), POOL), weights=[2, 1]),
+        '... + uu tien dung loai/nhom (BAN PHUC VU)': lambda q, v: boost(info, q, rrf(
+            keyword(cur, q, POOL), nearest_ip(cur, list(np.array(v) - center), POOL), weights=[2, 1])),
     }
+    center = np.mean([embed(t) for t in CENTER_PHRASES], axis=0)
+    out = {}
+    for set_name, queries in (('30 cau goc', QUERIES), ('20 cau kiem chung', HOLDOUT)):
+        out[set_name] = run(queries, methods, relevant)
+    conn.close()
+    lines = ['# Sprint 5 - Tim kiem: ket qua tren bo cau hoi viet tay', '',
+             '"Dung" = dung loai san pham + nhom khach (+ tu khoa neu cau hoi yeu cau). Bo cau hoi tu xay, nho - '
+             'chi de so sanh cac cach, khong phai benchmark chuan.', '',
+             '2026-10-07: ban cu tra ve cung vai san pham "hub" (tat, ao so mi tron) cho moi cau ("vay di tiec" -> '
+             'tat nam). Sua: tru vector trung binh cua cac cau chung (can giua) truoc khi tim vector, trong so tu '
+             'khoa x2 trong RRF, roi dua san pham dung loai/nhom khach duoc nhac trong cau len truoc. Bo 20 cau kiem '
+             'chung viet SAU khi thay loi; cac tu nhan dien loai/nhom duoc viet sau khi xem ca hai bo, nen so lieu '
+             'van lac quan hon thuc te.', '']
+    for set_name, per in out.items():
+        lines += [f'## {set_name}', '', '| Cach tim | P@10 | nDCG@10 | Cau khong ra ket qua |', '|---|---:|---:|---:|']
+        n = len(QUERIES) if set_name.startswith('30') else len(HOLDOUT)
+        for name, r in per.items():
+            lines.append(f"| {name} | {np.mean(r['p10']):.3f} | {np.mean(r['ndcg']):.3f} | {r['zero']}/{n} |")
+        lines.append('')
+    (HERE / 'results.md').write_text('\n'.join(lines), encoding='utf-8')
+    print('\n'.join(lines))
+
+
+def run(queries, methods, relevant):
     per = {m: {'p10': [], 'ndcg': [], 'zero': 0} for m in methods}
-    for q, groups, types, pattern in QUERIES:
+    for q, groups, types, pattern in queries:
         v = embed(q)
         for name, fn in methods.items():
             top = fn(q, v)[:10]
@@ -130,16 +230,7 @@ def main():
             per[name]['p10'].append(sum(rel) / 10)
             dcg = sum(1 / math.log2(i + 2) for i, r in enumerate(rel) if r)
             per[name]['ndcg'].append(dcg / sum(1 / math.log2(i + 2) for i in range(10)))
-    conn.close()
-
-    lines = ['# Sprint 5 - Tim kiem: ket qua tren bo cau hoi viet tay', '',
-             f'{len(QUERIES)} cau hoi tu nhien (danh sach trong `eval_search.py`), "dung" = dung loai san pham '
-             '+ nhom khach (+ tu khoa neu cau hoi yeu cau). Bo cau hoi tu xay, nho - chi de so sanh cac cach.', '',
-             '| Cach tim | P@10 | nDCG@10 | Cau khong ra ket qua |', '|---|---:|---:|---:|']
-    for name, r in per.items():
-        lines.append(f"| {name} | {np.mean(r['p10']):.3f} | {np.mean(r['ndcg']):.3f} | {r['zero']}/{len(QUERIES)} |")
-    (HERE / 'results.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    print('\n'.join(lines))
+    return per
 
 
 if __name__ == '__main__':
