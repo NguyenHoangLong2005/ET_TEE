@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { RefreshCcw, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export const metadata = {
-  title: 'Chính Sách Đổi Trả 30 Ngày | ET.TEE Studio',
-  description: 'Cam kết đổi trả trong 30 ngày hoàn toàn miễn phí tại 200+ cửa hàng hoặc yêu cầu shipper thu gom tận nhà.',
+  title: 'Chính Sách Đổi Trả 30 Ngày',
+  description: 'Cam kết đổi trả trong 30 ngày hoàn toàn miễn phí tại cửa hàng hoặc yêu cầu shipper thu gom tận nhà.',
 };
 
 export default function ReturnPolicyPage() {
@@ -23,7 +23,7 @@ export default function ReturnPolicyPage() {
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
           <div className="border-b border-slate-100 pb-6">
-            <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
+            <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               30-Day Guarantee
             </span>
             <h1 className="text-3xl font-black uppercase text-slate-900">
@@ -34,8 +34,8 @@ export default function ReturnPolicyPage() {
           <div className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed">
             
             {/* Highlight Banner */}
-            <div className="p-5 bg-amber-50/80 rounded-2xl border border-amber-200 flex items-start gap-3">
-              <RefreshCcw className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-5 bg-primary-50/80 rounded-2xl border border-primary-200 flex items-start gap-3">
+              <RefreshCcw className="w-6 h-6 text-primary-600 shrink-0 mt-0.5" />
               <div className="space-y-1 text-slate-900">
                 <strong className="block font-bold">Cam kết "Không hài lòng, đổi trả trong 30 ngày":</strong>
                 <span>Nếu bạn mặc thử không vừa vặn, không ưng ý màu sắc hoặc phom dáng, ET.TEE hỗ trợ đổi size, đổi mẫu hoàn toàn miễn phí trong vòng 30 ngày kể từ ngày nhận hàng.</span>
@@ -58,13 +58,13 @@ export default function ReturnPolicyPage() {
             {/* Section 2 */}
             <div className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 uppercase flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-amber-600" />
+                <ShieldCheck className="w-5 h-5 text-primary-600" />
                 <span>2. Quy Trình 4 Bước Đổi Hàng Đơn Giản</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="font-bold text-slate-900 text-xs">Cách 1: Đổi Trực Tiếp Tại Showroom</span>
-                  <p className="text-slate-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến bất kỳ cửa hàng nào trong hệ thống 200+ showroom ET.TEE để thử và đổi ngay.</p>
+                  <p className="text-slate-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến bất kỳ cửa hàng nào trong hệ thống ET.TEE để thử và đổi ngay.</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="font-bold text-slate-900 text-xs">Cách 2: Đổi Tận Nhà Qua Shipper</span>

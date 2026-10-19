@@ -34,7 +34,7 @@ export default function SizeGuideClient() {
       {/* 1. Value Badges Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
             <RefreshCcw className="w-6 h-6" />
           </div>
           <div>
@@ -67,7 +67,7 @@ export default function SizeGuideClient() {
       {/* 2. Interactive Calculator Section */}
       <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-          <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-black">
+          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-black">
             <Calculator className="w-5 h-5" />
           </div>
           <div>
@@ -85,7 +85,7 @@ export default function SizeGuideClient() {
               max="210"
               value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-primary"
               placeholder="170"
             />
           </div>
@@ -98,7 +98,7 @@ export default function SizeGuideClient() {
               max="150"
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-primary"
               placeholder="65"
             />
           </div>
@@ -108,7 +108,7 @@ export default function SizeGuideClient() {
             <select
               value={fit}
               onChange={(e) => setFit(e.target.value as any)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-amber-500 bg-white"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl font-bold text-sm outline-none focus:border-primary bg-white"
             >
               <option value="slim">Ôm vừa (Slim Fit)</option>
               <option value="regular">Thoải mái (Regular)</option>
@@ -120,18 +120,18 @@ export default function SizeGuideClient() {
             type="submit"
             className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase text-xs tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-4 h-4 text-primary-400" />
             <span>Tính Size Ngay</span>
           </button>
         </form>
 
         {suggestedSize && (
-          <div className="mt-6 p-6 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl text-slate-950 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg animate-in fade-in slide-in-from-bottom-2">
+          <div className="mt-6 p-6 bg-primary rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg animate-in fade-in slide-in-from-bottom-2">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest block text-slate-900">Kích Thước Khuyên Dùng</span>
-              <div className="text-3xl font-black tracking-tight text-slate-950">SIZE {suggestedSize}</div>
+              <span className="text-xs font-bold uppercase tracking-widest block text-white/80">Kích Thước Khuyên Dùng</span>
+              <div className="text-3xl font-black tracking-tight text-white">SIZE {suggestedSize}</div>
               {details.map(d => (
-                <p key={d} className="text-xs text-slate-900 font-medium mt-1">{d}</p>
+                <p key={d} className="text-xs text-white/90 font-medium mt-1">{d}</p>
               ))}
             </div>
             <Link
@@ -165,7 +165,7 @@ export default function SizeGuideClient() {
                 onClick={() => setActiveTab(cat.id as any)}
                 className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
                   activeTab === cat.id
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    ? 'bg-primary text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >

@@ -18,6 +18,7 @@ export default async function ProductRecommendations({ slug }: { slug: string })
         title="Sản phẩm tương tự"
         products={similarProducts.map(({ product }) => product)}
         embedded
+        trackSource="recommendation"
       />
 
       {/* Outfit: completed by the compatibility model (Sprint 4); rule-based list as fallback */}

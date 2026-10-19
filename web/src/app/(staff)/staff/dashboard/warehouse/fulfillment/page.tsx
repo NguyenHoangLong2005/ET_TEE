@@ -117,12 +117,12 @@ export default function WarehouseFulfillmentPage() {
   const totalUnits = visible.reduce((sum, o) => sum + o.itemCount, 0);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 md:p-8 text-slate-900">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+      <div className="space-y-6">
         <PageHeader
-          title="Xuất Hàng"
+          title="Xuất hàng"
           subtitle="Lấy hàng → Đóng gói → Bàn giao vận chuyển"
-          badge={<span className="bg-primary-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">KHO HÀNG</span>}
+          badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           actions={
             <Button variant="outline" size="sm" onClick={() => void load()} icon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}>
               Làm mới
@@ -143,7 +143,7 @@ export default function WarehouseFulfillmentPage() {
                 key={s.status}
                 onClick={() => setTab(s.status)}
                 aria-pressed={active}
-                className={`group relative flex items-center gap-3 rounded-2xl border p-4 text-left transition ${
+                className={`group relative flex items-center gap-3 rounded-xl border p-4 text-left transition ${
                   active
                     ? "border-primary-600 bg-white shadow-md ring-2 ring-primary-100"
                     : "border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300"
@@ -151,7 +151,7 @@ export default function WarehouseFulfillmentPage() {
               >
                 <span
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                    active ? "bg-primary-600 text-white" : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
+                    active ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
                   }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -197,10 +197,10 @@ export default function WarehouseFulfillmentPage() {
 
         {loading && orders.length === 0 ? (
           <div className="space-y-3">
-            {[0, 1, 2].map((i) => <div key={i} className="h-36 animate-pulse rounded-2xl bg-slate-200" />)}
+            {[0, 1, 2].map((i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-slate-200" />)}
           </div>
         ) : visible.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-14 text-center">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-14 text-center">
             <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
               <Check className="h-7 w-7 text-emerald-600" />
             </span>
@@ -220,7 +220,7 @@ export default function WarehouseFulfillmentPage() {
               const tone = waitTone(mins);
               const cod = (order.codAmount ?? 0) > 0;
               return (
-                <article key={order.id} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+                <article key={order.id} className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
                   <span className={`absolute inset-y-0 left-0 w-1 ${shortLines.length ? "bg-rose-500" : tone.bar}`} aria-hidden />
 
                   <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 py-4 pl-6 pr-5">
@@ -359,6 +359,6 @@ export default function WarehouseFulfillmentPage() {
           isLoading={busyId !== null}
         />
       </div>
-    </main>
+    </div>
   );
 }

@@ -46,9 +46,9 @@ export default function ContactPage() {
 
         {/* Hero Header */}
         <div className="bg-white text-slate-900 p-8 md:p-12 rounded-3xl mb-10 shadow-md relative overflow-hidden border border-slate-200/80">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-block px-3.5 py-1 bg-amber-50 text-amber-900 text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-amber-200 shadow-2xs">
+            <span className="inline-block px-3.5 py-1 bg-primary-50 text-primary-900 text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-primary-200 shadow-2xs">
               ET.TEE Customer Care 24/7
             </span>
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 mb-4">
@@ -63,11 +63,11 @@ export default function ContactPage() {
         {/* Support Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-700 flex items-center justify-center">
               <Phone className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">Tổng Đài Tư Vấn & Đặt Hàng</h3>
-            <p className="text-lg font-black text-amber-700">1900 1234</p>
+            <p className="text-lg font-black text-primary-700">1900 1234</p>
             <p className="text-xs text-slate-500 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 8:00 - 22:00 (Tất cả các ngày)</p>
           </div>
 
@@ -125,7 +125,7 @@ export default function ContactPage() {
                       placeholder="Nguyễn Văn A"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary text-slate-900 font-medium"
                     />
                   </div>
                   <div>
@@ -136,7 +136,7 @@ export default function ContactPage() {
                       placeholder="0987 654 321"
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary text-slate-900 font-medium"
                     />
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export default function ContactPage() {
                     placeholder="email@example.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary text-slate-900 font-medium"
                   />
                 </div>
 
@@ -158,7 +158,7 @@ export default function ContactPage() {
                   <select
                     value={topic}
                     onChange={e => setTopic(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-bold"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary text-slate-900 font-bold"
                   >
                     <option value="size">Tư vấn chọn Size / Kích cỡ</option>
                     <option value="order">Tra cứu tình trạng Đơn hàng</option>
@@ -175,15 +175,15 @@ export default function ContactPage() {
                     placeholder="Nhập nội dung bạn cần ET.TEE hỗ trợ..."
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-slate-900 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary text-slate-900 font-medium"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold uppercase tracking-wider text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-extrabold uppercase tracking-wider text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2"
                 >
-                  <Send className="w-4 h-4 text-slate-950" />
+                  <Send className="w-4 h-4 text-white" />
                   <span>Gửi Tin Nhắn Cho ET.TEE</span>
                 </button>
               </form>
@@ -201,7 +201,7 @@ export default function ContactPage() {
 
             <div className="p-6 bg-slate-900 text-white rounded-2xl space-y-4 shadow-lg">
               <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-primary-400 shrink-0 mt-0.5" />
                 <div className="text-xs space-y-1">
                   <span className="font-bold text-white block">Địa chỉ văn phòng đại diện:</span>
                   <span className="text-slate-300">Tầng 3, Tòa nhà Lotte Center, 54 Liễu Giai, P. Cống Vị, Q. Ba Đình, Hà Nội</span>
@@ -209,7 +209,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-center gap-3 border-t border-slate-800 pt-3">
-                <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+                <Clock className="w-5 h-5 text-primary-400 shrink-0" />
                 <div className="text-xs">
                   <span className="font-bold text-white block">Thời gian làm việc:</span>
                   <span className="text-slate-300">Thứ 2 - Thứ 7 (8:00 - 17:30)</span>
@@ -217,7 +217,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200 text-xs text-slate-800">
+            <div className="p-4 bg-primary-50/80 rounded-2xl border border-primary-200 text-xs text-slate-800">
               💡 Bạn cần tư vấn mua hàng gấp? Vui lòng gọi trực tiếp Hotline <strong>1900 1234</strong> để được nhân viên hỗ trợ giữ hàng tại showroom gần nhất ngay lập tức.
             </div>
           </div>

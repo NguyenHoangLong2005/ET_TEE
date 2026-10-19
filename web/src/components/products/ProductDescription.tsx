@@ -26,7 +26,8 @@ export default function ProductDescription({ product }: { product: Product }) {
   };
 
   const specs: [string, string][] = [
-    ['Mã sản phẩm', product.slug.toUpperCase()],
+    // Was the upper-cased slug ("QUAN-LUNG-THUN-CHAM-MAT-..."), which is a URL, not a code.
+    ['Mã sản phẩm', String(product.id)],
     ['Thương hiệu', product.brand || ''],
     ['Loại sản phẩm', TYPE_LABEL[product.productType ?? ''] || product.category?.name || ''],
     ['Dành cho', GROUP_LABEL[product.targetGroup ?? ''] || ''],

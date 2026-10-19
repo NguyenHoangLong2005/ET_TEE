@@ -25,10 +25,10 @@ const SIZE_SECTIONS = [
 ] as const;
 
 const PRICE_RANGES = [
-  { label: 'Dưới 200.000đ', min: undefined, max: 200000 },
-  { label: '200.000đ - 500.000đ', min: 200000, max: 500000 },
-  { label: '500.000đ - 1.000.000đ', min: 500000, max: 1000000 },
-  { label: 'Trên 1.000.000đ', min: 1000000, max: undefined },
+  { label: 'Dưới 200.000₫', min: undefined, max: 200000 },
+  { label: '200.000₫ - 500.000₫', min: 200000, max: 500000 },
+  { label: '500.000₫ - 1.000.000₫', min: 500000, max: 1000000 },
+  { label: 'Trên 1.000.000₫', min: 1000000, max: undefined },
 ];
 
 const getProductTypeLabel = (type: string) => {
@@ -44,7 +44,7 @@ const getProductTypeLabel = (type: string) => {
     'jacket': 'Áo khoác',
     'coat': 'Áo khoác',
     'outerwear': 'Áo khoác',
-    'dress': 'Váy',
+    'dress': 'Đầm',
     'skirt': 'Chân váy',
     'accessory': 'Phụ kiện',
     'accessories': 'Phụ kiện',
@@ -325,7 +325,7 @@ export default function FilterSidebar({ stats }: FilterSidebarProps) {
             {expanded.productType ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {expanded.productType && (
-            <div className="space-y-2.5 mt-3 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+            <div className="space-y-2.5 mt-3">
               {Object.entries(stats.productType).map(([key, count]) => {
                 const isChecked = currentProductTypeSet.has(key);
                 return (

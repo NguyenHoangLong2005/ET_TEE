@@ -53,8 +53,8 @@ const GENDERS = [
 ];
 
 const inputClass =
-  'w-full h-10 px-3 bg-white border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]';
-const labelClass = 'block text-xs font-bold text-zinc-700 uppercase tracking-wide mb-1.5';
+  'w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary';
+const labelClass = 'block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5';
 
 const money = (v: number | null) => (v == null ? '—' : `${Math.round(v).toLocaleString('vi-VN')} ₫`);
 
@@ -261,39 +261,39 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
     }
   };
 
-  const err = (k: string) => (submitted && errors.e[k] ? <p className="mt-1 text-xs font-medium text-[#BD001F]" role="alert">{errors.e[k]}</p> : null);
-  const fieldBorder = (k: string) => (submitted && errors.e[k] ? 'border-[#E50027]' : '');
+  const err = (k: string) => (submitted && errors.e[k] ? <p className="mt-1 text-xs font-medium text-primary-700" role="alert">{errors.e[k]}</p> : null);
+  const fieldBorder = (k: string) => (submitted && errors.e[k] ? 'border-primary' : '');
 
   const priceNum = Number(form.price);
   const saleNum = form.sale.trim() === '' ? null : Number(form.sale);
   const shownPrice = !errors.e.price && !errors.e.sale ? (saleNum ?? priceNum) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-3xl max-h-[94vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 shrink-0">
-          <h3 className="text-sm font-semibold text-zinc-900">{isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
-          <button type="button" onClick={onClose} aria-label="Đóng" className="p-1 text-zinc-400 hover:text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-3xl max-h-[94vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+          <h3 className="text-sm font-semibold text-slate-900">{isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
+          <button type="button" onClick={onClose} aria-label="Đóng" className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {loading ? (
-          <div className="p-10 text-center text-sm text-zinc-500">Đang tải…</div>
+          <div className="p-10 text-center text-sm text-slate-500">Đang tải…</div>
         ) : (
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col" noValidate>
             <div className="space-y-6 overflow-y-auto p-6">
               {/* Thông tin cơ bản */}
               <section className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Thông tin cơ bản</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Thông tin cơ bản</h4>
                 <div>
-                  <label className={labelClass}>Tên sản phẩm <span className="text-[#E50027]">*</span></label>
+                  <label className={labelClass}>Tên sản phẩm <span className="text-primary">*</span></label>
                   <input className={`${inputClass} ${fieldBorder('name')}`} value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="VD: Áo thun cotton basic" />
                   {err('name')}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Danh mục <span className="text-[#E50027]">*</span></label>
+                    <label className={labelClass}>Danh mục <span className="text-primary">*</span></label>
                     <select className={`${inputClass} ${fieldBorder('categoryId')}`} value={form.categoryId} onChange={(e) => set({ categoryId: e.target.value })}>
                       <option value="">— Chọn danh mục —</option>
                       {categoryOptions.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
@@ -322,10 +322,10 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                   </div>
                 </div>
                 {partnersError && (
-                  <p className="text-xs font-medium text-[#BD001F]">Không tải được danh sách nhà sản xuất / nhà cung cấp. Đóng form và thử lại.</p>
+                  <p className="text-xs font-medium text-primary-700">Không tải được danh sách nhà sản xuất / nhà cung cấp. Đóng form và thử lại.</p>
                 )}
                 {!partnersError && (manufacturers.length === 0 || suppliers.length === 0) && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-slate-500">
                     {manufacturers.length === 0 && 'Chưa có nhà sản xuất nào — thêm ở mục Nhà sản xuất. '}
                     {suppliers.length === 0 && 'Chưa có nhà cung cấp nào — thêm ở mục Nhà cung cấp.'}
                   </p>
@@ -360,10 +360,10 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
 
               {/* Giá */}
               <section className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Giá và trạng thái</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Giá và trạng thái</h4>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Giá niêm yết (₫) <span className="text-[#E50027]">*</span></label>
+                    <label className={labelClass}>Giá niêm yết (₫) <span className="text-primary">*</span></label>
                     <input type="number" min="0" step="1000" inputMode="numeric" className={`${inputClass} font-mono ${fieldBorder('price')}`} value={form.price} onChange={(e) => set({ price: e.target.value })} />
                     {err('price')}
                   </div>
@@ -373,27 +373,27 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                     {err('sale')}
                   </div>
                 </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 p-4">
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4">
                   <span>
-                    <span className="block text-sm font-semibold text-zinc-900">Đang bán</span>
-                    <span className="block text-xs text-zinc-500">Tắt để lưu nháp: sản phẩm không hiển thị trên cửa hàng.</span>
+                    <span className="block text-sm font-semibold text-slate-900">Đang bán</span>
+                    <span className="block text-xs text-slate-500">Tắt để lưu nháp: sản phẩm không hiển thị trên cửa hàng.</span>
                   </span>
                   <button
                     type="button" role="switch" aria-checked={form.active} aria-label="Đang bán"
                     onClick={() => set({ active: !form.active })}
-                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${form.active ? 'bg-emerald-500' : 'bg-zinc-300'}`}
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${form.active ? 'bg-emerald-500' : 'bg-slate-300'}`}
                   >
                     <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${form.active ? 'left-[22px]' : 'left-0.5'}`} />
                   </button>
                 </div>
                 {shownPrice != null && (
-                  <p className="text-xs text-zinc-500">
-                    Khách sẽ thấy <strong className="text-[#E50027] font-mono">{money(shownPrice)}</strong>
+                  <p className="text-xs text-slate-500">
+                    Khách sẽ thấy <strong className="text-primary tabular-nums">{money(shownPrice)}</strong>
                     {saleNum != null && priceNum > 0 && ` (giảm ${Math.round(((priceNum - saleNum) / priceNum) * 100)}%)`}
                   </p>
                 )}
                 {isEdit && (
-                  <p className="text-xs text-zinc-500">Giá mới áp dụng cho mọi biến thể và toàn hệ thống. Đơn đã đặt trước đó giữ nguyên giá.</p>
+                  <p className="text-xs text-slate-500">Giá mới áp dụng cho mọi biến thể và toàn hệ thống. Đơn đã đặt trước đó giữ nguyên giá.</p>
                 )}
               </section>
 
@@ -401,8 +401,8 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
               <section className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Hình ảnh</h4>
-                    <p className="mt-0.5 text-xs text-zinc-500">JPG, PNG, WEBP hoặc GIF, tối đa 5MB mỗi ảnh. Ảnh đầu tiên là ảnh bìa.</p>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Hình ảnh</h4>
+                    <p className="mt-0.5 text-xs text-slate-500">JPG, PNG, WEBP hoặc GIF, tối đa 5MB mỗi ảnh. Ảnh đầu tiên là ảnh bìa.</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button type="button" size="sm" variant="outline" onClick={() => setShowUrlInput((v) => !v)}>
@@ -437,7 +437,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => { e.preventDefault(); uploadFiles(e.dataTransfer.files); }}
-                    className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 py-8 text-sm text-zinc-500 hover:border-[#E50027] hover:text-[#BD001F] transition-colors"
+                    className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 py-8 text-sm text-slate-500 hover:border-primary hover:text-primary-700 transition-colors"
                   >
                     <ImageIcon className="w-6 h-6" />
                     Kéo thả ảnh vào đây hoặc bấm để chọn ảnh
@@ -449,29 +449,29 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                     onDrop={(e) => { e.preventDefault(); uploadFiles(e.dataTransfer.files); }}
                   >
                     {form.images.map((img, i) => (
-                      <div key={`${i}-${img.imageUrl}`} className="group relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+                      <div key={`${i}-${img.imageUrl}`} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                         <div className="relative aspect-square">
                           <SafeImage src={img.imageUrl} alt={img.alt || form.name} fill className="object-cover" />
                         </div>
                         {i === 0 && (
-                          <span className="absolute left-2 top-2 rounded-full bg-[#E50027] px-2 py-0.5 text-[11px] font-semibold text-white">Ảnh bìa</span>
+                          <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-white">Ảnh bìa</span>
                         )}
                         <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity">
                           {i !== 0 ? (
                             <button type="button" onClick={() => makeCover(i)}
-                              className="rounded-md bg-white/90 px-2 py-1 text-[11px] font-semibold text-zinc-800 hover:bg-white">
+                              className="rounded-md bg-white/90 px-2 py-1 text-[11px] font-semibold text-slate-800 hover:bg-white">
                               Đặt làm bìa
                             </button>
                           ) : <span />}
                           <button type="button" aria-label="Xóa ảnh" onClick={() => set({ images: form.images.filter((_, k) => k !== i) })}
-                            className="rounded-md bg-white/90 p-1.5 text-zinc-700 hover:bg-white hover:text-[#E50027]">
+                            className="rounded-md bg-white/90 p-1.5 text-slate-700 hover:bg-white hover:text-primary">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
                     ))}
                     {uploading && (
-                      <div className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-zinc-300 text-xs text-zinc-500">
+                      <div className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-slate-300 text-xs text-slate-500">
                         Đang tải lên…
                       </div>
                     )}
@@ -483,7 +483,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
               {/* Biến thể */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Biến thể (màu / size)</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Biến thể (màu / size)</h4>
                   {!isEdit && (
                     <Button type="button" size="sm" variant="outline" icon={<Plus className="w-4 h-4" />}
                       onClick={() => set({ variants: [...form.variants, { sku: '', color: '', colorHex: '', size: '', stock: 0 }] })}>
@@ -493,13 +493,13 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                 </div>
                 {isEdit ? (
                   <>
-                    <div className="overflow-hidden rounded-xl border border-zinc-200">
+                    <div className="overflow-hidden rounded-xl border border-slate-200">
                       <table className="w-full text-sm">
-                        <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
+                        <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                           <tr><th className="px-3 py-2 text-left">SKU</th><th className="px-3 py-2 text-left">Màu</th><th className="px-3 py-2 text-left">Size</th><th className="px-3 py-2 text-right">Tồn kho</th></tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-100">
-                          {form.variants.length === 0 && <tr><td colSpan={4} className="px-3 py-3 text-center text-zinc-400">Sản phẩm chưa có biến thể.</td></tr>}
+                        <tbody className="divide-y divide-slate-100">
+                          {form.variants.length === 0 && <tr><td colSpan={4} className="px-3 py-3 text-center text-slate-400">Sản phẩm chưa có biến thể.</td></tr>}
                           {form.variants.map((v) => (
                             <tr key={v.id}>
                               <td className="px-3 py-2 font-mono text-xs">{v.sku}</td>
@@ -511,11 +511,11 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                         </tbody>
                       </table>
                     </div>
-                    <p className="text-xs text-zinc-500">Tồn kho không sửa trực tiếp ở đây: để bổ sung hàng, dùng “Nhập bổ sung” ở mục Tồn kho (chọn đúng màu / size), số lượng được cộng vào hàng bán được ngay.</p>
+                    <p className="text-xs text-slate-500">Tồn kho không sửa trực tiếp ở đây: để bổ sung hàng, dùng “Nhập bổ sung” ở mục Tồn kho (chọn đúng màu / size), số lượng được cộng vào hàng bán được ngay.</p>
                   </>
                 ) : (
                   <>
-                    <div className="grid grid-cols-12 gap-2 px-1 text-[11px] font-bold uppercase text-zinc-400">
+                    <div className="grid grid-cols-12 gap-2 px-1 text-[11px] font-bold uppercase text-slate-400">
                       <span className="col-span-4">SKU *</span><span className="col-span-3">Màu</span><span className="col-span-2">Size</span><span className="col-span-2">Tồn kho</span><span />
                     </div>
                     {form.variants.map((v, i) => {
@@ -528,7 +528,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                           <input type="number" min="0" className={`${inputClass} col-span-2`} value={v.stock} onChange={(e) => upd({ stock: e.target.value })} />
                           <button type="button" aria-label="Xóa biến thể" disabled={form.variants.length === 1}
                             onClick={() => set({ variants: form.variants.filter((_, k) => k !== i) })}
-                            className="justify-self-center p-1.5 rounded-lg text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] disabled:opacity-30 disabled:pointer-events-none transition-colors">
+                            className="justify-self-center p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50 disabled:opacity-30 disabled:pointer-events-none transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -540,7 +540,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
               </section>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 border-t border-zinc-100 bg-zinc-50 px-6 py-3 shrink-0">
+            <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50 px-6 py-3 shrink-0">
               <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Hủy</Button>
               <Button type="submit" loading={saving} icon={<Save className="w-4 h-4" />}>{isEdit ? 'Lưu thay đổi' : 'Tạo sản phẩm'}</Button>
             </div>

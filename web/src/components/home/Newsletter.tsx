@@ -27,7 +27,7 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="py-16 md:py-24 bg-slate-50 border-t border-slate-200">
+    <section className="py-16 md:py-20 bg-white border-t border-slate-200">
       <div className="container mx-auto px-4 xl:px-8">
         <div className="max-w-2xl mx-auto flex flex-col items-center text-center">
           <h2 className="text-2xl md:text-3xl font-black tracking-tight uppercase mb-4">
@@ -44,15 +44,15 @@ export default function Newsletter() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Địa chỉ email của bạn" 
-              className="flex-1 h-12 px-4 bg-white border border-slate-300 text-black placeholder:text-slate-400 outline-none focus:border-black text-sm transition-colors"
+              className="flex-1 h-12 px-5 text-sm rounded-full bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-900 transition-colors"
               required
             />
             <button 
               type="submit"
               disabled={sending}
-              className="h-12 px-8 bg-black hover:bg-slate-800 text-white font-bold text-sm uppercase tracking-wider transition-colors shrink-0"
+              className="h-12 px-8 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white text-sm font-bold uppercase tracking-wider transition-colors shrink-0"
             >
-              Đăng ký
+              {sending ? 'Đang gửi...' : 'Đăng ký'}
             </button>
           </form>
 

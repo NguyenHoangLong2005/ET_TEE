@@ -103,17 +103,17 @@ export default function MarketingAnalyticsPage() {
   const th = "px-4 py-2 text-xs font-medium text-slate-500";
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+      <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="border-l-4 border-red-600 pl-3 text-xl font-semibold">Hiệu quả marketing</h1>
+          <h1 className="text-[22px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[26px]">Hiệu quả marketing</h1>
           <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm">
             {RANGES.map(r => (
               <button
                 key={r.key}
                 type="button"
                 onClick={() => setRange(r.key)}
-                className={`rounded-md px-3 py-1 ${range === r.key ? "bg-red-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+                className={`rounded-md px-3 py-1.5 font-medium ${range === r.key ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
               >
                 {r.label}
               </button>
@@ -128,11 +128,11 @@ export default function MarketingAnalyticsPage() {
           </div>
         )}
 
-        <section className="grid grid-cols-2 divide-x divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white lg:grid-cols-5 lg:divide-y-0">
+        <section className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           {kpis.map(k => (
-            <div key={k.label} className="border-t-2 border-red-600 p-4 first:border-t-2">
-              <p className="text-xs text-slate-500">{k.label}</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-red-700">{loading ? "…" : k.value}</p>
+            <div key={k.label} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+              <p className="text-[13px] font-medium text-slate-500">{k.label}</p>
+              <p className="mt-2 text-[22px] font-bold tracking-tight tabular-nums text-slate-900">{loading ? "—" : k.value}</p>
               <p className="mt-0.5 h-4 text-xs text-slate-400">{loading ? "" : k.sub ?? ""}</p>
             </div>
           ))}
@@ -169,7 +169,7 @@ export default function MarketingAnalyticsPage() {
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full rounded-full bg-red-600" style={{ width: `${Math.round((b.impressions / maxImp) * 100)}%` }} />
+                            <div className="h-full rounded-full bg-slate-800" style={{ width: `${Math.round((b.impressions / maxImp) * 100)}%` }} />
                           </div>
                           <span className="w-12 text-right tabular-nums">{fmtNum(b.impressions)}</span>
                         </div>
@@ -208,8 +208,8 @@ export default function MarketingAnalyticsPage() {
                         {v.name && <span className="ml-2 text-slate-500">{v.name}</span>}
                       </td>
                       <td className="px-4 py-2.5 text-right tabular-nums">{fmtNum(v.used)}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{v.used > 0 ? fmtMoney(Number(v.totalDiscount)) : "—"}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{v.used > 0 ? fmtMoney(Number(v.avgOrder)) : "—"}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtMoney(Number(v.totalDiscount))}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtMoney(Number(v.avgOrder))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -218,6 +218,6 @@ export default function MarketingAnalyticsPage() {
           )}
         </section>
       </div>
-    </main>
+    </div>
   );
 }

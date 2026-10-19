@@ -123,14 +123,14 @@ export default function StyleGuidePage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-10">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       {/* 1. Page Header Demo */}
       <PageHeader
         title="ET.TEE Design System Style Guide"
         subtitle="Môi trường trực quan demo toàn bộ Design Tokens, Bảng màu, Typography & Components nền tảng."
         breadcrumbs={[
           { label: 'Admin', href: '/admin/dashboard' },
-          { label: 'Hệ thống', href: '/admin/settings/payments-shipping' },
+          { label: 'Hệ thống' },
           { label: 'Style Guide' },
         ]}
         badge={
@@ -171,7 +171,7 @@ export default function StyleGuidePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Brand Colors */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Brand Primary (Đỏ ET.TEE)
             </h3>
@@ -184,7 +184,7 @@ export default function StyleGuidePage() {
           </div>
 
           {/* Semantic Success */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Semantic: Success
             </h3>
@@ -197,7 +197,7 @@ export default function StyleGuidePage() {
           </div>
 
           {/* Semantic Warning */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Semantic: Warning
             </h3>
@@ -210,7 +210,7 @@ export default function StyleGuidePage() {
           </div>
 
           {/* Semantic Danger & Info */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Semantic: Danger & Info
             </h3>
@@ -235,7 +235,7 @@ export default function StyleGuidePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Admin Tier */}
-          <div className="bg-white p-5 rounded-2xl border-2 border-slate-900 shadow-sm space-y-3">
+          <div className="bg-white p-5 rounded-xl border-2 border-slate-900 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <span className="bg-slate-900 text-white font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded font-bold">
                 SYSTEM
@@ -252,7 +252,7 @@ export default function StyleGuidePage() {
           </div>
 
           {/* Store Owner Tier */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <span className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">
                 BRANCH
@@ -269,7 +269,7 @@ export default function StyleGuidePage() {
           </div>
 
           {/* Staff Tier */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">
                 STAFF
@@ -469,7 +469,7 @@ export default function StyleGuidePage() {
 
           <div className="space-y-4">
             <SkeletonCard />
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
               <Skeleton className="h-4 w-40" />
               <SkeletonText lines={3} />
             </div>

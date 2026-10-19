@@ -27,42 +27,21 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  */
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    'text-white font-semibold shadow-sm focus:ring-2 focus:ring-offset-1',
+    'bg-primary text-white hover:bg-primary-700 active:bg-primary-800 font-semibold shadow-[0_1px_2px_rgba(16,24,40,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1',
   secondary:
-    'bg-slate-900 text-white hover:bg-slate-800 font-semibold shadow-sm focus:ring-2 focus:ring-slate-900/30 focus:ring-offset-1',
+    'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 font-semibold shadow-[0_1px_2px_rgba(16,24,40,0.08)] focus-visible:ring-2 focus-visible:ring-slate-900/30 focus-visible:ring-offset-1',
   danger:
-    'text-white font-semibold shadow-sm focus:ring-2 focus:ring-offset-1',
+    'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 font-semibold shadow-sm focus-visible:ring-2 focus-visible:ring-red-600/30 focus-visible:ring-offset-1',
   outline:
-    'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900 font-medium focus:ring-2 focus:ring-slate-200 focus:ring-offset-1',
+    'bg-white text-slate-700 border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 font-medium focus-visible:ring-2 focus-visible:ring-slate-200 focus-visible:ring-offset-1',
   ghost:
-    'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium focus:ring-2 focus:ring-slate-200 focus:ring-offset-1',
-};
-
-// Inline styles for brand-specific colors (avoids Tailwind purge issues with dynamic colors)
-const VARIANT_STYLES: Record<ButtonVariant, React.CSSProperties> = {
-  primary: {
-    background: '#E50027',
-  },
-  secondary: {},
-  danger: {
-    background: '#DC2626',
-  },
-  outline: {},
-  ghost: {},
-};
-
-const VARIANT_HOVER_STYLES: Record<ButtonVariant, string> = {
-  primary:   'hover:opacity-90',
-  secondary: '',
-  danger:    'hover:opacity-90',
-  outline:   '',
-  ghost:     '',
+    'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium focus-visible:ring-2 focus-visible:ring-slate-200 focus-visible:ring-offset-1',
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5',
-  md: 'px-4 py-2 text-sm rounded-lg gap-2',
-  lg: 'px-5 py-2.5 text-sm rounded-lg gap-2',
+  sm: 'h-8 px-3 text-xs rounded-lg gap-1.5',
+  md: 'h-9 px-3.5 text-sm rounded-lg gap-2',
+  lg: 'h-11 px-5 text-sm rounded-xl gap-2',
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -90,14 +69,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         className={`
-          inline-flex items-center justify-center transition-all duration-150 outline-none select-none
+          inline-flex items-center justify-center whitespace-nowrap shrink-0 transition-all duration-150 outline-none select-none
           disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
           ${VARIANT_CLASSES[variant]}
-          ${VARIANT_HOVER_STYLES[variant]}
           ${SIZE_CLASSES[size]}
           ${className}
         `}
-        style={{ ...VARIANT_STYLES[variant], ...style }}
+        style={style}
         {...props}
       >
         {loading ? (
@@ -105,7 +83,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           icon && <span className="shrink-0">{icon}</span>
         )}
-        {children && <span>{children}</span>}
+        {/* inline-flex: many callers pass an icon inside children; svg is display:block (preflight),
+            so in a plain span it sat on its own line above the label. */}
+        {children && <span className="inline-flex items-center gap-1.5">{children}</span>}
         {!loading && iconRight && <span className="shrink-0">{iconRight}</span>}
       </button>
     );

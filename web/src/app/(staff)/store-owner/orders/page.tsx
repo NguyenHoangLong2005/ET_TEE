@@ -253,7 +253,7 @@ export default function StoreOwnerOrdersPage() {
       header: 'Tổng tiền',
       align: 'right',
       width: '140px',
-      render: (o) => <span className="block truncate font-mono text-sm font-semibold text-slate-900">{formatCurrency(o.totalAmount)}</span>,
+      render: (o) => <span className="block truncate tabular-nums text-sm font-semibold text-slate-900">{formatCurrency(o.totalAmount)}</span>,
     },
     {
       key: 'payment',
@@ -289,13 +289,13 @@ export default function StoreOwnerOrdersPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Đơn hàng"
           subtitle="Theo dõi đơn hàng phát sinh, trạng thái xử lý và thanh toán của cửa hàng."
           actions={
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => { fetchOrders(); fetchSummary(); }}
               loading={loading}
               icon={<RefreshCw className="w-4 h-4" />}
@@ -413,7 +413,7 @@ export default function StoreOwnerOrdersPage() {
         {/* Chi tiết đơn hàng */}
         {selected && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
               <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Đơn hàng <span className="font-mono">{selected.orderCode}</span></h3>
@@ -479,7 +479,7 @@ export default function StoreOwnerOrdersPage() {
                                   {' · '}SL {item.quantity} × {formatCurrency(item.unitPrice)}
                                 </p>
                               </div>
-                              <p className="font-mono font-semibold text-slate-900 shrink-0">{formatCurrency(item.totalPrice)}</p>
+                              <p className="tabular-nums font-semibold text-slate-900 shrink-0">{formatCurrency(item.totalPrice)}</p>
                             </li>
                           ))}
                         </ul>

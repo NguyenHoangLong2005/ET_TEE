@@ -168,7 +168,7 @@ export default function ManufacturersPage() {
             href={item.website.startsWith('http') ? item.website : `https://${item.website}`}
             target="_blank"
             rel="noreferrer"
-            className="text-[#BD001F] hover:underline text-xs truncate max-w-[200px] inline-block"
+            className="text-primary-700 hover:underline text-xs truncate max-w-[200px] inline-block"
           >
             {item.website}
           </a>
@@ -189,7 +189,7 @@ export default function ManufacturersPage() {
       header: 'Số sản phẩm',
       align: 'right',
       render: (item) => (
-        <span className="inline-flex min-w-[2rem] justify-center px-2 py-0.5 rounded-full bg-zinc-100 font-semibold text-zinc-800 text-xs tabular-nums">
+        <span className="inline-flex min-w-[2rem] justify-center px-2 py-0.5 rounded-full bg-slate-100 font-semibold text-slate-800 text-xs tabular-nums">
           {item.productCount || 0}
         </span>
       ),
@@ -202,14 +202,14 @@ export default function ManufacturersPage() {
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => handleOpenModal(item)}
-            className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Sửa"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => setItemToDelete(item)}
-            className="p-1.5 text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary-50 rounded-lg transition-colors"
             title="Xóa"
           >
             <Trash2 className="w-4 h-4" />
@@ -221,11 +221,11 @@ export default function ManufacturersPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* Header */}
         <PageHeader
-          title="Quản lý Nhà sản xuất"
+          title="Quản lý nhà sản xuất"
           subtitle="Quản lý các đối tác gia công và xưởng sản xuất (dùng chung toàn hệ thống). Số sản phẩm là số sản phẩm đã chọn nhà sản xuất này trong form sản phẩm."
           actions={
             <div className="flex items-center gap-2.5">
@@ -248,7 +248,7 @@ export default function ManufacturersPage() {
         />
 
         {loadError && (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-[#F4C0C8] bg-[#FFF0F2] px-4 py-3 text-sm text-[#950019]">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-800">
             <span>{loadError}</span>
             <Button variant="outline" size="sm" onClick={fetchData}>Thử lại</Button>
           </div>
@@ -280,7 +280,7 @@ export default function ManufacturersPage() {
         {/* Modal Create / Edit */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <h3 className="text-sm font-semibold text-slate-900">
                   {editingItem ? 'Sửa nhà sản xuất' : 'Thêm nhà sản xuất mới'}
@@ -303,7 +303,7 @@ export default function ManufacturersPage() {
                     required
                     value={formData.name || ''}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="VD: Xưởng may ET.TEE Sài Gòn"
                   />
                 </div>
@@ -315,7 +315,7 @@ export default function ManufacturersPage() {
                       type="text"
                       value={formData.country || ''}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       placeholder="Việt Nam"
                     />
                   </div>
@@ -325,7 +325,7 @@ export default function ManufacturersPage() {
                       type="text"
                       value={formData.website || ''}
                       onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       placeholder="ettee.vn"
                     />
                   </div>
@@ -337,7 +337,7 @@ export default function ManufacturersPage() {
                     type="email"
                     value={formData.contactEmail || ''}
                     onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="contact@factory.vn"
                   />
                 </div>
@@ -348,7 +348,7 @@ export default function ManufacturersPage() {
                     rows={3}
                     value={formData.description || ''}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027] resize-none"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                     placeholder="Mô tả năng lực xưởng..."
                   />
                 </div>

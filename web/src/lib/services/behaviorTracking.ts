@@ -40,8 +40,40 @@ export function behaviorSessionHeader(): Record<string, string> {
   return id ? { 'X-Behavior-Session': id } : {};
 }
 
+const NEXT_SOURCE_KEY = 'behavior_next_source';
+// A click only counts for the product page it opened, if that page opens soon after.
+const NEXT_SOURCE_MS = 5 * 60 * 1000;
+
+export type ViewSource = 'recommendation';
+
+/**
+ * Called when a product is clicked in a recommendation section, so the VIEW it leads to is stored
+ * with source=recommendation (user_behavior_events.source; the backend already accepted it but the
+ * storefront never sent one). Lets the recommendation sections' click-through be measured.
+ */
+export function markNextViewSource(productId: number | undefined, source: ViewSource): void {
+  if (typeof window === 'undefined' || !productId) return;
+  try {
+    sessionStorage.setItem(NEXT_SOURCE_KEY, JSON.stringify({ id: productId, source, at: Date.now() }));
+  } catch {
+    // storage unavailable: the view is recorded without a source
+  }
+}
+
+function takeViewSource(productId: number): ViewSource | undefined {
+  try {
+    const next = JSON.parse(sessionStorage.getItem(NEXT_SOURCE_KEY) || 'null') as { id: number; source: ViewSource; at: number } | null;
+    if (!next || next.id !== productId) return undefined;
+    sessionStorage.removeItem(NEXT_SOURCE_KEY);
+    return Date.now() - next.at < NEXT_SOURCE_MS ? next.source : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function trackProductView(productId: number): void {
   if (typeof window === 'undefined' || !productId) return;
+  const source = takeViewSource(productId);
   try {
     const last = JSON.parse(sessionStorage.getItem(LAST_VIEW_KEY) || 'null') as { id: number; at: number } | null;
     if (last && last.id === productId && Date.now() - last.at < REPEAT_VIEW_MS) return;
@@ -54,7 +86,7 @@ export function trackProductView(productId: number): void {
   fetch(`${getApiBaseUrl()}/api/events`, {
     method: 'POST',
     headers: getAuthHeaders(true),
-    body: JSON.stringify({ productId, eventType: 'VIEW', sessionId: getBehaviorSessionId() }),
+    body: JSON.stringify({ productId, eventType: 'VIEW', sessionId: getBehaviorSessionId(), source }),
     keepalive: true,
   }).catch(() => {
     // tracking is best effort, never surfaces to the shopper

@@ -25,6 +25,12 @@ export type ForYouFeed = {
 
 const EMPTY_FEED: ForYouFeed = { strategy: 'NONE', model: null, products: [] };
 
+export type TrendingFeed = { windowDays: number; products: Product[] };
+const EMPTY_TRENDING: TrendingFeed = { windowDays: 0, products: [] };
+
+export type BecauseYouViewedFeed = { anchor: Product | null; products: Product[] };
+const EMPTY_BECAUSE: BecauseYouViewedFeed = { anchor: null, products: [] };
+
 export type CartComplement = {
   product: Product;
   /** target_group:product_type, e.g. "men:pants" */
@@ -105,6 +111,54 @@ export const RecommendationService = {
       return json.data ?? EMPTY_FEED;
     } catch {
       return EMPTY_FEED;
+    }
+  },
+
+  /**
+   * Home "Đang được quan tâm": most interest (distinct shoppers viewing / adding to cart / buying)
+   * over the last windowDays (7, or 30 when the week is quiet). Same for everyone, so it can run
+   * on the server.
+   */
+  async getTrending(limit: number = 12): Promise<TrendingFeed> {
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/recommendations/trending?limit=${limit}`, {
+        next: { revalidate: 600 },
+      });
+      if (!res.ok) return EMPTY_TRENDING;
+      const json = await res.json();
+      return json.data ?? EMPTY_TRENDING;
+    } catch {
+      return EMPTY_TRENDING;
+    }
+  },
+
+  /** Home "Vì bạn đã xem X": CLIP neighbours of the product this shopper viewed last. Browser only. */
+  async getBecauseYouViewed(limit: number = 12): Promise<BecauseYouViewedFeed> {
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/recommendations/because-you-viewed?limit=${limit}`, {
+        headers: getAuthHeaders(true),
+        cache: 'no-store',
+      });
+      if (!res.ok) return EMPTY_BECAUSE;
+      const json = await res.json();
+      return json.data ?? EMPTY_BECAUSE;
+    } catch {
+      return EMPTY_BECAUSE;
+    }
+  },
+
+  /** Home "Bạn đã xem gần đây": this shopper's last product pages. Browser only. */
+  async getRecentlyViewed(limit: number = 12): Promise<Product[]> {
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/recommendations/recently-viewed?limit=${limit}`, {
+        headers: getAuthHeaders(true),
+        cache: 'no-store',
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data ?? [];
+    } catch {
+      return [];
     }
   },
 

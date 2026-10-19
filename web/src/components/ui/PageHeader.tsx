@@ -28,17 +28,17 @@ export function PageHeader({
   className = '',
 }: PageHeaderProps) {
   return (
-    <div className={`mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${className}`}>
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
+    <div className={`mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between ${className}`}>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-[22px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[26px]">{title}</h1>
           {badge && <div>{badge}</div>}
         </div>
-        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-500">{subtitle}</p>}
       </div>
-      
+
       {actions && (
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center gap-2.5">
           {actions}
         </div>
       )}

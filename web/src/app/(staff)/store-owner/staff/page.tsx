@@ -488,16 +488,16 @@ export default function StoreOwnerStaffPage() {
   /* ════════════════ RENDER ════════════════ */
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* Header */}
         <PageHeader
-          title="Quản lý Nhân sự"
+          title="Quản lý nhân sự"
           subtitle="Quản lý tài khoản nhân viên, cấp phát vai trò và đánh giá hiệu suất nhân sự."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={activeTab === 'staff' ? fetchStaff : fetchEvaluations}
                 loading={activeTab === 'staff' ? loading : loadingEvals}
                 icon={<RefreshCw className="w-4 h-4" />}
@@ -576,7 +576,7 @@ export default function StoreOwnerStaffPage() {
         {/* ── Modal: Create Staff ── */}
         {showCreate && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-lg w-full overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
@@ -686,7 +686,7 @@ export default function StoreOwnerStaffPage() {
         {/* ── Modal: Create Evaluation ── */}
         {showCreateEval && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-lg w-full overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500/10 rounded-lg">
@@ -796,7 +796,7 @@ export default function StoreOwnerStaffPage() {
         {/* ── Modal: Lock Staff ── */}
         {lockId && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-md w-full overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-red-50 text-red-600 rounded-lg">
@@ -853,7 +853,7 @@ export default function StoreOwnerStaffPage() {
         {/* ── Modal: Temp Password Alert ── */}
         {tempPwd && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
               <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
                 <CheckCircle className="w-6 h-6" />
               </div>
@@ -875,7 +875,7 @@ export default function StoreOwnerStaffPage() {
         {/* ── Modal: View User Detail ── */}
         {viewUser && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-md w-full overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="font-extrabold text-slate-900 text-base">Hồ sơ nhân viên</h3>
                 <button

@@ -4,35 +4,34 @@ import OutfitSection from '@/components/home/OutfitSection';
 import TrustBar from '@/components/home/TrustBar';
 import Newsletter from '@/components/home/Newsletter';
 import MarketingCarousel from '@/components/home/MarketingCarousel';
-import ForYouSection from '@/components/home/ForYouSection';
+import PersonalizedSections from '@/components/home/PersonalizedSections';
+import RecentlyViewedSection from '@/components/home/RecentlyViewedSection';
+import ProductCarousel from '@/components/home/ProductCarousel';
 import { ProductService } from '@/lib/services/productService';
-import { RecommendationService } from '@/lib/services/recommendationService';
+import { RecommendationService, TrendingFeed } from '@/lib/services/recommendationService';
 
 export default async function Home() {
   let newProducts: any[] = [];
   let bestSellers: any[] = [];
   let saleProducts: any[] = [];
-  let forYouProducts: any[] = [];
   let familyOutfits: any[] = [];
+  let trending: TrendingFeed = { windowDays: 0, products: [] };
 
   try {
     const results = await Promise.allSettled([
       ProductService.getNewProducts(8),
       ProductService.getBestSellers(8),
       ProductService.getSaleProducts(8),
-      RecommendationService.getPersonalizedRecommendations(8),
-      ProductService.getFamilyOutfitProducts(4)
+      ProductService.getFamilyOutfitProducts(4),
+      RecommendationService.getTrending(12),
     ]);
 
     newProducts = results[0].status === 'fulfilled' ? results[0].value : [];
     bestSellers = results[1].status === 'fulfilled' ? results[1].value : [];
     saleProducts = results[2].status === 'fulfilled' ? results[2].value : [];
 
-    if (results[3].status === 'fulfilled') {
-      forYouProducts = results[3].value.map(item => item.product).filter(Boolean);
-    }
-
-    familyOutfits = results[4].status === 'fulfilled' ? results[4].value : [];
+    familyOutfits = results[3].status === 'fulfilled' ? results[3].value : [];
+    if (results[4].status === 'fulfilled') trending = results[4].value;
   } catch (error) {
     console.error("Home page fetch error:", error);
   }
@@ -50,16 +49,27 @@ export default async function Home() {
       {/* 3. Category Bento Highlights Grid */}
       <CategoryHighlights />
 
-      {/* 3b. Personalised feed (client side: needs the shopper's login / guest token). Renders
-         nothing for a visitor with no browsing history yet. */}
-      <ForYouSection />
+      {/* 3b. Personalised sections (client side: need the shopper's login / guest token):
+         "Dành riêng cho bạn" (SASRec), "Vì bạn đã xem" (CLIP), "Hoàn thiện giỏ hàng" (FP-Growth).
+         Each renders nothing until there is history / a cart to work from. */}
+      <PersonalizedSections />
+
+      {/* 3c. Everyone, including first-time visitors: interest from all shoppers in the last
+         7 days (30 when the week is quiet), counted in distinct shoppers. */}
+      <ProductCarousel
+        title="Đang Được Quan Tâm"
+        subtitle={`Được nhiều khách xem, thêm vào giỏ và mua nhất ${trending.windowDays || 7} ngày qua`}
+        bgColor="bg-slate-50"
+        products={trending.products}
+        trackSource="recommendation"
+      />
 
       {/* 4. Special Deals & Flash Sale (Urgency Driver) */}
       <MarketingCarousel
         placementKey="HOME_SALE"
         title="Ưu Đãi Đặc Biệt"
         subtitle="Mức giá cực tốt - Số lượng có hạn, mua ngay kẻo lỡ"
-        viewAllLink="/products?sort=price-asc"
+        viewAllLink="/products?status=sale"
         bgColor="bg-red-50/40"
         fallback={saleProducts}
       />
@@ -74,17 +84,16 @@ export default async function Home() {
         fallback={newProducts}
       />
 
-      {/* This section's data (forYouProducts) is fetched server-side with no
-         user/session context - it's the same best-seller list for every
-         visitor, not personalized to anyone. The old copy ("Dành Riêng Cho
-         Bạn" / "cá nhân hóa bởi trợ lý thời trang AI") claimed the opposite. */}
+      {/* Only shown when marketing curates HOME_RECOMMENDED. Its fallback used to be the
+         best-seller list, so the page showed the exact same 8 products twice (here and in
+         "Bán Chạy Nhất" below). */}
       <MarketingCarousel
         placementKey="HOME_RECOMMENDED"
         title="Được Yêu Thích Nhất"
         subtitle="Những sản phẩm đang bán chạy và được nhiều khách hàng lựa chọn"
         viewAllLink="/products"
         bgColor="bg-slate-50"
-        fallback={forYouProducts.length > 0 ? forYouProducts : newProducts}
+        fallback={[]}
       />
 
       {/* 7. Mix & Match Outfit Guide & Family Lookbook */}
@@ -96,9 +105,12 @@ export default async function Home() {
         title="Bán Chạy Nhất"
         subtitle="Những sản phẩm được ưa chuộng và đánh giá 5 sao từ khách hàng"
         viewAllLink="/products?sort=best-seller"
-        bgColor="bg-white"
+        bgColor="bg-slate-50"
         fallback={bestSellers}
       />
+
+      {/* Shopper's own last product pages (hidden without history) */}
+      <RecentlyViewedSection />
 
       {/* 9. Newsletter & Exclusive Voucher Incentives */}
       <Newsletter />

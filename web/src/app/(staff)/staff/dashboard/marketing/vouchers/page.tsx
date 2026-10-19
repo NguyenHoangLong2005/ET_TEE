@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getAuthHeaders } from "@/lib/auth";
 import { getApiBaseUrl } from "@/lib/api-config";
 import { toast } from "sonner";
@@ -20,15 +21,15 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 type DiscountType = "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIP";
 // Mirrors MarketingService.validateVoucherTransition: staff toggle ACTIVE <-> PAUSED; the rest are
 // terminal or belong to shop-owner approval. Sending "INACTIVE" was always rejected.
-type VoucherStatus = "ACTIVE" | "PAUSED" | "CANCELLED" | "EXPIRED" | "PENDING_APPROVAL" | "REJECTED";
+type VoucherStatus = "ACTIVE" | "PAUSED" | "CANCELLED" | "EXPIRED" | "PENDING_APPROVAL" | "REJECTED" | "REVISION_REQUESTED";
 const STATUS_LABEL: Record<VoucherStatus, string> = {
   ACTIVE: "Kích hoạt", PAUSED: "Tạm dừng", CANCELLED: "Đã hủy", EXPIRED: "Hết hạn",
-  PENDING_APPROVAL: "Chờ duyệt", REJECTED: "Bị từ chối",
+  PENDING_APPROVAL: "Chờ duyệt", REJECTED: "Bị từ chối", REVISION_REQUESTED: "Cần chỉnh sửa",
 };
 const canToggle = (s: VoucherStatus) => s === "ACTIVE" || s === "PAUSED";
 const STATUS_TONE: Record<VoucherStatus, "success" | "warning" | "danger" | "neutral"> = {
   ACTIVE: "success", PAUSED: "neutral", CANCELLED: "danger", EXPIRED: "danger",
-  PENDING_APPROVAL: "warning", REJECTED: "danger",
+  PENDING_APPROVAL: "warning", REJECTED: "danger", REVISION_REQUESTED: "warning",
 };
 
 interface Voucher {
@@ -44,6 +45,33 @@ interface Voucher {
   expiresAt: string;
   status: VoucherStatus;
   isPublic?: boolean;
+  /** Set while an edit / delete of this approved voucher waits for the store owner. */
+  pendingChange?: "UPDATE" | "DELETE" | null;
+}
+
+/**
+ * Bell deep link (?edit=<id>, sent when the store owner rejects or sends back a voucher): opens
+ * that voucher's edit form once the list has loaded, then drops the param so a reload won't reopen it.
+ */
+function EditFromUrl({ vouchers, loading, onOpen }: { vouchers: Voucher[]; loading: boolean; onOpen: (v: Voucher) => void }) {
+  const editId = useSearchParams().get("edit");
+  const router = useRouter();
+  const pathname = usePathname();
+  const handled = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editId || loading || handled.current === editId) return;
+    handled.current = editId;
+    router.replace(pathname, { scroll: false });
+    const v = vouchers.find(x => String(x.id) === editId);
+    if (!v) {
+      toast.error("Không tìm thấy voucher cần sửa");
+    } else if (v.pendingChange) {
+      toast.info("Voucher này đang có yêu cầu chờ chủ cửa hàng duyệt");
+    } else {
+      onOpen(v);
+    }
+  }, [editId, loading, vouchers, onOpen, router, pathname]);
+  return null;
 }
 
 export default function VouchersPage() {
@@ -169,8 +197,16 @@ export default function VouchersPage() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Lỗi khi lưu voucher");
       }
-      // New vouchers from marketing staff wait in the store owner approval queue before going live.
-      toast.success(isEditing ? "Cập nhật voucher thành công" : "Đã tạo voucher và gửi chủ cửa hàng phê duyệt");
+      const body = await res.json().catch(() => ({}));
+      // New vouchers from marketing staff wait in the store owner approval queue before going live;
+      // edits of an approved voucher become a change request and the live voucher stays as it was.
+      toast.success(!isEditing
+        ? "Đã tạo voucher và gửi chủ cửa hàng phê duyệt"
+        : body?.pendingApproval
+          ? "Đã gửi yêu cầu sửa, voucher giữ nguyên đến khi chủ cửa hàng duyệt"
+          : (editingVoucher.status === "REVISION_REQUESTED" || editingVoucher.status === "REJECTED")
+            ? "Đã chỉnh sửa và gửi lại chủ cửa hàng phê duyệt"
+            : "Cập nhật voucher thành công");
       setIsModalOpen(false);
       await fetchData(true);
     } catch (err: any) {
@@ -214,10 +250,17 @@ export default function VouchersPage() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Không thể xóa voucher");
       }
-      setVouchers(prev => prev.filter(v => v.id !== voucherToDelete.id));
+      const body = await res.json().catch(() => ({}));
+      if (body?.pendingApproval) {
+        // Approved voucher: stays live until the store owner approves the deletion.
+        setVouchers(prev => prev.map(v => v.id === voucherToDelete.id ? { ...v, pendingChange: "DELETE" } : v));
+        toast.success("Đã gửi yêu cầu xóa, chờ chủ cửa hàng duyệt");
+      } else {
+        setVouchers(prev => prev.filter(v => v.id !== voucherToDelete.id));
+        toast.success("Đã xóa voucher thành công");
+      }
       setIsDeleteModalOpen(false);
       setVoucherToDelete(null);
-      toast.success("Đã xóa voucher thành công");
     } catch (err: any) {
       toast.error(err?.message || "Lỗi khi xóa voucher");
     } finally {
@@ -266,7 +309,7 @@ export default function VouchersPage() {
       header: "Mức giảm",
       render: (v) => (
         <div className="text-xs">
-          <span className="font-bold text-emerald-600">
+          <span className="font-bold text-slate-900">
             {v.discountType === "PERCENTAGE" && `${v.discountValue}%`}
             {v.discountType === "FIXED_AMOUNT" && formatCurrency(v.discountValue)}
             {v.discountType === "FREE_SHIP" && "Miễn phí ship"}
@@ -281,7 +324,7 @@ export default function VouchersPage() {
       key: "minOrderValue",
       header: "Đơn tối thiểu",
       render: (v) => (
-        <span className="text-xs font-mono text-slate-700">
+        <span className="text-xs tabular-nums text-slate-700">
           {formatCurrency(v.minOrderValue)}
         </span>
       )
@@ -323,11 +366,20 @@ export default function VouchersPage() {
       key: "status",
       header: "Trạng thái",
       render: (v) => (
-        <StatusBadge
-          status={v.status}
-          label={STATUS_LABEL[v.status] ?? v.status}
-          tone={STATUS_TONE[v.status]}
-        />
+        <div className="flex flex-col items-start gap-1">
+          <StatusBadge
+            status={v.status}
+            label={STATUS_LABEL[v.status] ?? v.status}
+            tone={STATUS_TONE[v.status]}
+          />
+          {v.pendingChange && (
+            <StatusBadge
+              label={v.pendingChange === "DELETE" ? "Chờ duyệt xóa" : "Chờ duyệt sửa"}
+              tone="warning"
+              size="sm"
+            />
+          )}
+        </div>
       )
     },
     {
@@ -348,7 +400,8 @@ export default function VouchersPage() {
             variant="ghost"
             size="sm"
             onClick={() => handleOpenModal(v)}
-            title="Sửa voucher"
+            disabled={!!v.pendingChange}
+            title={v.pendingChange ? "Đang chờ chủ cửa hàng duyệt yêu cầu trước" : "Sửa voucher"}
             icon={<Edit2 className="w-3.5 h-3.5" />}
           />
           <Button
@@ -358,7 +411,8 @@ export default function VouchersPage() {
               setVoucherToDelete(v);
               setIsDeleteModalOpen(true);
             }}
-            title="Xóa voucher"
+            disabled={!!v.pendingChange}
+            title={v.pendingChange ? "Đang chờ chủ cửa hàng duyệt yêu cầu trước" : "Xóa voucher"}
             className="text-rose-600 hover:text-rose-700"
             icon={<Trash2 className="w-3.5 h-3.5" />}
           />
@@ -368,10 +422,13 @@ export default function VouchersPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-8 space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+      <Suspense fallback={null}>
+        <EditFromUrl vouchers={vouchers} loading={loading} onOpen={handleOpenModal} />
+      </Suspense>
       {/* Header */}
       <PageHeader
-        title="Quản Lý Voucher & Mã Khuyến Mãi"
+        title="Quản lý voucher & mã khuyến mãi"
         subtitle="Quản lý cấu hình khuyến mãi, mã voucher và hạn mức phát hành toàn hệ thống"
         breadcrumbs={[
           { label: "Marketing", href: "/staff/dashboard/marketing" },
@@ -405,19 +462,19 @@ export default function VouchersPage() {
           title="Tổng voucher"
           value={vouchers.length}
           icon={Ticket}
-          color="blue"
+          color="slate"
         />
         <StatCard
           title="Đang kích hoạt"
           value={activeCount}
           icon={CheckCircle2}
-          color="success"
+          color="slate"
         />
         <StatCard
           title="Lượt sử dụng tích lũy"
           value={totalUsages}
           icon={TrendingUp}
-          color="warning"
+          color="slate"
         />
       </div>
 
@@ -453,6 +510,9 @@ export default function VouchersPage() {
               <option value="ACTIVE">Kích hoạt</option>
               <option value="PAUSED">Tạm dừng</option>
               <option value="EXPIRED">Hết hạn</option>
+              <option value="PENDING_APPROVAL">Chờ duyệt</option>
+              <option value="REVISION_REQUESTED">Cần chỉnh sửa</option>
+              <option value="REJECTED">Bị từ chối</option>
               <option value="CANCELLED">Đã hủy</option>
             </select>
           </div>
@@ -462,7 +522,7 @@ export default function VouchersPage() {
       {/* Create / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden my-8">
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden my-8">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <Ticket className="w-5 h-5 text-primary" />
@@ -477,6 +537,16 @@ export default function VouchersPage() {
             </div>
 
             <form onSubmit={handleSave} className="p-6 space-y-4 text-xs">
+              {editingVoucher && (editingVoucher.status === "REJECTED" || editingVoucher.status === "REVISION_REQUESTED") && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
+                  Voucher {editingVoucher.status === "REJECTED" ? "đã bị từ chối" : "cần chỉnh sửa"}. Lưu thay đổi sẽ gửi lại chủ cửa hàng duyệt.
+                </p>
+              )}
+              {editingVoucher && canToggle(editingVoucher.status) && (
+                <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-600">
+                  Voucher đang hoạt động: thay đổi sẽ được gửi chủ cửa hàng duyệt, voucher giữ nguyên đến khi được duyệt.
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Mã Voucher *</label>
@@ -624,7 +694,9 @@ export default function VouchersPage() {
         }}
         onConfirm={handleDelete}
         title="Xác nhận xóa voucher"
-        message={`Bạn có chắc chắn muốn xóa mã voucher "${voucherToDelete?.code}"? Thao tác này không thể hoàn tác.`}
+        message={voucherToDelete && canToggle(voucherToDelete.status)
+          ? `Mã "${voucherToDelete.code}" đã được duyệt: yêu cầu xóa sẽ được gửi chủ cửa hàng duyệt, voucher vẫn hoạt động đến khi được duyệt.`
+          : `Bạn có chắc chắn muốn xóa mã voucher "${voucherToDelete?.code}"? Thao tác này không thể hoàn tác.`}
         confirmText="Xác nhận xóa"
         type="danger"
         isLoading={isDeleting}

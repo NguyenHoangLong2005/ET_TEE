@@ -4,7 +4,7 @@ import SafeImage from '@/components/ui/SafeImage';
 import { getApiBaseUrl } from '@/lib/api-config';
 
 export const metadata = {
-  title: 'Tin Tức & Blog Thời Trang | ET.TEE Studio',
+  title: 'Tin Tức & Blog Thời Trang',
   description: 'Cập nhật tin tức mới nhất về xu hướng thời trang, mẹo phối đồ nam nữ, bí quyết chọn size và kiến thức về các loại chất liệu cao cấp từ ET.TEE.',
 };
 
@@ -56,8 +56,8 @@ export default async function NewsPage() {
         {/* Featured Article Card */}
         {featuredArticle && (
           <div className="mb-12">
-            <h2 className="text-xs font-black uppercase tracking-widest text-amber-600 mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600" />
+            <h2 className="text-xs font-black uppercase tracking-widest text-primary-600 mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary-600" />
               <span>Bài viết nổi bật</span>
             </h2>
 
@@ -71,7 +71,7 @@ export default async function NewsPage() {
                   alt={featuredArticle.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                <span className="absolute top-4 left-4 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
+                <span className="absolute top-4 left-4 bg-primary text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
                   {featuredArticle.category}
                 </span>
               </div>
@@ -84,7 +84,7 @@ export default async function NewsPage() {
                     <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {featuredArticle.readTime}</span>
                   </div>
 
-                  <h3 className="text-xl font-black text-slate-900 group-hover:text-amber-600 transition-colors leading-snug">
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-primary-600 transition-colors leading-snug">
                     {featuredArticle.title}
                   </h3>
 
@@ -93,7 +93,7 @@ export default async function NewsPage() {
                   </p>
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                <div className="pt-6 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
                   <span>Đọc bài viết chi tiết</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -141,7 +141,7 @@ export default async function NewsPage() {
                         <span>{art.readTime}</span>
                       </div>
 
-                      <h3 className="font-bold text-slate-900 text-sm group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="font-bold text-slate-900 text-sm group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
                         {art.title}
                       </h3>
 
@@ -151,7 +151,7 @@ export default async function NewsPage() {
                     </div>
                   </div>
 
-                  <div className="px-6 pb-6 pt-2 text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <div className="px-6 pb-6 pt-2 text-xs font-bold text-primary-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                     <span>Đọc tiếp</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>

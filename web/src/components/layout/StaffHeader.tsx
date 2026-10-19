@@ -1,11 +1,10 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { getRoleDisplayName } from '@/lib/auth';
+import { getActiveRole, getRoleDisplayName } from '@/lib/auth';
 import {
-  LogOut, ChevronDown, User, KeyRound, HelpCircle, Bell, Home,
-  CheckCircle2, AlertTriangle, AlertCircle, HardDrive, Sparkles,
-  Shield, ExternalLink, X, Star,
+  LogOut, ChevronDown, ChevronRight, User, KeyRound, Bell, Menu, Store,
+  CheckCircle2, AlertTriangle, AlertCircle, HardDrive, Sparkles, ExternalLink, Star,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -25,17 +24,35 @@ interface SystemNotificationItem {
   createdAt: string;
 }
 
-export default function StaffHeader() {
-  const { user, logout } = useAuth();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showHelpModal, setShowHelpModal] = useState(false);
+const formatRelativeTime = (isoString?: string) => {
+  if (!isoString) return '';
+  const diffSec = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+  if (!Number.isFinite(diffSec)) return '';
+  if (diffSec < 60) return 'Vừa xong';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
+  return `${Math.floor(diffSec / 86400)} ngày trước`;
+};
 
+const notifIcon = (type: string, severity: string) => {
+  if (type === 'PERFORMANCE_EVALUATION') return <Star className="h-4 w-4 text-amber-500" />;
+  if (type.includes('BACKUP')) return <HardDrive className="h-4 w-4 text-slate-400" />;
+  if (type.includes('AI') || (type.includes('AUDIT') && severity !== 'DANGER')) return <Sparkles className="h-4 w-4 text-violet-500" />;
+  if (severity === 'DANGER') return <AlertCircle className="h-4 w-4 text-red-600" />;
+  if (severity === 'WARNING') return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+  if (severity === 'SUCCESS') return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+  return <CheckCircle2 className="h-4 w-4 text-slate-400" />;
+};
+
+export default function StaffHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
+  const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<SystemNotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname() || '';
@@ -69,12 +86,8 @@ export default function StaffHeader() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setShowNotifications(false);
-      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setShowUserMenu(false);
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -89,18 +102,14 @@ export default function StaffHeader() {
     if (!notif.isRead) {
       try {
         await apiClient.patch(`${notifApiBase}/${notif.id}/read`, {});
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
-        );
+        setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n)));
         setUnreadCount((c) => Math.max(0, c - 1));
       } catch {
         // Continue navigation
       }
     }
     setShowNotifications(false);
-    if (notif.targetUrl) {
-      router.push(notif.targetUrl);
-    }
+    if (notif.targetUrl) router.push(notif.targetUrl);
   };
 
   const handleMarkAllRead = async () => {
@@ -114,260 +123,170 @@ export default function StaffHeader() {
     }
   };
 
-  // Notification icon: semantic only, default muted
-  const getNotifIcon = (type: string, severity: string) => {
-    if (type === 'PERFORMANCE_EVALUATION') return <Star className="w-4 h-4" style={{ color: '#D97706' }} />;
-    if (type.includes('BACKUP')) return <HardDrive className="w-4 h-4 text-slate-400" />;
-    if (type.includes('AI') || type.includes('AUDIT') && severity !== 'DANGER')
-      return <Sparkles className="w-4 h-4 text-slate-400" />;
-    if (severity === 'DANGER') return <AlertCircle className="w-4 h-4" style={{ color: '#DC2626' }} />;
-    if (severity === 'WARNING') return <AlertTriangle className="w-4 h-4" style={{ color: '#D97706' }} />;
-    if (severity === 'SUCCESS') return <CheckCircle2 className="w-4 h-4" style={{ color: '#059669' }} />;
-    return <CheckCircle2 className="w-4 h-4 text-slate-400" />;
-  };
-
-  const formatRelativeTime = (isoString?: string) => {
-    if (!isoString) return '';
-    try {
-      const now = new Date();
-      const past = new Date(isoString);
-      const diffSec = Math.floor((now.getTime() - past.getTime()) / 1000);
-      if (diffSec < 60) return 'Vừa xong';
-      if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
-      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
-      return `${Math.floor(diffSec / 86400)} ngày trước`;
-    } catch {
-      return '';
-    }
-  };
-
-  const homeHref = pathname.startsWith('/admin')
-    ? '/admin/dashboard'
-    : pathname.startsWith('/store-owner')
-    ? '/store-owner/dashboard'
-    : '/staff/dashboard/sales';
+  const role = user?.role || getActiveRole(user?.roles);
+  const initial = user?.fullName?.charAt(0)?.toUpperCase() || 'U';
 
   return (
-    <>
-      {/* ── Topbar — 64px, clean, minimal ── */}
-      <header
-        className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-5 sticky top-0 z-40"
-        style={{ boxShadow: 'none' }}
-      >
-        {/* Left: Breadcrumb */}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Link
-            href={homeHref}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
-            title="Về trang tổng quan"
-            aria-label="Trang chủ"
-          >
-            <Home className="w-4 h-4" />
-          </Link>
-          <span className="text-slate-300 text-sm select-none">/</span>
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 backdrop-blur-md sm:px-6">
+      {/* Left: menu (mobile) + breadcrumb */}
+      <div className="flex min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          className="-ml-1 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+          aria-label="Mở menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <nav className="flex min-w-0 items-center gap-1.5 text-sm" aria-label="Breadcrumb">
           {sectionName && (
             <>
-              <span className="text-xs text-slate-400 font-medium hidden sm:block truncate max-w-[120px]">
-                {sectionName}
-              </span>
-              <span className="text-slate-300 hidden sm:block select-none">/</span>
+              <span className="hidden truncate text-slate-400 sm:block">{sectionName}</span>
+              <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-slate-300 sm:block" />
             </>
           )}
-          <h1 className="text-sm font-semibold text-slate-800 truncate">{pageTitle}</h1>
+          <h1 className="truncate text-sm font-semibold text-slate-900">{pageTitle}</h1>
+        </nav>
+      </div>
+
+      {/* Right */}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Link
+          href="/"
+          className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 md:inline-flex"
+          title="Mở trang cửa hàng"
+        >
+          <Store className="h-4 w-4" /> Xem cửa hàng
+        </Link>
+
+        {/* Notifications */}
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              if (!showNotifications) fetchNotifications();
+            }}
+            className={`relative rounded-lg p-2 transition-colors ${showNotifications ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
+            aria-label="Thông báo"
+            aria-expanded={showNotifications}
+          >
+            <Bell className="h-[18px] w-[18px]" />
+            {unreadCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white ring-2 ring-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-900">Thông báo</span>
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-primary-50 px-1.5 py-0.5 text-[10px] font-bold text-primary">{unreadCount} mới</span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button type="button" onClick={handleMarkAllRead} className="text-xs font-medium text-slate-500 hover:text-slate-900">
+                    Đánh dấu đã đọc
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
+                {loadingNotifs && notifications.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-400">Đang tải thông báo...</div>
+                ) : notifications.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 p-8 text-center">
+                    <Bell className="h-6 w-6 text-slate-300" />
+                    <p className="text-xs text-slate-400">Bạn chưa có thông báo nào.</p>
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <button
+                      type="button"
+                      key={notif.id}
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${!notif.isRead ? 'bg-primary-50/30' : ''}`}
+                    >
+                      <span className="mt-0.5 shrink-0 rounded-lg bg-slate-100 p-1.5">{notifIcon(notif.type, notif.severity)}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="mb-0.5 flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-semibold text-slate-900">{notif.title}</span>
+                          <span className="shrink-0 text-[10px] text-slate-400">{formatRelativeTime(notif.createdAt)}</span>
+                        </span>
+                        <span className="line-clamp-3 block text-xs leading-relaxed text-slate-500">{notif.message}</span>
+                      </span>
+                      {!notif.isRead && <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {isAdmin && (
+                <div className="border-t border-slate-100 bg-slate-50 px-4 py-2.5">
+                  <Link
+                    href="/admin/audit-logs"
+                    onClick={() => setShowNotifications(false)}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900"
+                  >
+                    Xem nhật ký kiểm toán <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1 shrink-0">
-          
-          {/* Notification Bell */}
-          <div className="relative" ref={notifRef}>
+        <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
+
+        {/* User menu */}
+        {user && (
+          <div className="relative" ref={userMenuRef}>
             <button
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                if (!showNotifications) fetchNotifications();
-              }}
-              className="relative p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              aria-label="Thông báo"
-              aria-expanded={showNotifications}
+              type="button"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className={`flex items-center gap-2.5 rounded-xl py-1 pl-1 pr-2 transition-colors ${showUserMenu ? 'bg-slate-100' : 'hover:bg-slate-100'}`}
+              aria-expanded={showUserMenu}
+              aria-label="Tài khoản"
             >
-              <Bell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <span
-                  className="absolute top-1 right-1 min-w-[15px] h-[15px] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5"
-                  style={{ background: '#E50027' }}
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
+              <span className="flex h-8 w-8 select-none items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">{initial}</span>
+              <span className="hidden min-w-0 text-left sm:block">
+                <span className="block max-w-[160px] truncate text-xs font-semibold leading-tight text-slate-900">{user.fullName || user.email}</span>
+                <span className="block text-[11px] leading-tight text-slate-500">{getRoleDisplayName(role)}</span>
+              </span>
+              <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 sm:block" />
             </button>
 
-            {/* Notification Popover */}
-            {showNotifications && (
-              <div
-                className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl border border-slate-200 py-0 z-50 overflow-hidden"
-                style={{ boxShadow: 'var(--shadow-overlay)' }}
-              >
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-900">Thông báo</span>
-                    {unreadCount > 0 && (
-                      <span
-                        className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                        style={{ background: '#F9E2E5', color: '#E50027' }}
-                      >
-                        {unreadCount} mới
-                      </span>
-                    )}
-                  </div>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllRead}
-                      className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
-                    >
-                      Đã đọc tất cả
-                    </button>
-                  )}
+            {showUserMenu && (
+              <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1.5 shadow-xl shadow-slate-900/10">
+                <div className="border-b border-slate-100 px-4 pb-3 pt-2">
+                  <p className="truncate text-sm font-semibold text-slate-900">{user.fullName || 'Tài khoản'}</p>
+                  <p className="truncate text-xs text-slate-500">{user.email}</p>
                 </div>
-
-                <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
-                  {loadingNotifs && notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-400">Đang tải thông báo...</div>
-                  ) : notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-400">
-                      Không có thông báo nào.
-                    </div>
-                  ) : (
-                    notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        onClick={() => handleNotificationClick(notif)}
-                        className={`px-4 py-3 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition-colors ${
-                          !notif.isRead ? 'bg-slate-50/70' : ''
-                        }`}
-                      >
-                        <div className="p-1.5 rounded-lg bg-slate-100 shrink-0 mt-0.5">
-                          {getNotifIcon(notif.type, notif.severity)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2 mb-0.5">
-                            <p className="text-xs font-semibold text-slate-900 truncate">{notif.title}</p>
-                            <span
-                              className="text-[10px] text-slate-400 shrink-0"
-                              style={{ fontFamily: 'var(--font-mono, monospace)' }}
-                            >
-                              {formatRelativeTime(notif.createdAt)}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 line-clamp-4 leading-relaxed">
-                            {notif.message}
-                          </p>
-                        </div>
-                        {!notif.isRead && (
-                          <span
-                            className="w-1.5 h-1.5 rounded-full shrink-0 mt-2"
-                            style={{ background: '#E50027' }}
-                          />
-                        )}
-                      </div>
-                    ))
-                  )}
+                <div className="py-1.5">
+                  <Link href="/staff/profile" onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+                    <User className="h-4 w-4 text-slate-400" /> Hồ sơ cá nhân
+                  </Link>
+                  <Link href="/staff/change-password" onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+                    <KeyRound className="h-4 w-4 text-slate-400" /> Đổi mật khẩu
+                  </Link>
                 </div>
-
-                {isAdmin && (
-                  <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50">
-                    <Link
-                      href="/admin/audit-logs"
-                      onClick={() => setShowNotifications(false)}
-                      className="text-xs font-medium text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 transition-colors"
-                    >
-                      Xem lịch sử Audit toàn hệ thống <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                )}
+                <div className="border-t border-slate-100 pt-1.5">
+                  <button type="button" onClick={handleLogout}
+                    className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                    <LogOut className="h-4 w-4" /> Đăng xuất
+                  </button>
+                </div>
               </div>
             )}
           </div>
-
-          {/* Sign Out Action */}
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 ml-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 hover:text-slate-900"
-              aria-label="Đăng xuất"
-            >
-              <LogOut className="w-4 h-4 text-slate-400" />
-              <span className="hidden sm:block text-sm font-medium">Đăng xuất</span>
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* ── Internal Help Modal ── */}
-      {showHelpModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div
-            className="bg-white rounded-xl border border-slate-200 max-w-lg w-full overflow-hidden"
-            style={{ boxShadow: 'var(--shadow-overlay)' }}
-          >
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-slate-400" />
-                <h3 className="font-semibold text-sm text-white">Trung tâm Hỗ trợ Quản trị ET.TEE</h3>
-              </div>
-              <button
-                onClick={() => setShowHelpModal(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto text-sm text-slate-600">
-              <div>
-                <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2">
-                  1. Nguyên tắc An toàn &amp; Bảo mật
-                </h4>
-                <p className="text-xs leading-relaxed text-slate-500">
-                  Mọi thao tác quản trị tài khoản, phân quyền RBAC, sao lưu dữ liệu và cấu hình AI đều được ghi lại vào bảng <strong className="text-slate-700">Audit Logs</strong> với địa chỉ IP và timestamp chính xác.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2">
-                  2. Khắc phục Sự cố &amp; Khẩn cấp
-                </h4>
-                <p className="text-xs leading-relaxed text-slate-500">
-                  Khi phát hiện dịch vụ gián đoạn, truy cập mục <strong className="text-slate-700">Giám sát Hạ tầng</strong> để kiểm tra kết nối PostgreSQL và mức tiêu thụ JVM Heap.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2">
-                  3. Thông tin Hệ thống
-                </h4>
-                <div
-                  className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1"
-                  style={{ fontFamily: 'var(--font-mono, monospace)' }}
-                >
-                  <p><span className="text-slate-400">Phiên bản:</span> ET.TEE Core Platform v2.6</p>
-                  <p><span className="text-slate-400">Hạ tầng:</span> Spring Boot 3 + PostgreSQL 16</p>
-                  <p><span className="text-slate-400">Hotline Kỹ thuật:</span> 1900 6868</p>
-                  <p><span className="text-slate-400">Email:</span> tech-admin@ettee.vn</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-5 py-3.5 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button
-                onClick={() => setShowHelpModal(false)}
-                className="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </header>
   );
 }

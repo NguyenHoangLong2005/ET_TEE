@@ -484,8 +484,8 @@ export default function AdminDashboardPage() {
     },
   ];
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6 text-slate-800">
-      {" "}
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+        <PageHeader title="Tổng quan hệ thống" subtitle="Tình trạng hệ thống, tài khoản và hoạt động quản trị" />
       {/* -- Health Banner & Actions -- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
         <div className={`flex-1 rounded-xl border px-4 py-2.5 flex items-center gap-3 ${healthBannerStyle}`}>
@@ -559,7 +559,7 @@ export default function AdminDashboardPage() {
       </div>{" "}
       {/* ─── System Health Detail — 1 card, 3 columns ─── */}{" "}
       {monitoring && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] overflow-hidden">
           {" "}
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
             {" "}
@@ -670,7 +670,7 @@ export default function AdminDashboardPage() {
         </div>
       )}{" "}
       {/* ─── Quick Actions ─── */}{" "}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-5">
         {" "}
         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">
           Truy cập nhanh

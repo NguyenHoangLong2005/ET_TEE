@@ -142,7 +142,7 @@ export function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-semibold rounded border ${badge} ${sizeCls} ${className}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap font-semibold rounded border ${badge} ${sizeCls} ${className}`}
       style={{ background: bgColor }}
     >
       {showDot && <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />}

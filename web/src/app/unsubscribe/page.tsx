@@ -1,6 +1,6 @@
 import UnsubscribeClient from './UnsubscribeClient';
 
-export const metadata = { title: 'Hủy nhận email ưu đãi | ET.TEE', robots: { index: false } };
+export const metadata = { title: 'Hủy nhận email ưu đãi', robots: { index: false } };
 
 export default async function UnsubscribePage({
   searchParams,

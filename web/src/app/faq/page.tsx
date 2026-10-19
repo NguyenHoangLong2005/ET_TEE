@@ -20,8 +20,8 @@ const FAQ_DATA = [
     catName: 'Giao Hàng & Phí Ship',
     icon: Truck,
     items: [
-      { q: 'Phí giao hàng tại ET.TEE tính như thế nào?', a: 'MIỄN PHÍ VẬN CHUYỂN cho tất cả các đơn hàng từ 499.000đ trở lên trên toàn quốc. Đơn hàng dưới 499.000đ có phí giao hàng cố định là 20.000đ.' },
-      { q: 'Bao lâu thì tôi nhận được hàng?', a: 'Tại Hà Nội & TP.HCM: nhận hàng trong 1-2 ngày. Các tỉnh thành khác: nhận hàng từ 2-4 ngày làm việc. ET.TEE cũng hỗ trợ giao hàng hỏa tốc 2h tại khu vực nội thành.' },
+      { q: 'Phí giao hàng tại ET.TEE tính như thế nào?', a: 'ET.TEE MIỄN PHÍ VẬN CHUYỂN cho mọi đơn hàng trên toàn quốc, không yêu cầu giá trị tối thiểu.' },
+      { q: 'Bao lâu thì tôi nhận được hàng?', a: 'Tại Hà Nội & TP.HCM: nhận hàng trong 1-2 ngày. Các tỉnh thành khác: nhận hàng từ 2-4 ngày làm việc.' },
       { q: 'Tôi có được kiểm tra hàng trước khi thanh toán không?', a: 'CÓ! ET.TEE hỗ trợ 100% khách hàng đồng kiểm (mở hộp xem sản phẩm) trước khi thanh toán cho nhân viên giao hàng.' },
     ]
   },
@@ -31,7 +31,7 @@ const FAQ_DATA = [
     icon: RefreshCcw,
     items: [
       { q: 'Chính sách đổi trả 30 ngày áp dụng ra sao?', a: 'Trong vòng 30 ngày kể từ khi nhận hàng, nếu sản phẩm chưa qua sử dụng, còn nguyên tem mác, bạn có thể đổi size, đổi màu hoặc đổi mẫu khác hoàn toàn miễn phí.' },
-      { q: 'Tôi có thể đổi hàng tại cửa hàng trực tiếp không?', a: 'Có! Bạn có thể mang sản phẩm tới bất kỳ cửa hàng nào trong hệ thống 200+ showroom ET.TEE trên toàn quốc để đổi hàng trực tiếp.' },
+      { q: 'Tôi có thể đổi hàng tại cửa hàng trực tiếp không?', a: 'Có! Bạn có thể mang sản phẩm tới bất kỳ cửa hàng nào trong hệ thống ET.TEE (xem danh sách tại trang Hệ thống cửa hàng) để đổi hàng trực tiếp.' },
       { q: 'Nếu đổi trả qua bưu điện thì ai trả phí ship?', a: 'ET.TEE sẽ hỗ trợ phí ship 2 chiều nếu lỗi do sản phẩm bị chật size hoặc giao sai mẫu. Trường hợp khách muốn đổi mẫu theo sở thích, khách hàng hỗ trợ phí gửi hàng.' },
     ]
   },
@@ -68,9 +68,9 @@ export default function FAQPage() {
 
         {/* Hero Header */}
         <div className="bg-white text-slate-900 p-8 md:p-12 rounded-3xl mb-10 shadow-md relative overflow-hidden border border-slate-200/80">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-block px-3.5 py-1 bg-amber-50 text-amber-900 text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-amber-200 shadow-2xs">
+            <span className="inline-block px-3.5 py-1 bg-primary-50 text-primary-900 text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-primary-200 shadow-2xs">
               Trung Tâm Trợ Giúp ET.TEE
             </span>
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 mb-4">
@@ -91,7 +91,7 @@ export default function FAQPage() {
               placeholder="Nhập từ khóa câu hỏi cần tìm (ví dụ: đổi trả, phí ship, chọn size...)"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-primary text-slate-900"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function FAQPage() {
                 key={cat.cat}
                 onClick={() => setActiveCat(cat.cat)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  activeCat === cat.cat ? 'bg-amber-500 text-slate-950' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  activeCat === cat.cat ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {cat.catName}
@@ -133,7 +133,7 @@ export default function FAQPage() {
             return (
               <div key={section.cat} className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
                     <Icon className="w-4 h-4" />
                   </div>
                   <h2 className="text-lg font-black uppercase text-slate-900">{section.catName}</h2>
@@ -148,17 +148,17 @@ export default function FAQPage() {
                       <div key={idx} className="py-3">
                         <button
                           onClick={() => toggleItem(itemKey)}
-                          className="w-full flex items-center justify-between text-left font-bold text-slate-900 text-xs sm:text-sm hover:text-amber-600 transition-colors py-1"
+                          className="w-full flex items-center justify-between text-left font-bold text-slate-900 text-xs sm:text-sm hover:text-primary-600 transition-colors py-1"
                         >
                           <span className="flex items-center gap-2">
-                            <span className="text-amber-600">Q.</span>
+                            <span className="text-primary-600">Q.</span>
                             {item.q}
                           </span>
                           {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
                         </button>
 
                         {isOpen && (
-                          <div className="mt-2 pl-6 pr-2 text-xs text-slate-700 leading-relaxed bg-amber-50/60 p-3 rounded-xl border border-amber-200/60 animate-in fade-in-50">
+                          <div className="mt-2 pl-6 pr-2 text-xs text-slate-700 leading-relaxed bg-primary-50/60 p-3 rounded-xl border border-primary-200/60 animate-in fade-in-50">
                             {item.a}
                           </div>
                         )}

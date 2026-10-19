@@ -33,8 +33,9 @@ export default function StaffDashboardPage() {
 
   return (
     <ProtectedRoute allowedRoles={["ADMIN", "SHOP_OWNER", "STAFF", "SALES_STAFF", "MARKETING_STAFF", "WAREHOUSE_STAFF", "SHIPPING_STAFF", "CSKH_STAFF"]}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <div className="text-slate-400 text-sm">Đang chuyển tới khu vực làm việc của bạn...</div>
+      <div className="min-h-[60vh] flex items-center justify-center gap-3 text-sm text-slate-500">
+        <span className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
+        Đang chuyển tới khu vực làm việc của bạn...
       </div>
     </ProtectedRoute>
   );

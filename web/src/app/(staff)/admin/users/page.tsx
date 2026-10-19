@@ -549,14 +549,14 @@ export default function AdminUsersPage() {
       key: "employee",
       header: "Nhân viên",
       render: (u) => (
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarGrad(u.role)} flex items-center justify-center text-white font-bold text-sm shrink-0`}>
+        <div className="flex min-w-[260px] items-center gap-3">
+          <div className={`w-9 h-9 rounded-full bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0`}>
             {u.fullName?.charAt(0)?.toUpperCase() || "?"}
           </div>
           <div>
-            <div className="font-semibold text-slate-900">{u.fullName}</div>
+            <div className="font-semibold text-slate-900 truncate max-w-[220px]">{u.fullName}</div>
             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400">
-              <span className="font-mono">{u.employeeCode || "—"}</span>
+              <span className="font-mono whitespace-nowrap">{u.employeeCode || "—"}</span>
               <span>·</span>
               <Mail className="w-3 h-3" />
               <span className="truncate max-w-[160px]">{u.email}</span>
@@ -575,7 +575,7 @@ export default function AdminUsersPage() {
       header: "Vai trò",
       render: (u) => (
         <div>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${roleBadge(u.role)}`}>
+          <span className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-xs font-semibold border ${roleBadge(u.role)}`}>
             <Shield className="w-3 h-3" />
             {getRoleDisplayName(u.role)}
           </span>
@@ -588,11 +588,11 @@ export default function AdminUsersPage() {
       header: "Chi nhánh",
       render: (u) => (
         u.shopId ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
             <Building className="w-3 h-3" /> Shop #{u.shopId}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-xs bg-slate-900 text-white px-2.5 py-1 rounded-md">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs bg-slate-900 text-white px-2.5 py-1 rounded-md">
             <Crown className="w-3 h-3" /> HQ
           </span>
         )
@@ -701,16 +701,17 @@ export default function AdminUsersPage() {
   /* ════════════════ RENDER ════════════════ */
   return (
     <PermissionGuard requiredPermissions={["MANAGE_USER", "MANAGE_ROLE_PERMISSION"]}>
-      <div className="p-6 space-y-5 bg-[#F8FAFC] min-h-screen">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+        <PageHeader title="Quản lý người dùng" subtitle="Tài khoản nhân viên và khách hàng, vai trò và trạng thái đăng nhập" />
 
         {/* Filter Card */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-2">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             
             {/* Left side: Filters */}
             <div className="flex flex-1 flex-col md:flex-row md:items-end gap-3">
               <div className="flex-1 max-w-md">
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">Tìm kiếm</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tìm kiếm</label>
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -723,7 +724,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
               <div className="w-full md:w-56">
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">Vai trò</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Vai trò</label>
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
@@ -755,7 +756,7 @@ export default function AdminUsersPage() {
                   <div className="w-px h-6 bg-slate-200 mx-1 hidden md:block"></div>
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="h-9 px-4 bg-primary hover:bg-red-700 text-white font-semibold text-sm rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                    className="h-9 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg shadow-sm transition-colors flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> Thêm tài khoản
                   </button>
@@ -773,11 +774,11 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        {/* Table Card exact match to image */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Table card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] overflow-hidden">
           <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-[#1e293b]">Danh sách tài khoản</h2>
-            <span className="bg-[#f1f5f9] text-[#475569] px-2.5 py-0.5 rounded-full text-xs font-semibold">
+            <h2 className="text-base font-bold text-slate-800">Danh sách tài khoản</h2>
+            <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">
               {totalElements} người dùng
             </span>
           </div>
@@ -786,6 +787,7 @@ export default function AdminUsersPage() {
             columns={userColumns}
             data={users}
             loading={loadingUsers}
+            className="rounded-none border-0 shadow-none"
             rowKey={(u) => u.id}
             emptyTitle="Không có tài khoản nào"
             emptyMessage="Vui lòng điều chỉnh bộ lọc tìm kiếm."
@@ -1222,7 +1224,7 @@ export default function AdminUsersPage() {
                   <button type="button" onClick={() => setQuotaUser(null)}
                     className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">Hủy</button>
                   <button type="submit" disabled={quotaLoading}
-                    className="flex-[2] py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50">
+                    className="flex-[2] py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover disabled:opacity-50">
                     {quotaLoading ? "Đang lưu..." : "Cập nhật Quota"}
                   </button>
                 </div>

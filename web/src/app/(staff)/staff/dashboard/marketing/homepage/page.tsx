@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Check, ChevronDown, Eye, EyeOff, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, Eye, EyeOff, Loader2, Pencil, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getAuthHeaders } from "@/lib/auth";
+import { Product } from "@/lib/services/productService";
+import { RecommendationService, TrendingFeed } from "@/lib/services/recommendationService";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Banner = {
@@ -33,12 +35,20 @@ type ProductHit = { id: number; name: string; price?: number; images?: { imageUr
 
 // Keys must match what the storefront homepage reads (web/src/app/page.tsx).
 const HERO_POSITION = "HOME_HERO";
-const PRODUCT_SECTIONS = [
-  { key: "HOME_SALE", label: "Ưu đãi đặc biệt", hint: "Sản phẩm đang giảm giá" },
-  { key: "HOME_NEW", label: "Sản phẩm mới", hint: "Hàng mới về" },
-  { key: "HOME_RECOMMENDED", label: "Được yêu thích nhất", hint: "Sản phẩm được nhiều người chọn" },
-  { key: "HOME_BEST_SELLER", label: "Bán chạy nhất", hint: "Sản phẩm bán chạy" },
-] as const;
+// autoText: what the storefront shows while marketing has picked nothing for the section.
+type ProductSection = { key: string; label: string; hint: string; autoText: string };
+const PRODUCT_SECTIONS: ProductSection[] = [
+  { key: "HOME_SALE", label: "Ưu đãi đặc biệt", hint: "Sản phẩm đang giảm giá",
+    autoText: "Trang chủ đang hiển thị sản phẩm giảm giá nhiều nhất" },
+  { key: "HOME_NEW", label: "Sản phẩm mới", hint: "Hàng mới về",
+    autoText: "Trang chủ đang hiển thị hàng mới nhất" },
+  // The storefront has no automatic list for this one (it used to repeat the best sellers).
+  { key: "HOME_RECOMMENDED", label: "Được yêu thích nhất", hint: "Chỉ hiện khi có sản phẩm được chọn",
+    autoText: "Khối này đang ẩn trên trang chủ" },
+  { key: "HOME_BEST_SELLER", label: "Bán chạy nhất", hint: "Sản phẩm bán chạy",
+    autoText: "Trang chủ đang hiển thị sản phẩm bán chạy nhất" },
+];
+const section = (key: string) => PRODUCT_SECTIONS.find(s => s.key === key)!;
 
 // Static slides the storefront falls back to (web/src/components/home/HeroBanner.tsx)
 // when no banner exists in the database.
@@ -98,6 +108,14 @@ export default function HomepageBuilderPage() {
     return m;
   }, [placements]);
 
+  // Live preview of the automatic "Đang được quan tâm" list (same endpoint as the storefront).
+  const [trending, setTrending] = useState<TrendingFeed | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    RecommendationService.getTrending(12).then(t => { if (!cancelled) setTrending(t); });
+    return () => { cancelled = true; };
+  }, []);
+
   const activeHero = banners.filter(isBannerOn);
   const isSel = (s: Selected) => JSON.stringify(s) === JSON.stringify(selected);
 
@@ -106,14 +124,36 @@ export default function HomepageBuilderPage() {
       isSel(s) ? "border-red-600 ring-2 ring-red-100" : "border-transparent hover:border-red-400"
     }`;
 
+  const renderSection = (key: string) => {
+    const sec = section(key);
+    const items = bySection[sec.key] ?? [];
+    const s: Selected = { type: "products", key: sec.key };
+    return (
+      <button key={sec.key} type="button" onClick={() => setSelected(s)} className={`${blockClass(s)} bg-white p-4`}>
+        <EditTag />
+        <div className="mb-3 flex items-baseline gap-2">
+          <h3 className="text-base font-semibold">{sec.label}</h3>
+          <span className="text-xs text-slate-400">{sec.hint}</span>
+        </div>
+        {items.length === 0 ? (
+          <p className="rounded-md bg-slate-50 py-6 text-center text-sm text-slate-500">
+            Chưa chọn sản phẩm — {sec.autoText.charAt(0).toLowerCase() + sec.autoText.slice(1)}
+          </p>
+        ) : (
+          <ProductThumbs products={items.map(p => ({ key: p.id, name: p.product?.name ?? `#${p.productId}`, imageUrl: p.product?.imageUrl }))} />
+        )}
+      </button>
+    );
+  };
+
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="mx-auto flex max-w-7xl gap-6">
         {/* Preview */}
         <div className="min-w-0 flex-1 space-y-4">
           <div>
-            <h1 className="border-l-4 border-red-600 pl-3 text-xl font-semibold">Trang chủ</h1>
-            <p className="mt-1 pl-4 text-sm text-slate-500">Bấm vào một khối bên dưới để chỉnh sửa nội dung hiển thị trên trang chủ.</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Trang chủ</h1>
+            <p className="mt-1 text-sm text-slate-500">Bấm vào một khối bên dưới để chỉnh sửa nội dung hiển thị trên trang chủ.</p>
           </div>
 
           {loading ? (
@@ -144,44 +184,35 @@ export default function HomepageBuilderPage() {
                 </div>
               </button>
 
+              {/* Same order as the storefront (web/src/app/page.tsx) */}
               <Locked label="Cam kết dịch vụ" />
               <Locked label="Danh mục nổi bật" />
 
-              {/* Product sections */}
-              {PRODUCT_SECTIONS.map(sec => {
-                const items = bySection[sec.key] ?? [];
-                const s: Selected = { type: "products", key: sec.key };
-                return (
-                  <button key={sec.key} type="button" onClick={() => setSelected(s)} className={`${blockClass(s)} bg-white p-4`}>
-                    <EditTag />
-                    <div className="mb-3 flex items-baseline gap-2">
-                      <h3 className="text-base font-semibold">{sec.label}</h3>
-                      <span className="text-xs text-slate-400">{sec.hint}</span>
-                    </div>
-                    {items.length === 0 ? (
-                      <p className="rounded-md bg-slate-50 py-6 text-center text-sm text-slate-500">
-                        Chưa chọn sản phẩm — trang chủ đang hiển thị danh sách tự động
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-4 gap-3 md:grid-cols-6">
-                        {items.slice(0, 6).map(p => (
-                          <div key={p.id}>
-                            <div className="aspect-[3/4] overflow-hidden rounded bg-slate-100">
-                              {p.product?.imageUrl && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={p.product.imageUrl} alt="" className="h-full w-full object-cover" />
-                              )}
-                            </div>
-                            <p className="mt-1 truncate text-xs">{p.product?.name ?? `#${p.productId}`}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+              <AutoBlock
+                title="Gợi ý cá nhân"
+                lines={[
+                  ["Dành riêng cho bạn", "theo chuỗi sản phẩm khách vừa xem, thêm giỏ, mua (mô hình SASRec)"],
+                  ["Vì bạn đã xem …", "sản phẩm có hình ảnh gần nhất với sản phẩm khách xem cuối cùng (CLIP)"],
+                  ["Hoàn thiện giỏ hàng", "món thường được mua cùng các sản phẩm trong giỏ (luật FP-Growth)"],
+                ]}
+                note="Mỗi khách thấy một nội dung khác nhau; khách mới chưa có lịch sử hoặc giỏ hàng sẽ không thấy các khối này."
+              />
+              <AutoBlock
+                title="Đang được quan tâm"
+                lines={[["Mọi khách đều thấy", `nhiều khách xem, thêm giỏ và mua nhất ${trending?.windowDays || 7} ngày qua`]]}
+                products={trending?.products}
+              />
 
-              <Locked label="Phối đồ gia đình" />
+              {renderSection("HOME_SALE")}
+              {renderSection("HOME_NEW")}
+              {renderSection("HOME_RECOMMENDED")}
+              <Locked label="Đồ gia đình" />
+              {renderSection("HOME_BEST_SELLER")}
+
+              <AutoBlock
+                title="Bạn đã xem gần đây"
+                lines={[["Riêng từng khách", "những sản phẩm khách vừa xem, mới nhất trước"]]}
+              />
               <Locked label="Đăng ký nhận tin" />
             </div>
           )}
@@ -208,7 +239,7 @@ export default function HomepageBuilderPage() {
           </aside>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -219,6 +250,57 @@ function EditTag() {
     <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white lg:hidden lg:group-hover:flex">
       <Pencil className="h-3 w-3" /> Chỉnh sửa
     </span>
+  );
+}
+
+function ProductThumbs({ products }: { products: { key: number; name: string; imageUrl?: string }[] }) {
+  return (
+    <div className="grid grid-cols-4 gap-3 md:grid-cols-6">
+      {products.slice(0, 6).map(p => (
+        <div key={p.key}>
+          <div className="aspect-[3/4] overflow-hidden rounded bg-slate-100">
+            {p.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.imageUrl} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
+          <p className="mt-1 truncate text-xs">{p.name}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Sections filled by the recommendation system: shown so marketing sees the real page order and
+ * what each block is based on, but they are not edited here.
+ */
+function AutoBlock({ title, lines, note, products }: {
+  title: string;
+  lines: [string, string][];
+  note?: string;
+  products?: Product[];
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-sky-300 bg-sky-50/50 p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-sky-600" />
+        <h3 className="text-base font-semibold">{title}</h3>
+        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700">Tự động · hệ thống gợi ý</span>
+      </div>
+      <ul className="space-y-1 text-xs text-slate-600">
+        {lines.map(([name, how]) => (
+          <li key={name}><span className="font-semibold text-slate-800">{name}</span>: {how}</li>
+        ))}
+      </ul>
+      {note && <p className="mt-2 text-[11px] text-slate-500">{note}</p>}
+      {products && products.length > 0 && (
+        <div className="mt-3">
+          <p className="mb-2 text-[11px] font-medium text-slate-500">Đang hiển thị lúc này:</p>
+          <ProductThumbs products={products.map(p => ({ key: p.id, name: p.name, imageUrl: p.images?.[0]?.imageUrl }))} />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -397,7 +479,7 @@ function HeroEditor({ banners, onChange, onClose }: { banners: Banner[]; onChang
 function ProductEditor({
   section, items, onChange, onClose,
 }: {
-  section: { key: string; label: string; hint: string };
+  section: ProductSection;
   items: Placement[];
   onChange: () => Promise<void>;
   onClose: () => void;
@@ -502,7 +584,7 @@ function ProductEditor({
 
   return (
     <>
-      <DrawerHeader title={section.label} subtitle={items.length ? `${items.length} sản phẩm được chọn` : "Đang hiển thị danh sách tự động"} onClose={onClose} />
+      <DrawerHeader title={section.label} subtitle={items.length ? `${items.length} sản phẩm được chọn` : section.autoText} onClose={onClose} />
       <div className="border-b border-slate-200 p-4" ref={boxRef}>
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />

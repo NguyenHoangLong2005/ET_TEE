@@ -275,12 +275,12 @@ export default function WarehouseReceivingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
-          title="Nhập Kho"
+          title="Nhập kho"
           subtitle="Ghi nhận hàng nhập về kho. Tồn kho được cộng ngay khi tạo phiếu."
-          badge={<span className="bg-primary-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">KHO HÀNG</span>}
+          badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           actions={
             <Button variant="outline" size="sm" onClick={reload} icon={<RefreshCw className={`w-3.5 h-3.5 ${loadingProducts || historyLoading ? "animate-spin" : ""}`} />}>
               Làm mới
@@ -297,7 +297,7 @@ export default function WarehouseReceivingPage() {
                 key={key}
                 onClick={() => setTab(key)}
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition ${
-                  tab === key ? "bg-primary-600 text-white shadow" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  tab === key ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />{label}
@@ -311,7 +311,7 @@ export default function WarehouseReceivingPage() {
 
         {tab === "new" && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+            <form onSubmit={handleSubmit} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
               <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-4">
                 <ArrowDownToLine className="h-5 w-5 text-primary-600" />
                 <h2 className="text-sm font-bold text-slate-900">Thông tin phiếu nhập</h2>
@@ -437,7 +437,7 @@ export default function WarehouseReceivingPage() {
             </form>
 
             <aside className="space-y-6">
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-sm font-bold text-slate-900">Tóm tắt phiếu</h2>
                 {selected ? (
                   <dl className="space-y-3 text-sm">
@@ -463,7 +463,7 @@ export default function WarehouseReceivingPage() {
                 )}
               </section>
 
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-bold text-slate-900">Vừa nhập gần đây</h2>
                   {history.length > 0 && (
@@ -504,6 +504,6 @@ export default function WarehouseReceivingPage() {
           />
         )}
       </div>
-    </main>
+    </div>
   );
 }

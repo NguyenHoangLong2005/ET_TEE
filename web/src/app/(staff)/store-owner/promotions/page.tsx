@@ -228,7 +228,7 @@ export default function StoreOwnerPromotionsPage() {
       key: 'discount',
       header: 'Mức giảm giá',
       render: (p) => (
-        <span className="font-bold text-emerald-700 font-mono">
+        <span className="font-bold text-emerald-700 tabular-nums">
           {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatCurrency(p.discountValue)}
         </span>
       ),
@@ -237,7 +237,7 @@ export default function StoreOwnerPromotionsPage() {
       key: 'minOrderValue',
       header: 'Đơn tối thiểu',
       render: (p) => (
-        <span className="text-slate-600 font-mono text-xs">
+        <span className="text-slate-600 tabular-nums text-xs">
           {p.minOrderValue ? formatCurrency(p.minOrderValue) : 'Không yêu cầu'}
         </span>
       ),
@@ -300,7 +300,7 @@ export default function StoreOwnerPromotionsPage() {
       key: 'discount',
       header: 'Mức giảm giá',
       render: (p) => (
-        <span className="font-bold text-emerald-700 font-mono">
+        <span className="font-bold text-emerald-700 tabular-nums">
           {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatCurrency(p.discountValue)}
         </span>
       ),
@@ -339,16 +339,16 @@ export default function StoreOwnerPromotionsPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         
         {/* Header */}
         <PageHeader
-          title="Quản lý Khuyến mãi & Phê duyệt"
+          title="Quản lý khuyến mãi & phê duyệt"
           subtitle="Phê duyệt voucher đề xuất từ đội ngũ marketing và phát hành mã giảm giá."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={fetchData}
                 loading={isLoading}
                 icon={<RefreshCw className="w-4 h-4" />}
@@ -449,7 +449,7 @@ export default function StoreOwnerPromotionsPage() {
         {/* Create Promo Modal */}
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
               <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-900">Tạo Voucher Mới</h3>
                 <button

@@ -29,7 +29,7 @@ const STATUS_MAP: Record<string, { label: string; colorClass: string; icon: any 
   REFUNDED: { label: 'Đã hoàn tiền', colorClass: 'text-slate-700 bg-slate-100 border-slate-200', icon: CheckCircle2 },
 };
 
-const formatVnd = (value: number) => `${Math.round(value || 0).toLocaleString('vi-VN')}đ`;
+const formatVnd = (value: number) => `${Math.round(value || 0).toLocaleString('vi-VN')}₫`;
 
 const formatDate = (value?: string) => {
   if (!value) return '';

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ShieldCheck, Wrench, CheckCircle2 } from 'lucide-react';
 
 export const metadata = {
-  title: 'Chính Sách Bảo Hành & Sửa Chữa | ET.TEE Studio',
+  title: 'Chính Sách Bảo Hành & Sửa Chữa',
   description: 'Thông tin bảo hành đường may, khóa kéo 6 tháng và hỗ trợ sửa chữa miễn phí cho tất cả sản phẩm thời trang ET.TEE.',
 };
 
@@ -23,7 +23,7 @@ export default function WarrantyPolicyPage() {
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
           <div className="border-b border-slate-100 pb-6">
-            <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
+            <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               Product Warranty
             </span>
             <h1 className="text-3xl font-black uppercase text-slate-900">
@@ -33,8 +33,8 @@ export default function WarrantyPolicyPage() {
 
           <div className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed">
             
-            <div className="p-5 bg-amber-50/80 rounded-2xl border border-amber-200 flex items-start gap-3">
-              <ShieldCheck className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-5 bg-primary-50/80 rounded-2xl border border-primary-200 flex items-start gap-3">
+              <ShieldCheck className="w-6 h-6 text-primary-600 shrink-0 mt-0.5" />
               <div className="space-y-1 text-slate-900">
                 <strong className="block font-bold">Bảo hành đường may & phụ kiện 6 tháng:</strong>
                 <span>ET.TEE cam kết hỗ trợ sửa chữa hoàn toàn miễn phí các lỗi bung chỉ, sứt khóa kéo, đứt cúc áo trong vòng 6 tháng kể từ khi mua hàng.</span>
@@ -43,7 +43,7 @@ export default function WarrantyPolicyPage() {
 
             <div className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 uppercase flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-amber-600" />
+                <Wrench className="w-5 h-5 text-primary-600" />
                 <span>1. Danh Mục Sản Phẩm Được Bảo Hành</span>
               </h2>
               <ul className="space-y-2 pl-4 list-disc text-slate-600">
