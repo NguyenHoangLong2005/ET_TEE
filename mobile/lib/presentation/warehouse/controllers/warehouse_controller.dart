@@ -93,6 +93,8 @@ class WarehouseController extends BaseController {
     required int quantity,
     String? location,
     int? variantId,
+    int? supplierId,
+    String? note,
   }) =>
       _guard(() async {
         await _repo.inbound(
@@ -101,6 +103,8 @@ class WarehouseController extends BaseController {
           quantity: quantity,
           location: location,
           variantId: variantId,
+          supplierId: supplierId,
+          note: note,
         );
         await loadInventory();
       }, 'Đã nhập kho');
@@ -131,13 +135,18 @@ class WarehouseController extends BaseController {
         await loadAdjustments();
       }, 'Đã gửi phiếu điều chỉnh, cần duyệt');
 
+  Future<String?> approveAdjustment(int adjustmentId) => _guard(() async {
+        await _repo.approveAdjustment(adjustmentId);
+        await loadAdjustments();
+      }, 'Đã duyệt điều chỉnh');
+
   Future<String?> approveReservation(int id) => _guard(() async {
-        await _repo.approveReservation('$id');
+        await _repo.approveReservation(id);
         await loadReservations();
       }, 'Đã duyệt giữ hàng');
 
   Future<String?> rejectReservation(int id, String reason) => _guard(() async {
-        await _repo.rejectReservation('$id', reason);
+        await _repo.rejectReservation(id, reason);
         await loadReservations();
       }, 'Đã từ chối giữ hàng');
 
@@ -151,6 +160,11 @@ class WarehouseController extends BaseController {
         await loadOrders();
       }, 'Đã hoàn tất lấy hàng');
 
+  Future<String?> packOrder(int orderId) => _guard(() async {
+        await _repo.packOrder(orderId);
+        await loadOrders();
+      }, 'Đã đóng gói');
+
   Future<Map<String, dynamic>?> labelInfo(int orderId) async {
     Map<String, dynamic>? result;
     await _guard(() async {
@@ -158,6 +172,11 @@ class WarehouseController extends BaseController {
     }, null);
     return result;
   }
+
+  Future<String?> printLabel(int orderId) => _guard(() async {
+        await _repo.printLabel(orderId);
+        await loadOrders();
+      }, 'Đã in tem');
 
   Future<String?> handover(int orderId) => _guard(() async {
         await _repo.handover(orderId);

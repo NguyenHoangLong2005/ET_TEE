@@ -49,6 +49,8 @@ class WarehouseRemoteDataSource {
     required int quantity,
     String? location,
     int? variantId,
+    int? supplierId,
+    String? note,
   }) async {
     final data = await _api.post<Map<String, dynamic>>(
       '$_base/inbound',
@@ -58,6 +60,8 @@ class WarehouseRemoteDataSource {
         'quantity': quantity,
         'location': location,
         if (variantId != null) 'variantId': variantId,
+        if (supplierId != null) 'supplierId': supplierId,
+        if (note != null) 'note': note,
       },
       parse: (raw) => raw as Map<String, dynamic>,
     );
@@ -127,6 +131,10 @@ class WarehouseRemoteDataSource {
     return InventoryAdjustment.fromJson(data);
   }
 
+  Future<void> approveAdjustment(int adjustmentId) async {
+    await _api.post<dynamic>('$_base/adjustments/$adjustmentId/approve');
+  }
+
   // ─── Giu hang cho don ──────────────────────────────────────────────────────
 
   Future<List<StockReservation>> getReservations() async {
@@ -139,11 +147,11 @@ class WarehouseRemoteDataSource {
         .toList();
   }
 
-  Future<void> approveReservation(String reservationId) async {
+  Future<void> approveReservation(int reservationId) async {
     await _api.post<dynamic>('$_base/reservations/$reservationId/approve');
   }
 
-  Future<void> rejectReservation(String reservationId, String reason) async {
+  Future<void> rejectReservation(int reservationId, String reason) async {
     await _api.post<dynamic>(
       '$_base/reservations/$reservationId/reject',
       body: {'reason': reason},
@@ -160,11 +168,19 @@ class WarehouseRemoteDataSource {
     await _api.post<dynamic>('$_base/orders/$orderId/picking/complete');
   }
 
+  Future<void> packOrder(int orderId) async {
+    await _api.post<dynamic>('$_base/orders/$orderId/packing');
+  }
+
   Future<Map<String, dynamic>> getLabelInfo(int orderId) async {
     return _api.get<Map<String, dynamic>>(
       '$_base/orders/$orderId/label',
       parse: (raw) => raw as Map<String, dynamic>,
     );
+  }
+
+  Future<void> printLabel(int orderId) async {
+    await _api.post<dynamic>('$_base/orders/$orderId/label');
   }
 
   Future<void> handover(int orderId) async {

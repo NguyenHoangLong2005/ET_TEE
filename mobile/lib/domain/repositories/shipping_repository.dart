@@ -48,6 +48,8 @@ abstract class ShippingRepository {
       {int page = 0, int size = 20});
 
   Future<Map<String, dynamic>> getReconciliationDetail(int id);
+
+  Future<CodReconciliation> createCodReconciliation(Map<String, dynamic> dto);
 }
 
 class ReadyPackage {

@@ -41,8 +41,10 @@ class SalesRepositoryImpl implements SalesRepository {
       _remote.cancelOrder(orderId, reason);
 
   @override
-  Future<void> addNote(int orderId, String content) =>
-      _remote.addNote(orderId, content);
+  Future<void> addNote(int orderId, String content) {
+    // Default userId - should be replaced with actual user ID from auth
+    return _remote.addNote(orderId, content, 'staff');
+  }
 
   @override
   Future<List<OrderNote>> listNotes(int orderId) => _remote.listNotes(orderId);
@@ -54,4 +56,45 @@ class SalesRepositoryImpl implements SalesRepository {
   @override
   Future<List<String>> allowedTransitions(int orderId) =>
       _remote.allowedTransitions(orderId);
+
+  // New methods
+  @override
+  Future<Map<String, dynamic>> getDashboard() => _remote.getDashboard();
+
+  @override
+  Future<Map<String, dynamic>> getOrdersPage({
+    int page = 0,
+    int size = 15,
+    String filter = 'all',
+    String? q,
+  }) =>
+      _remote.getOrdersPage(page: page, size: size, filter: filter, q: q);
+
+  @override
+  Future<Map<String, dynamic>> getOrderStatusInfo(int orderId) =>
+      _remote.getOrderStatusInfo(orderId);
+
+  @override
+  Future<List<Map<String, dynamic>>> getOrderHistory(int orderId) =>
+      _remote.getOrderHistory(orderId);
+
+  @override
+  Future<Order> createOrder(Map<String, dynamic> payload) =>
+      _remote.createOrder(payload);
+
+  @override
+  Future<void> confirmBankTransfer(int orderId) =>
+      _remote.confirmBankTransfer(orderId);
+
+  @override
+  Future<void> addNoteWithUserId(int orderId, String content, String userId) =>
+      _remote.addNote(orderId, content, userId);
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllStatuses() =>
+      _remote.getAllStatuses();
+
+  @override
+  Future<Map<String, dynamic>> getStatusDisplay(String status) =>
+      _remote.getStatusDisplay(status);
 }

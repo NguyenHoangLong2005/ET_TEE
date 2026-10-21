@@ -94,8 +94,9 @@ class ApiClient {
         return const NetworkException('Không kết nối được tới máy chủ');
       case DioExceptionType.badResponse:
         final status = e.response?.statusCode ?? 0;
-        final msg = e.response?.data is Map
-            ? (e.response!.data as Map)['message']?.toString()
+        final data = e.response?.data;
+        final msg = data is Map
+            ? (data['message'] ?? data['error'])?.toString()
             : null;
         if (status == 401) return UnauthorizedException(msg ?? '');
         if (status == 403) return ForbiddenException(msg ?? '');

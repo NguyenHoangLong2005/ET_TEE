@@ -129,18 +129,14 @@ class ShippingRemoteDataSource {
     );
   }
 
+  // Note: Backend doesn't have separate image upload endpoint.
+  // Image URL should be uploaded separately (e.g., to Firebase Storage, S3)
+  // and then passed in the proof request.
   Future<String> uploadProofImage(File image) async {
-    final data = await _api.upload<Map<String, dynamic>>(
-      '$_base/proof-image',
-      file: image,
-      field: 'file',
-      parse: (raw) => raw as Map<String, dynamic>,
+    throw UnimplementedError(
+      'Backend does not support direct image upload. '
+      'Upload image to external storage (Firebase, S3) and use the URL in submitProofOfDelivery.',
     );
-    final url = data['url'] as String?;
-    if (url == null || url.isEmpty) {
-      throw const FormatException('Máy chủ không trả về URL ảnh bằng chứng');
-    }
-    return url;
   }
 
   // ─── Doi soat COD ─────────────────────────────────────────────────────────
@@ -174,5 +170,15 @@ class ShippingRemoteDataSource {
       '$_base/cod/reconciliations/$id',
       parse: (raw) => raw as Map<String, dynamic>,
     );
+  }
+
+  Future<CodReconciliation> createCodReconciliation(
+      Map<String, dynamic> dto) async {
+    final data = await _api.post<Map<String, dynamic>>(
+      '$_base/cod/reconciliation',
+      body: dto,
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
+    return CodReconciliation.fromJson(data);
   }
 }

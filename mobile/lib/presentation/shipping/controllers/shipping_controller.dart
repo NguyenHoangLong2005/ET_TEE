@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../../../core/state/base_controller.dart';
 import '../../../domain/entities/order_status.dart';
 import '../../../domain/repositories/shipping_repository.dart';
@@ -140,15 +138,16 @@ class ShippingController extends BaseController {
         await loadShipments();
       }, 'Đã gửi bằng chứng giao hàng');
 
-  Future<String> uploadPodImage(int shipmentId, File image) async {
-    _busyIds.add(shipmentId);
-    notifyListeners();
-    try {
-      return await _repo.uploadProofImage(image);
-    } finally {
-      _busyIds.remove(shipmentId);
-      notifyListeners();
-    }
+  Future<CodReconciliation?> createCodReconciliation(Map<String, dynamic> dto) async {
+    CodReconciliation? result;
+    await _guard(
+      0,
+      () async {
+        result = await _repo.createCodReconciliation(dto);
+      },
+      null,
+    );
+    return result;
   }
 
   Future<String?> reconcileCod(int shipmentId) => _guard(shipmentId, () async {

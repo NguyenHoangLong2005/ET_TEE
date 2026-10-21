@@ -28,6 +28,30 @@ abstract class SalesRepository {
   Future<void> requestHold(int orderId, int productId, int quantity);
 
   Future<List<String>> allowedTransitions(int orderId);
+
+  // New methods
+  Future<Map<String, dynamic>> getDashboard();
+
+  Future<Map<String, dynamic>> getOrdersPage({
+    int page = 0,
+    int size = 15,
+    String filter = 'all',
+    String? q,
+  });
+
+  Future<Map<String, dynamic>> getOrderStatusInfo(int orderId);
+
+  Future<List<Map<String, dynamic>>> getOrderHistory(int orderId);
+
+  Future<Order> createOrder(Map<String, dynamic> payload);
+
+  Future<void> confirmBankTransfer(int orderId);
+
+  Future<void> addNoteWithUserId(int orderId, String content, String userId);
+
+  Future<List<Map<String, dynamic>>> getAllStatuses();
+
+  Future<Map<String, dynamic>> getStatusDisplay(String status);
 }
 
 class OrderNote {

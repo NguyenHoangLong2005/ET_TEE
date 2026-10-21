@@ -97,4 +97,8 @@ class ShippingRepositoryImpl implements ShippingRepository {
   @override
   Future<Map<String, dynamic>> getReconciliationDetail(int id) =>
       _remote.getReconciliationDetail(id);
+
+  @override
+  Future<CodReconciliation> createCodReconciliation(Map<String, dynamic> dto) =>
+      _remote.createCodReconciliation(dto);
 }

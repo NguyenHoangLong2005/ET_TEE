@@ -266,19 +266,31 @@ class _ShipmentsTab extends StatelessWidget {
     );
     if (form == null) return;
 
-    String imageUrl;
-    try {
-      imageUrl = await controller.uploadPodImage(s.id, File(form.image.path));
-    } catch (error) {
-      onToast('Không tải được ảnh bằng chứng: $error');
+    // Note: Backend doesn't support direct image upload.
+    // Image should be uploaded to external storage (Firebase, S3, etc.) first,
+    // then the URL is passed in the proof request.
+    // For now, we use a placeholder or require manual URL input.
+    final String imageUrl = form.imageUrl ?? '';
+    
+    if (imageUrl.isEmpty && form.image != null) {
+      // If user picked an image but no URL, show error
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vui lòng tải ảnh lên lưu trữ đám mây (Firebase, S3...) và nhập URL, hoặc để trống nếu không có ảnh.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
+
     onToast(
       await controller.submitPod(
             s.id,
             PodProof(
               receiverName: form.receiverName,
-              imageUrl: imageUrl,
+              imageUrl: imageUrl.isEmpty ? null : imageUrl,
               note: form.note,
             ),
           ) ??
@@ -658,12 +670,14 @@ class _PodDialogState extends State<_PodDialog> {
   final _picker = ImagePicker();
   final _nameCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
+  final _imageUrlCtrl = TextEditingController();
   XFile? _image;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _noteCtrl.dispose();
+    _imageUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -729,9 +743,17 @@ class _PodDialogState extends State<_PodDialog> {
                 ),
               ],
             ),
-            if (_image == null)
+            const SizedBox(height: 12),
+            TextField(
+              controller: _imageUrlCtrl,
+              decoration: const InputDecoration(
+                labelText: 'URL ảnh (tải lên Firebase/S3 rồi dán link vào đây)',
+                hintText: 'https://...',
+              ),
+            ),
+            if (_image == null && _imageUrlCtrl.text.isEmpty)
               Text(
-                'Cần đính kèm ảnh xác nhận giao hàng.',
+                'Cần đính kèm ảnh xác nhận giao hàng (chụp/ chọn hoặc nhập URL).',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             const SizedBox(height: 12),
@@ -750,16 +772,13 @@ class _PodDialogState extends State<_PodDialog> {
         ),
         FilledButton(
           onPressed: () {
-            if (_nameCtrl.text.trim().isEmpty || _image == null) return;
-            Navigator.of(context).pop(
-              _PodForm(
-                receiverName: _nameCtrl.text.trim(),
-                image: _image!,
-                note: _noteCtrl.text.trim().isEmpty
-                    ? null
-                    : _noteCtrl.text.trim(),
-              ),
-            );
+            if (_nameCtrl.text.trim().isEmpty) return;
+            Navigator.of(context).pop(_PodForm(
+              receiverName: _nameCtrl.text.trim(),
+              image: _image,
+              imageUrl: _imageUrlCtrl.text.trim().isEmpty ? null : _imageUrlCtrl.text.trim(),
+              note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+            ));
           },
           child: const Text('Gửi xác nhận'),
         ),
@@ -771,12 +790,14 @@ class _PodDialogState extends State<_PodDialog> {
 class _PodForm {
   const _PodForm({
     required this.receiverName,
-    required this.image,
+    this.image,
+    this.imageUrl,
     this.note,
   });
 
   final String receiverName;
-  final XFile image;
+  final XFile? image;
+  final String? imageUrl;
   final String? note;
 }
 

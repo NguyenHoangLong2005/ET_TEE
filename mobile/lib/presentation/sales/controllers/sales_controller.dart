@@ -20,6 +20,18 @@ class SalesController extends BaseController {
   Order? get selected => _selected;
   List<OrderNote> get notes => _notes;
 
+  Map<String, dynamic>? _dashboard;
+  Map<String, dynamic>? _orderStatusInfo;
+  List<Map<String, dynamic>>? _orderHistory;
+  List<Map<String, dynamic>>? _allStatuses;
+  Map<String, dynamic>? _statusDisplay;
+
+  Map<String, dynamic>? get dashboard => _dashboard;
+  Map<String, dynamic>? get orderStatusInfo => _orderStatusInfo;
+  List<Map<String, dynamic>>? get orderHistory => _orderHistory;
+  List<Map<String, dynamic>>? get allStatuses => _allStatuses;
+  Map<String, dynamic>? get statusDisplay => _statusDisplay;
+
   /// Order dang xu ly (xac minh / xac nhan / huy) de hien loading cuc bo.
   bool isBusy(int orderId) => _busyIds.contains(orderId);
 
@@ -33,6 +45,35 @@ class SalesController extends BaseController {
 
   Future<void> loadSlaWarnings() => run(() async {
         _slaWarnings = await _repo.getSlaWarnings();
+      });
+
+  Future<void> loadDashboard() => run(() async {
+        _dashboard = await _repo.getDashboard();
+      });
+
+  Future<Map<String, dynamic>> loadOrdersPage({
+    int page = 0,
+    int size = 15,
+    String filter = 'all',
+    String? q,
+  }) async {
+    return _repo.getOrdersPage(page: page, size: size, filter: filter, q: q);
+  }
+
+  Future<void> loadOrderStatusInfo(int orderId) => run(() async {
+        _orderStatusInfo = await _repo.getOrderStatusInfo(orderId);
+      });
+
+  Future<void> loadOrderHistory(int orderId) => run(() async {
+        _orderHistory = await _repo.getOrderHistory(orderId);
+      });
+
+  Future<void> loadAllStatuses() => run(() async {
+        _allStatuses = await _repo.getAllStatuses();
+      });
+
+  Future<void> loadStatusDisplay(String status) => run(() async {
+        _statusDisplay = await _repo.getStatusDisplay(status);
       });
 
   Future<void> refreshAll() async {
@@ -69,6 +110,9 @@ class SalesController extends BaseController {
   Future<String?> confirmOrder(int orderId) =>
       _mutate(orderId, () => _repo.confirmOrder(orderId), order: true);
 
+  Future<String?> confirmBankTransfer(int orderId) =>
+      _mutate(orderId, () => _repo.confirmBankTransfer(orderId), order: true);
+
   Future<String?> cancelOrder(int orderId, String reason) => _mutate(
         orderId,
         () => _repo.cancelOrder(orderId, reason),
@@ -86,6 +130,16 @@ class SalesController extends BaseController {
         message: 'Đã ghi chú',
       );
 
+  Future<String?> addNoteWithUserId(int orderId, String content, String userId) => _mutate(
+        orderId,
+        () async {
+          await _repo.addNoteWithUserId(orderId, content, userId);
+          _notes = await _repo.listNotes(orderId);
+        },
+        order: false,
+        message: 'Đã ghi chú',
+      );
+
   Future<String?> requestHold(int orderId, int productId, int quantity) =>
       _mutate(
         orderId,
@@ -93,6 +147,18 @@ class SalesController extends BaseController {
         order: false,
         message: 'Đã gửi yêu cầu giữ hàng',
       );
+
+  Future<Order?> createOrder(Map<String, dynamic> payload) async {
+    Order? result;
+    await _mutate(
+      0,
+      () async {
+        result = await _repo.createOrder(payload);
+      },
+      order: false,
+    );
+    return result;
+  }
 
   Future<void> loadNotes(int orderId) => run(() async {
         _notes = await _repo.listNotes(orderId);

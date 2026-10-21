@@ -15,6 +15,8 @@ abstract class WarehouseRepository {
     required int quantity,
     String? location,
     int? variantId,
+    int? supplierId,
+    String? note,
   });
 
   Future<Map<String, dynamic>> countInbound(
@@ -32,17 +34,23 @@ abstract class WarehouseRepository {
     required String reason,
   });
 
+  Future<void> approveAdjustment(int adjustmentId);
+
   Future<List<StockReservation>> getReservations();
 
-  Future<void> approveReservation(String reservationId);
+  Future<void> approveReservation(int reservationId);
 
-  Future<void> rejectReservation(String reservationId, String reason);
+  Future<void> rejectReservation(int reservationId, String reason);
 
   Future<void> startPicking(int orderId);
 
   Future<void> completePicking(int orderId);
 
+  Future<void> packOrder(int orderId);
+
   Future<Map<String, dynamic>> getLabelInfo(int orderId);
+
+  Future<void> printLabel(int orderId);
 
   Future<void> handover(int orderId);
 

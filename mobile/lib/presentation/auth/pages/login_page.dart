@@ -15,7 +15,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  static const _demoPassword = 'Demo@123456';
+  final _passwordController = TextEditingController(text: 'Demo@123456');
+  bool _showPasswordInput = false;
 
   static const _roles = [
     (AppRole.salesStaff, 'Nhân viên Bán hàng', 'sales@et.tee',
@@ -33,6 +34,12 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _boot();
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
   }
 
   /// Đã có token hợp lệ -> vào thẳng màn hình theo vai trò, không cần chọn.
@@ -53,7 +60,8 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
     try {
-      await sl<AuthRepository>().login(email, _demoPassword);
+      final password = _passwordController.text.trim();
+      await sl<AuthRepository>().login(email, password);
       if (!mounted) return;
       await redirectByRole(context);
     } catch (e) {
@@ -61,14 +69,18 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _booting = false;
         _error = _message(e);
+        _showPasswordInput = true;
       });
     }
   }
 
   String _message(Object e) {
     final text = '$e';
-    if (text.contains('401') || text.toLowerCase().contains('unauthorized')) {
-      return 'Sai tài khoản hoặc mật khẩu demo.';
+    if (text.contains('401') ||
+        text.contains('400') ||
+        text.toLowerCase().contains('unauthorized') ||
+        text.toLowerCase().contains('mật khẩu không đúng')) {
+      return 'Sai tài khoản hoặc mật khẩu demo. Vui lòng kiểm tra mật khẩu bên dưới.';
     }
     if (text.toLowerCase().contains('connection') ||
         text.toLowerCase().contains('network')) {
@@ -109,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                     padding: EdgeInsets.symmetric(vertical: 24),
                     child: CircularProgressIndicator(),
                   )
-                else
+                else ...[
                   for (final (_, label, email, icon) in _roles)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -119,9 +131,28 @@ class _LoginPageState extends State<LoginPage> {
                         label: Text(label),
                       ),
                     ),
+                  const SizedBox(height: 12),
+                  if (_showPasswordInput) ...[
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Mật khẩu đăng nhập',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ] else
+                    TextButton.icon(
+                      onPressed: () => setState(() => _showPasswordInput = true),
+                      icon: const Icon(Icons.key, size: 18),
+                      label: const Text('Nhập mật khẩu tùy chỉnh'),
+                    ),
+                ],
                 const SizedBox(height: 8),
                 Text(
-                  'Tài khoản demo: ${_roles.first.$3} / $_demoPassword',
+                  'Tài khoản demo: ${_roles.first.$3}',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),

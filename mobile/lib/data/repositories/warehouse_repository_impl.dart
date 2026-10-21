@@ -31,6 +31,8 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
     required int quantity,
     String? location,
     int? variantId,
+    int? supplierId,
+    String? note,
   }) =>
       _remote.inbound(
         productId: productId,
@@ -38,6 +40,8 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
         quantity: quantity,
         location: location,
         variantId: variantId,
+        supplierId: supplierId,
+        note: note,
       );
 
   @override
@@ -66,14 +70,18 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
       );
 
   @override
+  Future<void> approveAdjustment(int adjustmentId) =>
+      _remote.approveAdjustment(adjustmentId);
+
+  @override
   Future<List<StockReservation>> getReservations() => _remote.getReservations();
 
   @override
-  Future<void> approveReservation(String reservationId) =>
+  Future<void> approveReservation(int reservationId) =>
       _remote.approveReservation(reservationId);
 
   @override
-  Future<void> rejectReservation(String reservationId, String reason) =>
+  Future<void> rejectReservation(int reservationId, String reason) =>
       _remote.rejectReservation(reservationId, reason);
 
   @override
@@ -83,8 +91,14 @@ class WarehouseRepositoryImpl implements WarehouseRepository {
   Future<void> completePicking(int orderId) => _remote.completePicking(orderId);
 
   @override
+  Future<void> packOrder(int orderId) => _remote.packOrder(orderId);
+
+  @override
   Future<Map<String, dynamic>> getLabelInfo(int orderId) =>
       _remote.getLabelInfo(orderId);
+
+  @override
+  Future<void> printLabel(int orderId) => _remote.printLabel(orderId);
 
   @override
   Future<void> handover(int orderId) => _remote.handover(orderId);

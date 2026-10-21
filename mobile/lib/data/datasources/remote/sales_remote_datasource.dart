@@ -10,17 +10,42 @@ class SalesRemoteDataSource {
 
   String get _base => AppConfig.salesBase;
 
-  Future<List<Order>> getNewOrders() async {
-    final data = await _api.get<List<dynamic>>(
-      '$_base/orders/new',
-      parse: (raw) => raw as List<dynamic>,
+  Future<Map<String, dynamic>> getDashboard() async {
+    return _api.get<Map<String, dynamic>>(
+      '$_base/dashboard',
+      parse: (raw) => raw as Map<String, dynamic>,
     );
-    return data.map((e) => Order.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<Map<String, dynamic>> getOrdersPage({
+    int page = 0,
+    int size = 15,
+    String filter = 'all',
+    String? q,
+  }) async {
+    return _api.get<Map<String, dynamic>>(
+      '$_base/orders/page',
+      query: {
+        'page': page,
+        'size': size,
+        'filter': filter,
+        if (q != null) 'q': q,
+      },
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
   }
 
   Future<List<Order>> getAllOrders() async {
     final data = await _api.get<List<dynamic>>(
       '$_base/orders',
+      parse: (raw) => raw as List<dynamic>,
+    );
+    return data.map((e) => Order.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<Order>> getNewOrders() async {
+    final data = await _api.get<List<dynamic>>(
+      '$_base/orders/new',
       parse: (raw) => raw as List<dynamic>,
     );
     return data.map((e) => Order.fromJson(e as Map<String, dynamic>)).toList();
@@ -44,6 +69,21 @@ class SalesRemoteDataSource {
     return Order.fromJson(data);
   }
 
+  Future<Map<String, dynamic>> getOrderStatusInfo(int orderId) async {
+    return _api.get<Map<String, dynamic>>(
+      '$_base/orders/$orderId/status-info',
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getOrderHistory(int orderId) async {
+    final data = await _api.get<List<dynamic>>(
+      '$_base/orders/$orderId/history',
+      parse: (raw) => raw as List<dynamic>,
+    );
+    return data.cast<Map<String, dynamic>>();
+  }
+
   Future<Order> verifyOrder(
     int orderId, {
     required String customerName,
@@ -62,12 +102,25 @@ class SalesRemoteDataSource {
     return Order.fromJson(data);
   }
 
+  Future<Order> createOrder(Map<String, dynamic> payload) async {
+    final data = await _api.post<Map<String, dynamic>>(
+      '$_base/orders',
+      body: payload,
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
+    return Order.fromJson(data);
+  }
+
   Future<Order> confirmOrder(int orderId) async {
     final data = await _api.post<Map<String, dynamic>>(
       '$_base/orders/$orderId/confirm',
       parse: (raw) => raw as Map<String, dynamic>,
     );
     return Order.fromJson(data);
+  }
+
+  Future<void> confirmBankTransfer(int orderId) async {
+    await _api.post<dynamic>('$_base/orders/$orderId/confirm-payment');
   }
 
   Future<void> cancelOrder(int orderId, String reason) async {
@@ -77,10 +130,10 @@ class SalesRemoteDataSource {
     );
   }
 
-  Future<void> addNote(int orderId, String content) async {
+  Future<void> addNote(int orderId, String content, String userId) async {
     await _api.post<dynamic>(
       '$_base/orders/$orderId/notes',
-      body: {'content': content},
+      body: {'content': content, 'userId': userId},
     );
   }
 
@@ -107,5 +160,20 @@ class SalesRemoteDataSource {
       parse: (raw) => raw as List<dynamic>,
     );
     return data.map((e) => '$e').toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getAllStatuses() async {
+    final data = await _api.get<List<dynamic>>(
+      '$_base/statuses',
+      parse: (raw) => raw as List<dynamic>,
+    );
+    return data.cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> getStatusDisplay(String status) async {
+    return _api.get<Map<String, dynamic>>(
+      '$_base/statuses/$status/display',
+      parse: (raw) => raw as Map<String, dynamic>,
+    );
   }
 }
