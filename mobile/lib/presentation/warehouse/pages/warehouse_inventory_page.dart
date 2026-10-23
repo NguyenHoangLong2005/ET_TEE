@@ -27,6 +27,7 @@ class _WarehouseInventoryPageState extends State<WarehouseInventoryPage> {
   InventoryItem? _target;
   int? _selectedProductId;
   int? _selectedVariantId;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -369,48 +370,79 @@ class _WarehouseInventoryPageState extends State<WarehouseInventoryPage> {
   }
 
   Widget _inventoryList(List<InventoryItem> items) {
-    return _controller.isLoading && items.isEmpty
-        ? const Center(child: CircularProgressIndicator())
-        : items.isEmpty
-            ? _controller.errorMessage == null
-                ? const EmptyState(message: 'Kho đang trống.')
-                : ErrorRetryView(
-                    message: _controller.errorMessage!,
-                    onRetry: () => _controller.loadInventory(),
-                  )
-            : ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, i) {
-                  final item = items[i];
-                  final selected = _target?.id == item.id;
-                  return Card(
-                    child: ListTile(
-                      selected: selected,
-                      title: Text(item.productName),
-                      subtitle: Text(
-                        'Có ${item.quantityOnHand} · Giữ ${item.quantityReserved} · '
-                        'Khả dụng ${item.available}\n'
-                        'Vị trí: ${item.warehouseLocation ?? '—'}',
-                      ),
-                      isThreeLine: true,
-                      onTap: () => setState(() {
-                        _target = item;
-                        _locationCtrl.text = item.warehouseLocation ?? '';
-                      }),
-                      trailing: PermissionGate(
-                        permission: 'COUNT_STOCK',
-                        child: IconButton(
-                          tooltip: 'Kiểm đếm',
-                          icon: const Icon(Icons.pin_outlined),
-                          onPressed: () => _count(item.id, item.quantityOnHand),
-                        ),
-                      ),
+    final filtered = items.where((item) {
+      if (_searchQuery.isEmpty) return true;
+      final q = _searchQuery.toLowerCase();
+      final nameMatches = item.productName.toLowerCase().contains(q);
+      final locMatches = item.warehouseLocation?.toLowerCase().contains(q) ?? false;
+      return nameMatches || locMatches;
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: TextField(
+            onChanged: (val) => setState(() => _searchQuery = val),
+            decoration: InputDecoration(
+              hintText: 'Tìm theo tên sản phẩm, vị trí kệ...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: () => setState(() => _searchQuery = ''),
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _controller.isLoading && items.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : filtered.isEmpty
+                  ? _controller.errorMessage == null
+                      ? const EmptyState(message: 'Không tìm thấy tồn kho phù hợp.')
+                      : ErrorRetryView(
+                          message: _controller.errorMessage!,
+                          onRetry: () => _controller.loadInventory(),
+                        )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, i) {
+                        final item = filtered[i];
+                        final selected = _target?.id == item.id;
+                        return Card(
+                          child: ListTile(
+                            selected: selected,
+                            title: Text(item.productName),
+                            subtitle: Text(
+                              'Có ${item.quantityOnHand} · Giữ ${item.quantityReserved} · '
+                              'Khả dụng ${item.available}\n'
+                              'Vị trí: ${item.warehouseLocation ?? '—'}',
+                            ),
+                            isThreeLine: true,
+                            onTap: () => setState(() {
+                              _target = item;
+                              _locationCtrl.text = item.warehouseLocation ?? '';
+                            }),
+                            trailing: PermissionGate(
+                              permission: 'COUNT_STOCK',
+                              child: IconButton(
+                                tooltip: 'Kiểm đếm',
+                                icon: const Icon(Icons.pin_outlined),
+                                onPressed: () => _count(item.id, item.quantityOnHand),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              );
+        ),
+      ],
+    );
   }
 }
 

@@ -271,7 +271,7 @@ class _ShipmentsTab extends StatelessWidget {
     // then the URL is passed in the proof request.
     // For now, we use a placeholder or require manual URL input.
     final String imageUrl = form.imageUrl ?? '';
-    
+
     if (imageUrl.isEmpty && form.image != null) {
       // If user picked an image but no URL, show error
       if (context.mounted) {
@@ -491,87 +491,464 @@ class _ExceptionsTab extends StatelessWidget {
   }
 }
 
-class _CodTab extends StatelessWidget {
+class _CodTab extends StatefulWidget {
   const _CodTab({required this.controller, required this.onToast});
 
   final ShippingController controller;
   final ToastFn onToast;
 
-  Future<void> _reconcile(PendingCod c) async {
-    onToast(await controller.reconcileCod(c.shipmentId) ?? 'Đã đối soát');
+  @override
+  State<_CodTab> createState() => _CodTabState();
+}
+
+class _CodTabState extends State<_CodTab> {
+  final Set<int> _selectedIds = {};
+  bool _showHistory = false;
+
+  Future<void> _refreshPending() async {
+    await widget.controller.loadCod();
+    if (!mounted) return;
+    final availableIds =
+        widget.controller.pendingCod.map((item) => item.shipmentId).toSet();
+    setState(
+        () => _selectedIds.removeWhere((id) => !availableIds.contains(id)));
   }
+
+  Future<void> _createReconciliation() async {
+    final noteController = TextEditingController();
+    final note = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lập phiếu đối soát COD'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${_selectedIds.length} vận đơn · '
+              '${Formatters.currency(_selectedTotal)}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: noteController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Ghi chú (không bắt buộc)',
+                hintText: 'Ngân hàng, thủ quỹ hoặc đợt đối soát...',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(noteController.text),
+            child: const Text('Lập phiếu'),
+          ),
+        ],
+      ),
+    );
+    noteController.dispose();
+    if (note == null || !mounted) return;
+
+    final result = await widget.controller.createCodReconciliation({
+      'shipmentIds': _selectedIds.toList(),
+      if (note.trim().isNotEmpty) 'note': note.trim(),
+    });
+    if (!mounted) return;
+    if (result == null) {
+      widget.onToast(
+        widget.controller.errorMessage ?? 'Không thể lập phiếu đối soát COD',
+      );
+      return;
+    }
+
+    setState(() {
+      _selectedIds.clear();
+      _showHistory = true;
+    });
+    widget.onToast('Đã lập phiếu đối soát COD');
+  }
+
+  double get _selectedTotal => widget.controller.pendingCod
+      .where((item) => _selectedIds.contains(item.shipmentId))
+      .fold(0, (sum, item) => sum + item.codAmount);
 
   @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
     final pending = controller.pendingCod;
+    final reconciliations = controller.reconciliations;
 
     return PermissionGate(
       permission: 'RECONCILE_COD',
       alsoRequire: const ['MANAGE_WAYBILL'],
-      child: RefreshIndicator(
-        onRefresh: controller.loadCod,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.payments_outlined),
-                title: const Text('Tổng COD chờ đối soát'),
-                subtitle: Text(
-                  '${pending.length} kiện · '
-                  '${Formatters.currency(controller.pendingCodTotal)}',
-                  style: const TextStyle(fontSize: 15),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: StatCard(
+                    label: 'Vận đơn chờ đối soát',
+                    value: '${pending.length}',
+                    icon: Icons.inventory_2_outlined,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: StatCard(
+                    label: 'Tổng tiền COD đọng',
+                    value: Formatters.currency(controller.pendingCodTotal),
+                    icon: Icons.payments_outlined,
+                    color: AppColors.statusPicking,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: StatCard(
+                    label: 'Phiếu đã lập',
+                    value: '${reconciliations.length}',
+                    icon: Icons.receipt_long_outlined,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _CodViewButton(
+                    label: 'Chờ đối soát (${pending.length})',
+                    selected: !_showHistory,
+                    onPressed: () => setState(() => _showHistory = false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _CodViewButton(
+                    label: 'Lịch sử phiếu',
+                    selected: _showHistory,
+                    onPressed: () => setState(() => _showHistory = true),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _showHistory
+                ? _CodHistoryList(
+                    reconciliations: reconciliations,
+                    onRefresh: controller.loadReconciliations,
+                  )
+                : _CodPendingList(
+                    items: pending,
+                    selectedIds: _selectedIds,
+                    onRefresh: _refreshPending,
+                    onToggle: (item) {
+                      setState(() {
+                        if (!_selectedIds.add(item.shipmentId)) {
+                          _selectedIds.remove(item.shipmentId);
+                        }
+                      });
+                    },
+                    onSelectAll: () {
+                      setState(() {
+                        if (_selectedIds.length == pending.length) {
+                          _selectedIds.clear();
+                        } else {
+                          _selectedIds
+                            ..clear()
+                            ..addAll(pending.map((item) => item.shipmentId));
+                        }
+                      });
+                    },
+                  ),
+          ),
+          if (!_showHistory && _selectedIds.isNotEmpty)
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border(
+                    top: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${_selectedIds.length} vận đơn\n'
+                        '${Formatters.currency(_selectedTotal)}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: _createReconciliation,
+                      icon: const Icon(Icons.receipt_long_outlined),
+                      label: const Text('Lập phiếu'),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            if (pending.isEmpty)
-              const EmptyState(
+        ],
+      ),
+    );
+  }
+}
+
+class _CodViewButton extends StatelessWidget {
+  const _CodViewButton({
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return selected
+        ? FilledButton(
+            onPressed: onPressed,
+            child: Text(label, textAlign: TextAlign.center),
+          )
+        : OutlinedButton(
+            onPressed: onPressed,
+            child: Text(label, textAlign: TextAlign.center),
+          );
+  }
+}
+
+class _CodPendingList extends StatelessWidget {
+  const _CodPendingList({
+    required this.items,
+    required this.selectedIds,
+    required this.onRefresh,
+    required this.onToggle,
+    required this.onSelectAll,
+  });
+
+  final List<PendingCod> items;
+  final Set<int> selectedIds;
+  final Future<void> Function() onRefresh;
+  final ValueChanged<PendingCod> onToggle;
+  final VoidCallback onSelectAll;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+        children: [
+          Card(
+            child: CheckboxListTile(
+              value: items.isNotEmpty && selectedIds.length == items.length,
+              onChanged: items.isEmpty ? null : (_) => onSelectAll(),
+              title: Text(
+                'Vận đơn đã giao chưa tất toán COD'
+                '${selectedIds.isEmpty ? '' : ' (${selectedIds.length}/${items.length})'}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              secondary: IconButton(
+                tooltip: 'Tải lại',
+                onPressed: onRefresh,
+                icon: const Icon(Icons.refresh_rounded),
+              ),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
+          if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 24),
+              child: EmptyState(
                 message: 'Không có COD nào chờ đối soát.',
                 icon: Icons.receipt_long_outlined,
-              )
-            else
-              ...pending.map(
-                (c) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(c.orderCode ?? 'Kiện #${c.shipmentId}'),
-                    subtitle: Text(
-                      'Hãng: ${c.carrierName ?? '—'}\n'
-                      '${Formatters.currency(c.codAmount)}',
+              ),
+            )
+          else
+            ...items.map(
+              (item) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: InkWell(
+                  onTap: () => onToggle(item),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
                     ),
-                    isThreeLine: true,
-                    trailing: FilledButton.tonal(
-                      onPressed: controller.isBusy(c.shipmentId)
-                          ? null
-                          : () => _reconcile(c),
-                      child: const Text('Đối soát'),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: selectedIds.contains(item.shipmentId),
+                          onChanged: (_) => onToggle(item),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.trackingCode ?? 'SHIP-#${item.shipmentId}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              if (item.orderCode != null)
+                                Text(
+                                  'Đơn #${item.orderCode}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.customerName ?? 'Chưa có tên khách hàng',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (item.customerPhone?.isNotEmpty == true)
+                                Text(
+                                  item.customerPhone!,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              const SizedBox(height: 6),
+                              _CodDetailRow(
+                                label: 'Hãng vận chuyển',
+                                value: item.carrierName ?? 'Tự giao hàng',
+                              ),
+                              _CodDetailRow(
+                                label: 'Ngày giao hàng',
+                                value: Formatters.dateTime(item.deliveredAt),
+                              ),
+                              _CodDetailRow(
+                                label: 'Tiền thu hộ',
+                                value: Formatters.currency(item.codAmount),
+                                valueColor: AppColors.statusPicking,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            const SizedBox(height: 24),
-            Text('Lịch sử đối soát',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            if (controller.reconciliations.isEmpty)
-              const Text('Chưa có phiếu đối soát nào.')
-            else
-              ...controller.reconciliations.map(
-                (r) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(r.reconciliationCode),
-                    subtitle: Text(
-                      '${Formatters.currency(r.totalCodAmount)} · '
-                      '${r.reconciledByName ?? '—'} · '
-                      '${Formatters.dateTime(r.reconciledAt)}',
-                    ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CodDetailRow extends StatelessWidget {
+  const _CodDetailRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                color: valueColor,
+                fontWeight: valueColor == null ? null : FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CodHistoryList extends StatelessWidget {
+  const _CodHistoryList({
+    required this.reconciliations,
+    required this.onRefresh,
+  });
+
+  final List<CodReconciliation> reconciliations;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
+        children: [
+          if (reconciliations.isEmpty)
+            const EmptyState(
+              message: 'Chưa có phiếu đối soát nào.',
+              icon: Icons.receipt_long_outlined,
+            )
+          else
+            ...reconciliations.map(
+              (item) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: Text(
+                    item.reconciliationCode,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  subtitle: Text(
+                    '${Formatters.currency(item.totalCodAmount)} · '
+                    '${item.reconciledByName ?? '—'} · '
+                    '${Formatters.dateTime(item.reconciledAt)}',
+                  ),
+                  isThreeLine: true,
+                  trailing: item.status == null
+                      ? null
+                      : Chip(
+                          label: Text(item.status!),
+                          visualDensity: VisualDensity.compact,
+                        ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

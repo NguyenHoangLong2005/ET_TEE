@@ -140,39 +140,95 @@ class _NewOrdersTab extends StatelessWidget {
   }
 }
 
-class _AllOrdersTab extends StatelessWidget {
+class _AllOrdersTab extends StatefulWidget {
   const _AllOrdersTab({required this.controller});
 
   final SalesController controller;
 
   @override
+  State<_AllOrdersTab> createState() => _AllOrdersTabState();
+}
+
+class _AllOrdersTabState extends State<_AllOrdersTab> {
+  String _searchQuery = '';
+  String _selectedStatus = 'ALL';
+
+  static const Map<String, String> _statusOptions = {
+    'ALL': 'Tất cả',
+    'PENDING': 'Đơn mới',
+    'CONFIRMED': 'Đã xác nhận',
+    'DELIVERING': 'Đang giao',
+    'COMPLETED': 'Hoàn thành',
+    'CANCELLED': 'Đã hủy',
+  };
+
+  @override
   Widget build(BuildContext context) {
-    final orders = controller.allOrders;
-    if (orders.isEmpty) {
-      return const EmptyState(message: 'Chưa có đơn nào.');
-    }
-    return RefreshIndicator(
-      onRefresh: controller.loadAllOrders,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: orders.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, i) => Card(
-          child: ListTile(
-            title: Text(orders[i].orderCode),
-            subtitle: Text(
-              '${orders[i].customerName ?? '—'} · '
-              '${Formatters.currency(orders[i].totalAmount)}',
-            ),
-            trailing: StatusBadge.order(OrderStatus.fromWire(orders[i].status)),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => OrderDetailPage(orderId: orders[i].id),
-              ),
+    final all = widget.controller.allOrders;
+    final filtered = all.where((order) {
+      final matchesQuery = _searchQuery.isEmpty ||
+          order.orderCode.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          (order.customerName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (order.phone?.contains(_searchQuery) ?? false);
+      final matchesStatus = _selectedStatus == 'ALL' ||
+          order.status.toUpperCase() == _selectedStatus;
+      return matchesQuery && matchesStatus;
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: TextField(
+            onChanged: (val) => setState(() => _searchQuery = val),
+            decoration: InputDecoration(
+              hintText: 'Tìm mã đơn, tên KH, SĐT...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: () => setState(() => _searchQuery = ''),
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
           ),
         ),
-      ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            children: _statusOptions.entries.map((entry) {
+              final selected = _selectedStatus == entry.key;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(entry.value),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _selectedStatus = entry.key),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Expanded(
+          child: filtered.isEmpty
+              ? const EmptyState(message: 'Không tìm thấy đơn hàng phù hợp.')
+              : RefreshIndicator(
+                  onRefresh: widget.controller.loadAllOrders,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) => _OrderCard(
+                      order: filtered[i],
+                      controller: widget.controller,
+                    ),
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }
@@ -225,6 +281,17 @@ class _NotesTabState extends State<_NotesTab> {
   @override
   Widget build(BuildContext context) {
     final notes = widget.controller.notes;
+    final allOrders = widget.controller.allOrders;
+    Order? selectedOrder;
+    if (_selectedOrderId != null) {
+      for (final o in allOrders) {
+        if (o.id == _selectedOrderId) {
+          selectedOrder = o;
+          break;
+        }
+      }
+    }
+
     return Column(
       children: [
         Padding(
@@ -238,7 +305,7 @@ class _NotesTabState extends State<_NotesTab> {
                   labelText: 'Chọn đơn hàng',
                   prefixIcon: Icon(Icons.receipt_long_outlined),
                 ),
-                items: widget.controller.allOrders
+                items: allOrders
                     .map(
                       (order) => DropdownMenuItem<int>(
                         value: order.id,
@@ -251,6 +318,63 @@ class _NotesTabState extends State<_NotesTab> {
                     .toList(),
                 onChanged: _selectOrder,
               ),
+              if (selectedOrder != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${selectedOrder.orderCode} · ${selectedOrder.customerName ?? 'Khách hàng'}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                          ),
+                          StatusBadge.order(OrderStatus.fromWire(selectedOrder.status)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.phone_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text(selectedOrder.phone ?? '—', style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 12),
+                          Icon(Icons.attach_money_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          Text(Formatters.currency(selectedOrder.totalAmount), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      if (selectedOrder.address != null && selectedOrder.address!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                selectedOrder.address!,
+                                style: const TextStyle(fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               TextField(
                 controller: _contentCtrl,

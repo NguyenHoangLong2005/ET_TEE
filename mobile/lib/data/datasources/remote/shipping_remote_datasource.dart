@@ -11,12 +11,21 @@ class ShippingRemoteDataSource {
 
   String get _base => AppConfig.shippingBase;
 
+  List<dynamic> _asList(dynamic raw) {
+    if (raw is List) return raw;
+    if (raw is Map<String, dynamic>) {
+      final list = raw['items'] ?? raw['content'] ?? raw['data'];
+      if (list is List) return list;
+    }
+    return const [];
+  }
+
   // ─── Kien da dong goi ──────────────────────────────────────────────────────
 
   Future<List<ReadyPackage>> getReadyPackages() async {
     final data = await _api.get<List<dynamic>>(
       '$_base/ready-orders',
-      parse: (raw) => raw as List<dynamic>,
+      parse: _asList,
     );
     return data
         .map((e) => ReadyPackage.fromJson(e as Map<String, dynamic>))
@@ -28,7 +37,7 @@ class ShippingRemoteDataSource {
   Future<List<Shipment>> getShipments() async {
     final data = await _api.get<List<dynamic>>(
       '$_base/shipments',
-      parse: (raw) => raw as List<dynamic>,
+      parse: _asList,
     );
     return data
         .map((e) => Shipment.fromJson(e as Map<String, dynamic>))
@@ -87,7 +96,7 @@ class ShippingRemoteDataSource {
   Future<List<ShippingException>> getExceptions() async {
     final data = await _api.get<List<dynamic>>(
       '$_base/exceptions',
-      parse: (raw) => raw as List<dynamic>,
+      parse: _asList,
     );
     return data
         .map((e) => ShippingException.fromJson(e as Map<String, dynamic>))
@@ -129,9 +138,6 @@ class ShippingRemoteDataSource {
     );
   }
 
-  // Note: Backend doesn't have separate image upload endpoint.
-  // Image URL should be uploaded separately (e.g., to Firebase Storage, S3)
-  // and then passed in the proof request.
   Future<String> uploadProofImage(File image) async {
     throw UnimplementedError(
       'Backend does not support direct image upload. '
@@ -144,7 +150,7 @@ class ShippingRemoteDataSource {
   Future<List<Map<String, dynamic>>> getPendingCod() async {
     final data = await _api.get<List<dynamic>>(
       '$_base/cod',
-      parse: (raw) => raw as List<dynamic>,
+      parse: _asList,
     );
     return data.cast<Map<String, dynamic>>();
   }
@@ -158,7 +164,7 @@ class ShippingRemoteDataSource {
     final data = await _api.get<List<dynamic>>(
       '$_base/cod/reconciliations',
       query: {'page': page, 'size': size},
-      parse: (raw) => raw as List<dynamic>,
+      parse: _asList,
     );
     return data
         .map((e) => CodReconciliation.fromJson(e as Map<String, dynamic>))

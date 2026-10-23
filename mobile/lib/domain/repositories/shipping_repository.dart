@@ -204,26 +204,43 @@ class PendingCod {
     required this.shipmentId,
     required this.codAmount,
     this.orderCode,
+    this.trackingCode,
     this.carrierName,
     this.customerName,
+    this.customerPhone,
+    this.deliveredAt,
   });
 
   final int shipmentId;
   final double codAmount;
   final String? orderCode;
+  final String? trackingCode;
   final String? carrierName;
   final String? customerName;
+  final String? customerPhone;
+  final DateTime? deliveredAt;
 
   factory PendingCod.fromJson(Map<String, dynamic> json) {
     final order = json['order'];
+    final orderMap = order is Map ? Map<String, dynamic>.from(order) : null;
+    final orderCodeWire = orderMap?['orderCode'] ?? json['orderCode'];
+    final customerNameWire = orderMap?['customerName'] ?? json['customerName'];
+    final customerPhoneWire =
+        orderMap?['customerPhone'] ?? json['customerPhone'] ?? json['phone'];
+
     return PendingCod(
-      shipmentId: (json['shipmentId'] as num?)?.toInt() ??
-          (json['id'] as num?)?.toInt() ??
+      shipmentId: (json['id'] as num?)?.toInt() ??
+          (json['shipmentId'] as num?)?.toInt() ??
           0,
       codAmount: (json['codAmount'] as num?)?.toDouble() ?? 0,
-      orderCode: order is Map ? order['orderCode'] as String? : null,
+      orderCode: orderCodeWire as String?,
+      trackingCode: json['trackingCode'] as String?,
       carrierName: (json['carrierName'] ?? json['carrier']) as String?,
-      customerName: json['customerName'] as String?,
+      customerName: customerNameWire as String?,
+      customerPhone: customerPhoneWire as String?,
+      deliveredAt: json['deliveredAt'] == null
+          ? null
+          : DateTime.tryParse('${json['deliveredAt']}'),
     );
   }
 }

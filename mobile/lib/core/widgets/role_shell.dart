@@ -55,25 +55,76 @@ class RoleShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profile = sl<AuthRepository>().cachedProfile;
+    final fullName = profile?.fullName ?? title;
+    final roleName = profile?.primaryRole?.wireName ?? '';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            if (profile != null)
+              Text(
+                '${profile.fullName} · $roleName',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
+              ),
+          ],
+        ),
         bottom: bottom,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Làm mới',
             onPressed: controller.isLoading ? null : onRefresh,
           ),
           PopupMenuButton<String>(
             tooltip: 'Tài khoản',
+            icon: CircleAvatar(
+              radius: 14,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Text(
+                fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
             onSelected: (value) {
               if (value == 'logout') _confirmLogout(context);
             },
-            itemBuilder: (ctx) => const [
-              PopupMenuItem(value: 'logout', child: Text('Đăng xuất')),
+            itemBuilder: (ctx) => [
+              if (profile != null)
+                PopupMenuItem(
+                  enabled: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(profile.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(roleName, style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.outline)),
+                      const Divider(),
+                    ],
+                  ),
+                ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Đăng xuất'),
+                  ],
+                ),
+              ),
             ],
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(

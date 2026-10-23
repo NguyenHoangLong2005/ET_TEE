@@ -59,7 +59,7 @@ class ShippingController extends BaseController {
       });
 
   Future<void> loadReconciliations() => run(() async {
-        _reconciliations = await _repo.getReconciliations();
+        _reconciliations = await _repo.getReconciliations(size: 50);
       });
 
   Future<void> refreshAll() async {
@@ -138,16 +138,16 @@ class ShippingController extends BaseController {
         await loadShipments();
       }, 'Đã gửi bằng chứng giao hàng');
 
-  Future<CodReconciliation?> createCodReconciliation(Map<String, dynamic> dto) async {
-    CodReconciliation? result;
-    await _guard(
-      0,
-      () async {
-        result = await _repo.createCodReconciliation(dto);
-      },
-      null,
-    );
-    return result;
+  Future<CodReconciliation?> createCodReconciliation(
+      Map<String, dynamic> dto) async {
+    try {
+      final result = await _repo.createCodReconciliation(dto);
+      await loadCod();
+      return result;
+    } catch (e) {
+      setError(e is Exception ? '$e' : 'Lỗi: $e');
+      return null;
+    }
   }
 
   Future<String?> reconcileCod(int shipmentId) => _guard(shipmentId, () async {
