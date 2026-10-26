@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Check, ChevronDown, Eye, EyeOff, Loader2, Pencil, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronDown, Eye, EyeOff, Loader2, Pencil, Plus, Search, Wand2, Trash2, X } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getAuthHeaders } from "@/lib/auth";
 import { Product } from "@/lib/services/productService";
@@ -282,11 +282,11 @@ function AutoBlock({ title, lines, note, products }: {
   products?: Product[];
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-sky-300 bg-sky-50/50 p-4">
+    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-4">
       <div className="mb-2 flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-sky-600" />
+        <Wand2 className="h-4 w-4 text-slate-500" />
         <h3 className="text-base font-semibold">{title}</h3>
-        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700">Tự động · hệ thống gợi ý</span>
+        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">Tự động · hệ thống gợi ý</span>
       </div>
       <ul className="space-y-1 text-xs text-slate-600">
         {lines.map(([name, how]) => (

@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, Sparkles, ShieldCheck } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
@@ -140,11 +140,10 @@ export default function CartPage() {
                regardless, so the banner both overpromised a condition and
                then underdelivered the "chúc mừng" moment for orders under
                it, since they'd also ship free. */}
-            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-8">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-8">
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
                 <Truck className="w-4 h-4 text-emerald-600" />
                 <span className="flex items-center gap-1">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
                   Miễn phí giao hàng toàn quốc cho mọi đơn hàng
                 </span>
               </div>

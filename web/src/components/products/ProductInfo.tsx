@@ -12,6 +12,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import SizeGuideModal from '@/components/products/SizeGuideModal';
 import SizeSuggestionChip from './SizeSuggestionChip';
 import StoreStockModal from '@/components/products/StoreStockModal';
+import { sortSizes } from '@/lib/utils/sizeOrder';
 
 // Checkout and the cart check availableQuantity; max(stock, available) showed items as
 // in stock that the server then refused.
@@ -23,7 +24,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const urlColor = searchParams.get('color');
 
   const availableColors = Array.from(new Map((product.variants || []).filter(v => v.colorHex).map(v => [v.colorHex, { name: v.color, hex: v.colorHex, code: v.colorCode }])).values());
-  const availableSizes = Array.from(new Set((product.variants || []).filter(v => v.size).map(v => v.size)));
+  const availableSizes = sortSizes(Array.from(new Set((product.variants || []).filter(v => v.size).map(v => v.size as string))));
 
   const stockMap = new Map<string, number>();
   (product.variants || []).forEach(v => {

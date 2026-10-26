@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Star, MessageSquare, CornerDownRight, CheckCircle2, AlertCircle, 
   Search, Filter, RefreshCw, Send, Edit, EyeOff, ShieldCheck, 
-  ShoppingBag, Sparkles, MessageCircle, HelpCircle
+  ShoppingBag, MessageCircle, HelpCircle
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -40,15 +40,15 @@ interface CustomerReview {
 
 const QUICK_TEMPLATES = [
   {
-    title: '❤️ Cảm ơn đánh giá 5 sao',
-    text: 'ET.TEE chân thành cảm ơn bạn đã tin tưởng và lựa chọn sản phẩm của shop! Sự hài lòng của bạn là động lực lớn nhất để ET.TEE tiếp tục hoàn thiện chất lượng dịch vụ. Chúc bạn luôn có những trải nghiệm tuyệt vời cùng ET.TEE nha! ✨'
+    title: 'Cảm ơn đánh giá 5 sao',
+    text: 'ET.TEE chân thành cảm ơn bạn đã tin tưởng và lựa chọn sản phẩm của shop! Sự hài lòng của bạn là động lực lớn nhất để ET.TEE tiếp tục hoàn thiện chất lượng dịch vụ. Chúc bạn luôn có những trải nghiệm tuyệt vời cùng ET.TEE.'
   },
   {
-    title: '🤝 Hỗ trợ Đổi trả hàng (1-3 sao)',
+    title: 'Hỗ trợ đổi trả hàng (1-3 sao)',
     text: 'Dạ ET.TEE rất tiếc vì trải nghiệm mua sắm vừa rồi chưa làm bạn hoàn toàn hài lòng. Bộ phận CSKH ET.TEE đã nhắn tin trực tiếp để hỗ trợ đổi size/mẫu hoàn toàn miễn phí cho bạn ngay nhé ạ! Cảm ơn góp ý quý báu của bạn!'
   },
   {
-    title: '👕 Hướng dẫn bảo quản sản phẩm',
+    title: 'Hướng dẫn bảo quản sản phẩm',
     text: 'ET.TEE cảm ơn bạn đã yêu thích sản phẩm ạ! Để áo giữ phom và màu sắc bền đẹp nhất, bạn nhớ giặt bằng nước lạnh và phơi mặt trái dưới bóng râm nhé. Chúc bạn có một ngày thật nhiều niềm vui!'
   }
 ];
@@ -241,8 +241,8 @@ export default function CskhReviewsPage() {
           />
           <StatCard
             title="Điểm đánh giá TB"
-            value={`${avgRating} ⭐`}
-            icon={Sparkles}
+            value={`${avgRating} / 5`}
+            icon={Star}
             color="slate"
           />
         </div>
@@ -263,7 +263,7 @@ export default function CskhReviewsPage() {
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`}
               >
-                {stars === 0 ? 'Tất cả' : `${stars} ⭐`}
+                {stars === 0 ? 'Tất cả' : `${stars} sao`}
               </button>
             ))}
           </div>
@@ -445,7 +445,7 @@ export default function CskhReviewsPage() {
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-900">{selectedReview.customerName}</span>
                     <span className="text-amber-500 font-bold flex items-center gap-1">
-                      {selectedReview.rating} ⭐
+                      {selectedReview.rating}/5 sao
                     </span>
                   </div>
                   <p className="text-slate-700 italic">"{selectedReview.content}"</p>

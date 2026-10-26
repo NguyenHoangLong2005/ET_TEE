@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getActiveRole, getRoleDisplayName } from '@/lib/auth';
 import {
   LogOut, ChevronDown, ChevronRight, User, KeyRound, Bell, Menu, Store,
-  CheckCircle2, AlertTriangle, AlertCircle, HardDrive, Sparkles, ExternalLink, Star,
+  CheckCircle2, AlertTriangle, AlertCircle, HardDrive, ScrollText, ExternalLink, Star,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -35,9 +35,9 @@ const formatRelativeTime = (isoString?: string) => {
 };
 
 const notifIcon = (type: string, severity: string) => {
-  if (type === 'PERFORMANCE_EVALUATION') return <Star className="h-4 w-4 text-amber-500" />;
+  if (type === 'PERFORMANCE_EVALUATION') return <Star className="h-4 w-4 text-slate-400" />;
   if (type.includes('BACKUP')) return <HardDrive className="h-4 w-4 text-slate-400" />;
-  if (type.includes('AI') || (type.includes('AUDIT') && severity !== 'DANGER')) return <Sparkles className="h-4 w-4 text-violet-500" />;
+  if (type.includes('AI') || (type.includes('AUDIT') && severity !== 'DANGER')) return <ScrollText className="h-4 w-4 text-slate-400" />;
   if (severity === 'DANGER') return <AlertCircle className="h-4 w-4 text-red-600" />;
   if (severity === 'WARNING') return <AlertTriangle className="h-4 w-4 text-amber-500" />;
   if (severity === 'SUCCESS') return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;

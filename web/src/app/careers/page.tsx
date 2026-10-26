@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, MapPin, DollarSign, Award, Users, Heart, CheckCircle2, ArrowRight, X, Sparkles, Building } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Award, Users, Heart, CheckCircle2, ArrowRight, X, Building } from 'lucide-react';
 import { toast } from 'sonner';
 
 const POSITIONS = [
@@ -63,7 +63,6 @@ export default function CareersPage() {
           <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-primary-50 text-primary-900 text-xs font-bold uppercase tracking-widest rounded-full border border-primary-200 shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5 text-primary-600" />
               <span>Gia Nhập Ngôi Nhà ET.TEE</span>
             </span>
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900">

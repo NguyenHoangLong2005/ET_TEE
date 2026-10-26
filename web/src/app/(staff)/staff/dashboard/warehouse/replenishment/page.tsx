@@ -10,6 +10,7 @@ import { DataTable, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 
+/** Backend ReplenishmentAdvisor.Suggestion: the inventory row plus a restock quantity from its sales pace. */
 type InventoryItem = {
   id: number;
   productId: number;
@@ -18,6 +19,15 @@ type InventoryItem = {
   quantityOnHand: number;
   quantityReserved: number;
   reorderLevel: number;
+  available: number;
+  soldInWindow: number;
+  windowDays: number;
+  dailyDemand: number;
+  targetStock: number;
+  coverDays: number;
+  suggestedQuantity: number;
+  /** SALES = from units sold in the window; THRESHOLD = nothing sold, topped up to 2x the threshold */
+  basis: "SALES" | "THRESHOLD";
 };
 
 type RestockRequest = {
@@ -32,7 +42,7 @@ type RestockRequest = {
 
 // Backend chỉ trả các mặt hàng có khả dụng <= ngưỡng nhập lại, nên chỉ có 2 mức.
 type Priority = "CRITICAL" | "LOW";
-type Row = InventoryItem & { priority: Priority; available: number; suggested: number };
+type Row = InventoryItem & { priority: Priority; suggested: number };
 
 const PRIORITY: Record<Priority, { label: string; hint: string; badge: string }> = {
   CRITICAL: { label: "Nguy cấp", hint: "Hết hàng hoặc dưới 50% ngưỡng", badge: "bg-rose-100 text-rose-800 border-rose-200" },
@@ -41,8 +51,15 @@ const PRIORITY: Record<Priority, { label: string; hint: string; badge: string }>
 
 const REQUEST_LABEL: Record<string, string> = { PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", REJECTED: "Từ chối", REVISION_REQUESTED: "Cần chỉnh sửa" };
 
-/** Gợi ý nhập để tồn khả dụng đạt gấp đôi ngưỡng (đưa về đúng ngưỡng thì hàng vẫn "sắp hết"). */
-const suggestQty = (available: number, reorder: number) => Math.max(1, reorder * 2 - Math.max(0, available));
+const fmtPace = (perDay: number) => perDay.toLocaleString("vi-VN", { maximumFractionDigits: 1 });
+
+/** Why this quantity, in one line (the number comes from the backend, see ReplenishmentAdvisor). */
+function basisText(r: InventoryItem): string {
+  if (r.basis === "SALES") {
+    return `Bán ${r.soldInWindow} trong ${r.windowDays} ngày (~${fmtPace(r.dailyDemand)}/ngày) · nhập đủ bán ~${r.coverDays} ngày`;
+  }
+  return `Chưa bán được trong ${r.windowDays} ngày · nhập theo ngưỡng (đủ ${r.targetStock})`;
+}
 
 export default function ReplenishmentPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -81,10 +98,9 @@ export default function ReplenishmentPage() {
     () =>
       items
         .map((i) => {
-          const available = (i.quantityOnHand ?? 0) - (i.quantityReserved ?? 0);
           const reorder = i.reorderLevel ?? 10;
-          const priority: Priority = available <= 0 || available < reorder * 0.5 ? "CRITICAL" : "LOW";
-          return { ...i, available, priority, suggested: suggestQty(available, reorder) };
+          const priority: Priority = i.available <= 0 || i.available < reorder * 0.5 ? "CRITICAL" : "LOW";
+          return { ...i, priority, suggested: i.suggestedQuantity };
         })
         .sort((a, b) => (a.priority === b.priority ? a.available - b.available : a.priority === "CRITICAL" ? -1 : 1)),
     [items],
@@ -165,7 +181,12 @@ export default function ReplenishmentPage() {
     {
       key: "suggested",
       header: "Gợi ý nhập",
-      render: (r) => <span className="font-mono font-black text-slate-900">+{r.suggested}</span>,
+      render: (r) => (
+        <div className="min-w-[13rem]">
+          <span className="font-mono font-black text-slate-900">+{r.suggested}</span>
+          <p className={`mt-0.5 text-[11px] leading-snug ${r.basis === "SALES" ? "text-slate-500" : "text-amber-700"}`}>{basisText(r)}</p>
+        </div>
+      ),
     },
     {
       key: "actions",
@@ -309,8 +330,9 @@ export default function ReplenishmentPage() {
                   onChange={(e) => setProposeQty(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Gợi ý +{proposeItem.suggested} để tồn khả dụng đạt {proposeItem.reorderLevel * 2} (gấp đôi ngưỡng).
+                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                  Gợi ý +{proposeItem.suggested} để tồn khả dụng đạt {proposeItem.targetStock}. {basisText(proposeItem)}.
+                  {proposeItem.basis === "SALES" && " Gồm ~7 ngày chờ duyệt & nhập hàng, 14 ngày bán và 7 ngày dự phòng."}
                 </p>
               </div>
               <div>

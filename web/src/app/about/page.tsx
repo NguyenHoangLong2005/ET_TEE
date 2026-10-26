@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Target, Compass } from 'lucide-react';
+import { ArrowRight, Target, Compass } from 'lucide-react';
 
 export const metadata = {
   title: 'Giới Thiệu Thương Hiệu',
@@ -16,7 +16,6 @@ export default function AboutPage() {
         
         <div className="container mx-auto max-w-5xl relative z-10 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-800 text-xs font-bold uppercase tracking-widest shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
             <span>CÂU CHUYỆN THƯƠNG HIỆU ET.TEE</span>
           </div>
 

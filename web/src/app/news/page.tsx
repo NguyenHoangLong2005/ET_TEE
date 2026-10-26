@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Newspaper, Clock, Eye, ArrowRight, Tag, Sparkles } from 'lucide-react';
+import { Newspaper, Clock, Eye, ArrowRight, Tag } from 'lucide-react';
 import SafeImage from '@/components/ui/SafeImage';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -57,7 +57,7 @@ export default async function NewsPage() {
         {featuredArticle && (
           <div className="mb-12">
             <h2 className="text-xs font-black uppercase tracking-widest text-primary-600 mb-4 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary-600" />
+              <Newspaper className="w-4 h-4 text-primary-600" />
               <span>Bài viết nổi bật</span>
             </h2>
 

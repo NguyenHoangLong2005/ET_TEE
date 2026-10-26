@@ -885,7 +885,7 @@ export default function AdminUsersPage() {
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     <p className="text-xs text-red-700 font-medium leading-relaxed">
-                      ⚠️ <strong>Cảnh báo quyền hạn cấp cao:</strong> Vai trò {createForm.roleCode} có quyền quản trị tối cao trên toàn hệ thống. Hệ thống sẽ yêu cầu xác nhận bước 2 trước khi tạo.
+                      <strong>Cảnh báo quyền hạn cấp cao:</strong> Vai trò {createForm.roleCode} có quyền quản trị tối cao trên toàn hệ thống. Hệ thống sẽ yêu cầu xác nhận bước 2 trước khi tạo.
                     </p>
                   </div>
                 )}
@@ -898,7 +898,7 @@ export default function AdminUsersPage() {
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                   <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1">
-                    💡 Tài khoản mới sẽ bị yêu cầu đổi mật khẩu ở lần đầu đăng nhập.
+                    Tài khoản mới sẽ bị yêu cầu đổi mật khẩu ở lần đầu đăng nhập.
                   </p>
                 </div>
 

@@ -93,16 +93,16 @@ export default function ProductDescription({ product }: { product: Product }) {
             <p className="text-[11px] text-slate-500">Khuyến nghị chung — ưu tiên hướng dẫn trên nhãn sản phẩm.</p>
             <div className="grid grid-cols-2 gap-2 text-[11px]">
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Giặt ở nhiệt độ thường 30°C
+                Giặt ở nhiệt độ thường 30°C
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ❌ Không dùng chất tẩy mạnh
+                Không dùng chất tẩy mạnh
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Lộn trái khi giặt và phơi
+                Lộn trái khi giặt và phơi
               </div>
               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                ✔️ Ủi ở nhiệt độ thấp
+                Ủi ở nhiệt độ thấp
               </div>
             </div>
           </div>

@@ -517,7 +517,7 @@ export default function ShippingShipmentsPage() {
                   <select value={exType} onChange={e => setExType(e.target.value)}
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-sky-400">
                     {Object.entries(EXCEPTION_TYPES).map(([k, v]) => (
-                      <option key={k} value={k}>{v.icon} {v.label}</option>
+                      <option key={k} value={k}>{v.label}</option>
                     ))}
                   </select>
                 </div>

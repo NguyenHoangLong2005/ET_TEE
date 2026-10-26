@@ -7,10 +7,10 @@ export default function CampaignBlock() {
         <div className="bg-slate-900 rounded-3xl overflow-hidden flex flex-col md:flex-row items-center">
           <div className="w-full md:w-1/2 p-10 md:p-16 lg:p-24 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
-              AI GỢI Ý <br /> <span className="text-primary">CHUẨN SIZE & GU</span>
+              ĐÚNG SIZE <br /> <span className="text-primary">HỢP GU CỦA BẠN</span>
             </h2>
             <p className="text-slate-300 mb-8 text-lg leading-relaxed max-w-md mx-auto md:mx-0">
-              Chỉ cần trả lời 3 câu hỏi nhanh, ET.TEE sẽ tạo ngay một hồ sơ thời trang riêng biệt, giúp bạn tìm ra những item hoàn hảo nhất từ kiểu dáng đến kích cỡ.
+              Trả lời 3 câu hỏi về chiều cao, cân nặng và phong cách, ET.TEE gợi ý cỡ và phom dáng nên chọn, kèm những mẫu đang có sẵn size của bạn.
             </p>
             <Link 
               href="/style-quiz"

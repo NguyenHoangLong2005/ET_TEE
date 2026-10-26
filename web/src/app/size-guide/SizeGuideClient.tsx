@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { SizeAdvisorService, CONFIDENCE_LABEL, Fit } from '@/lib/services/sizeAdvisorService';
-import { Ruler, Calculator, Sparkles, CheckCircle2, ShieldCheck, HelpCircle, RefreshCcw, Truck } from 'lucide-react';
+import { Ruler, Calculator, CheckCircle2, ShieldCheck, HelpCircle, RefreshCcw, Truck } from 'lucide-react';
 
 export default function SizeGuideClient() {
   const [activeTab, setActiveTab] = useState<'nam' | 'nu' | 'tre-em' | 'phu-kien'>('nam');
@@ -120,7 +120,7 @@ export default function SizeGuideClient() {
             type="submit"
             className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase text-xs tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-primary-400" />
+            <Calculator className="w-4 h-4 text-primary-400" />
             <span>Tính Size Ngay</span>
           </button>
         </form>

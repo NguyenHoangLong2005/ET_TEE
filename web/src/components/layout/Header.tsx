@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, Heart, Menu, X, ChevronDown, LogOut, Sparkles, Tag, Camera } from 'lucide-react';
+import { Search, ShoppingBag, User, Heart, Menu, X, ChevronDown, LogOut, Tag, Camera } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -62,7 +62,6 @@ export default function Header() {
       <div className="bg-primary text-white text-[11px] md:text-xs py-2 px-4 shadow-sm relative z-50">
         <div className="container mx-auto flex items-center justify-between font-medium tracking-wide">
           <div className="hidden sm:flex items-center gap-1.5 text-red-100">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>Thời Trang Cao Cấp ET.TEE</span>
           </div>
           

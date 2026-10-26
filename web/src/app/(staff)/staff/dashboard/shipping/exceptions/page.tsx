@@ -248,7 +248,7 @@ export default function ShippingExceptionsPage() {
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
             className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-primary">
             <option value="ALL">Tất cả loại sự cố</option>
-            {Object.entries(EXCEPTION_TYPES).map(([k, v]) => <option key={k} value={k}>{v.icon} {v.label}</option>)}
+            {Object.entries(EXCEPTION_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
 
@@ -294,7 +294,7 @@ export default function ShippingExceptionsPage() {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${typeCfg.cls}`}>
-                          {typeCfg.icon} {typeCfg.label}
+                          {typeCfg.label}
                         </span>
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusCfg.cls}`}>
                           {statusCfg.label}
@@ -492,7 +492,7 @@ export default function ShippingExceptionsPage() {
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"
                   >
                     {Object.entries(EXCEPTION_TYPES).map(([k, v]) => (
-                      <option key={k} value={k}>{v.icon} {v.label}</option>
+                      <option key={k} value={k}>{v.label}</option>
                     ))}
                   </select>
                 </div>
