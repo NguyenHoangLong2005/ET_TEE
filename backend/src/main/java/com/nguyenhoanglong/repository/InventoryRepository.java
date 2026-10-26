@@ -27,15 +27,18 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     java.util.List<Inventory> findByShopId(Long shopId);
 
+    /** Inventory rows outlive a soft-deleted product; low-stock views must not ask to restock those. */
+    String LIVE_PRODUCT = " AND EXISTS (SELECT 1 FROM Product p WHERE p.id = i.productId AND p.status <> 'DELETED')";
+
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.shopId = :shopId "
-            + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")
+            + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel" + LIVE_PRODUCT)
     long countLowStockByShopId(@Param("shopId") Long shopId);
 
     @Query("SELECT i FROM Inventory i WHERE i.shopId = :shopId "
-            + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")
+            + "AND (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel" + LIVE_PRODUCT)
     java.util.List<Inventory> findReplenishmentSuggestionsByShopId(@Param("shopId") Long shopId);
 
-    @Query("SELECT i FROM Inventory i WHERE (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel")
+    @Query("SELECT i FROM Inventory i WHERE (i.quantityOnHand - i.quantityReserved) <= i.reorderLevel" + LIVE_PRODUCT)
     java.util.List<Inventory> findAllReplenishmentSuggestions();
 }
 

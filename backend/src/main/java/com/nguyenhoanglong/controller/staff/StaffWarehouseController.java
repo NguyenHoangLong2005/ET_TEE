@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
         "T(com.nguyenhoanglong.constant.PermissionConstants).HOLD_STOCK_ORDER, " +
         "T(com.nguyenhoanglong.constant.PermissionConstants).PICK_PACK_LABEL, " +
         "T(com.nguyenhoanglong.constant.PermissionConstants).HANDOVER_SHIPPING, " +
-        "T(com.nguyenhoanglong.constant.PermissionConstants).PROPOSE_RESTOCK)")
+        "T(com.nguyenhoanglong.constant.PermissionConstants).PROPOSE_RESTOCK) " +
+        // The owner views the branch stock and receives goods (store-owner/inventory); fulfillment
+        // and stock changes stay behind their own permissions below.
+        "or hasRole('SHOP_OWNER')")
 public class StaffWarehouseController {
     private final WarehouseService service;
 
@@ -37,7 +40,7 @@ public class StaffWarehouseController {
         return ResponseEntity.ok(service.getWarehouseOrders());
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK)")
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
     @PostMapping("/inbound")
     public ResponseEntity<?> inbound(@RequestBody InboundRequest request) {
         return ResponseEntity.ok(service.inbound(
@@ -46,14 +49,14 @@ public class StaffWarehouseController {
         ));
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK)")
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
     @GetMapping("/products/{productId}/variants")
     public ResponseEntity<?> productVariants(@PathVariable Long productId) {
         return ResponseEntity.ok(service.getProductVariants(productId));
     }
 
     // Danh mục sản phẩm để chọn khi nhập kho (gồm cả sản phẩm chưa có dòng tồn kho).
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK)")
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
     @GetMapping("/products")
     public ResponseEntity<?> catalogProducts() {
         return ResponseEntity.ok(service.getCatalogProducts());

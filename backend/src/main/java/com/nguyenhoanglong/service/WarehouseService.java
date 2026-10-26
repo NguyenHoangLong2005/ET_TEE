@@ -36,6 +36,9 @@ public class WarehouseService {
     @org.springframework.beans.factory.annotation.Autowired
     private ApprovalNotificationService approvalNotifications;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ReplenishmentAdvisor replenishmentAdvisor;
+
     public static final String WAREHOUSE_INVENTORY_URL = "/staff/dashboard/warehouse/inventory";
     public static final String WAREHOUSE_REPLENISHMENT_URL = "/staff/dashboard/warehouse/replenishment";
 
@@ -512,11 +515,14 @@ public class WarehouseService {
 
     // ========== Replenishment ==========
 
-    public List<Inventory> getReplenishmentSuggestions() {
+    /** Items at or below their reorder level, each with a restock quantity from its sales pace. */
+    @Transactional(readOnly = true)
+    public List<ReplenishmentAdvisor.Suggestion> getReplenishmentSuggestions() {
         Long shopId = resolveShopId();
-        return (shopId == null)
+        List<Inventory> low = (shopId == null)
                 ? inventories.findAllReplenishmentSuggestions()
                 : inventories.findReplenishmentSuggestionsByShopId(shopId);
+        return replenishmentAdvisor.suggest(low);
     }
 
     @Transactional

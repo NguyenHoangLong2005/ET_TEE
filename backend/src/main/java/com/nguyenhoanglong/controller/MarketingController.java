@@ -315,7 +315,9 @@ public class MarketingController {
     // ADMIN — Vouchers
     // ═════════════════════════════════════════════════════════════════════
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    // Owners manage vouchers too (store-owner/promotions); MarketingService applies their changes directly.
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO, " +
+            "T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @GetMapping("/admin/vouchers")
     public ResponseEntity<Map<String, Object>> listVouchers() {
         Map<String, Object> response = new HashMap<>();
@@ -324,7 +326,8 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO, " +
+            "T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @PostMapping("/admin/vouchers")
     public ResponseEntity<Map<String, Object>> createVoucher(@Valid @RequestBody Voucher voucher) {
         Voucher created = marketingService.createVoucher(voucher, getCurrentUserIdentifier());
@@ -335,7 +338,8 @@ public class MarketingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO, " +
+            "T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @PutMapping("/admin/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> updateVoucher(@PathVariable Long id, @Valid @RequestBody Voucher voucher) {
         MarketingService.VoucherChangeOutcome outcome = marketingService.editVoucher(id, voucher, getCurrentUserIdentifier());
@@ -349,7 +353,8 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO, " +
+            "T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @PatchMapping("/admin/vouchers/{id}/status")
     public ResponseEntity<Map<String, Object>> patchVoucherStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Voucher updated = marketingService.updateVoucherStatus(id, body.get("status"), getCurrentUserIdentifier());
@@ -360,7 +365,8 @@ public class MarketingController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO, " +
+            "T(com.nguyenhoanglong.constant.PermissionConstants).APPROVE_SHOP_PROMO)")
     @DeleteMapping("/admin/vouchers/{id}")
     public ResponseEntity<Map<String, Object>> deleteVoucher(@PathVariable Long id) {
         boolean pending = marketingService.removeVoucher(id, getCurrentUserIdentifier()).awaitingApproval();
