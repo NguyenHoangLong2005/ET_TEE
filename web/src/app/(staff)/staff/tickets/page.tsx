@@ -99,7 +99,7 @@ export default function CskhTicketsPage() {
       key: 'code',
       header: 'Mã Ticket',
       render: (t) => (
-        <span className="font-mono font-bold text-teal-700">
+        <span className="font-mono font-bold text-slate-900 whitespace-nowrap">
           {t.ticketCode || `#${t.id}`}
         </span>
       )
@@ -165,7 +165,7 @@ export default function CskhTicketsPage() {
       render: (t) => (
         <Link
           href={`${base}/support?ticketId=${t.id}`}
-          className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 hover:text-teal-700 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition"
         >
           <span>Xử lý</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -176,22 +176,22 @@ export default function CskhTicketsPage() {
 
   return (
     <PermissionGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CSKH_STAFF", "SHOP_OWNER", "STAFF"]}>
-      <main className="min-h-screen bg-slate-50/60 p-6 md:p-8 text-slate-900 font-sans antialiased space-y-6 max-w-7xl mx-auto">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="Quản Lý Tickets CSKH"
+          title="Quản lý ticket CSKH"
           subtitle="Theo dõi và điều phối yêu cầu khiếu nại, hỗ trợ giải đáp khách hàng"
           breadcrumbs={isStoreOwnerArea
             ? [{ label: 'Store Owner', href: '/store-owner/dashboard' }, { label: 'Ticket hỗ trợ' }]
             : [
                 { label: 'Staff Hub', href: '/staff/dashboard' },
                 { label: 'CSKH', href: '/staff/support' },
-                { label: 'Tickets' }
+                { label: 'Ticket' }
               ]}
           actions={
             <div className="flex items-center gap-2">
               <Link href={`${base}/support`}>
                 <Button variant="outline" size="sm" className="flex items-center gap-1.5">
-                  <HelpCircle className="w-4 h-4 text-teal-600" />
+                  <HelpCircle className="w-4 h-4 text-slate-400" />
                   <span>CSKH Workbench</span>
                 </Button>
               </Link>
@@ -204,7 +204,7 @@ export default function CskhTicketsPage() {
                 </Link>
               )}
               <Button
-                variant="primary"
+                variant="outline"
                 size="sm"
                 onClick={() => load(1)}
                 disabled={loading}
@@ -223,25 +223,25 @@ export default function CskhTicketsPage() {
             title="Tổng số Ticket"
             value={counts.total}
             icon={MessageCircle}
-            color="info"
+            color="slate"
           />
           <StatCard
             title="Mới / Đang mở"
             value={counts.new}
             icon={AlertCircle}
-            color="warning"
+            color="slate"
           />
           <StatCard
             title="Đang xử lý / Leo thang"
             value={counts.inProgress}
             icon={Clock}
-            color="blue"
+            color="slate"
           />
           <StatCard
             title="Đã giải quyết xong"
             value={counts.resolved}
             icon={CheckCircle2}
-            color="success"
+            color="slate"
           />
         </div>
 
@@ -278,7 +278,7 @@ export default function CskhTicketsPage() {
                   onClick={() => setStatusFilter(item.key)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     statusFilter === item.key
-                      ? "bg-teal-600 text-white shadow-xs"
+                      ? "bg-slate-900 text-white shadow-xs"
                       : "bg-slate-100 text-slate-600 hover:text-slate-800 hover:bg-slate-200"
                   }`}
                 >
@@ -288,7 +288,7 @@ export default function CskhTicketsPage() {
             </div>
           }
         />
-      </main>
+      </div>
     </PermissionGuard>
   );
 }

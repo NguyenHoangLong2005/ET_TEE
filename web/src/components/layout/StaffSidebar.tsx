@@ -2,300 +2,184 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import {
-  ChevronRight, Store, Building2, Shield, User, KeyRound, HelpCircle, MoreVertical
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Building2, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getActiveRole, getRoleDisplayName } from '@/lib/auth';
 import { getNavGroupsForPath, NavGroupConfig } from '@/config/role-navigation.config';
-import { getTierFromPathname, getDepartmentFromPathname } from '@/config/tier-branding.config';
+import { getDepartmentFromPathname } from '@/config/tier-branding.config';
 
-export default function StaffSidebar() {
+const COLLAPSE_KEY = 'ettee_staff_sidebar_collapsed';
+
+/** Section landing pages: only an exact match makes them active, otherwise every sub-page would light them up too. */
+const EXACT_ONLY = new Set([
+  '/store-owner/dashboard', '/admin/dashboard', '/staff/dashboard/sales',
+  '/staff/dashboard/warehouse', '/staff/dashboard/shipping', '/staff/dashboard/marketing',
+]);
+
+interface StaffSidebarProps {
+  /** Below lg the sidebar is a drawer; these control it. */
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
+export default function StaffSidebar({ mobileOpen, onMobileClose }: StaffSidebarProps) {
   const pathname = usePathname() || '';
   const { user } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    try { setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1'); } catch { /* private mode */ }
   }, []);
 
-  const userRole = mounted ? (user?.role || getActiveRole(user?.roles)) : 'STAFF';
-  const tierBrand = getTierFromPathname(pathname);
-  const navGroups: NavGroupConfig[] = mounted ? getNavGroupsForPath(pathname, userRole) : [];
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      try { localStorage.setItem(COLLAPSE_KEY, c ? '0' : '1'); } catch { /* ignore */ }
+      return !c;
+    });
+  };
 
-  if (!mounted) {
-    return (
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen">
-        <div className="h-16 flex items-center px-4 border-b border-slate-100">
-          <div className="w-8 h-8 rounded-lg bg-slate-100 animate-pulse" />
-          <div className="ml-3 w-24 h-4 bg-slate-100 rounded animate-pulse" />
-        </div>
-        <div className="flex-1 p-3 space-y-1">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-9 bg-slate-100 rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </aside>
-    );
-  }
+  const userRole = mounted ? (user?.role || getActiveRole(user?.roles)) : 'STAFF';
+  const navGroups: NavGroupConfig[] = mounted ? getNavGroupsForPath(pathname, userRole) : [];
 
   const isAdminArea = pathname.startsWith('/admin');
   const isStoreOwner = pathname.startsWith('/store-owner');
-
-  // Enterprise sidebar label: unified, no per-department rainbow
   const areaLabel = isAdminArea
-    ? 'Quản trị Hệ thống'
+    ? 'Quản trị hệ thống'
     : isStoreOwner
-    ? 'Quản lý Cửa hàng'
-    : getDepartmentFromPathname(pathname)?.name || 'Nhân viên Vận hành';
+    ? 'Quản lý cửa hàng'
+    : getDepartmentFromPathname(pathname)?.name || 'Vận hành';
+  const areaBadge = isAdminArea ? 'Admin' : isStoreOwner ? 'Store' : 'Staff';
 
-  const areaBadgeText = isAdminArea
-    ? 'SYSTEM'
-    : isStoreOwner
-    ? 'STORE'
-    : 'STAFF';
-
-  return (
-    <aside
-      className={`
-        ${isCollapsed ? 'w-16' : 'w-64'}
-        flex-shrink-0 bg-white border-r border-slate-200
-        flex flex-col transition-all duration-300 ease-in-out
-        h-screen sticky top-0 z-30
-      `}
-      style={{ fontFamily: 'var(--font-sans, sans-serif)' }}
-    >
-      {/* ── Logo / Brand Header ── */}
-      <div
-        className={`flex items-center border-b border-slate-100 h-16 shrink-0 ${
-          isCollapsed ? 'justify-center px-2' : 'px-4 gap-3'
-        }`}
-      >
-        {/* Brand mark */}
-        <div
-          className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shrink-0 text-xs font-black tracking-tighter select-none"
-          style={{ background: '#E50027' }}
-        >
+  // the drawer is always full width; only the desktop rail collapses
+  const renderSidebar = (rail: boolean, inDrawer: boolean) => (
+    <div className="flex h-full flex-col border-r border-slate-200/80 bg-white text-slate-600">
+      {/* Brand */}
+      <div className={`flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 ${rail ? 'justify-center px-2' : 'px-4'}`}>
+        <Link href="/" className="flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-xl bg-primary text-[13px] font-black tracking-tighter text-white shadow-[0_6px_14px_-6px_rgba(229,0,39,0.6)]" title="Về trang cửa hàng">
           ET
-        </div>
-
-        {!isCollapsed && (
+        </Link>
+        {!rail && (
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-extrabold text-slate-900 tracking-tight">ET.TEE</span>
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-white tracking-wider uppercase"
-                style={{ fontFamily: 'var(--font-mono, monospace)' }}
-              >
-                {areaBadgeText}
+              <span className="text-[15px] font-extrabold tracking-tight text-slate-900">ET.TEE</span>
+              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                {areaBadge}
               </span>
             </div>
-            <span className="block text-[11px] text-slate-400 font-medium mt-0.5 truncate">
-              {areaLabel}
-            </span>
+            <span className="mt-0.5 block truncate text-[11px] text-slate-400">{areaLabel}</span>
           </div>
         )}
-
-        {/* Collapse / expand toggle */}
-        {!isCollapsed && (
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600 shrink-0"
-            title="Thu gọn sidebar"
-            aria-label="Thu gọn sidebar"
-          >
-            <ChevronRight className="w-4 h-4 rotate-180" />
+        {inDrawer ? (
+          <button type="button" onClick={onMobileClose} aria-label="Đóng menu"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <X className="h-5 w-5" />
           </button>
-        )}
-        {isCollapsed && (
-          <button
-            onClick={() => setIsCollapsed(false)}
-            className="absolute -right-3 top-12 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all z-10"
-            title="Mở rộng sidebar"
-            aria-label="Mở rộng sidebar"
-          >
-            <ChevronRight className="w-3 h-3" />
+        ) : !rail && (
+          <button type="button" onClick={toggleCollapsed} aria-label="Thu gọn thanh bên" title="Thu gọn"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <PanelLeftClose className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {/* ── Branch indicator (store-owner only) ── */}
-      {isStoreOwner && (
-        <div className="px-3 py-2.5 border-b border-slate-100">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50">
-              <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="text-xs font-semibold text-slate-700 truncate">ET.TEE Store</span>
+      {/* Branch */}
+      {isStoreOwner && !rail && (
+        <div className="px-3 pt-3">
+          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100">
+              <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-slate-900">ET.TEE Store</p>
+              <p className="text-[10px] text-slate-400">Chi nhánh đang quản lý</p>
             </div>
-          ) : (
-            <div className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center mx-auto">
-              <Store className="w-4 h-4 text-slate-400" />
-            </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* ── Navigation Groups ── */}
-      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto no-scrollbar">
-        {navGroups.map((group, groupIdx) => (
-          <div key={groupIdx} className={groupIdx > 0 ? 'pt-4' : ''}>
-            {/* Section label — eyebrow style */}
-            {group.groupName && !isCollapsed && (
-              <div className="px-2.5 pb-1.5 pt-0.5 flex items-center justify-between">
-                <span
-                  className="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                  style={{ letterSpacing: '0.08em' }}
-                >
-                  {group.groupName}
-                </span>
-                {isAdminArea && groupIdx === 0 && (
-                  <Shield className="w-3 h-3 text-slate-300" />
-                )}
-              </div>
+      {/* Navigation */}
+      <nav className="no-scrollbar flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        {navGroups.map((group, gi) => (
+          <div key={gi}>
+            {group.groupName && !rail && (
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                {group.groupName}
+              </p>
             )}
-
-            {/* Nav Items */}
-            {group.items.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                pathname === item.path ||
-                (item.path !== '/store-owner/dashboard' &&
-                  item.path !== '/admin/dashboard' &&
-                  item.path !== '/staff/dashboard/sales' &&
-                  item.path !== '/staff/dashboard/warehouse' &&
-                  item.path !== '/staff/dashboard/shipping' &&
-                  item.path !== '/staff/dashboard/marketing' &&
-                  pathname.startsWith(item.path));
-
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`
-                    flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium
-                    transition-colors duration-150
-                    ${isActive
-                      ? 'text-slate-900 font-semibold'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }
-                    ${isCollapsed ? 'justify-center' : ''}
-                  `}
-                  style={isActive ? {
-                    backgroundColor: '#F9E2E5',   /* primary-100 */
-                    color: '#6E0013',              /* primary-900 */
-                  } : {}}
-                >
-                  <span
-                    className="shrink-0 flex items-center"
-                    style={isActive ? { color: '#6E0013' } : { color: '#94A3B8' }}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </span>
-                  {!isCollapsed && (
-                    <span className="flex-1 truncate leading-none">{item.label}</span>
-                  )}
-                  {!isCollapsed && item.badge && (
-                    <span
-                      className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{
-                        background: '#F9E2E5',
-                        color: '#E50027',
-                        fontFamily: 'var(--font-mono, monospace)',
-                      }}
+            {group.groupName && rail && gi > 0 && <div className="mx-3 mb-3 h-px bg-slate-100" />}
+            <ul className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.path || (!EXACT_ONLY.has(item.path) && pathname.startsWith(item.path + '/'));
+                return (
+                  <li key={item.path}>
+                    <Link
+                      href={item.path}
+                      title={rail ? item.label : undefined}
+                      onClick={inDrawer ? onMobileClose : undefined}
+                      className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
+                        rail ? 'justify-center' : ''
+                      } ${active
+                        ? 'bg-slate-100 font-semibold text-slate-900'
+                        : 'font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                     >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                      {active && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />}
+                      <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                      {!rail && <span className="flex-1 truncate">{item.label}</span>}
+                      {!rail && item.badge && (
+                        <span className="rounded-full bg-primary-50 px-1.5 py-0.5 text-[10px] font-bold text-primary">{item.badge}</span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ))}
       </nav>
 
-      {/* ── User Footer ── */}
-      <div className="p-3 border-t border-slate-100 shrink-0 relative" ref={dropdownRef}>
-        {!isCollapsed ? (
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-2.5 w-full text-left p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            {/* Avatar — solid primary, no gradient */}
-            <div
-              className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 select-none"
-              style={{ background: '#E50027' }}
-            >
+      {/* Footer */}
+      <div className="shrink-0 border-t border-slate-100 p-3">
+        {rail ? (
+          <button type="button" onClick={toggleCollapsed} aria-label="Mở rộng thanh bên" title="Mở rộng"
+            className="flex w-full justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-3 rounded-xl px-2 py-1.5">
+            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
               {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-slate-900 truncate leading-none">
-                {user?.fullName || 'Staff'}
-              </p>
-              <p className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">
-                {getRoleDisplayName(userRole)}
-              </p>
-            </div>
-            <MoreVertical className="w-4 h-4 text-slate-400 shrink-0" />
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="w-full flex justify-center p-1 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            <div
-              className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center select-none"
-              style={{ background: '#E50027' }}
-            >
-              {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-          </button>
-        )}
-
-        {/* User Dropdown */}
-        {showDropdown && (
-          <div
-            className={`absolute bottom-full mb-2 bg-white rounded-xl border border-slate-200 py-1 z-50 overflow-hidden ${
-              isCollapsed ? 'left-3 w-56' : 'left-3 right-3'
-            }`}
-            style={{ boxShadow: 'var(--shadow-overlay)' }}
-          >
-            <div className="py-1">
-              <Link
-                href="/staff/profile"
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <User className="w-4 h-4 text-slate-400" /> Hồ sơ cá nhân
-              </Link>
-              <Link
-                href="/staff/change-password"
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-              >
-                <KeyRound className="w-4 h-4 text-slate-400" /> Đổi mật khẩu
-              </Link>
-              <button
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
-              >
-                <HelpCircle className="w-4 h-4 text-slate-400" /> Trợ giúp
-              </button>
+              <p className="truncate text-xs font-semibold text-slate-900">{user?.fullName || 'Nhân viên'}</p>
+              <p className="truncate text-[11px] text-slate-400">{mounted ? getRoleDisplayName(userRole) : ''}</p>
             </div>
           </div>
         )}
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop rail */}
+      <aside className={`hidden h-screen shrink-0 transition-[width] duration-200 lg:block ${collapsed ? 'w-[72px]' : 'w-64'}`}>
+        {renderSidebar(collapsed, false)}
+      </aside>
+
+      {/* Mobile drawer */}
+      <div className={`fixed inset-0 z-50 lg:hidden ${mobileOpen ? '' : 'pointer-events-none'}`} aria-hidden={!mobileOpen}>
+        <div
+          className={`absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity ${mobileOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={onMobileClose}
+        />
+        <aside className={`absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          {renderSidebar(false, true)}
+        </aside>
+      </div>
+    </>
   );
 }

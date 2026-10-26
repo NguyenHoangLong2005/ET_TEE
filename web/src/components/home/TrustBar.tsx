@@ -5,7 +5,7 @@ const TRUST_ITEMS = [
   {
     icon: Truck,
     title: 'Giao Hàng Miễn Phí',
-    desc: 'Áp dụng cho mọi đơn hàng từ 499.000đ',
+    desc: 'Áp dụng cho mọi đơn hàng toàn quốc',
     href: '/policy/shipping',
   },
   {
@@ -16,13 +16,13 @@ const TRUST_ITEMS = [
   },
   {
     icon: ShieldCheck,
-    title: 'Chất Liệu An Toàn',
-    desc: 'Chứng nhận 100% Cotton & vải lành tính',
+    title: 'Chất Liệu Minh Bạch',
+    desc: 'Thành phần vải ghi rõ trên từng sản phẩm',
     href: '/about',
   },
   {
     icon: PhoneCall,
-    title: 'Tư Vấn Hỗ Trợ 24/7',
+    title: 'Tư Vấn Hỗ Trợ',
     desc: 'Hotline miễn cước: 1900 1234 (8h - 22h)',
     href: '/contact',
   },
@@ -41,10 +41,10 @@ export default function TrustBar() {
                 href={item.href}
                 className="flex flex-col items-center text-center lg:border-r lg:border-slate-200 last:border-r-0 px-6 group cursor-pointer"
               >
-                <div className="mb-3 text-slate-900 group-hover:scale-110 group-hover:text-amber-500 transition-all duration-300">
+                <div className="mb-3 text-slate-900 group-hover:text-primary transition-colors duration-300">
                   <Icon className="w-8 h-8 stroke-1" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1 group-hover:text-amber-600 transition-colors">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1 group-hover:text-primary transition-colors">
                   {item.title}
                 </h4>
                 <p className="text-[11px] text-slate-500 max-w-[200px] leading-relaxed">

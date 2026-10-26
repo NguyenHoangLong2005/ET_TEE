@@ -3,7 +3,7 @@ import { SearchService } from '@/lib/services/searchService';
 import SearchClient from './SearchClient';
 
 export const metadata: Metadata = {
-  title: 'Tìm kiếm | ET.TEE',
+  title: 'Tìm kiếm',
   description: 'Tìm sản phẩm bằng lời mô tả hoặc bằng ảnh.',
 };
 
@@ -18,7 +18,8 @@ export default async function SearchPage({
 
   return (
     <div className="container mx-auto px-4 xl:px-8 pt-6 pb-20 min-h-[60vh]">
-      <SearchClient initialQuery={q} initialResult={initial} />
+      {/* key: a new ?q= from the header search must reset the input and any photo result. */}
+      <SearchClient key={q} initialQuery={q} initialResult={initial} />
     </div>
   );
 }

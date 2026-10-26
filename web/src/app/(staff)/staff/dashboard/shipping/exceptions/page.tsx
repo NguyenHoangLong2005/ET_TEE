@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { getApiBaseUrl } from "@/lib/api-config";
-import { getAuthHeaders } from "@/lib/auth";
+import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import {
   AlertTriangle, RefreshCw, X, CheckCircle2, Clock,
@@ -13,80 +11,43 @@ import {
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Button } from "@/components/ui/Button";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import {
+  ShippingExceptionItem, toShippingException, toShipment, Shipment, canReportException,
+  asList, fmtDateTime, EXCEPTION_TYPES, carrierLabel } from '@/lib/shipping';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type Exception = {
-  id: number;
-  shipmentId?: number;
-  trackingCode?: string;
-  orderCode?: string;
-  customerName?: string;
-  customerPhone?: string;
-  shippingAddress?: string;
-  carrierName?: string;
-  exceptionType: string;
-  description?: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "RETURNED";
-  createdAt?: string;
-  resolvedAt?: string;
-  resolution?: string;
-};
+type Exception = ShippingExceptionItem;
+type ExStatus = "OPEN" | "RESOLVED" | "RETURNED";
 
-// ─── Nav ─────────────────────────────────────────────────────────────────────
-function ShippingNav({ active }: { active: string }) {
-  const links = [
-    { href: "/staff/dashboard/shipping/dashboard", label: "Tổng quan" },
-    { href: "/staff/dashboard/shipping/orders", label: "Đơn chờ giao" },
-    { href: "/staff/dashboard/shipping/shipments", label: "Kiện hàng" },
-    { href: "/staff/dashboard/shipping/exceptions", label: "Ngoại lệ" },
-    { href: "/staff/dashboard/shipping/cod", label: "Đối soát COD" },
-  ];
-  return (
-    <nav className="flex flex-wrap gap-2 text-xs font-semibold">
-      {links.map(l => (
-        <Link key={l.href} href={l.href}
-          className={`rounded-lg border px-3 py-2 transition ${l.href === active
-            ? "border-sky-300 bg-sky-50 text-sky-700 font-bold"
-            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}
-        >{l.label}</Link>
-      ))}
-    </nav>
-  );
-}
 
 // ─── Configs ─────────────────────────────────────────────────────────────────
-const EXCEPTION_TYPES: Record<string, { label: string; icon: string; cls: string }> = {
-  WRONG_ADDRESS:   { label: "Sai địa chỉ",       icon: "📍", cls: "bg-orange-100 text-orange-700 border-orange-200" },
-  NOT_AT_HOME:     { label: "Vắng nhà",           icon: "🏠", cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  REFUSED:         { label: "Từ chối nhận",       icon: "🚫", cls: "bg-rose-100 text-rose-700 border-rose-200" },
-  DAMAGED:         { label: "Hàng hỏng",          icon: "📦", cls: "bg-red-100 text-red-700 border-red-200" },
-  LOST:            { label: "Thất lạc",           icon: "❓", cls: "bg-purple-100 text-purple-700 border-purple-200" },
-  WRONG_ITEM:      { label: "Sai hàng",           icon: "⚠️", cls: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  PHONE_OFF:       { label: "Không liên lạc được", icon: "📵", cls: "bg-slate-100 text-slate-600 border-slate-200" },
-  CARRIER_DELAY:   { label: "Hãng trễ",           icon: "🕐", cls: "bg-blue-100 text-blue-700 border-blue-200" },
-  OTHER:           { label: "Khác",               icon: "🔹", cls: "bg-slate-100 text-slate-600 border-slate-200" },
-};
-
-const STATUS_CFG: Record<Exception["status"], { label: string; cls: string }> = {
+// Backend chỉ có OPEN -> RESOLVED (tiếp tục giao) hoặc RETURNED (hoàn về kho).
+const STATUS_CFG: Record<ExStatus, { label: string; cls: string }> = {
   OPEN:        { label: "Chưa xử lý",    cls: "bg-rose-100 text-rose-700 border-rose-200" },
-  IN_PROGRESS: { label: "Đang xử lý",    cls: "bg-amber-100 text-amber-700 border-amber-200" },
   RESOLVED:    { label: "Đã giải quyết", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  RETURNED:    { label: "Đã hoàn hàng",  cls: "bg-orange-100 text-orange-700 border-orange-200" },
+  RETURNED:    { label: "Đã hoàn hàng",  cls: "bg-slate-100 text-slate-700 border-slate-200" },
 };
 
-const RESOLUTION_TEMPLATES = [
+// Mẫu theo từng hướng xử lý: trước đây chung một danh sách nên chọn "Hoàn hàng về kho"
+// vẫn giữ ghi chú "khách sẽ ra bưu cục nhận".
+const CONTINUE_TEMPLATES = [
   "Đã liên hệ khách hàng, khách sẽ ra bưu cục nhận trong ngày.",
   "Đã cập nhật địa chỉ mới, yêu cầu hãng giao lại vào ngày hôm sau.",
-  "Khách từ chối nhận, đã yêu cầu hoàn hàng về kho.",
   "Đã liên hệ hãng vận chuyển xác nhận tình trạng và hẹn giao lại.",
 ];
+const RETURN_TEMPLATES = [
+  "Khách từ chối nhận, đã yêu cầu hoàn hàng về kho.",
+  "Không liên lạc được khách sau nhiều lần giao, hoàn hàng về kho.",
+  "Hàng hư hỏng trong quá trình vận chuyển, hoàn về kho để xử lý.",
+];
+const templatesFor = (returning: boolean) => (returning ? RETURN_TEMPLATES : CONTINUE_TEMPLATES);
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 export default function ShippingExceptionsPage() {
   const [exceptions, setExceptions] = useState<Exception[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | Exception["status"]>("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | ExStatus>("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
 
   // Resolve modal
@@ -94,28 +55,30 @@ export default function ShippingExceptionsPage() {
   const [resolveNote, setResolveNote] = useState("");
   const [returnToSender, setReturnToSender] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Hoàn hàng hủy đơn và cộng lại tồn kho, không hoàn tác được: hỏi lại trước khi gửi.
+  const [confirmReturn, setConfirmReturn] = useState(false);
+
+  // Đổi hướng xử lý: nếu ghi chú vẫn là một mẫu chưa sửa thì đổi sang mẫu của hướng mới.
+  const chooseAction = (returning: boolean) => {
+    setReturnToSender(returning);
+    if (!resolveNote.trim() || [...CONTINUE_TEMPLATES, ...RETURN_TEMPLATES].includes(resolveNote)) {
+      setResolveNote(templatesFor(returning)[0]);
+    }
+  };
 
   // Report modal
   const [reportModal, setReportModal] = useState<boolean>(false);
   const [reportShipmentId, setReportShipmentId] = useState("");
+  const [reportable, setReportable] = useState<Shipment[]>([]);
   const [reportType, setReportType] = useState("NOT_AT_HOME");
   const [reportDesc, setReportDesc] = useState("");
   const [isReporting, setIsReporting] = useState(false);
 
-  const baseUrl = getApiBaseUrl();
-  const authHeaders = getAuthHeaders() as Record<string, string>;
-
   const load = useCallback(async (silent?: unknown) => {
     if (silent !== true) setLoading(true);
     try {
-      const res = await fetch(`${baseUrl}/api/staff/shipping/exceptions`, { headers: authHeaders, cache: "no-store" });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Không thể tải danh sách sự cố ngoại lệ");
-      }
-      const data = await res.json();
-      const arr: Exception[] = Array.isArray(data) ? data : data?.data ?? [];
-      setExceptions(arr);
+      const data = await apiClient.get<any>("/api/staff/shipping/exceptions");
+      setExceptions(asList(data).map(toShippingException));
     } catch (err: any) {
       toast.error(err?.message || "Không thể tải danh sách sự cố");
       setExceptions([]);
@@ -126,26 +89,27 @@ export default function ShippingExceptionsPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const handleResolve = async (e: React.FormEvent) => {
+  const handleResolve = (e: React.FormEvent) => {
     e.preventDefault();
     if (!resolveModal) return;
     if (!resolveNote.trim()) { toast.error("Vui lòng nhập ghi chú xử lý"); return; }
+    if (returnToSender) { setConfirmReturn(true); return; }
+    void submitResolve();
+  };
 
+  const submitResolve = async () => {
+    if (!resolveModal) return;
+    setConfirmReturn(false);
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${baseUrl}/api/staff/shipping/exceptions/${resolveModal.id}/resolve`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({ note: resolveNote.trim(), returnToSender }),
+      await apiClient.put(`/api/staff/shipping/exceptions/${resolveModal.id}/resolve`, {
+        note: resolveNote.trim(),
+        returnToSender,
       });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Không thể xử lý ngoại lệ");
-      }
       toast.success(`Đã cập nhật ngoại lệ cho đơn ${resolveModal.orderCode || `#${resolveModal.id}`}`);
       setExceptions(prev => prev.map(ex =>
         ex.id === resolveModal.id
-          ? { ...ex, status: returnToSender ? "RETURNED" : "RESOLVED", resolution: resolveNote.trim(), resolvedAt: new Date().toISOString() }
+          ? { ...ex, status: returnToSender ? "RETURNED" : "RESOLVED", resolution: resolveNote.trim() }
           : ex
       ));
       setResolveModal(null);
@@ -160,26 +124,18 @@ export default function ShippingExceptionsPage() {
     e.preventDefault();
     const shipmentIdNum = Number(reportShipmentId.trim());
     if (isNaN(shipmentIdNum) || shipmentIdNum <= 0) {
-      toast.error("Vui lòng nhập ID vận đơn hợp lệ");
+      toast.error("Vui lòng chọn kiện hàng");
       return;
     }
 
     setIsReporting(true);
     try {
-      const res = await fetch(`${baseUrl}/api/staff/shipping/exceptions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({
-          shipmentId: shipmentIdNum,
-          type: reportType,
-          description: reportDesc.trim() || undefined,
-        }),
+      await apiClient.post("/api/staff/shipping/exceptions", {
+        shipmentId: shipmentIdNum,
+        type: reportType,
+        description: reportDesc.trim() || undefined,
       });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Không thể tạo ghi nhận ngoại lệ");
-      }
-      toast.success(`Đã ghi nhận ngoại lệ cho vận đơn #${shipmentIdNum}`);
+      toast.success("Đã ghi nhận sự cố cho kiện hàng");
       setReportModal(false);
       setReportShipmentId("");
       setReportDesc("");
@@ -188,6 +144,18 @@ export default function ShippingExceptionsPage() {
       toast.error(err?.message || "Lỗi khi ghi nhận ngoại lệ");
     } finally {
       setIsReporting(false);
+    }
+  };
+
+  const openReport = async () => {
+    setReportModal(true);
+    setReportShipmentId("");
+    try {
+      const data = await apiClient.get<any>("/api/staff/shipping/shipments");
+      setReportable(asList(data).map(toShipment).filter(canReportException));
+    } catch (err: any) {
+      toast.error(err?.message || "Không thể tải danh sách kiện hàng");
+      setReportable([]);
     }
   };
 
@@ -204,21 +172,19 @@ export default function ShippingExceptionsPage() {
   });
 
   const openCount = exceptions.filter(e => e.status === "OPEN").length;
-  const inProgressCount = exceptions.filter(e => e.status === "IN_PROGRESS").length;
-  const resolvedCount = exceptions.filter(e => e.status === "RESOLVED" || e.status === "RETURNED").length;
+  const resolvedCount = exceptions.filter(e => e.status === "RESOLVED").length;
+  const returnedCount = exceptions.filter(e => e.status === "RETURNED").length;
 
-  const fmtDate = (iso?: string) => iso
-    ? new Date(iso).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-    : "—";
+  const fmtDate = fmtDateTime;
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
-          title="Ngoại Lệ Giao Hàng"
+          title="Ngoại lệ giao hàng"
           subtitle="Theo dõi và giải quyết các sự cố phát sinh trong quá trình vận chuyển"
           breadcrumbs={[
-            { label: "Bộ phận vận chuyển", href: "/staff/dashboard/shipping" },
+            { label: "Bộ phận vận chuyển", href: "/staff/dashboard/shipping/dashboard" },
             { label: "Ngoại lệ" },
           ]}
           actions={
@@ -234,7 +200,7 @@ export default function ShippingExceptionsPage() {
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => setReportModal(true)}
+                onClick={() => void openReport()}
                 icon={<AlertTriangle className="w-3.5 h-3.5" />}
               >
                 Ghi nhận ngoại lệ
@@ -242,8 +208,6 @@ export default function ShippingExceptionsPage() {
             </div>
           }
         />
-
-        <ShippingNav active="/staff/dashboard/shipping/exceptions" />
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -254,16 +218,16 @@ export default function ShippingExceptionsPage() {
             color="danger"
           />
           <StatCard
-            title="Đang xử lý"
-            value={inProgressCount}
-            icon={Clock}
-            color="warning"
-          />
-          <StatCard
-            title="Đã giải quyết"
+            title="Đã xử lý, tiếp tục giao"
             value={resolvedCount}
             icon={CheckCircle2}
-            color="success"
+            color="slate"
+          />
+          <StatCard
+            title="Đã hoàn về kho"
+            value={returnedCount}
+            icon={RotateCcw}
+            color="slate"
           />
         </div>
 
@@ -273,59 +237,75 @@ export default function ShippingExceptionsPage() {
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm tracking, mã đơn, tên KH..."
-              className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400"
+              className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)}
-            className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-400">
+            className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-primary">
             <option value="ALL">Tất cả trạng thái</option>
             {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-400">
+            className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-primary">
             <option value="ALL">Tất cả loại sự cố</option>
-            {Object.entries(EXCEPTION_TYPES).map(([k, v]) => <option key={k} value={k}>{v.icon} {v.label}</option>)}
+            {Object.entries(EXCEPTION_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
 
         {/* Exceptions List */}
         {loading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-2">
-            <RefreshCw className="w-6 h-6 animate-spin text-rose-500" />
+            <RefreshCw className="w-6 h-6 animate-spin text-slate-400" />
             <span>Đang tải danh sách sự cố ngoại lệ...</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400">
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-400">
             <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
-            <p className="font-semibold text-slate-700">Không có ngoại lệ vận chuyển nào</p>
-            <p className="text-xs text-slate-400 mt-1">Tất cả đơn hàng đang được lưu thông ổn định.</p>
+            {exceptions.length === 0 ? (
+              <>
+                <p className="font-semibold text-slate-700">Không có ngoại lệ vận chuyển nào</p>
+                <p className="text-xs text-slate-400 mt-1">Tất cả đơn hàng đang được lưu thông ổn định.</p>
+              </>
+            ) : (
+              // Trước đây bộ lọc ẩn hết kết quả vẫn báo "lưu thông ổn định" dù còn sự cố.
+              <>
+                <p className="font-semibold text-slate-700">Không có sự cố khớp bộ lọc</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Có {exceptions.length} sự cố{openCount > 0 ? `, ${openCount} chưa xử lý` : ""}.{" "}
+                  <button type="button" className="font-semibold text-slate-700 underline-offset-2 hover:underline"
+                    onClick={() => { setSearchQuery(""); setStatusFilter("ALL"); setTypeFilter("ALL"); }}>
+                    Xóa bộ lọc
+                  </button>
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
             {filtered.map(ex => {
               const typeCfg = EXCEPTION_TYPES[ex.exceptionType] ?? { label: ex.exceptionType, icon: "⚠️", cls: "bg-slate-100 text-slate-600 border-slate-200" };
-              const statusCfg = STATUS_CFG[ex.status] ?? { label: ex.status, cls: "bg-slate-100 text-slate-600 border-slate-200" };
+              const statusCfg = STATUS_CFG[ex.status as ExStatus] ?? { label: ex.status, cls: "bg-slate-100 text-slate-600 border-slate-200" };
               const isResolved = ex.status === "RESOLVED" || ex.status === "RETURNED";
 
               return (
-                <div key={ex.id} className={`rounded-2xl border bg-white p-5 transition shadow-2xs hover:shadow-md ${!isResolved ? "border-rose-200" : "border-slate-200"}`}>
+                <div key={ex.id} className={`rounded-xl border bg-white p-5 transition shadow-2xs hover:shadow-md ${!isResolved ? "border-rose-200" : "border-slate-200"}`}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     {/* Left Info */}
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${typeCfg.cls}`}>
-                          {typeCfg.icon} {typeCfg.label}
+                          {typeCfg.label}
                         </span>
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusCfg.cls}`}>
                           {statusCfg.label}
                         </span>
-                        {ex.carrierName && <span className="text-xs text-slate-500 font-medium">{ex.carrierName}</span>}
+                        {ex.carrierName && <span className="text-xs text-slate-500 font-medium">{carrierLabel(ex.carrierName)}</span>}
                         {ex.createdAt && <span className="text-xs text-slate-400 font-mono">Báo cáo lúc {fmtDate(ex.createdAt)}</span>}
                       </div>
 
                       <div className="flex items-center gap-4 text-sm flex-wrap">
                         {ex.orderCode && (
-                          <span className="font-mono font-bold text-slate-900">Đơn #{ex.orderCode}</span>
+                          <span className="font-mono font-bold text-slate-900">Đơn {ex.orderCode}</span>
                         )}
                         {ex.trackingCode && (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 font-mono text-xs text-slate-700">
@@ -334,6 +314,14 @@ export default function ShippingExceptionsPage() {
                           </div>
                         )}
                       </div>
+
+                      {(ex.customerName || ex.customerPhone || ex.shippingAddress) && (
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                          {ex.customerName && <span className="font-semibold text-slate-700">{ex.customerName}</span>}
+                          {ex.customerPhone && <span className="inline-flex items-center gap-1 font-mono"><Phone className="w-3 h-3" />{ex.customerPhone}</span>}
+                          {ex.shippingAddress && <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" />{ex.shippingAddress}</span>}
+                        </div>
+                      )}
 
                       {/* Description */}
                       {ex.description && (
@@ -349,7 +337,6 @@ export default function ShippingExceptionsPage() {
                           <div>
                             <span className="font-bold">Phương án giải quyết: </span>
                             <span>{ex.resolution}</span>
-                            {ex.resolvedAt && <span className="block text-[11px] text-emerald-600 mt-0.5">Thời gian: {fmtDate(ex.resolvedAt)}</span>}
                           </div>
                         </div>
                       )}
@@ -364,7 +351,7 @@ export default function ShippingExceptionsPage() {
                           onClick={() => {
                             setResolveModal(ex);
                             setReturnToSender(false);
-                            setResolveNote(RESOLUTION_TEMPLATES[0]);
+                            setResolveNote(CONTINUE_TEMPLATES[0]);
                           }}
                           icon={<CheckCircle2 className="w-3.5 h-3.5" />}
                         >
@@ -382,10 +369,10 @@ export default function ShippingExceptionsPage() {
         {/* Modal Resolve */}
         {resolveModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Xử Lý Sự Cố Giao Hàng
+                  <CheckCircle2 className="w-5 h-5 text-slate-400" /> Xử Lý Sự Cố Giao Hàng
                 </h3>
                 <button onClick={() => setResolveModal(null)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
                   <X className="w-5 h-5" />
@@ -400,12 +387,12 @@ export default function ShippingExceptionsPage() {
                 <fieldset>
                   <legend className="block text-xs font-semibold text-slate-700 mb-1">Hướng xử lý *</legend>
                   <div className="grid grid-cols-2 gap-2">
-                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${!returnToSender ? "border-sky-400 bg-sky-50" : "border-slate-200"}`}>
-                      <input type="radio" name="resolve-action" checked={!returnToSender} onChange={() => setReturnToSender(false)} />
+                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${!returnToSender ? "border-slate-900 bg-slate-50" : "border-slate-200"}`}>
+                      <input type="radio" name="resolve-action" checked={!returnToSender} onChange={() => chooseAction(false)} />
                       Tiếp tục giao hàng
                     </label>
-                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${returnToSender ? "border-orange-400 bg-orange-50" : "border-slate-200"}`}>
-                      <input type="radio" name="resolve-action" checked={returnToSender} onChange={() => setReturnToSender(true)} />
+                    <label className={`flex items-center gap-2 rounded-xl border p-2.5 text-xs cursor-pointer ${returnToSender ? "border-slate-900 bg-slate-50" : "border-slate-200"}`}>
+                      <input type="radio" name="resolve-action" checked={returnToSender} onChange={() => chooseAction(true)} />
                       Hoàn hàng về kho
                     </label>
                   </div>
@@ -419,11 +406,12 @@ export default function ShippingExceptionsPage() {
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Mẫu phản hồi nhanh</label>
                   <select
+                    value=""
                     onChange={e => e.target.value && setResolveNote(e.target.value)}
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-sky-400 mb-2"
                   >
                     <option value="">Chọn mẫu phương án...</option>
-                    {RESOLUTION_TEMPLATES.map((tmpl, idx) => (
+                    {templatesFor(returnToSender).map((tmpl, idx) => (
                       <option key={idx} value={tmpl}>{tmpl}</option>
                     ))}
                   </select>
@@ -445,8 +433,8 @@ export default function ShippingExceptionsPage() {
                   <Button variant="outline" size="sm" type="button" onClick={() => setResolveModal(null)}>
                     Hủy
                   </Button>
-                  <Button variant="primary" size="sm" type="submit" loading={isSubmitting}>
-                    Hoàn tất xử lý
+                  <Button variant={returnToSender ? "danger" : "primary"} size="sm" type="submit" loading={isSubmitting}>
+                    {returnToSender ? "Hoàn hàng về kho" : "Hoàn tất xử lý"}
                   </Button>
                 </div>
               </form>
@@ -454,10 +442,21 @@ export default function ShippingExceptionsPage() {
           </div>
         )}
 
+        <ConfirmModal
+          isOpen={confirmReturn}
+          onClose={() => setConfirmReturn(false)}
+          onConfirm={() => void submitResolve()}
+          isLoading={isSubmitting}
+          title="Hoàn hàng về kho?"
+          message={`Đơn ${resolveModal?.orderCode ?? ""} sẽ bị hủy, hàng được cộng lại vào kho và tồn bán; đơn đã thanh toán chuyển sang chờ hoàn tiền. Thao tác này không hoàn tác được.`}
+          confirmText="Hoàn hàng về kho"
+          type="danger"
+        />
+
         {/* Modal Report New Exception */}
         {reportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-rose-500" /> Ghi Nhận Sự Cố Giao Hàng Mới
@@ -469,15 +468,20 @@ export default function ShippingExceptionsPage() {
 
               <form onSubmit={handleReport} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">ID Kiện Hàng (Shipment ID) *</label>
-                  <input
-                    type="number"
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Kiện hàng *</label>
+                  <select
                     required
                     value={reportShipmentId}
                     onChange={e => setReportShipmentId(e.target.value)}
-                    placeholder="Nhập ID kiện hàng (vd: 12)"
-                    className="w-full rounded-xl border border-slate-300 p-2.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-sky-400"
-                  />
+                    className="w-full rounded-xl border border-slate-300 p-2.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"
+                  >
+                    <option value="">{reportable.length ? "Chọn kiện đang xử lý..." : "Không có kiện nào đang giao"}</option>
+                    {reportable.map(sh => (
+                      <option key={sh.id} value={sh.id}>
+                        {sh.orderCode ?? `#${sh.id}`} · {sh.trackingCode} · {sh.customerName ?? ""}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -488,7 +492,7 @@ export default function ShippingExceptionsPage() {
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-sky-400"
                   >
                     {Object.entries(EXCEPTION_TYPES).map(([k, v]) => (
-                      <option key={k} value={k}>{v.icon} {v.label}</option>
+                      <option key={k} value={k}>{v.label}</option>
                     ))}
                   </select>
                 </div>
@@ -517,6 +521,6 @@ export default function ShippingExceptionsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

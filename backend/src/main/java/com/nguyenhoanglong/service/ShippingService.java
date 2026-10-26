@@ -250,6 +250,9 @@ public class ShippingService {
         return list;
     }
 
+    // One transaction: the shipment used to be saved as EXCEPTION before the exception row was
+    // inserted, so a failed insert left the parcel stuck in EXCEPTION with nothing to resolve.
+    @Transactional
     public ShippingException addException(User actor, Long shipmentId, String type, String description) {
         Shipment s = shipment(shipmentId);
         enforceShippingShopOwnership(actor, s.getOrder());
@@ -263,13 +266,15 @@ public class ShippingService {
                 && s.getStatus() != ShipmentStatus.IN_TRANSIT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kiện hàng đã giao hoặc đã hoàn, không thể báo ngoại lệ");
         }
+        String exceptionType = type == null || type.isBlank() ? "OTHER" : type.trim();
         s.setStatus(ShipmentStatus.EXCEPTION);
         shipments.save(s);
 
         ShippingException e = new ShippingException();
         e.setShipment(s);
-        e.setExceptionType(type);
-        e.setDescription(description);
+        e.setExceptionType(exceptionType);
+        // Cot description NOT NULL: form cho phep bo trong mo ta, truoc day loi 500 o DB.
+        e.setDescription(description == null || description.isBlank() ? "" : description.trim());
         e.setStatus("OPEN");
         return exceptions.save(e);
     }
@@ -441,7 +446,7 @@ public class ShippingService {
             totalCod = totalCod.add(s.getCodAmount());
         }
 
-        String recCode = "COD-REC-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + String.format("%04d", new Random().nextInt(10000));
+        String recCode = newReconciliationCode();
 
         CodReconciliation rec = new CodReconciliation();
         rec.setReconciliationCode(recCode);
@@ -558,6 +563,20 @@ public class ShippingService {
      * the customer. A caller may still pass the exact expected amount (idempotent
      * clients do); anything else is rejected.
      */
+    /**
+     * COD-REC-yyyyMMdd-HHmmss-XXXX. The code used to be the date plus 4 random digits, so two
+     * batches on the same day could collide on the UNIQUE column and fail with a 500.
+     */
+    private String newReconciliationCode() {
+        java.util.concurrent.ThreadLocalRandom random = java.util.concurrent.ThreadLocalRandom.current();
+        String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+        for (int attempt = 0; attempt < 5; attempt++) {
+            String code = "COD-REC-" + stamp + "-" + String.format("%04d", random.nextInt(10000));
+            if (codReconciliationRepository.findByReconciliationCode(code).isEmpty()) return code;
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Không tạo được mã phiếu đối soát, vui lòng thử lại");
+    }
+
     private BigDecimal resolveCodAmount(Order order, BigDecimal requested) {
         BigDecimal expected = expectedCod(order);
         if (requested != null && requested.compareTo(expected) != 0) {

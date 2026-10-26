@@ -341,12 +341,12 @@ export default function PostManagementPage() {
   ], []);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header */}
         <PageHeader
-          title="Quản lý Bài Viết"
+          title="Quản lý bài viết"
           subtitle="Nội dung blog, tin tức và chia sẻ xu hướng thời trang ET.TEE"
           actions={
             <div className="flex items-center gap-2">
@@ -363,7 +363,7 @@ export default function PostManagementPage() {
                 onClick={() => handleOpenModal()}
                 icon={<Plus className="w-4 h-4" />}
               >
-                Viết Bài Mới
+                Viết bài mới
               </Button>
             </div>
           }
@@ -375,21 +375,21 @@ export default function PostManagementPage() {
             title="Đã xuất bản"
             value={publishedPosts}
             icon={CheckCircle}
-            color="green"
+            color="slate"
             subtitle="Bài viết đang hiển thị trên trang tin"
           />
           <StatCard
             title="Bản nháp"
             value={draftPosts}
             icon={FileText}
-            color="warning"
+            color="slate"
             subtitle="Bài viết đang soạn thảo"
           />
           <StatCard
             title="Lượt xem (Toàn bộ)"
             value={totalViews.toLocaleString('vi-VN')}
             icon={Eye}
-            color="blue"
+            color="slate"
             subtitle="Lượt độc giả truy cập xem bài viết"
           />
         </div>
@@ -404,7 +404,7 @@ export default function PostManagementPage() {
           onSearchChange={setSearchQuery}
           searchPlaceholder="Tìm kiếm theo tiêu đề, slug, tag..."
           emptyTitle="Chưa có bài viết nào"
-          emptyMessage="Thay đổi từ khóa tìm kiếm hoặc bấm 'Viết Bài Mới' để bắt đầu soạn thảo."
+          emptyMessage="Thay đổi từ khóa tìm kiếm hoặc bấm 'Viết bài mới' để bắt đầu soạn thảo."
           filterSlot={
             <div className="flex items-center gap-2">
               <select
@@ -427,10 +427,10 @@ export default function PostManagementPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={() => !isSaving && setIsModalOpen(false)} />
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-xl w-full max-w-3xl relative z-10 max-h-[90vh] flex flex-col text-slate-900">
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl w-full max-w-3xl relative z-10 max-h-[90vh] flex flex-col text-slate-900">
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <h2 className="text-sm font-semibold text-slate-900">
-                {editingPost ? 'Cập nhật Bài Viết' : 'Viết Bài Mới'}
+                {editingPost ? 'Cập nhật bài viết' : 'Viết bài mới'}
               </h2>
               <button 
                 onClick={() => !isSaving && setIsModalOpen(false)}

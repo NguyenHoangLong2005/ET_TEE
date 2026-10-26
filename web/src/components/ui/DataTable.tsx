@@ -41,7 +41,8 @@ export interface DataTableProps<T> {
   className?: string;
   onRowClick?: (row: T) => void;
   /** table-layout: fixed. Columns take their `width`; the rest share the remaining space and long
-   *  content must truncate itself, so the table always fits its container without a horizontal scrollbar. */
+   *  content must truncate itself. Below 960px the table scrolls sideways instead of squeezing
+   *  columns until their headers overlap. */
   fixedLayout?: boolean;
 }
 
@@ -113,8 +114,7 @@ export function DataTable<T>({
 
   return (
     <div
-      className={`bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col ${className}`}
-      style={{ boxShadow: 'var(--shadow-flat, 0 1px 2px rgba(15,23,42,0.04))' }}
+      className={`bg-white rounded-2xl border border-slate-200/80 overflow-hidden flex flex-col shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.03)] ${className}`}
     >
       {/* Toolbar */}
       {hasControls && (
@@ -122,24 +122,13 @@ export function DataTable<T>({
           <div className="flex flex-1 items-center gap-3 flex-wrap">
             {onSearchChange && (
               <div className="relative flex-1 sm:max-w-xs min-w-[180px]">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery ?? ''}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-200 rounded-lg outline-none transition-all text-slate-800 placeholder:text-slate-400"
-                  style={{
-                    // Enterprise focus convention — primary border
-                  } as React.CSSProperties}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#E50027';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(229,0,39,0.08)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#E2E8F0';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="h-9 w-full pl-9 pr-3 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none transition-colors text-slate-800 placeholder:text-slate-400 focus:bg-white"
                 />
               </div>
             )}
@@ -153,9 +142,9 @@ export function DataTable<T>({
 
       {/* Table */}
       <div className="overflow-x-auto relative flex-1 min-h-[200px]">
-        <table className={`w-full text-left text-xs border-collapse ${fixedLayout ? 'table-fixed' : ''}`}>
+        <table className={`w-full text-left text-[13px] border-collapse ${fixedLayout ? 'table-fixed min-w-[960px]' : ''}`}>
           <thead>
-            <tr className="border-b border-slate-200" style={{ background: '#F8FAFC' }}>
+            <tr className="border-b border-slate-200 bg-slate-50/80">
               {columns.map((col) => {
                 const alignCls =
                   col.align === 'center'
@@ -174,10 +163,7 @@ export function DataTable<T>({
                     } ${col.headerClassName ?? ''}`}
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
-                    <div
-                      className={`inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase`}
-                      style={{ letterSpacing: '0.06em' }}
-                    >
+                    <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">
                       <span>{col.header}</span>
                       {col.sortable && (
                         <span>
@@ -212,15 +198,9 @@ export function DataTable<T>({
                 <tr
                   key={rowKey(row, idx) ?? idx}
                   onClick={() => onRowClick && onRowClick(row)}
-                  className={`transition-colors ${
+                  className={`transition-colors hover:bg-slate-50/80 ${
                     onRowClick ? 'cursor-pointer' : ''
                   }`}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = '#F8FAFC';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = '';
-                  }}
                 >
                   {columns.map((col) => {
                     const alignCls =
@@ -249,7 +229,7 @@ export function DataTable<T>({
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="px-4 py-3 border-t border-slate-100 bg-white flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-xs text-slate-500 font-medium">
             {pagination.totalItems !== undefined ? (
               <>

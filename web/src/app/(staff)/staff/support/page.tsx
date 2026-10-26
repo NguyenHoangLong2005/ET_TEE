@@ -482,14 +482,12 @@ export default function SupportChatPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Headset className="w-7 h-7 text-red-600" /> Trung Tâm Hỗ Trợ (CSKH & Live Chat)
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Trung tâm hỗ trợ khách hàng</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Tiếp nhận ticket, tra cứu đơn hàng bảo mật & tặng voucher đền bù theo hạn mức chi nhánh
           </p>
         </div>
@@ -554,7 +552,7 @@ export default function SupportChatPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Ticket List Panel */}
-        <div className="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-flat overflow-hidden flex flex-col h-[650px]">
+        <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200/80 shadow-flat overflow-hidden flex flex-col h-[650px]">
           <div className="p-4 border-b border-slate-200 bg-slate-50/50 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-900 flex items-center gap-2 text-sm">
@@ -669,7 +667,7 @@ export default function SupportChatPage() {
         </div>
 
         {/* Chat / Ticket Detail Panel */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-flat overflow-hidden flex flex-col h-[650px]">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-flat overflow-hidden flex flex-col h-[650px]">
           {!selectedTicketId ? (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
               <Headset className="w-14 h-14 text-slate-300 mb-3" />
@@ -711,7 +709,7 @@ export default function SupportChatPage() {
                     {canUseCskhTools && ticketDetail.status !== 'CLOSED' && (
                       <button
                         onClick={handleOpenGrantModal}
-                        className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
+                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
                       >
                         <Gift className="w-3.5 h-3.5" /> Tặng Voucher CSKH
                       </button>
@@ -720,7 +718,7 @@ export default function SupportChatPage() {
                     {ticketDetail.status !== 'CLOSED' && (
                       <button
                         onClick={openAssignModal}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
+                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
                       >
                         <UserCheck className="w-3.5 h-3.5" /> Phân công
                       </button>
@@ -729,7 +727,7 @@ export default function SupportChatPage() {
                     {ticketDetail.status !== 'CLOSED' && (
                       <button
                         onClick={openEscalateModal}
-                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
+                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs px-3 py-1.5 rounded-lg font-medium shadow-flat transition flex items-center gap-1"
                       >
                         <TrendingUp className="w-3.5 h-3.5" /> Leo thang
                       </button>
@@ -1182,7 +1180,7 @@ export default function SupportChatPage() {
                 <button
                   type="submit"
                   disabled={submittingAction || !selectedCandidateId}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 rounded-lg shadow-flat transition flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-slate-300 rounded-lg shadow-flat transition flex items-center gap-1.5"
                 >
                   {submittingAction && <RefreshCw className="w-3 h-3 animate-spin" />}
                   Xác nhận Phân công
@@ -1267,7 +1265,7 @@ export default function SupportChatPage() {
                 <button
                   type="submit"
                   disabled={submittingAction || !selectedCandidateId}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 rounded-lg shadow-flat transition flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-hover disabled:bg-slate-300 rounded-lg shadow-flat transition flex items-center gap-1.5"
                 >
                   {submittingAction && <RefreshCw className="w-3 h-3 animate-spin" />}
                   Xác nhận Leo thang

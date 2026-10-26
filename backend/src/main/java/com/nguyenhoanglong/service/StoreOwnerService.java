@@ -21,6 +21,9 @@ public interface StoreOwnerService {
 
     StoreProductFormDto createProduct(StoreProductFormDto form);
 
+    /** Runs every check createProduct does, without saving; throws ResponseStatusException on the first problem. */
+    void validateNewProduct(StoreProductFormDto form);
+
     /** Updates product info and images. Variants and stock are left untouched. */
     StoreProductFormDto updateProduct(Long productId, StoreProductFormDto form);
 

@@ -116,13 +116,13 @@ export default function AIFeatureFlagsPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} requiredPermissions={['MANAGE_AI_MODEL_FEATURE_FLAG']}>
-      <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6 text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="AI Feature Flags & Cờ Tính Năng"
+          title="Cờ tính năng AI"
           subtitle="Kiểm soát bật/tắt tức thì các tính năng trí tuệ nhân tạo trên Storefront và Admin"
           breadcrumbs={[
             { label: 'Admin', href: '/admin/dashboard' },
-            { label: 'AI Feature Flags' },
+            { label: 'Cờ tính năng AI' },
           ]}
           actions={
             <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function AIFeatureFlagsPage() {
         />
 
         {/* ─── Feature Flags List ─── */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] divide-y divide-slate-100 overflow-hidden">
           {loading && flags.length === 0 ? (
             <div className="p-12 text-center text-xs text-slate-400">Đang tải danh sách cờ tính năng...</div>
           ) : flags.length === 0 ? (
@@ -187,7 +187,7 @@ export default function AIFeatureFlagsPage() {
                       {flag.description || 'Chưa có mô tả chi tiết cho cờ tính năng này.'}
                     </p>
                     {flag.updatedAt && (
-                      <p className="text-[10px] text-slate-400 font-mono">
+                      <p className="text-[10px] text-slate-400 tabular-nums">
                         Cập nhật lần cuối: {new Date(flag.updatedAt).toLocaleString('vi-VN')}
                       </p>
                     )}
@@ -222,7 +222,7 @@ export default function AIFeatureFlagsPage() {
         {/* ─── Modal Create Flag ─── */}
         {showCreateModal && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               <form onSubmit={handleCreateFlag}>
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">

@@ -258,7 +258,7 @@ export default function AccountOrdersPage() {
               <div className="bg-slate-50/50 p-4 sm:px-6 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-slate-600 text-sm font-semibold">Tổng tiền:</span>
-                  <span className="text-xl font-black text-primary">{order.totalAmount?.toLocaleString('vi-VN')}đ</span>
+                  <span className="text-xl font-black text-primary">{order.totalAmount?.toLocaleString('vi-VN')}₫</span>
                 </div>
                 
                 <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">

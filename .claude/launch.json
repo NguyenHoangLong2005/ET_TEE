@@ -14,6 +14,12 @@
       "port": 8081
     },
     {
+      "name": "mobile-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3001", "--directory", "mobile/build/web"],
+      "port": 3001
+    },
+    {
       "name": "embedder",
       "runtimeExecutable": "python",
       "runtimeArgs": ["services/embedder/app.py"],

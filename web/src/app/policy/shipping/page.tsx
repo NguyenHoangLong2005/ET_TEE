@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Truck, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const metadata = {
-  title: 'Chính Sách Vận Chuyển & Giao Hàng | ET.TEE Studio',
-  description: 'Thông tin chi tiết về phí giao hàng, thời gian nhận hàng, giao hỏa tốc 2h và quy trình đồng kiểm trước khi thanh toán tại ET.TEE.',
+  title: 'Chính Sách Vận Chuyển & Giao Hàng',
+  description: 'Thông tin chi tiết về phí giao hàng, thời gian nhận hàng và quy trình đồng kiểm trước khi thanh toán tại ET.TEE.',
 };
 
 export default function ShippingPolicyPage() {
@@ -23,7 +23,7 @@ export default function ShippingPolicyPage() {
         <article className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm space-y-8">
           
           <div className="border-b border-slate-100 pb-6">
-            <span className="inline-block px-3 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase rounded-full mb-3 shadow-xs">
+            <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-black uppercase rounded-full mb-3 shadow-xs">
               Delivery Policy
             </span>
             <h1 className="text-3xl font-black uppercase text-slate-900">
@@ -36,17 +36,13 @@ export default function ShippingPolicyPage() {
             {/* Section 1 */}
             <div className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 uppercase flex items-center gap-2">
-                <Truck className="w-5 h-5 text-amber-600" />
+                <Truck className="w-5 h-5 text-primary-600" />
                 <span>1. Biểu Phí Vận Chuyển Toàn Quốc</span>
               </h2>
-              <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200 text-xs space-y-2">
+              <div className="p-4 bg-primary-50/80 rounded-2xl border border-primary-200 text-xs space-y-2">
                 <div className="flex justify-between font-bold text-slate-900">
-                  <span>Đơn hàng từ 499.000đ trở lên:</span>
+                  <span>Mọi đơn hàng, không yêu cầu giá trị tối thiểu:</span>
                   <span className="text-emerald-600 uppercase">MIỄN PHÍ VẬN CHUYỂN (Freeship)</span>
-                </div>
-                <div className="flex justify-between text-slate-600 border-t border-amber-200/60 pt-2">
-                  <span>Đơn hàng dưới 499.000đ:</span>
-                  <span className="font-bold text-slate-900">20.000đ / đơn</span>
                 </div>
               </div>
             </div>
@@ -54,11 +50,10 @@ export default function ShippingPolicyPage() {
             {/* Section 2 */}
             <div className="space-y-3">
               <h2 className="text-base font-bold text-slate-900 uppercase flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-600" />
+                <Clock className="w-5 h-5 text-primary-600" />
                 <span>2. Thời Gian Giao Hàng Dự Kiến</span>
               </h2>
               <ul className="space-y-2 pl-4 list-disc">
-                <li><strong>Giao hàng Hỏa tốc 2H:</strong> Áp dụng tại các quận nội thành Hà Nội & TP. Hồ Chí Minh khi đặt hàng trước 16:00.</li>
                 <li><strong>Khu vực Nội thành (Hà Nội, TP.HCM, Đà Nẵng, Hải Phòng):</strong> Nhận hàng trong vòng 1 - 2 ngày làm việc.</li>
                 <li><strong>Khu vực Ngoại thành & Các Tỉnh khác:</strong> Nhận hàng từ 2 - 4 ngày làm việc.</li>
               </ul>

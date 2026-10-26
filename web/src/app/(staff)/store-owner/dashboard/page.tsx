@@ -16,7 +16,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import {
   TrendingUp, ShoppingBag, Package, AlertTriangle,
   RefreshCw, ArrowUpRight, ChevronRight, BarChart2,
-  Clock, CheckCircle2, XCircle, RotateCcw, Layers, Users, Tag, Hand
+  Clock, CheckCircle2, XCircle, RotateCcw, Layers, Users, Tag
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -94,7 +94,7 @@ const rangeInputClass =
   'ui-control h-9 px-3 bg-white border border-slate-200 rounded-lg font-sans text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary';
 
 const fmtCurrency = (v?: number) =>
-  typeof v === 'number' ? v.toLocaleString('vi-VN') + ' ₫' : '—';
+  typeof v === 'number' ? Math.round(v).toLocaleString('vi-VN') + ' ₫' : '—';
 
 const fmtDate = (s?: string) => {
   if (!s) return '—';
@@ -319,20 +319,17 @@ export default function StoreOwnerDashboardPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="min-h-screen bg-slate-50 p-6 space-y-5 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* ─── Control Bar ─── */}
         <PageHeader
           title={
-            <span className="inline-flex items-center gap-2.5">
-              {greeting}, {firstName}
-              <Hand className="w-6 h-6 text-amber-500 -rotate-12" aria-hidden="true" />
-            </span>
+            <>{greeting}, {firstName}</>
           }
           subtitle={`${data?.shopName || 'Tổng quan '} · Đồng bộ lúc ${lastSync.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
           actions={
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={load}
               loading={refreshing}
               icon={<RefreshCw className="w-4 h-4" />}
@@ -343,7 +340,7 @@ export default function StoreOwnerDashboardPage() {
         />
 
         {/* ─── Khoảng thời gian ─── */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 space-y-2.5">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] px-4 py-3 space-y-2.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-slate-500 mr-1">Khoảng thời gian:</span>
             {PRESETS.map((pr) => (
@@ -431,7 +428,7 @@ export default function StoreOwnerDashboardPage() {
         </div>
 
         {/* ─── Quick Actions ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-8 gap-3">
           {[
             { href: '/store-owner/orders',       icon: ShoppingBag, label: 'Đơn hàng',       sub: 'Quản lý & xử lý',     color: 'text-slate-400' },
             { href: '/store-owner/approvals',    icon: CheckCircle2, label: 'Phê duyệt',      sub: 'Hàng đợi duyệt',      color: 'text-slate-400', badge: data?.pendingPromotions },
@@ -443,10 +440,14 @@ export default function StoreOwnerDashboardPage() {
             { href: '/store-owner/logs',         icon: Layers,      label: 'Nhật ký Shop',   sub: 'Audit log', color: 'text-slate-400' },
           ].map((item) => (
             <Link key={item.href} href={item.href}
-              className="relative bg-white border border-slate-200 rounded-xl p-3.5 hover:bg-slate-50 hover:border-slate-300 hover:shadow-flat transition-all group shadow-2xs block">
-              <item.icon className={`w-4 h-4 ${item.color} mb-2 group-hover:scale-110 transition-transform`} />
-              <p className="text-xs font-bold text-slate-900 truncate">{item.label}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5 leading-tight truncate">{item.sub}</p>
+              className="relative flex items-center gap-3 bg-white border border-slate-200/80 rounded-2xl p-3.5 hover:border-slate-300 hover:shadow-[0_4px_12px_-4px_rgba(16,24,40,0.12)] transition-all group">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-primary-50 group-hover:text-primary">
+                <item.icon className="w-[18px] h-[18px]" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[13px] font-semibold text-slate-900 truncate">{item.label}</span>
+                <span className="block text-[11px] text-slate-400 mt-0.5 leading-tight truncate">{item.sub}</span>
+              </span>
               {item.badge !== undefined && item.badge > 0 && (
                 <span className="absolute top-2 right-2 text-[9px] font-bold bg-amber-500 text-white w-4 h-4 rounded-full flex items-center justify-center">
                   {item.badge}
@@ -460,7 +461,7 @@ export default function StoreOwnerDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
           {/* Revenue Chart */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-flat p-5 space-y-3">
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-flat p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-semibold text-slate-900">
@@ -480,7 +481,7 @@ export default function StoreOwnerDashboardPage() {
           </div>
 
           {/* Order Status Donut */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-flat p-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-flat p-5 space-y-4">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">Tỉ lệ đơn hàng</h2>
               <p className="text-[11px] text-slate-500 mt-0.5">Trạng thái các đơn tạo trong kỳ</p>
@@ -530,7 +531,7 @@ export default function StoreOwnerDashboardPage() {
         </div>
 
         {/* ─── Recent Orders Table ─── */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-flat p-5 space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-flat p-5 space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-slate-400" />

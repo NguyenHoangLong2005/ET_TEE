@@ -19,7 +19,7 @@ const TONE_CLASSES: Record<Tone, string> = {
   red:    'bg-[#FEF2F2] text-[#DC2626] ring-[#FECACA]',
   sky:    'bg-[#EFF6FF] text-[#2563EB] ring-[#BFDBFE]',
   violet: 'bg-violet-50 text-violet-700 ring-violet-200',
-  rose:   'bg-[#F9E2E5] text-[#BD001F] ring-[#FBCDD3]',
+  rose:   'bg-primary-100 text-primary-700 ring-[#FBCDD3]',
 };
 
 export function Badge({ tone = 'gray', children, dot }: { tone?: Tone; children: ReactNode; dot?: boolean }) {

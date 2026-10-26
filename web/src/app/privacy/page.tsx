@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export const metadata = {
-  title: 'Chính Sách Bảo Mật Thông Tin | ET.TEE Studio',
+  title: 'Chính Sách Bảo Mật Thông Tin',
   description: 'Cam kết bảo mật thông tin cá nhân khách hàng, chính sách cookie và an toàn thanh toán tại ET.TEE.',
 };
 

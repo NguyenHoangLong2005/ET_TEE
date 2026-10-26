@@ -133,10 +133,10 @@ export default function AdminRbacPage() {
 
   return (
     <PermissionGuard allowedRoles={["ADMIN"]} requiredPermissions={["MANAGE_ROLE_PERMISSION"]}>
-      <div className="bg-slate-50 p-4 md:p-6 space-y-4 text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         <PageHeader
-          title="Cấu Hình RBAC"
+          title="Cấu hình phân quyền (RBAC)"
           subtitle="Phân quyền chi tiết theo vai trò: gán và thu hồi quyền hệ thống"
           breadcrumbs={[
             { label: "Admin", href: "/admin/dashboard" },

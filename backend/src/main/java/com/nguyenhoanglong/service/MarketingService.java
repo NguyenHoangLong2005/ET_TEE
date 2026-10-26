@@ -26,6 +26,9 @@ public class MarketingService {
     @Autowired private MarketingPostRepository marketingPostRepository;
     @Autowired private OrderRepository orderRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private ApprovalNotificationService approvalNotifications;
+    @Autowired private VoucherChangeRequestRepository changeRequestRepository;
+    @Autowired private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // ═════════════════════════════════════════════════════════════════════
     // BANNERS
@@ -118,7 +121,11 @@ public class MarketingService {
     }
 
     public List<Voucher> getAllVouchers() {
-        return voucherRepository.findAll();
+        List<Voucher> all = voucherRepository.findAll();
+        Map<Long, String> pending = new HashMap<>();
+        for (VoucherChangeRequest r : changeRequestRepository.findByStatus("PENDING")) pending.put(r.getVoucherId(), r.getAction());
+        all.forEach(v -> v.setPendingChange(pending.get(v.getId())));
+        return all;
     }
 
     public List<Voucher> getVouchersByShop(Long shopId) {
@@ -199,14 +206,33 @@ public class MarketingService {
         voucher.setUpdatedBy(createdBy);
         voucher.setCreatedAt(LocalDateTime.now());
         voucher.setUpdatedAt(LocalDateTime.now());
-        return voucherRepository.save(voucher);
+        Voucher saved = voucherRepository.save(voucher);
+        if ("PENDING_APPROVAL".equals(saved.getStatus())) {
+            approvalNotifications.notifyOwnersOfRequest(saved.getShopId(), "Mã giảm giá mới cần phê duyệt",
+                    describeVoucherForApproval(saved));
+        }
+        return saved;
     }
 
+    /** Applies the edit immediately. Staff edits of a live voucher go through {@link #editVoucher} instead. */
     @Transactional
     public Voucher updateVoucher(Long id, Voucher updates, String updatedBy) {
         Voucher existing = voucherRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voucher không tồn tại"));
+        boolean resubmitted = applyVoucherUpdates(existing, updates);
 
+        existing.setUpdatedBy(updatedBy);
+        existing.setUpdatedAt(LocalDateTime.now());
+        Voucher saved = voucherRepository.save(existing);
+        if (resubmitted) {
+            approvalNotifications.notifyOwnersOfRequest(saved.getShopId(), "Mã giảm giá đã chỉnh sửa, chờ duyệt lại",
+                    describeVoucherForApproval(saved));
+        }
+        return saved;
+    }
+
+    /** Validates and copies the non-null fields of updates onto existing; true if it resubmitted a sent-back voucher. */
+    private boolean applyVoucherUpdates(Voucher existing, Voucher updates) {
         if (updates.getCode() != null) {
             String newCode = updates.getCode().trim().toUpperCase();
             if (!newCode.equals(existing.getCode()) && voucherRepository.existsByCode(newCode)) {
@@ -234,7 +260,14 @@ public class MarketingService {
         if (updates.getMaxDiscountAmount() != null) existing.setMaxDiscountAmount(updates.getMaxDiscountAmount());
         if (updates.getMaxUses() != null) existing.setMaxUses(updates.getMaxUses());
         if (updates.getPerUserLimit() != null) existing.setPerUserLimit(updates.getPerUserLimit());
-        if (updates.getStatus() != null) {
+        // Fixing a voucher the store owner sent back or rejected puts it straight back in their approval queue.
+        boolean resubmitted = "REVISION_REQUESTED".equalsIgnoreCase(existing.getStatus())
+                || "REJECTED".equalsIgnoreCase(existing.getStatus());
+        if (resubmitted || "PENDING_APPROVAL".equalsIgnoreCase(existing.getStatus())) {
+            // The edit form always carries a status (the entity defaults it to ACTIVE); while the
+            // voucher waits on the store owner, its status is theirs to decide, so ignore it.
+            if (resubmitted) existing.setStatus("PENDING_APPROVAL");
+        } else if (updates.getStatus() != null) {
             // Same rules as the status endpoint, so an edit can't activate a voucher awaiting approval.
             validateVoucherTransition(existing.getStatus(), updates.getStatus().toUpperCase());
             existing.setStatus(updates.getStatus().toUpperCase());
@@ -248,10 +281,12 @@ public class MarketingService {
         if (existing.getStartDate() != null && existing.getEndDate() != null && existing.getStartDate().isAfter(existing.getEndDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
         }
+        return resubmitted;
+    }
 
-        existing.setUpdatedBy(updatedBy);
-        existing.setUpdatedAt(LocalDateTime.now());
-        return voucherRepository.save(existing);
+    private static String describeVoucherForApproval(Voucher v) {
+        String value = v.getDiscountValue() != null ? v.getDiscountValue().stripTrailingZeros().toPlainString() : "?";
+        return v.getCode() + " - " + v.getName() + " (giảm " + value + ("PERCENT".equals(v.getType()) ? "%" : "₫") + ").";
     }
 
     @Transactional
@@ -267,6 +302,11 @@ public class MarketingService {
         // any string, so PENDING_APPROVAL -> ACTIVE (bypassing shop-owner approval)
         // or REJECTED -> ACTIVE (undoing a rejection) were both silently accepted.
         validateVoucherTransition(existing.getStatus(), newStatus);
+        // Pause/resume stay with staff; ending an approved voucher for good is a delete request.
+        if ("CANCELLED".equals(newStatus) && needsOwnerApproval(existing, updatedBy)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Hủy voucher đang chạy cần chủ cửa hàng duyệt: hãy dùng Xóa để gửi yêu cầu");
+        }
 
         existing.setStatus(newStatus);
         existing.setIsActive("ACTIVE".equals(newStatus));
@@ -296,6 +336,8 @@ public class MarketingService {
             case "ACTIVE" -> Set.of("PAUSED", "CANCELLED", "EXPIRED");
             case "PAUSED" -> Set.of("ACTIVE", "CANCELLED", "EXPIRED");
             case "PENDING_APPROVAL", "REJECTED", "CANCELLED", "EXPIRED" -> Set.of();
+            // Sent back for changes: staff edit it (which resubmits) or drop it.
+            case "REVISION_REQUESTED" -> Set.of("CANCELLED");
             default -> Set.of("ACTIVE", "PAUSED", "CANCELLED");
         };
 
@@ -318,6 +360,199 @@ public class MarketingService {
         } else {
             voucherRepository.deleteById(id);
         }
+        changeRequestRepository.findFirstByVoucherIdAndStatus(id, "PENDING").ifPresent(r -> {
+            // An owner/admin removed it directly: nothing left for the queue to decide.
+            r.setStatus("CANCELLED");
+            changeRequestRepository.save(r);
+        });
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // VOUCHER CHANGE REQUESTS (staff edit / delete of an approved voucher)
+    // ═════════════════════════════════════════════════════════════════════
+
+    /** Approved vouchers that may be (or become) live: changing them is the store owner's call. */
+    private static final Set<String> LIVE_VOUCHER_STATUSES = Set.of("ACTIVE", "PAUSED");
+
+    /** Either applied right away, or sent to the store owner and the voucher is unchanged. */
+    public record VoucherChangeOutcome(Voucher voucher, boolean awaitingApproval) {}
+
+    /**
+     * A small voucher used to get approved, then be edited to 90% off and go live with no review.
+     * Staff edits / deletes of an approved voucher now become a change request; drafts (pending,
+     * sent back, rejected) stay freely editable, and owners/admins apply changes directly.
+     */
+    private boolean needsOwnerApproval(Voucher v, String actor) {
+        User u = findUser(actor);
+        boolean staff = u == null || (u.getRole() != Role.ADMIN && u.getRole() != Role.SHOP_OWNER);
+        String status = v.getStatus() == null ? "ACTIVE" : v.getStatus().toUpperCase();
+        return staff && LIVE_VOUCHER_STATUSES.contains(status);
+    }
+
+    private void ensureNoPendingChange(Long voucherId) {
+        if (changeRequestRepository.findFirstByVoucherIdAndStatus(voucherId, "PENDING").isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Voucher này đang có yêu cầu sửa/xóa chờ chủ cửa hàng duyệt");
+        }
+    }
+
+    @Transactional
+    public VoucherChangeOutcome editVoucher(Long id, Voucher updates, String actor) {
+        Voucher existing = voucherRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voucher không tồn tại"));
+        if (!needsOwnerApproval(existing, actor)) {
+            return new VoucherChangeOutcome(updateVoucher(id, updates, actor), false);
+        }
+        ensureNoPendingChange(id);
+
+        // Status is not part of an edit: pausing/resuming has its own endpoint (and the form always
+        // sends the entity's default ACTIVE, which would otherwise resume a paused voucher).
+        updates.setStatus(null);
+        // Dry run on a detached copy: validates the proposal now, not when the owner clicks approve.
+        Voucher proposed = new Voucher();
+        org.springframework.beans.BeanUtils.copyProperties(existing, proposed);
+        applyVoucherUpdates(proposed, updates);
+
+        String summary = describeChanges(existing, proposed);
+        if (summary.isEmpty()) return new VoucherChangeOutcome(existing, false);
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("code", proposed.getCode());
+        payload.put("name", proposed.getName());
+        payload.put("description", proposed.getDescription());
+        payload.put("type", proposed.getType());
+        payload.put("discountValue", proposed.getDiscountValue());
+        payload.put("minOrderAmount", proposed.getMinOrderAmount());
+        payload.put("maxDiscountAmount", proposed.getMaxDiscountAmount());
+        payload.put("maxUses", proposed.getMaxUses());
+        payload.put("perUserLimit", proposed.getPerUserLimit());
+        payload.put("targetGroup", proposed.getTargetGroup());
+        payload.put("freeShipping", proposed.getFreeShipping());
+        payload.put("startDate", proposed.getStartDate());
+        payload.put("endDate", proposed.getEndDate());
+
+        VoucherChangeRequest r = newChangeRequest(existing, "UPDATE", summary, actor);
+        try {
+            r.setPayload(objectMapper.writeValueAsString(payload));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new IllegalStateException("Không thể lưu đề xuất sửa voucher", e);
+        }
+        changeRequestRepository.save(r);
+        approvalNotifications.notifyOwnersOfRequest(existing.getShopId(), "Yêu cầu sửa mã giảm giá " + existing.getCode(), summary);
+        existing.setPendingChange(r.getAction());
+        return new VoucherChangeOutcome(existing, true);
+    }
+
+    @Transactional
+    public VoucherChangeOutcome removeVoucher(Long id, String actor) {
+        Voucher existing = voucherRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voucher không tồn tại"));
+        if (!needsOwnerApproval(existing, actor)) {
+            deleteVoucher(id);
+            return new VoucherChangeOutcome(null, false);
+        }
+        ensureNoPendingChange(id);
+        String summary = "Xóa mã " + existing.getCode() + " - " + existing.getName()
+                + " (đã dùng " + (existing.getUsedCount() != null ? existing.getUsedCount() : 0) + " lượt)";
+        changeRequestRepository.save(newChangeRequest(existing, "DELETE", summary, actor));
+        approvalNotifications.notifyOwnersOfRequest(existing.getShopId(), "Yêu cầu xóa mã giảm giá " + existing.getCode(), summary);
+        existing.setPendingChange("DELETE");
+        return new VoucherChangeOutcome(existing, true);
+    }
+
+    private VoucherChangeRequest newChangeRequest(Voucher v, String action, String summary, String actor) {
+        VoucherChangeRequest r = new VoucherChangeRequest();
+        r.setVoucherId(v.getId());
+        r.setShopId(v.getShopId());
+        r.setAction(action);
+        r.setSummary(summary);
+        r.setRequestedBy(actor);
+        return r;
+    }
+
+    public List<VoucherChangeRequest> getPendingVoucherChanges(Long shopId) {
+        return changeRequestRepository.findPendingForShop(shopId);
+    }
+
+    /** Store owner decision; on APPROVED the edit is applied (re-validated) or the voucher deleted. */
+    @Transactional
+    public VoucherChangeRequest decideVoucherChange(Long shopId, Long requestId, String decision, String note, String actor) {
+        VoucherChangeRequest r = changeRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu sửa voucher #" + requestId));
+        if (r.getShopId() != null && !r.getShopId().equals(shopId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Yêu cầu không thuộc cửa hàng của bạn");
+        }
+        if (!"PENDING".equals(r.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu này đã được xử lý");
+        }
+        Voucher voucher = voucherRepository.findById(r.getVoucherId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voucher không còn tồn tại"));
+        String code = voucher.getCode();
+
+        if ("APPROVED".equals(decision)) {
+            if ("DELETE".equals(r.getAction())) {
+                deleteVoucher(voucher.getId());
+            } else {
+                try {
+                    Voucher updates = objectMapper.readValue(r.getPayload(), Voucher.class);
+                    updates.setStatus(null);
+                    updateVoucher(voucher.getId(), updates, r.getRequestedBy());
+                } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                    throw new IllegalStateException("Đề xuất sửa voucher bị hỏng #" + requestId, e);
+                }
+            }
+        }
+        r.setStatus(decision);
+        r.setReviewedBy(actor);
+        r.setReviewedAt(LocalDateTime.now());
+        r.setReviewNote(note != null && !note.isBlank() ? note.trim() : null);
+        changeRequestRepository.save(r);
+
+        // A refused edit links back to the edit form, so staff can adjust and send a new request.
+        boolean refusedEdit = "UPDATE".equals(r.getAction()) && !"APPROVED".equals(decision);
+        approvalNotifications.notifyRequesterOfDecision(r.getRequestedBy(),
+                ("DELETE".equals(r.getAction()) ? "Yêu cầu xóa" : "Yêu cầu sửa") + " mã giảm giá " + code,
+                decision, r.getReviewNote(), voucherUrl(r.getVoucherId(), refusedEdit),
+                refusedEdit ? "Bấm để sửa lại và gửi yêu cầu mới." : null);
+        return r;
+    }
+
+    /** Staff voucher page; with openEdit the page opens that voucher's edit form (bell deep link). */
+    public static String voucherUrl(Long voucherId, boolean openEdit) {
+        return "/staff/dashboard/marketing/vouchers" + (openEdit && voucherId != null ? "?edit=" + voucherId : "");
+    }
+
+    private static String describeChanges(Voucher before, Voucher after) {
+        List<String> parts = new ArrayList<>();
+        diff(parts, "Mã", before.getCode(), after.getCode());
+        diff(parts, "Tên", before.getName(), after.getName());
+        diff(parts, "Mô tả", before.getDescription(), after.getDescription());
+        diff(parts, "Loại", before.getType(), after.getType());
+        diff(parts, "Giá trị giảm", before.getDiscountValue(), after.getDiscountValue());
+        diff(parts, "Đơn tối thiểu", before.getMinOrderAmount(), after.getMinOrderAmount());
+        diff(parts, "Giảm tối đa", before.getMaxDiscountAmount(), after.getMaxDiscountAmount());
+        diff(parts, "Lượt dùng tối đa", before.getMaxUses(), after.getMaxUses());
+        diff(parts, "Giới hạn mỗi khách", before.getPerUserLimit(), after.getPerUserLimit());
+        diff(parts, "Nhóm khách", before.getTargetGroup(), after.getTargetGroup());
+        diff(parts, "Miễn phí ship", before.getFreeShipping(), after.getFreeShipping());
+        diff(parts, "Bắt đầu", before.getStartDate(), after.getStartDate());
+        diff(parts, "Hết hạn", before.getEndDate(), after.getEndDate());
+        return String.join("; ", parts);
+    }
+
+    private static void diff(List<String> parts, String label, Object before, Object after) {
+        boolean same = before instanceof BigDecimal b && after instanceof BigDecimal a
+                ? b.compareTo(a) == 0
+                : Objects.equals(before, after);
+        if (!same) parts.add(label + ": " + show(before) + " → " + show(after));
+    }
+
+    private static String show(Object v) {
+        if (v == null) return "(trống)";
+        if (v instanceof BigDecimal d) return d.stripTrailingZeros().toPlainString();
+        if (v instanceof Boolean b) return b ? "có" : "không";
+        if (v instanceof LocalDateTime t) return t.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        return v.toString();
     }
 
     /**
@@ -369,7 +604,9 @@ public class MarketingService {
         // minOrder
         if (voucher.getMinOrderAmount() != null && orderSubtotal.compareTo(voucher.getMinOrderAmount()) < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Đơn hàng tối thiểu " + voucher.getMinOrderAmount() + "đ để dùng mã này");
+                    // was the raw BigDecimal ("200000.00đ")
+                    "Đơn hàng tối thiểu " + java.text.NumberFormat.getInstance(java.util.Locale.forLanguageTag("vi-VN"))
+                            .format(voucher.getMinOrderAmount()) + "₫ để dùng mã này");
         }
 
         // perUserLimit
@@ -896,7 +1133,7 @@ public class MarketingService {
             Banner banner = bannerRepository.findById(bid).orElse(null);
             Map<String, Object> b = new LinkedHashMap<>();
             b.put("bannerId", bid);
-            b.put("name", banner != null ? banner.getTitle() : "Banner #" + bid);
+            b.put("name", banner != null ? banner.getTitle() : "Banner #" + bid + " (đã xóa)");
             b.put("position", banner != null ? banner.getPosition() : "HERO");
             b.put("impressions", count);
             long bClicks = (since != null)

@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: 'Không tìm thấy sản phẩm | ET.TEE',
+      title: 'Không tìm thấy sản phẩm',
       description: 'Sản phẩm không tồn tại hoặc đã ngừng kinh doanh.',
     };
   }
@@ -30,7 +30,7 @@ export async function generateMetadata({
   const price = (product.salePrice || product.price || 0).toLocaleString('vi-VN');
 
   return {
-    title: `${product.name} | ET.TEE`,
+    title: `${product.name}`,
     description: product.description 
       ? product.description.slice(0, 160) 
       : `Mua ngay ${product.name} chính hãng tại ET.TEE. Giá chỉ ${price}₫. Thiết kế chuẩn form dáng, chất liệu cao cấp.`,

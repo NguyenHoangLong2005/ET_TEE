@@ -130,7 +130,7 @@ export default function AdminBackupPage() {
   const columns: Column<BackupItem>[] = [
     {
       key: 'fileName',
-      header: 'Tên file Snapshot',
+      header: 'Tên file snapshot',
       render: (b) => (
         <div>
           <span className="font-mono text-xs font-bold text-slate-900 block">{b.fileName}</span>
@@ -140,7 +140,7 @@ export default function AdminBackupPage() {
     },
     {
       key: 'sizeFormatted',
-      header: 'Dung Lượng',
+      header: 'Dung lượng',
       render: (b) => (
         <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
           {b.sizeFormatted || `${(b.size / 1024).toFixed(1)} KB`}
@@ -149,7 +149,7 @@ export default function AdminBackupPage() {
     },
     {
       key: 'type',
-      header: 'Loại Sao Lưu',
+      header: 'Loại sao lưu',
       render: (b) => (
         <span
           className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
@@ -164,7 +164,7 @@ export default function AdminBackupPage() {
     },
     {
       key: 'status',
-      header: 'Trạng Thái',
+      header: 'Trạng thái',
       render: (b) => (
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -174,16 +174,16 @@ export default function AdminBackupPage() {
     },
     {
       key: 'createdAt',
-      header: 'Thời Gian Tạo',
+      header: 'Thời gian tạo',
       render: (b) => (
-        <span className="font-mono text-xs text-slate-400 whitespace-nowrap">
+        <span className="tabular-nums text-xs text-slate-400 whitespace-nowrap">
           {new Date(b.createdAt).toLocaleString('vi-VN')}
         </span>
       ),
     },
     {
       key: 'id',
-      header: 'Thao Tác',
+      header: 'Thao tác',
       align: 'right',
       render: (b) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -222,9 +222,9 @@ export default function AdminBackupPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} requiredPermissions={['MANAGE_BACKUP']}>
-      <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6 text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="Sao Lưu & Khôi Phục Dữ Liệu (Database Backup)"
+          title="Sao lưu & khôi phục dữ liệu"
           subtitle="Quản lý các snapshot cơ sở dữ liệu PostgreSQL định kỳ và xuất file sao lưu hệ thống"
           breadcrumbs={[
             { label: 'Admin', href: '/admin/dashboard' },
@@ -249,20 +249,20 @@ export default function AdminBackupPage() {
                 disabled={isTriggering}
                 loading={isTriggering}
               >
-                Tạo Bản Sao Lưu Mới
+                Tạo bản sao lưu mới
               </Button>
             </div>
           }
         />
 
         {/* ─── Backup Policy Banner ─── */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-slate-900 text-white shrink-0">
               <HardDrive className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-900">Chiến Lược Sao Lưu PostgreSQL Tự Động</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Chiến lược sao lưu PostgreSQL tự động</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 Các bản snapshot được nén và lưu trữ cục bộ tại máy chủ. Toàn bộ schema và dữ liệu các bảng được bảo toàn trọn vẹn.
               </p>
@@ -281,7 +281,7 @@ export default function AdminBackupPage() {
             loading={loading}
             rowKey={(item) => item.fileName}
             emptyTitle="Chưa có bản sao lưu nào"
-            emptyMessage="Nhấn 'Tạo Bản Sao Lưu Mới' để khởi tạo snapshot cơ sở dữ liệu."
+            emptyMessage="Nhấn 'Tạo bản sao lưu mới' để khởi tạo snapshot cơ sở dữ liệu."
           />
         </Card>
 
@@ -290,7 +290,7 @@ export default function AdminBackupPage() {
           isOpen={showCreateModal}
           title="Tạo bản sao lưu snapshot mới"
           message="Hệ thống sẽ thực hiện kết xuất toàn bộ dữ liệu bảng trong cơ sở dữ liệu PostgreSQL sang file .sql. Thao tác này an toàn và không gây gián đoạn luồng đặt hàng."
-          confirmText="Bắt Đầu Sao Lưu"
+          confirmText="Bắt đầu sao lưu"
           cancelText="Hủy"
           type="info"
           isLoading={isTriggering}
@@ -303,7 +303,7 @@ export default function AdminBackupPage() {
           isOpen={Boolean(restoreTarget)}
           title="Cảnh báo: Kiểm tra phục hồi cơ sở dữ liệu"
           message={`Bạn đang yêu cầu kiểm tra và chuẩn bị phục hồi snapshot "${restoreTarget?.fileName}". Việc phục hồi sẽ đồng bộ dữ liệu về thời điểm sao lưu này. Bạn có muốn tiếp tục kiểm tra tính toàn vẹn của snapshot?`}
-          confirmText="Kiểm Tra Toàn Vẹn"
+          confirmText="Kiểm tra toàn vẹn"
           cancelText="Hủy"
           type="warning"
           isLoading={isRestoring}
@@ -316,7 +316,7 @@ export default function AdminBackupPage() {
           isOpen={Boolean(deleteTarget)}
           title="Xác nhận xóa bản sao lưu"
           message={`Bạn có chắc muốn xóa file snapshot "${deleteTarget?.fileName}" (${deleteTarget?.sizeFormatted}) khỏi máy chủ? Hành động này không thể hoàn tác.`}
-          confirmText="Xóa Vĩnh Viễn"
+          confirmText="Xóa vĩnh viễn"
           cancelText="Hủy"
           type="danger"
           isLoading={isDeleting}

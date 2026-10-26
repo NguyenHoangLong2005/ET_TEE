@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api-config';
+import { marketingService } from '@/lib/services/marketingService';
 import { isPlaceholderImage, isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
 
 type Slide = {
@@ -15,7 +16,16 @@ type Slide = {
   title: string;
   subtitle: string;
   cta: string;
+  /** Id banner thật trong DB; slide dự phòng tĩnh không có nên không được tính số liệu. */
+  bannerId?: number;
 };
+
+// Lượt hiển thị/click cho trang Hiệu quả marketing. Banner không bao giờ gửi sự kiện nên
+// banner đang chạy luôn 0 lượt; lỗi tracking không được làm hỏng trang chủ.
+function trackBanner(eventType: 'IMPRESSION' | 'CLICK', bannerId?: number) {
+  if (bannerId == null) return;
+  marketingService.trackEvent({ eventType, bannerId }).catch(() => {});
+}
 
 const FALLBACK_SLIDES: Slide[] = [
   { 
@@ -123,6 +133,7 @@ export default function HeroBanner() {
           )
           .map(({ b, idx, bg }) => ({
             id: `banner-${b.id ?? idx}`,
+            bannerId: typeof b.id === 'number' ? b.id : undefined,
             bg,
             href: typeof b.linkUrl === 'string' && b.linkUrl.trim() ? b.linkUrl.trim() : '/products',
             badge: 'NEW',
@@ -153,6 +164,15 @@ export default function HeroBanner() {
     setCurrent((prev) => (prev - 1 + total) % total);
   }, [total]);
 
+  // Mỗi banner tính 1 lượt hiển thị cho mỗi lần tải trang, khi nó thực sự được hiện.
+  const seen = useRef<Set<number>>(new Set());
+  const activeBannerId = slides[current]?.bannerId;
+  useEffect(() => {
+    if (activeBannerId == null || seen.current.has(activeBannerId)) return;
+    seen.current.add(activeBannerId);
+    trackBanner('IMPRESSION', activeBannerId);
+  }, [activeBannerId]);
+
   useEffect(() => {
     if (paused) return;
     const timer = setInterval(goNext, AUTO_PLAY_INTERVAL);
@@ -161,7 +181,9 @@ export default function HeroBanner() {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-slate-900 group aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9]"
+      // The banners are 2880x900 (16:5) with their headline baked into the image; any other
+      // aspect ratio cropped the text off the sides, worst on phones (4:3).
+      className="relative w-full overflow-hidden bg-slate-100 group aspect-[16/5]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -174,7 +196,7 @@ export default function HeroBanner() {
               isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
-            <Link href={slide.href} className="block w-full h-full relative cursor-pointer group">
+            <Link href={slide.href} onClick={() => trackBanner('CLICK', slide.bannerId)} className="block w-full h-full relative cursor-pointer group">
               {/* Background Image */}
               <Image
                 src={failed.has(slide.id) ? FALLBACK_BG : slide.bg}
@@ -185,9 +207,7 @@ export default function HeroBanner() {
                 // Remote hosts are not allowlisted in next.config; skip the optimizer.
                 unoptimized={isRemoteImage(slide.bg) && !failed.has(slide.id)}
                 onError={() => markFailed(slide.id)}
-                className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
-                  isActive ? 'scale-105' : 'scale-100'
-                }`}
+                className="w-full h-full object-cover object-center"
               />
             </Link>
           </div>
@@ -197,7 +217,7 @@ export default function HeroBanner() {
       {/* Navigation Buttons */}
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); goPrev(); }}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-black hover:text-white text-black flex items-center justify-center transition-colors duration-300 opacity-0 group-hover:opacity-100"
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/90 shadow-md hover:bg-slate-900 hover:text-white text-slate-900 hidden sm:flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
         aria-label="Banner trước"
       >
         <ChevronLeft className="w-6 h-6" />
@@ -205,14 +225,14 @@ export default function HeroBanner() {
 
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); goNext(); }}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-black hover:text-white text-black flex items-center justify-center transition-colors duration-300 opacity-0 group-hover:opacity-100"
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/90 shadow-md hover:bg-slate-900 hover:text-white text-slate-900 hidden sm:flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
         aria-label="Banner tiếp theo"
       >
         <ChevronRight className="w-6 h-6" />
       </button>
 
       {/* Slide Indicators & Counter */}
-      <div className="absolute bottom-6 right-8 z-30 hidden md:flex items-center gap-4 text-white text-sm font-bold uppercase tracking-wider">
+      <div className="absolute bottom-4 right-6 z-30 hidden md:flex items-center gap-3 rounded-full bg-black/40 backdrop-blur-sm px-4 py-1.5 text-white text-xs font-bold tracking-wider tabular-nums">
         <span>{String(current + 1).padStart(2, '0')}</span>
         <div className="w-16 h-[2px] bg-white/30">
           <div 
@@ -224,14 +244,14 @@ export default function HeroBanner() {
       </div>
 
       {/* Indicator dots for mobile/tablet */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 md:hidden">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1 md:hidden">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent(index); }}
             aria-label={`Slide ${index + 1}`}
-            className={`transition-all duration-300 h-1 ${
-              index === current ? 'w-8 bg-white' : 'w-4 bg-white/50 hover:bg-white/80'
+            className={`transition-all duration-300 h-1 rounded-full ${
+              index === current ? 'w-5 bg-white' : 'w-2 bg-white/60 hover:bg-white/80'
             }`}
           />
         ))}

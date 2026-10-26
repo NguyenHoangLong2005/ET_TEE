@@ -236,16 +236,16 @@ export default function StoreOwnerInventoryPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         
         {/* Header */}
         <PageHeader
-          title="Quản lý Tồn kho"
+          title="Quản lý tồn kho"
           subtitle="Theo dõi số lượng hàng thực tế, cảnh báo mức an toàn và bổ sung tồn kho."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={fetchInventory}
                 loading={isLoading}
                 icon={<RefreshCw className="w-4 h-4" />}
@@ -326,7 +326,7 @@ export default function StoreOwnerInventoryPage() {
         {/* Restock Modal */}
         {restockModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-            <form onSubmit={handleRestockSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <form onSubmit={handleRestockSubmit} className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-md w-full p-6 space-y-4">
               <h3 className="text-sm font-semibold text-slate-900">Nhập bổ sung tồn kho</h3>
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Chọn sản phẩm</label>

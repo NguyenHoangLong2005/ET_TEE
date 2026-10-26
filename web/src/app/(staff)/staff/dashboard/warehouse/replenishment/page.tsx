@@ -10,6 +10,7 @@ import { DataTable, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 
+/** Backend ReplenishmentAdvisor.Suggestion: the inventory row plus a restock quantity from its sales pace. */
 type InventoryItem = {
   id: number;
   productId: number;
@@ -18,6 +19,15 @@ type InventoryItem = {
   quantityOnHand: number;
   quantityReserved: number;
   reorderLevel: number;
+  available: number;
+  soldInWindow: number;
+  windowDays: number;
+  dailyDemand: number;
+  targetStock: number;
+  coverDays: number;
+  suggestedQuantity: number;
+  /** SALES = from units sold in the window; THRESHOLD = nothing sold, topped up to 2x the threshold */
+  basis: "SALES" | "THRESHOLD";
 };
 
 type RestockRequest = {
@@ -32,17 +42,24 @@ type RestockRequest = {
 
 // Backend chỉ trả các mặt hàng có khả dụng <= ngưỡng nhập lại, nên chỉ có 2 mức.
 type Priority = "CRITICAL" | "LOW";
-type Row = InventoryItem & { priority: Priority; available: number; suggested: number };
+type Row = InventoryItem & { priority: Priority; suggested: number };
 
 const PRIORITY: Record<Priority, { label: string; hint: string; badge: string }> = {
   CRITICAL: { label: "Nguy cấp", hint: "Hết hàng hoặc dưới 50% ngưỡng", badge: "bg-rose-100 text-rose-800 border-rose-200" },
   LOW: { label: "Cần chú ý", hint: "Đã chạm ngưỡng nhập lại", badge: "bg-amber-100 text-amber-800 border-amber-200" },
 };
 
-const REQUEST_LABEL: Record<string, string> = { PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", REJECTED: "Từ chối" };
+const REQUEST_LABEL: Record<string, string> = { PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", REJECTED: "Từ chối", REVISION_REQUESTED: "Cần chỉnh sửa" };
 
-/** Gợi ý nhập để tồn khả dụng đạt gấp đôi ngưỡng (đưa về đúng ngưỡng thì hàng vẫn "sắp hết"). */
-const suggestQty = (available: number, reorder: number) => Math.max(1, reorder * 2 - Math.max(0, available));
+const fmtPace = (perDay: number) => perDay.toLocaleString("vi-VN", { maximumFractionDigits: 1 });
+
+/** Why this quantity, in one line (the number comes from the backend, see ReplenishmentAdvisor). */
+function basisText(r: InventoryItem): string {
+  if (r.basis === "SALES") {
+    return `Bán ${r.soldInWindow} trong ${r.windowDays} ngày (~${fmtPace(r.dailyDemand)}/ngày) · nhập đủ bán ~${r.coverDays} ngày`;
+  }
+  return `Chưa bán được trong ${r.windowDays} ngày · nhập theo ngưỡng (đủ ${r.targetStock})`;
+}
 
 export default function ReplenishmentPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -81,10 +98,9 @@ export default function ReplenishmentPage() {
     () =>
       items
         .map((i) => {
-          const available = (i.quantityOnHand ?? 0) - (i.quantityReserved ?? 0);
           const reorder = i.reorderLevel ?? 10;
-          const priority: Priority = available <= 0 || available < reorder * 0.5 ? "CRITICAL" : "LOW";
-          return { ...i, available, priority, suggested: suggestQty(available, reorder) };
+          const priority: Priority = i.available <= 0 || i.available < reorder * 0.5 ? "CRITICAL" : "LOW";
+          return { ...i, priority, suggested: i.suggestedQuantity };
         })
         .sort((a, b) => (a.priority === b.priority ? a.available - b.available : a.priority === "CRITICAL" ? -1 : 1)),
     [items],
@@ -143,7 +159,7 @@ export default function ReplenishmentPage() {
       key: "product",
       header: "Sản phẩm",
       render: (r) => (
-        <div>
+        <div className="min-w-[12rem]">
           <p className="font-semibold text-slate-900">{r.productName}</p>
           <p className="text-[10px] font-mono text-slate-400 mt-0.5">SP #{r.productId} · {r.warehouseLocation || "chưa gán vị trí"}</p>
         </div>
@@ -153,7 +169,7 @@ export default function ReplenishmentPage() {
       key: "stock",
       header: "Tồn kho",
       render: (r) => (
-        <div className="text-xs font-mono leading-relaxed">
+        <div className="min-w-[11rem] whitespace-nowrap text-xs leading-relaxed tabular-nums">
           <div>
             Khả dụng: <span className={`font-bold ${r.available <= 0 ? "text-rose-600" : "text-amber-600"}`}>{Math.max(0, r.available)}</span>
             <span className="text-slate-400"> / ngưỡng {r.reorderLevel}</span>
@@ -165,7 +181,12 @@ export default function ReplenishmentPage() {
     {
       key: "suggested",
       header: "Gợi ý nhập",
-      render: (r) => <span className="font-mono font-black text-slate-900">+{r.suggested}</span>,
+      render: (r) => (
+        <div className="min-w-[13rem]">
+          <span className="font-mono font-black text-slate-900">+{r.suggested}</span>
+          <p className={`mt-0.5 text-[11px] leading-snug ${r.basis === "SALES" ? "text-slate-500" : "text-amber-700"}`}>{basisText(r)}</p>
+        </div>
+      ),
     },
     {
       key: "actions",
@@ -174,7 +195,7 @@ export default function ReplenishmentPage() {
         <div className="flex items-center gap-2">
           <Link
             href={`/staff/dashboard/warehouse/receiving?productId=${r.productId}&qty=${r.suggested}`}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50"
           >
             <PackagePlus className="w-3.5 h-3.5" /> Nhập kho
           </Link>
@@ -216,12 +237,12 @@ export default function ReplenishmentPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
-          title="Đề Xuất Nhập Thêm"
+          title="Đề xuất nhập thêm"
           subtitle="Các mặt hàng khả dụng đã chạm ngưỡng nhập lại. Nhập kho ngay nếu hàng đã về, hoặc gửi đề xuất cho quản lý."
-          badge={<span className="bg-primary-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">KHO HÀNG</span>}
+          badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           actions={
             <Button variant="outline" size="sm" onClick={() => void load()} icon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}>
               Làm mới
@@ -232,7 +253,7 @@ export default function ReplenishmentPage() {
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 font-medium">{error}</p>}
 
         {criticalCount > 0 && (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 flex items-start gap-3">
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <p className="text-sm font-semibold text-rose-800">
               {criticalCount} mặt hàng đã hết hoặc gần hết. Nên xử lý trước để không ảnh hưởng đơn đang chờ.
@@ -247,7 +268,7 @@ export default function ReplenishmentPage() {
                 key={key}
                 onClick={() => setFilter(key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
-                  filter === key ? "bg-primary-600 border-primary-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  filter === key ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {label} ({count})
@@ -281,7 +302,7 @@ export default function ReplenishmentPage() {
           aria-label="Đề xuất nhập thêm hàng"
           onKeyDown={(e) => e.key === "Escape" && setProposeItem(null)}
         >
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
+          <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h3 className="font-bold text-sm text-primary-700 flex items-center gap-2">
                 <Send className="w-4 h-4" /> Đề xuất nhập thêm hàng
@@ -309,8 +330,9 @@ export default function ReplenishmentPage() {
                   onChange={(e) => setProposeQty(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary-600/20 focus:border-primary-600"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Gợi ý +{proposeItem.suggested} để tồn khả dụng đạt {proposeItem.reorderLevel * 2} (gấp đôi ngưỡng).
+                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                  Gợi ý +{proposeItem.suggested} để tồn khả dụng đạt {proposeItem.targetStock}. {basisText(proposeItem)}.
+                  {proposeItem.basis === "SALES" && " Gồm ~7 ngày chờ duyệt & nhập hàng, 14 ngày bán và 7 ngày dự phòng."}
                 </p>
               </div>
               <div>
@@ -333,6 +355,6 @@ export default function ReplenishmentPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

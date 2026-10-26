@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Star, MessageSquare, CornerDownRight, CheckCircle2, AlertCircle, 
   Search, Filter, RefreshCw, Send, Edit, EyeOff, ShieldCheck, 
-  ShoppingBag, Sparkles, MessageCircle, HelpCircle
+  ShoppingBag, MessageCircle, HelpCircle
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -40,15 +40,15 @@ interface CustomerReview {
 
 const QUICK_TEMPLATES = [
   {
-    title: '❤️ Cảm ơn đánh giá 5 sao',
-    text: 'ET.TEE chân thành cảm ơn bạn đã tin tưởng và lựa chọn sản phẩm của shop! Sự hài lòng của bạn là động lực lớn nhất để ET.TEE tiếp tục hoàn thiện chất lượng dịch vụ. Chúc bạn luôn có những trải nghiệm tuyệt vời cùng ET.TEE nha! ✨'
+    title: 'Cảm ơn đánh giá 5 sao',
+    text: 'ET.TEE chân thành cảm ơn bạn đã tin tưởng và lựa chọn sản phẩm của shop! Sự hài lòng của bạn là động lực lớn nhất để ET.TEE tiếp tục hoàn thiện chất lượng dịch vụ. Chúc bạn luôn có những trải nghiệm tuyệt vời cùng ET.TEE.'
   },
   {
-    title: '🤝 Hỗ trợ Đổi trả hàng (1-3 sao)',
+    title: 'Hỗ trợ đổi trả hàng (1-3 sao)',
     text: 'Dạ ET.TEE rất tiếc vì trải nghiệm mua sắm vừa rồi chưa làm bạn hoàn toàn hài lòng. Bộ phận CSKH ET.TEE đã nhắn tin trực tiếp để hỗ trợ đổi size/mẫu hoàn toàn miễn phí cho bạn ngay nhé ạ! Cảm ơn góp ý quý báu của bạn!'
   },
   {
-    title: '👕 Hướng dẫn bảo quản sản phẩm',
+    title: 'Hướng dẫn bảo quản sản phẩm',
     text: 'ET.TEE cảm ơn bạn đã yêu thích sản phẩm ạ! Để áo giữ phom và màu sắc bền đẹp nhất, bạn nhớ giặt bằng nước lạnh và phơi mặt trái dưới bóng râm nhé. Chúc bạn có một ngày thật nhiều niềm vui!'
   }
 ];
@@ -76,7 +76,8 @@ export default function CskhReviewsPage() {
     try {
       const res = await apiClient.get<CustomerReview[]>('/api/staff/cskh/reviews');
       if (Array.isArray(res)) {
-        setReviews(res);
+        // A review whose account was deleted comes back without a name; one such row used to blank the whole page.
+        setReviews(res.map((r) => ({ ...r, customerName: r.customerName || 'Khách hàng ẩn danh' })));
       } else {
         setReviews([]);
       }
@@ -185,10 +186,11 @@ export default function CskhReviewsPage() {
   };
 
   return (
-    <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN', 'STAFF']}>
-      <div className="min-h-screen bg-slate-50/60 p-6 md:p-8 font-sans antialiased text-slate-800 space-y-6 max-w-7xl mx-auto">
+    // same roles as CskhExtendedController's /reviews endpoints
+    <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN', 'CSKH_STAFF']}>
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="Quản Lý Đánh Giá Khách Hàng"
+          title="Quản lý đánh giá khách hàng"
           subtitle="Phản hồi đánh giá sản phẩm 1-5 sao, giải đáp thắc mắc và nâng cao chất lượng dịch vụ"
           breadcrumbs={[
             { label: 'Staff Hub', href: '/staff/dashboard' },
@@ -199,12 +201,12 @@ export default function CskhReviewsPage() {
             <div className="flex items-center gap-2">
               <Link href="/staff/support">
                 <Button variant="outline" size="sm" className="flex items-center gap-1.5">
-                  <HelpCircle className="w-4 h-4 text-teal-600" />
+                  <HelpCircle className="w-4 h-4 text-slate-400" />
                   <span>CSKH Hub</span>
                 </Button>
               </Link>
               <Button
-                variant="primary"
+                variant="outline"
                 size="sm"
                 onClick={fetchReviews}
                 disabled={loading}
@@ -220,33 +222,33 @@ export default function CskhReviewsPage() {
         {/* Quick Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            title="Tổng Đánh giá"
+            title="Tổng đánh giá"
             value={totalCount}
             icon={MessageCircle}
-            color="info"
+            color="slate"
           />
           <StatCard
-            title="Chờ CSKH Trả Lời"
+            title="Chờ CSKH trả lời"
             value={pendingCount}
             icon={AlertCircle}
-            color="warning"
+            color="slate"
           />
           <StatCard
-            title="Đã Phản Hồi"
+            title="Đã phản hồi"
             value={repliedCount}
             icon={CheckCircle2}
-            color="success"
+            color="slate"
           />
           <StatCard
-            title="Điểm Đánh Giá TB"
-            value={`${avgRating} ⭐`}
-            icon={Sparkles}
-            color="purple"
+            title="Điểm đánh giá TB"
+            value={`${avgRating} / 5`}
+            icon={Star}
+            color="slate"
           />
         </div>
 
         {/* Filter & Search Controls */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
               <Filter className="w-3.5 h-3.5" /> Lọc sao:
@@ -261,7 +263,7 @@ export default function CskhReviewsPage() {
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`}
               >
-                {stars === 0 ? 'Tất cả' : `${stars} ⭐`}
+                {stars === 0 ? 'Tất cả' : `${stars} sao`}
               </button>
             ))}
           </div>
@@ -294,12 +296,12 @@ export default function CskhReviewsPage() {
         {/* Main Reviews List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400 text-sm flex flex-col items-center gap-2">
+            <div className="bg-white p-12 rounded-xl border border-slate-200 text-center text-slate-400 text-sm flex flex-col items-center gap-2">
               <RefreshCw className="w-6 h-6 animate-spin text-red-600" />
               <span>Đang tải danh sách bình luận đánh giá...</span>
             </div>
           ) : filteredReviews.length === 0 ? (
-            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-500">
+            <div className="bg-white p-12 rounded-xl border border-slate-200 text-center text-slate-500">
               <MessageSquare className="w-10 h-10 text-slate-300 mx-auto mb-3" />
               <p className="font-bold text-slate-700">Không tìm thấy bình luận đánh giá nào phù hợp</p>
               <p className="text-xs text-slate-400 mt-1">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
@@ -308,7 +310,7 @@ export default function CskhReviewsPage() {
             filteredReviews.map((rev) => (
               <div 
                 key={rev.id} 
-                className={`bg-white rounded-2xl border transition-all p-5 space-y-4 shadow-2xs ${
+                className={`bg-white rounded-xl border transition-all p-5 space-y-4 shadow-2xs ${
                   rev.status === 'PENDING_REPLY' 
                     ? 'border-amber-200 bg-amber-50/10' 
                     : rev.status === 'HIDDEN'
@@ -383,7 +385,7 @@ export default function CskhReviewsPage() {
                         <CornerDownRight className="w-4 h-4 text-red-600" />
                         <span>Phản hồi từ CSKH ET.TEE ({rev.reply.repliedBy})</span>
                       </div>
-                      <span className="text-[11px] text-slate-400 font-mono">
+                      <span className="text-[11px] text-slate-400 tabular-nums">
                         {new Date(rev.reply.repliedAt).toLocaleString('vi-VN')}
                       </span>
                     </div>
@@ -423,7 +425,7 @@ export default function CskhReviewsPage() {
         {/* Modal Trả Lời Bình Luận */}
         {isReplyModalOpen && selectedReview && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-xl w-full overflow-hidden animate-in fade-in zoom-in duration-200">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-red-500" />
@@ -443,7 +445,7 @@ export default function CskhReviewsPage() {
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-900">{selectedReview.customerName}</span>
                     <span className="text-amber-500 font-bold flex items-center gap-1">
-                      {selectedReview.rating} ⭐
+                      {selectedReview.rating}/5 sao
                     </span>
                   </div>
                   <p className="text-slate-700 italic">"{selectedReview.content}"</p>

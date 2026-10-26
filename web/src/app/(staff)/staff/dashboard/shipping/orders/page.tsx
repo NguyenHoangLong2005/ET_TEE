@@ -11,7 +11,6 @@ import { apiClient } from "@/lib/api-client";
 import PageHeader from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { DataTable, Column } from "@/components/ui/DataTable";
-import StatusBadge from "@/components/ui/StatusBadge";
 import { StatCard } from "@/components/ui/StatCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -25,6 +24,7 @@ type Order = {
   shippingAddress?: string;
   status: string;
   paymentMethod?: string;
+  paymentStatus?: string;
   totalAmount?: number;
   total?: number;
   shippingProvider?: string;
@@ -33,38 +33,11 @@ type Order = {
   itemCount?: number;
 };
 
-// ─── Nav ─────────────────────────────────────────────────────────────────────
-function ShippingNav({ active }: { active: string }) {
-  const links = [
-    { href: "/staff/dashboard/shipping/dashboard", label: "Tổng quan" },
-    { href: "/staff/dashboard/shipping/orders", label: "Đơn chờ giao" },
-    { href: "/staff/dashboard/shipping/shipments", label: "Kiện hàng" },
-    { href: "/staff/dashboard/shipping/exceptions", label: "Ngoại lệ" },
-    { href: "/staff/dashboard/shipping/cod", label: "Đối soát COD" },
-  ];
-  return (
-    <nav className="flex flex-wrap gap-2 text-xs font-semibold">
-      {links.map(l => (
-        <Link
-          key={l.href}
-          href={l.href}
-          className={`rounded-lg border px-3 py-2 transition ${
-            l.href === active
-              ? "border-sky-300 bg-sky-50 text-sky-700 font-bold"
-              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          {l.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
 
 const PROVIDER_CLS: Record<string, string> = {
-  GHN:  "bg-red-100 text-red-700 border-red-200",
-  GHTK: "bg-blue-100 text-blue-700 border-blue-200",
-  "J&T": "bg-orange-100 text-orange-700 border-orange-200",
+  GHN:  "bg-slate-100 text-slate-700 border-slate-200",
+  GHTK: "bg-slate-100 text-slate-700 border-slate-200",
+  "J&T": "bg-slate-100 text-slate-700 border-slate-200",
 };
 
 // ─── Main Component ─────────────────────────────────────────────────────────
@@ -72,8 +45,8 @@ export default function ShippingOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  const [shipmentCounts, setShipmentCounts] = useState<{ inTransit: number; delivered: number } | null>(null);
   // Tao van don: buoc dua don kho da ban giao vao luong van chuyen (trang Kien hang).
   const [createFor, setCreateFor] = useState<Order | null>(null);
   const [carrier, setCarrier] = useState("GHN");
@@ -137,6 +110,18 @@ export default function ShippingOrdersPage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    apiClient.get<any>("/api/staff/shipping/shipments")
+      .then(data => {
+        const list = (Array.isArray(data) ? data : data?.data ?? []) as { status?: string }[];
+        setShipmentCounts({
+          inTransit: list.filter(s => s.status === "IN_TRANSIT").length,
+          delivered: list.filter(s => s.status === "DELIVERED").length,
+        });
+      })
+      .catch(() => setShipmentCounts(null));
+  }, [orders.length]);
+
   const filtered = useMemo(() => {
     return orders.filter(o => {
       const q = searchQuery.toLowerCase();
@@ -145,23 +130,21 @@ export default function ShippingOrdersPage() {
         (o.customerName ?? "").toLowerCase().includes(q) ||
         (o.customerPhone ?? o.phone ?? "").includes(q) ||
         (o.trackingCode ?? "").toLowerCase().includes(q);
-      const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
-      return matchSearch && matchStatus;
+      return matchSearch;
     });
-  }, [orders, searchQuery, statusFilter]);
+  }, [orders, searchQuery]);
 
-  // Stats
-  const handedCount = orders.filter(o => o.status === "HANDED_TO_CARRIER").length;
-  const inTransitCount = orders.filter(o => o.status === "IN_TRANSIT" || o.status === "OUT_FOR_DELIVERY").length;
-  const deliveredCount = orders.filter(o => o.status === "DELIVERED").length;
-  const failedCount = orders.filter(o => o.status === "FAILED_DELIVERY" || o.status === "EXCEPTION").length;
+  // Danh sách này chỉ gồm đơn kho đã bàn giao nhưng CHƯA có vận đơn. Đơn đang giao /
+  // đã giao / sự cố là trạng thái của kiện hàng, theo dõi ở trang Kiện hàng.
+  const codOrders = orders.filter(o => o.paymentMethod === "COD");
+  const codTotal = codOrders.reduce((sum, o) => sum + (o.totalAmount ?? o.total ?? 0), 0);
 
   const fmtMoney = (v?: number) => v != null ? `${v.toLocaleString("vi-VN")}₫` : "—";
 
   const columns: Column<Order>[] = [
     {
       key: 'orderCode',
-      header: 'Mã Đơn',
+      header: 'Mã đơn',
       render: (o) => {
         const id = o.id ?? o.orderId;
         return (
@@ -174,14 +157,14 @@ export default function ShippingOrdersPage() {
     },
     {
       key: 'customer',
-      header: 'Khách Hàng',
+      header: 'Khách hàng',
       render: (o) => {
         const phone = o.customerPhone ?? o.phone;
         return (
           <div>
             <div className="flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="font-semibold text-slate-900 text-sm">{o.customerName ?? "—"}</span>
+              <span className="font-semibold text-slate-900 text-sm whitespace-nowrap">{o.customerName ?? "—"}</span>
             </div>
             {phone && (
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -195,9 +178,9 @@ export default function ShippingOrdersPage() {
     },
     {
       key: 'address',
-      header: 'Địa Chỉ Giao Hàng',
+      header: 'Địa chỉ giao hàng',
       render: (o) => (
-        <div className="max-w-[200px] flex items-start gap-1.5">
+        <div className="min-w-[180px] max-w-[240px] flex items-start gap-1.5">
           <MapPin className="w-3 h-3 text-slate-400 shrink-0 mt-0.5" />
           <span className="text-xs text-slate-500 leading-relaxed line-clamp-2">{o.shippingAddress ?? "—"}</span>
         </div>
@@ -227,9 +210,11 @@ export default function ShippingOrdersPage() {
     },
     {
       key: 'status',
-      header: 'TT Vận Chuyển',
-      render: (o) => (
-        <StatusBadge status={o.status} type="shipment" />
+      header: 'Trạng thái',
+      render: () => (
+        <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded border text-[11px] font-semibold bg-amber-50 text-amber-700 border-amber-200">
+          Chờ tạo vận đơn
+        </span>
       )
     },
     {
@@ -240,17 +225,21 @@ export default function ShippingOrdersPage() {
         const amt = o.totalAmount ?? o.total;
         return isCOD ? (
           <div>
-            <span className="font-bold text-amber-700 text-sm font-mono">{fmtMoney(amt)}</span>
-            <span className="block text-[10px] text-slate-400">Thu tiền khi giao</span>
+            <span className="font-bold text-slate-900 text-sm tabular-nums whitespace-nowrap">{fmtMoney(amt)}</span>
+            <span className="block text-[10px] text-slate-400 whitespace-nowrap">Thu khi giao</span>
           </div>
-        ) : (
+        ) : o.paymentStatus === "PAID" ? (
           <span className="text-xs text-emerald-600 font-medium">Đã thanh toán</span>
+        ) : (
+          // Trước đây mọi đơn không phải COD đều hiện "Đã thanh toán", kể cả đơn chuyển khoản
+          // chưa nhận được tiền.
+          <span className="text-xs text-amber-600 font-medium">Chưa nhận thanh toán</span>
         );
       }
     },
     {
       key: 'actions',
-      header: 'Thao Tác',
+      header: 'Thao tác',
       align: 'right',
       render: (o) => (
         <div className="flex items-center justify-end gap-2">
@@ -274,18 +263,17 @@ export default function ShippingOrdersPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50/60 p-6 md:p-8 text-slate-900 font-sans antialiased space-y-6 max-w-7xl mx-auto">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader
-        title="Đơn Hàng Cần Xử Lý Vận Chuyển"
-        subtitle="Theo dõi tiến độ giao hàng, phân phối đơn sang hãng vận chuyển và kiểm tra tracking"
+        title="Đơn chờ tạo vận đơn"
+        subtitle="Đơn kho đã bàn giao: chọn hãng vận chuyển và tạo vận đơn để bắt đầu giao"
         breadcrumbs={[
-          { label: 'Staff Hub', href: '/staff/dashboard' },
-          { label: 'Vận chuyển', href: '/staff/dashboard/shipping' },
+          { label: 'Bộ phận vận chuyển', href: '/staff/dashboard/shipping/dashboard' },
           { label: 'Đơn chờ giao' }
         ]}
         actions={
           <Button
-            variant="primary"
+            variant="outline"
             size="sm"
             onClick={load}
             disabled={loading}
@@ -297,38 +285,40 @@ export default function ShippingOrdersPage() {
         }
       />
 
-      <ShippingNav active="/staff/dashboard/shipping/orders" />
-
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Đã bàn giao hãng"
-          value={handedCount}
+          title="Chờ tạo vận đơn"
+          value={orders.length}
           icon={Package}
-          color="info"
-          subtitle="Chờ hãng quét mã"
+          color="slate"
+          subtitle="Kho đã bàn giao cho bộ phận vận chuyển"
         />
         <StatCard
-          title="Đang giao hàng"
-          value={inTransitCount}
-          icon={Truck}
-          color="warning"
-          subtitle="Đang trên lộ trình"
+          title="Đơn thu hộ COD"
+          value={codOrders.length}
+          icon={DollarSign}
+          color="slate"
+          subtitle={`Tổng thu hộ ${fmtMoney(codTotal)}`}
         />
-        <StatCard
-          title="Giao thành công"
-          value={deliveredCount}
-          icon={CheckCircle2}
-          color="success"
-          subtitle="Đã phát cho khách"
-        />
-        <StatCard
-          title="Giao thất bại"
-          value={failedCount}
-          icon={Clock}
-          color="danger"
-          subtitle="Cần liên hệ xử lý"
-        />
+        <Link href="/staff/dashboard/shipping/shipments?status=IN_TRANSIT" className="block">
+          <StatCard
+            title="Đang giao hàng"
+            value={shipmentCounts?.inTransit ?? "—"}
+            icon={Truck}
+            color="slate"
+            subtitle="Xem ở Kiện hàng →"
+          />
+        </Link>
+        <Link href="/staff/dashboard/shipping/shipments?status=DELIVERED" className="block">
+          <StatCard
+            title="Đã giao thành công"
+            value={shipmentCounts?.delivered ?? "—"}
+            icon={CheckCircle2}
+            color="slate"
+            subtitle="Xem ở Kiện hàng →"
+          />
+        </Link>
       </div>
 
       {/* DataTable */}
@@ -340,41 +330,17 @@ export default function ShippingOrdersPage() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Tìm mã đơn, tracking, tên KH, SĐT..."
-        emptyTitle="Không có đơn vận chuyển nào"
-        emptyMessage="Không tìm thấy đơn hàng nào phù hợp với điều kiện tìm kiếm hoặc trạng thái lọc."
-        filterSlot={
-          <div className="flex items-center gap-2">
-            {[
-              { key: "ALL", label: "Tất cả" },
-              { key: "HANDED_TO_CARRIER", label: "Đã bàn giao" },
-              { key: "IN_TRANSIT", label: "Đang vận chuyển" },
-              { key: "OUT_FOR_DELIVERY", label: "Đang giao" },
-              { key: "DELIVERED", label: "Đã giao" },
-              { key: "FAILED_DELIVERY", label: "Giao thất bại" },
-            ].map(s => (
-              <button
-                key={s.key}
-                onClick={() => setStatusFilter(s.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                  statusFilter === s.key
-                    ? "bg-slate-900 text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        }
+        emptyTitle="Không có đơn chờ tạo vận đơn"
+        emptyMessage="Đơn đã tạo vận đơn được theo dõi ở mục Kiện hàng (đang giao, đã giao, sự cố)."
       />
 
       {/* Create Shipment Modal */}
       {createFor && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleCreateShipment} className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
+          <form onSubmit={handleCreateShipment} className="bg-white rounded-xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2">
-                <Truck className="w-5 h-5 text-sky-600" />
+                <Truck className="w-5 h-5 text-slate-400" />
                 <h3 className="text-sm font-semibold text-slate-900">Tạo vận đơn {createFor.orderCode}</h3>
               </div>
               <button type="button" onClick={() => setCreateFor(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
@@ -408,7 +374,9 @@ export default function ShippingOrdersPage() {
               <p className="text-xs text-slate-500">
                 {createFor.paymentMethod === "COD"
                   ? `Tiền thu hộ COD: ${fmtMoney(createFor.totalAmount ?? createFor.total)} (hệ thống tự tính theo đơn).`
-                  : "Đơn đã thanh toán, không thu hộ."}
+                  : createFor.paymentStatus === "PAID"
+                    ? "Đơn đã thanh toán, không thu hộ."
+                    : "Đơn chuyển khoản chưa nhận được tiền, không thu hộ: kiểm tra thanh toán trước khi giao."}
               </p>
             </div>
             <div className="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50">
@@ -422,10 +390,10 @@ export default function ShippingOrdersPage() {
       {/* Detail Modal */}
       {detailOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2">
-                <Truck className="w-5 h-5 text-sky-600" />
+                <Truck className="w-5 h-5 text-slate-400" />
                 <h3 className="text-sm font-semibold text-slate-900">Chi tiết vận đơn {detailOrder.orderCode}</h3>
               </div>
               <button onClick={() => setDetailOrder(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
@@ -442,23 +410,25 @@ export default function ShippingOrdersPage() {
                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
                   <p className="text-xs text-slate-400 uppercase font-semibold">Đơn vị vận chuyển</p>
                   <p className="font-bold text-slate-900 mt-1">{detailOrder.shippingProvider ?? "Nội bộ"}</p>
-                  <p className="text-xs font-mono text-sky-600 mt-0.5">{detailOrder.trackingCode ?? "Chưa có mã tracking"}</p>
+                  <p className="text-xs font-mono text-slate-500 mt-0.5">{detailOrder.trackingCode ?? "Chưa có mã tracking"}</p>
                 </div>
               </div>
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
                 <p className="text-xs text-slate-400 uppercase font-semibold">Địa chỉ giao hàng</p>
                 <p className="text-slate-700 mt-1">{detailOrder.shippingAddress ?? "—"}</p>
               </div>
-              <div className="flex justify-between items-center bg-sky-50 rounded-xl p-4 border border-sky-100">
+              <div className="flex justify-between items-center bg-slate-50 rounded-xl p-4 border border-slate-200">
                 <div>
-                  <p className="text-xs text-sky-700 font-semibold">Tiền thu hộ COD</p>
-                  <p className="text-lg font-black text-sky-900 font-mono">
+                  <p className="text-xs text-slate-500 font-semibold">Tiền thu hộ COD</p>
+                  <p className="text-lg font-black text-slate-900 tabular-nums">
                     {detailOrder.paymentMethod === "COD"
                       ? fmtMoney(detailOrder.totalAmount ?? detailOrder.total)
-                      : "0₫ (Đã thanh toán online)"}
+                      : detailOrder.paymentStatus === "PAID"
+                        ? "0₫ (Đã thanh toán online)"
+                        : "0₫ (Chưa nhận thanh toán)"}
                   </p>
                 </div>
-                <StatusBadge status={detailOrder.status} type="shipment" />
+                <span className="text-[11px] font-semibold text-amber-700">Chờ tạo vận đơn</span>
               </div>
             </div>
             <div className="p-4 border-t border-slate-100 flex justify-end bg-slate-50">
@@ -469,6 +439,6 @@ export default function ShippingOrdersPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

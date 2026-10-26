@@ -42,8 +42,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^\+?[0-9]{8,15}$/;
 
 const inputClass =
-  'w-full border border-zinc-200 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]';
-const labelClass = 'block text-xs font-bold text-zinc-700 uppercase tracking-wide mb-1.5';
+  'w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary';
+const labelClass = 'block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5';
 
 export default function SuppliersPage() {
   const { user } = useAuth();
@@ -188,8 +188,8 @@ export default function SuppliersPage() {
   };
 
   const fieldError = (k: keyof FormState) =>
-    submitted && errors[k] ? <p className="mt-1 text-xs font-medium text-[#BD001F]" role="alert">{errors[k]}</p> : null;
-  const border = (k: keyof FormState) => (submitted && errors[k] ? 'border-[#E50027]' : '');
+    submitted && errors[k] ? <p className="mt-1 text-xs font-medium text-primary-700" role="alert">{errors[k]}</p> : null;
+  const border = (k: keyof FormState) => (submitted && errors[k] ? 'border-primary' : '');
 
   const columns: Column<Supplier>[] = [
     {
@@ -198,15 +198,15 @@ export default function SuppliersPage() {
       width: '26%',
       render: (item) => (
         <div className="min-w-0">
-          <div className="font-bold text-zinc-900 break-words">{item.name}</div>
-          <div className="mt-0.5 flex items-center gap-2 text-xs text-zinc-400">
+          <div className="font-bold text-slate-900 break-words">{item.name}</div>
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400">
             <span className="font-mono">#{item.id}</span>
             {item.shopId == null ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-zinc-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
                 <Lock className="w-3 h-3" /> Dùng chung
               </span>
             ) : (
-              <span className="rounded-full bg-[#FFF0F2] px-2 py-0.5 font-medium text-[#BD001F]">Riêng</span>
+              <span className="rounded-full bg-primary-50 px-2 py-0.5 font-medium text-primary-700">Riêng</span>
             )}
           </div>
         </div>
@@ -218,9 +218,9 @@ export default function SuppliersPage() {
       width: '18%',
       render: (item) =>
         item.productType ? (
-          <span className="text-sm text-zinc-700 line-clamp-2" title={item.productType}>{item.productType}</span>
+          <span className="text-sm text-slate-700 line-clamp-2" title={item.productType}>{item.productType}</span>
         ) : (
-          <span className="text-zinc-300 text-xs">—</span>
+          <span className="text-slate-300 text-xs">—</span>
         ),
     },
     {
@@ -229,8 +229,8 @@ export default function SuppliersPage() {
       width: '22%',
       render: (item) => (
         <div className="min-w-0 space-y-0.5 text-xs">
-          {item.phone ? <a href={`tel:${item.phone}`} className="block font-medium text-zinc-800 hover:underline">{item.phone}</a> : <span className="block text-zinc-300">—</span>}
-          {item.email && <a href={`mailto:${item.email}`} className="block truncate text-zinc-500 hover:underline" title={item.email}>{item.email}</a>}
+          {item.phone ? <a href={`tel:${item.phone}`} className="block font-medium text-slate-800 hover:underline">{item.phone}</a> : <span className="block text-slate-300">—</span>}
+          {item.email && <a href={`mailto:${item.email}`} className="block truncate text-slate-500 hover:underline" title={item.email}>{item.email}</a>}
         </div>
       ),
     },
@@ -239,7 +239,7 @@ export default function SuppliersPage() {
       header: 'Địa chỉ',
       width: '18%',
       render: (item) => (
-        <span className="text-xs text-zinc-500 line-clamp-2" title={item.address ?? undefined}>{item.address || '—'}</span>
+        <span className="text-xs text-slate-500 line-clamp-2" title={item.address ?? undefined}>{item.address || '—'}</span>
       ),
     },
     {
@@ -248,7 +248,7 @@ export default function SuppliersPage() {
       width: '8%',
       align: 'right',
       render: (item) => (
-        <span className="inline-flex min-w-[2rem] justify-center px-2 py-0.5 rounded-full bg-zinc-100 font-semibold text-zinc-800 text-xs tabular-nums">
+        <span className="inline-flex min-w-[2rem] justify-center px-2 py-0.5 rounded-full bg-slate-100 font-semibold text-slate-800 text-xs tabular-nums">
           {item.productCount ?? 0}
         </span>
       ),
@@ -263,7 +263,7 @@ export default function SuppliersPage() {
           <div className="flex items-center justify-end gap-1">
             <button
               onClick={() => openModal(item)}
-              className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               title="Sửa" aria-label="Sửa"
             >
               <Edit2 className="w-4 h-4" />
@@ -271,19 +271,19 @@ export default function SuppliersPage() {
             {canDeleteSupplier(item) ? (
               <button
                 onClick={() => openDelete(item)}
-                className="p-1.5 text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary-50 rounded-lg transition-colors"
                 title="Xóa" aria-label="Xóa"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             ) : (
-              <span className="p-1.5 text-zinc-200" title="Nhà cung cấp dùng chung: chỉ Quản trị viên được xóa">
+              <span className="p-1.5 text-slate-200" title="Nhà cung cấp dùng chung: chỉ Quản trị viên được xóa">
                 <Trash2 className="w-4 h-4" />
               </span>
             )}
           </div>
         ) : (
-          <span className="text-xs italic text-zinc-300" title="Nhà cung cấp của cửa hàng khác, bạn chỉ xem được">
+          <span className="text-xs italic text-slate-300" title="Nhà cung cấp của cửa hàng khác, bạn chỉ xem được">
             Chỉ xem
           </span>
         ),
@@ -292,10 +292,10 @@ export default function SuppliersPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         <PageHeader
-          title="Quản lý Nhà cung cấp"
+          title="Quản lý nhà cung cấp"
           subtitle={
             isAdmin
               ? 'Đối tác cung ứng vải, nguyên phụ liệu và đóng gói (dùng chung + riêng từng cửa hàng).'
@@ -315,7 +315,7 @@ export default function SuppliersPage() {
         />
 
         {loadError && (
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-[#F4C0C8] bg-[#FFF0F2] px-4 py-3 text-sm text-[#950019]">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-800">
             <span>{loadError}</span>
             <Button variant="outline" size="sm" onClick={fetchData}>Thử lại</Button>
           </div>
@@ -345,21 +345,21 @@ export default function SuppliersPage() {
         />
 
         {isModalOpen && (!editingItem || canEditSupplier(editingItem)) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl w-full max-w-lg overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
-                <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h3 className="text-sm font-semibold text-slate-900">
                   {editingItem ? 'Sửa nhà cung cấp' : 'Thêm nhà cung cấp mới'}
                 </h3>
                 <button type="button" onClick={closeModal} aria-label="Đóng"
-                  className="p-1 text-zinc-400 hover:text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors">
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <form onSubmit={handleSave} className="p-6 space-y-4" noValidate>
                 <div>
-                  <label className={labelClass}>Tên nhà cung cấp <span className="text-[#E50027]">*</span></label>
+                  <label className={labelClass}>Tên nhà cung cấp <span className="text-primary">*</span></label>
                   <input
                     type="text" value={form.name} maxLength={255}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -423,7 +423,7 @@ export default function SuppliersPage() {
                 </div>
 
                 {!editingItem && !isAdmin && (
-                  <p className="text-xs text-zinc-500">Nhà cung cấp mới sẽ là nhà cung cấp riêng của bạn.</p>
+                  <p className="text-xs text-slate-500">Nhà cung cấp mới sẽ là nhà cung cấp riêng của bạn.</p>
                 )}
                 {editingItem && editingItem.shopId == null && (
                   <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -431,7 +431,7 @@ export default function SuppliersPage() {
                   </p>
                 )}
 
-                <div className="pt-3 border-t border-zinc-100 flex justify-end gap-2">
+                <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={closeModal} disabled={isSaving}>Hủy</Button>
                   <Button type="submit" loading={isSaving} icon={<Save className="w-4 h-4" />}>Lưu thông tin</Button>
                 </div>

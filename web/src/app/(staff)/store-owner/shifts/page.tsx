@@ -201,16 +201,16 @@ export default function StoreOwnerShiftsPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* Header */}
         <PageHeader
-          title="Lịch làm việc & Xếp ca"
+          title="Lịch làm việc & xếp ca"
           subtitle="Lịch phân ca làm việc và theo dõi danh sách nhân sự tại cửa hàng."
           actions={
             <div className="flex items-center gap-2.5">
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={fetchShifts}
                 loading={loading}
                 icon={<RefreshCw className="w-4 h-4" />}
@@ -250,7 +250,7 @@ export default function StoreOwnerShiftsPage() {
         {/* Modal: Create Work Shift */}
         {createModalOpen && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-md w-full overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="font-extrabold text-slate-900 text-base">Phân ca làm việc mới</h3>
                 <button

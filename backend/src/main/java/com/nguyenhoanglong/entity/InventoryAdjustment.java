@@ -27,6 +27,10 @@ public class InventoryAdjustment {
     @Column(name = "approved_by")
     private Long approvedBy;
 
+    /** requested_by la Long con User.id la String nen chua bao gio duoc ghi; cot nay luu nguoi gui de bao ket qua duyet. */
+    @Column(name = "requester_user_id", length = 255)
+    private String requesterUserId;
+
     @Column(name = "status", nullable = false, length = 30)
     private String status = "PENDING";
 
@@ -45,6 +49,8 @@ public class InventoryAdjustment {
     public void setRequestedBy(Long requestedBy) { this.requestedBy = requestedBy; }
     public Long getApprovedBy() { return approvedBy; }
     public void setApprovedBy(Long approvedBy) { this.approvedBy = approvedBy; }
+    public String getRequesterUserId() { return requesterUserId; }
+    public void setRequesterUserId(String requesterUserId) { this.requesterUserId = requesterUserId; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -99,15 +99,15 @@ export default function EmailCampaignsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader title="Chiến dịch email" subtitle="Chỉ gửi cho khách đã đồng ý nhận email; mỗi email có link hủy đăng ký" />
 
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
         <Users className="w-5 h-5 text-slate-500" />
         <span><strong>{subscribers}</strong> địa chỉ đang đồng ý nhận email ưu đãi.</span>
       </div>
 
-      <form onSubmit={create} className="rounded-2xl border border-slate-200 bg-white p-5 grid gap-4 md:grid-cols-2">
+      <form onSubmit={create} className="rounded-xl border border-slate-200 bg-white p-5 grid gap-4 md:grid-cols-2">
         <h2 className="md:col-span-2 font-bold text-slate-900 flex items-center gap-2"><Mail className="w-4 h-4" /> Chiến dịch mới</h2>
         <label className="text-sm">
           <span className="block font-semibold text-slate-700 mb-1">Tên (nội bộ)</span>
@@ -147,7 +147,7 @@ export default function EmailCampaignsPage() {
         </div>
       </form>
 
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600 text-left">
             <tr>

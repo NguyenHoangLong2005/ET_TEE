@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, RefreshCcw, Sparkles, CheckCircle2, Ruler, Calculator, ShieldCheck, ChevronRight } from 'lucide-react';
+import { X, RefreshCcw, CheckCircle2, Ruler, Calculator, ShieldCheck, ChevronRight } from 'lucide-react';
 import { SizeAdvisorService, CONFIDENCE_LABEL, Fit } from '@/lib/services/sizeAdvisorService';
 
 interface SizeGuideModalProps {
@@ -158,7 +158,7 @@ export default function SizeGuideModal({
                   : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <Ruler className="w-3.5 h-3.5 text-amber-500" />
               <span>Cách lấy số đo</span>
             </button>
           </div>
@@ -481,9 +481,9 @@ export default function SizeGuideModal({
           {/* VIEW 2: SMART CALCULATOR */}
           {activeView === 'calculator' && (
             <div className="max-w-xl mx-auto py-2">
-              <div className="bg-gradient-to-br from-amber-50 via-white to-slate-50 p-6 rounded-2xl border border-amber-200/80 shadow-xs mb-6">
+              <div className="bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80 shadow-xs mb-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
+                  <Calculator className="w-5 h-5 text-amber-600" />
                   <h3 className="font-bold text-slate-900 uppercase tracking-wide text-sm">Tính Size Tự Động Theo Vóc Dáng</h3>
                 </div>
 

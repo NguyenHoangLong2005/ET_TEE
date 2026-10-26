@@ -117,12 +117,12 @@ export default function WarehouseDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-8 text-slate-900">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="max-w-7xl mx-auto space-y-8">
         <PageHeader
-          title="Tổng Quan Kho Hàng"
+          title="Tổng quan kho hàng"
           subtitle={`Xử lý đơn hàng, xuất nhập kho & tồn kho chi nhánh • Cập nhật lúc: ${lastSync ? lastSync.toLocaleTimeString("vi-VN") : "—"}`}
-          badge={<span className="bg-primary-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">KHO HÀNG</span>}
+          badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           actions={
             <div className="flex items-center gap-2">
               <Link href="/staff/dashboard/warehouse/receiving">
@@ -141,7 +141,7 @@ export default function WarehouseDashboard() {
           }
         />
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6">
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">Đơn đang chờ ở từng bước</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {WORKFLOW.map((step, idx) => (
@@ -176,13 +176,13 @@ export default function WarehouseDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
               <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-primary-600" />
                 Đơn cần xử lý
               </h2>
-              <Link href="/staff/dashboard/warehouse/fulfillment" className="text-sm text-amber-600 hover:text-primary-700 font-medium flex items-center gap-1 transition-colors">
+              <Link href="/staff/dashboard/warehouse/fulfillment" className="text-sm text-slate-500 hover:text-slate-900 font-medium flex items-center gap-1 transition-colors">
                 Xem tất cả <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -196,19 +196,19 @@ export default function WarehouseDashboard() {
             />
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col">
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6 flex flex-col">
             <h2 className="text-sm font-semibold text-slate-900 mb-6">Thao tác nhanh</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-2.5">
               {QUICK_ACTIONS.map((action) => (
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all group text-center"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-[0_4px_12px_-4px_rgba(16,24,40,0.12)] transition-all group"
                 >
-                  <div className={`p-3 rounded-lg ${action.bg} group-hover:scale-110 transition-transform`}>
-                    <action.icon className={`w-6 h-6 ${action.color}`} />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-primary-50 group-hover:text-primary">
+                    <action.icon className="w-[18px] h-[18px]" />
                   </div>
-                  <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900">{action.name}</span>
+                  <span className="text-[13px] font-semibold text-slate-700 group-hover:text-slate-900">{action.name}</span>
                 </Link>
               ))}
             </div>

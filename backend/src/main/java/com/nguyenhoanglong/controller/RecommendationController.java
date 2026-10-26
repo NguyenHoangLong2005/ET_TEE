@@ -5,6 +5,7 @@ import com.nguyenhoanglong.repository.UserRepository;
 import com.nguyenhoanglong.service.BehaviorEventService;
 import com.nguyenhoanglong.service.CartComplementService;
 import com.nguyenhoanglong.service.ForYouService;
+import com.nguyenhoanglong.service.HomeRecommendationService;
 import com.nguyenhoanglong.service.OutfitService;
 import com.nguyenhoanglong.service.SizeAdvisorService;
 import org.springframework.http.HttpStatus;
@@ -26,15 +27,18 @@ public class RecommendationController {
     private final CartComplementService cartComplementService;
     private final OutfitService outfitService;
     private final SizeAdvisorService sizeAdvisorService;
+    private final HomeRecommendationService homeRecommendationService;
     private final UserRepository userRepository;
 
     public RecommendationController(ForYouService forYouService, CartComplementService cartComplementService,
                                     OutfitService outfitService, SizeAdvisorService sizeAdvisorService,
+                                    HomeRecommendationService homeRecommendationService,
                                     UserRepository userRepository) {
         this.forYouService = forYouService;
         this.cartComplementService = cartComplementService;
         this.outfitService = outfitService;
         this.sizeAdvisorService = sizeAdvisorService;
+        this.homeRecommendationService = homeRecommendationService;
         this.userRepository = userRepository;
     }
 
@@ -113,6 +117,33 @@ public class RecommendationController {
         String userKey = BehaviorEventService.resolveUserKey(currentUserId(), guestToken);
         var result = forYouService.recommend(userKey, Math.max(1, Math.min(limit, 24)));
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /** Home page, everyone: most interest from shoppers in the last 7 (or 30) days. */
+    @GetMapping("/trending")
+    public ResponseEntity<ApiResponse<HomeRecommendationService.Trending>> trending(
+            @RequestParam(defaultValue = "12") int limit) {
+        return ResponseEntity.ok(ApiResponse.success(homeRecommendationService.trending(Math.max(1, Math.min(limit, 24)))));
+    }
+
+    /** Home page: products similar to the one this shopper viewed last. */
+    @GetMapping("/because-you-viewed")
+    public ResponseEntity<ApiResponse<HomeRecommendationService.BecauseYouViewed>> becauseYouViewed(
+            @RequestHeader(value = "X-Guest-Cart-Token", required = false) String guestToken,
+            @RequestParam(defaultValue = "12") int limit) {
+        String userKey = BehaviorEventService.resolveUserKey(currentUserId(), guestToken);
+        return ResponseEntity.ok(ApiResponse.success(
+                homeRecommendationService.becauseYouViewed(userKey, Math.max(1, Math.min(limit, 24)))));
+    }
+
+    /** Home page: this shopper's last viewed products. */
+    @GetMapping("/recently-viewed")
+    public ResponseEntity<ApiResponse<java.util.List<com.nguyenhoanglong.dto.ProductDto>>> recentlyViewed(
+            @RequestHeader(value = "X-Guest-Cart-Token", required = false) String guestToken,
+            @RequestParam(defaultValue = "12") int limit) {
+        String userKey = BehaviorEventService.resolveUserKey(currentUserId(), guestToken);
+        return ResponseEntity.ok(ApiResponse.success(
+                homeRecommendationService.recentlyViewed(userKey, Math.max(1, Math.min(limit, 24)))));
     }
 
     private String currentUserId() {

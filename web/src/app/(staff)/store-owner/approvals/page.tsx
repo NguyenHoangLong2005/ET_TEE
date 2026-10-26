@@ -11,13 +11,37 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { toast } from 'sonner';
 import {
   PackageCheck, RefreshCw, CheckCircle2, XCircle, Clock,
-  FileCheck, Check, X
+  FileCheck, Check, X, PencilLine
 } from 'lucide-react';
 
 const TYPE_LABEL: Record<string, string> = {
   VOUCHER: 'Voucher',
   INVENTORY_ADJUSTMENT: 'Điều chỉnh tồn kho',
   RESTOCK_REQUEST: 'Đề xuất nhập hàng',
+  VOUCHER_UPDATE: 'Sửa voucher',
+  VOUCHER_DELETE: 'Xóa voucher',
+};
+
+type ApprovalAction = 'APPROVE' | 'REJECT' | 'REVISE';
+
+// Gửi lên backend + chữ hiển thị; từ chối và yêu cầu chỉnh sửa bắt buộc ghi chú, nhân viên nhận qua chuông.
+const ACTION_UI: Record<ApprovalAction, {
+  payload: string; title: string; confirm: string; done: string; prompt: string; placeholder: string; missingNote: string;
+}> = {
+  APPROVE: {
+    payload: 'APPROVED', title: 'Phê duyệt yêu cầu', confirm: 'Xác nhận Phê duyệt', done: 'phê duyệt',
+    prompt: 'Bạn có chắc chắn muốn phê duyệt áp dụng thay đổi này không?', placeholder: '', missingNote: '',
+  },
+  REJECT: {
+    payload: 'REJECTED', title: 'Từ chối yêu cầu', confirm: 'Xác nhận Từ chối', done: 'từ chối',
+    prompt: 'Vui lòng cung cấp lý do từ chối để nhân viên nhận được phản hồi:',
+    placeholder: 'Nhập lý do từ chối...', missingNote: 'Vui lòng nhập lý do từ chối cụ thể',
+  },
+  REVISE: {
+    payload: 'REVISION_REQUESTED', title: 'Yêu cầu chỉnh sửa', confirm: 'Gửi yêu cầu chỉnh sửa', done: 'gửi yêu cầu chỉnh sửa',
+    prompt: 'Ghi rõ nội dung nhân viên cần chỉnh sửa trước khi gửi lại:',
+    placeholder: 'VD: Giảm mức giảm giá xuống 10%...', missingNote: 'Vui lòng ghi rõ nội dung cần chỉnh sửa',
+  },
 };
 
 interface ApprovalItem {
@@ -56,7 +80,7 @@ export default function StoreOwnerApprovalsPage() {
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     item: ApprovalItem | null;
-    action: 'APPROVE' | 'REJECT';
+    action: ApprovalAction;
     note: string;
   }>({
     isOpen: false,
@@ -84,27 +108,28 @@ export default function StoreOwnerApprovalsPage() {
     fetchApprovals();
   }, [fetchApprovals]);
 
-  const handleOpenAction = (item: ApprovalItem, action: 'APPROVE' | 'REJECT') => {
+  const handleOpenAction = (item: ApprovalItem, action: ApprovalAction) => {
     setConfirmModal({
       isOpen: true,
       item,
       action,
-      note: action === 'APPROVE' ? 'Chủ shop phê duyệt' : '',
+      note: '',
     });
   };
 
   const handleExecuteAction = async () => {
     if (!confirmModal.item || processing) return;
+    const ui = ACTION_UI[confirmModal.action];
 
-    if (confirmModal.action === 'REJECT' && !confirmModal.note.trim()) {
-      toast.error('Vui lòng nhập lý do từ chối cụ thể');
+    if (confirmModal.action !== 'APPROVE' && !confirmModal.note.trim()) {
+      toast.error(ui.missingNote);
       return;
     }
 
     setProcessing(true);
     try {
       const payload = {
-        action: confirmModal.action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
+        action: ui.payload,
         note: confirmModal.note.trim(),
       };
 
@@ -118,7 +143,7 @@ export default function StoreOwnerApprovalsPage() {
         await apiClient.put(`/api/store-owner/approvals/${confirmModal.item.id}`, payload);
       }
 
-      toast.success(`Đã ${confirmModal.action === 'APPROVE' ? 'phê duyệt' : 'từ chối'} yêu cầu thành công`);
+      toast.success(`Đã ${ui.done} và thông báo cho nhân viên`);
       setConfirmModal({ isOpen: false, item: null, action: 'APPROVE', note: '' });
       fetchApprovals(true);
     } catch (err: any) {
@@ -193,6 +218,14 @@ export default function StoreOwnerApprovalsPage() {
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => handleOpenAction(item, 'REVISE')}
+            icon={<PencilLine className="w-3.5 h-3.5" />}
+          >
+            Yêu cầu chỉnh sửa
+          </Button>
+          <Button
+            size="sm"
             variant="danger"
             onClick={() => handleOpenAction(item, 'REJECT')}
             icon={<X className="w-3.5 h-3.5" />}
@@ -206,15 +239,15 @@ export default function StoreOwnerApprovalsPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* ─── Top Control Bar ─── */}
         <PageHeader
-          title="Hàng đợi Phê duyệt"
-          subtitle="Phê duyệt các yêu cầu khuyến mãi và điều chỉnh tồn kho từ nhân viên."
+          title="Hàng đợi phê duyệt"
+          subtitle="Duyệt voucher mới, yêu cầu sửa/xóa voucher, đề xuất nhập hàng và điều chỉnh tồn kho từ nhân viên."
           actions={
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={fetchApprovals}
               loading={loading}
               icon={<RefreshCw className="w-4 h-4" />}
@@ -240,7 +273,7 @@ export default function StoreOwnerApprovalsPage() {
         {/* Action Confirmation Modal */}
         <ConfirmModal
           isOpen={confirmModal.isOpen}
-          title={confirmModal.action === 'APPROVE' ? 'Phê duyệt yêu cầu' : 'Từ chối yêu cầu'}
+          title={ACTION_UI[confirmModal.action].title}
           message={
             <div className="space-y-3">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
@@ -248,24 +281,22 @@ export default function StoreOwnerApprovalsPage() {
                 <p className="text-slate-500 mt-0.5">Người đề xuất: {confirmModal.item?.requesterName}</p>
               </div>
               <p className="text-xs text-slate-600">
-                {confirmModal.action === 'APPROVE'
-                  ? 'Bạn có chắc chắn muốn phê duyệt áp dụng thay đổi này không?'
-                  : 'Vui lòng cung cấp lý do từ chối để nhân viên nhận được phản hồi:'}
+                {ACTION_UI[confirmModal.action].prompt}
               </p>
-              {confirmModal.action === 'REJECT' && (
+              {confirmModal.action !== 'APPROVE' && (
                 <textarea
                   rows={3}
                   value={confirmModal.note}
                   onChange={(e) => setConfirmModal({ ...confirmModal, note: e.target.value })}
-                  placeholder="Nhập lý do từ chối..."
+                  placeholder={ACTION_UI[confirmModal.action].placeholder}
                   className="w-full border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 resize-none"
                 />
               )}
             </div>
           }
-          confirmText={confirmModal.action === 'APPROVE' ? 'Xác nhận Phê duyệt' : 'Xác nhận Từ chối'}
+          confirmText={ACTION_UI[confirmModal.action].confirm}
           cancelText="Hủy"
-          type={confirmModal.action === 'APPROVE' ? 'info' : 'danger'}
+          type={confirmModal.action === 'APPROVE' ? 'info' : confirmModal.action === 'REVISE' ? 'warning' : 'danger'}
           isLoading={processing}
           onConfirm={handleExecuteAction}
           onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}

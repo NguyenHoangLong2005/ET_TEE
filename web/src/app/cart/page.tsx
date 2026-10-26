@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, Sparkles, ShieldCheck } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
@@ -16,13 +16,15 @@ export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeItem } = useCart();
   const { user } = useAuth();
   const [voucherCode, setVoucherCode] = useState('');
-  const [voucherInfo, setVoucherInfo] = useState<{ discountAmount: number; finalTotal: number; name: string } | null>(null);
+  // appliedSubtotal: the cart subtotal the discount was computed for.
+  const [voucherInfo, setVoucherInfo] = useState<{ code: string; discountAmount: number; finalTotal: number; name: string; appliedSubtotal: number } | null>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  // Only the latest validation may update the summary (quantity clicks can overlap).
+  const voucherRequest = useRef(0);
 
-  const handleApplyVoucher = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!voucherCode.trim()) return;
+  const validateVoucher = async (code: string, subtotal: number, revalidating: boolean) => {
+    const requestId = ++voucherRequest.current;
     setVoucherLoading(true);
     setVoucherError(null);
     try {
@@ -31,29 +33,55 @@ export default function CartPage() {
       const res = await fetch(`${getApiBaseUrl()}/api/marketing/vouchers/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(getAuthHeaders() as Record<string, string>) },
-        body: JSON.stringify({ code: voucherCode.trim().toUpperCase(), subtotal: cart?.subtotal || 0 }),
+        body: JSON.stringify({ code, subtotal }),
       });
       const json = await res.json();
+      if (requestId !== voucherRequest.current) return;
       if (json.success) {
         setVoucherInfo({
+          code,
           discountAmount: json.data.discountAmount,
           finalTotal: json.data.finalTotal,
           name: json.data.name,
+          appliedSubtotal: subtotal,
         });
-        toast.success(`Đã áp dụng voucher: ${json.data.name}`);
+        if (!revalidating) toast.success(`Đã áp dụng voucher: ${json.data.name}`);
       } else {
+        const message = json.message || 'Mã giảm giá không hợp lệ';
         setVoucherInfo(null);
-        setVoucherError(json.message || 'Mã giảm giá không hợp lệ');
-        toast.error(json.message || 'Mã giảm giá không hợp lệ');
+        setVoucherError(revalidating ? `Mã ${code} không còn áp dụng cho giỏ hàng hiện tại: ${message}` : message);
+        toast.error(revalidating ? `Đã bỏ mã ${code}: ${message}` : message);
       }
     } catch {
+      if (requestId !== voucherRequest.current) return;
       setVoucherInfo(null);
       setVoucherError('Không thể kiểm tra voucher');
       toast.error('Không thể kiểm tra voucher');
     } finally {
-      setVoucherLoading(false);
+      if (requestId === voucherRequest.current) setVoucherLoading(false);
     }
   };
+
+  const handleApplyVoucher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!voucherCode.trim()) return;
+    await validateVoucher(voucherCode.trim().toUpperCase(), cart?.subtotal || 0, false);
+  };
+
+  // The discount was computed for the subtotal at the time the code was applied; changing a
+  // quantity or removing an item kept the old discount and total (even above the new
+  // subtotal, or under a minimum order the cart no longer met). Re-check with the server.
+  const currentSubtotal = cart?.subtotal || 0;
+  useEffect(() => {
+    if (!voucherInfo || voucherInfo.appliedSubtotal === currentSubtotal) return;
+    Promise.resolve().then(() => {
+      if (currentSubtotal > 0) return validateVoucher(voucherInfo.code, currentSubtotal, true);
+      voucherRequest.current++;
+      setVoucherLoading(false);
+      setVoucherInfo(null);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSubtotal, voucherInfo]);
 
   if (isLoading) {
     return (
@@ -65,6 +93,9 @@ export default function CartPage() {
 
   const isEmpty = !cart || !cart.items || cart.items.length === 0;
   const subtotal = cart?.subtotal || 0;
+  // The code applied here used to be dropped on the way to checkout, so the total shown in
+  // the cart (with the discount) was not what checkout charged.
+  const checkoutHref = voucherInfo ? `/checkout?voucher=${encodeURIComponent(voucherInfo.code)}` : '/checkout';
 
   return (
     <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-12 text-slate-900">
@@ -109,11 +140,10 @@ export default function CartPage() {
                regardless, so the banner both overpromised a condition and
                then underdelivered the "chúc mừng" moment for orders under
                it, since they'd also ship free. */}
-            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-8">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl mb-8">
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
                 <Truck className="w-4 h-4 text-emerald-600" />
                 <span className="flex items-center gap-1">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
                   Miễn phí giao hàng toàn quốc cho mọi đơn hàng
                 </span>
               </div>
@@ -301,7 +331,7 @@ export default function CartPage() {
                 {voucherInfo ? (
                   <div className="mt-2 text-[12px] text-emerald-700 font-semibold flex items-center justify-between">
                     <span>✓ Đã giảm {voucherInfo.discountAmount.toLocaleString('vi-VN')}₫</span>
-                    <button type="button" onClick={() => { setVoucherInfo(null); setVoucherCode(''); }} className="text-slate-400 hover:text-slate-700 underline text-[11px]">Bỏ</button>
+                    <button type="button" onClick={() => { voucherRequest.current++; setVoucherLoading(false); setVoucherInfo(null); setVoucherCode(''); }} className="text-slate-400 hover:text-slate-700 underline text-[11px]">Bỏ</button>
                   </div>
                 ) : voucherError ? (
                   <div className="mt-2 text-[12px] text-primary font-medium">{voucherError}</div>
@@ -309,7 +339,7 @@ export default function CartPage() {
               </form>
 
               <Link 
-                href="/checkout"
+                href={checkoutHref}
                 className="w-full flex items-center justify-center h-13 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-lg gap-2"
               >
                 <span>Tiến hành thanh toán</span>
@@ -344,7 +374,7 @@ export default function CartPage() {
             </span>
           </div>
           <Link
-            href="/checkout"
+            href={checkoutHref}
             className="flex-1 max-w-[200px] h-11 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
           >
             <span>Thanh toán</span>

@@ -344,7 +344,7 @@ export default function AdminAuditLogsPage() {
 
   return (
     <PermissionGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]} requiredPermissions={["VIEW_AUDIT_LOG"]}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Nhật ký kiểm toán"
           subtitle="Truy vết mọi thao tác thay đổi dữ liệu, đăng nhập và truy cập bị từ chối: ai, từ đâu, lúc nào và kết quả ra sao."
@@ -354,7 +354,7 @@ export default function AdminAuditLogsPage() {
                 Xuất CSV
               </Button>
               <Button
-                variant="secondary"
+                variant="outline"
                 icon={<RefreshCw className="w-4 h-4" />}
                 onClick={fetchLogs}
                 loading={loading}
@@ -527,7 +527,7 @@ export default function AdminAuditLogsPage() {
         {/* ─── Chi tiết một bản ghi ─── */}
         {selectedLog && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                 <h3 className="text-sm font-semibold text-slate-900">Chi tiết bản ghi #{selectedLog.id}</h3>
                 <button

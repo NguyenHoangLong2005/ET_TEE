@@ -170,9 +170,9 @@ export default function SalesDashboardPage() {
 
   /* ════════════════ RENDER ════════════════ */
   return (
-    <main className="min-h-screen bg-slate-50/60 p-6 md:p-8 text-slate-900 font-sans antialiased space-y-6 max-w-7xl mx-auto">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader
-        title="Tổng quan Bán hàng"
+        title="Tổng quan bán hàng"
         subtitle={lastSync ? `Cập nhật lúc ${lastSync.toLocaleTimeString("vi-VN")}` : "Đang tải dữ liệu..."}
         actions={
           <div className="flex items-center gap-2.5">
@@ -209,7 +209,7 @@ export default function SalesDashboardPage() {
       {slaCount > 0 && (
         <Link
           href="/staff/dashboard/sales/orders?filter=sla"
-          className="flex items-center gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl hover:bg-rose-100/60 transition"
+          className="flex items-center gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100/60 transition"
         >
           <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
             <Timer className="w-5 h-5" />
@@ -233,7 +233,7 @@ export default function SalesDashboardPage() {
             : { label: "Đã giao thành công", value: counts["DELIVERED"] || 0, sub: "Tổng số đơn hoàn tất", icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-600" },
         ].map(k => {
           const body = (
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 h-full hover:border-slate-300 hover:shadow-sm transition">
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 h-full hover:border-slate-300 hover:shadow-sm transition">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{k.label}</p>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${k.tone}`}>
@@ -250,7 +250,7 @@ export default function SalesDashboardPage() {
 
       {/* Work queue + breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <section className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -301,7 +301,7 @@ export default function SalesDashboardPage() {
                     <button
                       onClick={() => handleConfirm(o)}
                       disabled={confirmingId === o.id}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-white bg-primary hover:bg-red-700 disabled:opacity-50 px-3 py-1.5 rounded-lg transition"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-white bg-primary hover:bg-primary-hover disabled:opacity-50 px-3 py-1.5 rounded-lg transition"
                     >
                       <Check className="w-3.5 h-3.5" />
                       {confirmingId === o.id ? "Đang xử lý..." : "Xác nhận"}
@@ -314,7 +314,7 @@ export default function SalesDashboardPage() {
         </section>
 
         <div className="space-y-6">
-          <section className="bg-white border border-slate-200 rounded-2xl p-5">
+          <section className="bg-white border border-slate-200/80 rounded-2xl p-5">
             <h2 className="text-sm font-bold text-slate-900 mb-4">Phân bổ trạng thái</h2>
             {breakdown.length === 0 ? (
               <p className="text-xs text-slate-400">Chưa có dữ liệu đơn hàng.</p>
@@ -335,7 +335,7 @@ export default function SalesDashboardPage() {
             )}
           </section>
 
-          <section className="bg-white border border-slate-200 rounded-2xl p-5">
+          <section className="bg-white border border-slate-200/80 rounded-2xl p-5">
             <h2 className="text-sm font-bold text-slate-900 mb-3">Lối tắt</h2>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -357,7 +357,7 @@ export default function SalesDashboardPage() {
       </div>
 
       {/* Recent orders */}
-      <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      <section className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <Truck className="w-4 h-4 text-blue-600" /> Đơn hàng gần đây
@@ -394,7 +394,7 @@ export default function SalesDashboardPage() {
                 <tr key={o.id} className="hover:bg-slate-50/60">
                   <td className="px-5 py-3 font-mono font-bold text-slate-900">{o.orderCode}</td>
                   <td className="px-5 py-3 text-slate-700">{o.customerName}</td>
-                  <td className="px-5 py-3 text-right font-mono font-semibold text-slate-900">{fmtVnd(o.totalAmount)}</td>
+                  <td className="px-5 py-3 text-right tabular-nums font-semibold text-slate-900">{fmtVnd(o.totalAmount)}</td>
                   <td className="px-5 py-3">
                     <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${statusMeta(o.status).cls}`}>
                       {statusMeta(o.status).label}
@@ -412,6 +412,6 @@ export default function SalesDashboardPage() {
           </table>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

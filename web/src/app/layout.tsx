@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
@@ -7,10 +7,21 @@ import { WishlistProvider } from "@/contexts/WishlistContext";
 import RootLayoutWrapper from "@/components/layout/RootLayoutWrapper";
 import { Toaster } from 'sonner';
 
-const inter = Inter({
+// One sans family for the whole site. The body used to get Inter from here while every
+// element with `font-sans` (and the staff area) resolved to Be Vietnam Pro from a CSS
+// @import, so plain text and utility-styled text rendered in two different fonts.
+const sans = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-be-vietnam",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-jetbrains",
 });
 
 export const metadata: Metadata = {
@@ -64,8 +75,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" data-scroll-behavior="smooth">
-      <body className={`${inter.className} ${inter.variable} min-h-screen flex flex-col bg-white text-slate-900 font-sans antialiased`}>
+    <html lang="vi" data-scroll-behavior="smooth" className={`${sans.variable} ${mono.variable}`}>
+      <body className={`min-h-screen flex flex-col bg-white text-slate-900 font-sans antialiased`}>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>

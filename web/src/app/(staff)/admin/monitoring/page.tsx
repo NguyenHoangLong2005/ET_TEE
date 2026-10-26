@@ -84,7 +84,7 @@ export default function MonitoringPage() {
     return (
       <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold text-slate-900">Giám Sát Hệ Thống (System Monitoring)</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Giám sát hệ thống</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 animate-pulse">
@@ -103,7 +103,7 @@ export default function MonitoringPage() {
       <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
         <div className="p-6 max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900">Giám Sát Hệ Thống (System Monitoring)</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Giám sát hệ thống</h1>
             <button
               type="button"
               onClick={() => { setLoading(true); fetchMetrics(); }}
@@ -123,9 +123,9 @@ export default function MonitoringPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="Giám Sát Hệ Thống"
+          title="Giám sát hệ thống"
           subtitle={metrics?.uptime ? `Uptime: ${metrics.uptime.uptimeFormatted}` : "Theo dõi trạng thái JVM, kết nối cơ sở dữ liệu và tài nguyên máy chủ"}
           breadcrumbs={[
             { label: 'Admin', href: '/admin/dashboard' },
@@ -135,18 +135,19 @@ export default function MonitoringPage() {
             <Button
               variant="outline"
               onClick={() => { setLoading(true); fetchMetrics(); }}
+              icon={<RefreshCw className="w-4 h-4" />}
             >
-              <RefreshCw className="w-4 h-4 mr-2" /> Làm mới
+              Làm mới
             </Button>
           }
         />
 
-      {metrics?.recentErrors && metrics.recentErrors > 0 && (
+      {(metrics?.recentErrors ?? 0) > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-red-600" />
           <div>
             <div className="font-semibold text-red-800">
-              {metrics.recentErrors} lỗi trong 1 giờ gần đây
+              {metrics?.recentErrors} lỗi trong 1 giờ gần đây
             </div>
             <div className="text-xs text-red-600">Kiểm tra nhật ký để biết chi tiết</div>
           </div>
@@ -156,10 +157,10 @@ export default function MonitoringPage() {
       {metrics && (
         <>
           {/* JVM Metrics */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-6">
             <div className="flex items-center gap-3 mb-6">
-              <Cpu className="w-6 h-6 text-blue-600" />
-              <h2 className="text-sm font-semibold text-slate-900">JVM & System Resources</h2>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><Cpu className="w-[18px] h-[18px]" /></span>
+              <h2 className="text-[15px] font-semibold text-slate-900">Tài nguyên máy chủ (JVM)</h2>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -185,64 +186,64 @@ export default function MonitoringPage() {
 
               {/* CPU */}
               <div>
-                <div className="text-sm text-slate-500 mb-1">CPU Load</div>
+                <div className="text-sm text-slate-500 mb-1">Tải CPU</div>
                 <div className="text-2xl font-bold text-slate-900">
                   {metrics.jvm.systemLoad > 0 ? metrics.jvm.systemLoad.toFixed(2) : 'N/A'}
                 </div>
-                <div className="text-xs text-slate-500">avg trên {metrics.jvm.processors} cores</div>
+                <div className="text-xs text-slate-500">trung bình trên {metrics.jvm.processors} nhân</div>
               </div>
 
               {/* Threads */}
               <div>
-                <div className="text-sm text-slate-500 mb-1">Threads</div>
+                <div className="text-sm text-slate-500 mb-1">Luồng xử lý</div>
                 <div className="text-2xl font-bold text-slate-900">{metrics.jvm.threadCount}</div>
-                <div className="text-xs text-slate-500">Peak: {metrics.jvm.peakThreadCount}</div>
+                <div className="text-xs text-slate-500">Cao nhất: {metrics.jvm.peakThreadCount}</div>
               </div>
 
               {/* System Memory */}
               <div>
-                <div className="text-sm text-slate-500 mb-1">System Memory</div>
+                <div className="text-sm text-slate-500 mb-1">Bộ nhớ đã cấp</div>
                 <div className="text-2xl font-bold text-slate-900">
                   {formatMemory(metrics.jvm.totalMemoryMb)}
                 </div>
                 <div className="text-xs text-slate-500">
-                  Free: {formatMemory(metrics.jvm.freeMemoryMb)}
+                  Còn trống: {formatMemory(metrics.jvm.freeMemoryMb)}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Database Pool */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-6">
             <div className="flex items-center gap-3 mb-6">
-              <Database className="w-6 h-6 text-emerald-600" />
-              <h2 className="text-sm font-semibold text-slate-900">Database Connection Pool</h2>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><Database className="w-[18px] h-[18px]" /></span>
+              <h2 className="text-[15px] font-semibold text-slate-900">Kết nối cơ sở dữ liệu</h2>
             </div>
 
             {metrics.database && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                    <div className="text-3xl font-bold text-emerald-700">{metrics.database.activeConnections}</div>
-                    <div className="text-xs text-emerald-600 mt-1">Đang sử dụng</div>
+                  <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.database.activeConnections}</div>
+                    <div className="text-xs text-slate-500 mt-1">Đang sử dụng</div>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-xl">
-                    <div className="text-3xl font-bold text-blue-700">{metrics.database.idleConnections}</div>
-                    <div className="text-xs text-blue-600 mt-1">Rảnh rỗi</div>
+                  <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.database.idleConnections}</div>
+                    <div className="text-xs text-slate-500 mt-1">Rảnh rỗi</div>
                   </div>
-                  <div className="text-center p-4 bg-slate-100 rounded-xl">
-                    <div className="text-3xl font-bold text-slate-700">{metrics.database.totalConnections}</div>
-                    <div className="text-xs text-slate-600 mt-1">Tổng kết nối</div>
+                  <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.database.totalConnections}</div>
+                    <div className="text-xs text-slate-500 mt-1">Tổng kết nối</div>
                   </div>
-                  <div className="text-center p-4 bg-amber-50 rounded-xl">
-                    <div className="text-3xl font-bold text-amber-700">{metrics.database.maxPoolSize}</div>
-                    <div className="text-xs text-amber-600 mt-1">Max Pool Size</div>
+                  <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.database.maxPoolSize}</div>
+                    <div className="text-xs text-slate-500 mt-1">Tối đa</div>
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-500">Pool Usage</span>
+                    <span className="text-sm text-slate-500">Mức sử dụng pool</span>
                     <span className="text-sm font-bold text-slate-900">
                       {metrics.database.activeConnections} / {metrics.database.maxPoolSize}
                     </span>
@@ -263,9 +264,9 @@ export default function MonitoringPage() {
                     <AlertTriangle className="w-5 h-5 text-red-600" />
                     <div>
                       <div className="font-semibold text-red-800">
-                        {metrics.database.threadsAwaitingConnection} threads đang chờ kết nối!
+                        {metrics.database.threadsAwaitingConnection} luồng đang chờ kết nối
                       </div>
-                      <div className="text-xs text-red-600">Cân nhắc tăng max pool size</div>
+                      <div className="text-xs text-red-600">Cân nhắc tăng kích thước pool tối đa</div>
                     </div>
                   </div>
                 )}
@@ -274,24 +275,24 @@ export default function MonitoringPage() {
           </div>
 
           {/* Order Statistics */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-6">
             <div className="flex items-center gap-3 mb-6">
-              <ShoppingCart className="w-6 h-6 text-purple-600" />
-              <h2 className="text-sm font-semibold text-slate-900">Order Statistics</h2>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><ShoppingCart className="w-[18px] h-[18px]" /></span>
+              <h2 className="text-[15px] font-semibold text-slate-900">Thống kê đơn hàng</h2>
             </div>
 
             <div className="grid grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-slate-50 rounded-xl">
-                <div className="text-3xl font-bold text-slate-700">{metrics.orders.totalOrders}</div>
+              <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.orders.totalOrders}</div>
                 <div className="text-xs text-slate-500 mt-1">Tổng đơn hàng</div>
               </div>
-              <div className="text-center p-4 bg-amber-50 rounded-xl">
-                <div className="text-3xl font-bold text-amber-700">{metrics.orders.pendingOrders}</div>
-                <div className="text-xs text-amber-600 mt-1">Đang chờ xử lý</div>
+              <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.orders.pendingOrders}</div>
+                <div className="text-xs text-slate-500 mt-1">Đang chờ xử lý</div>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <div className="text-3xl font-bold text-blue-700">{metrics.orders.activeOrders}</div>
-                <div className="text-xs text-blue-600 mt-1">Đang xử lý/Ship</div>
+              <div className="text-center p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                <div className="text-[26px] font-bold text-slate-900 tabular-nums">{metrics.orders.activeOrders}</div>
+                <div className="text-xs text-slate-500 mt-1">Đang xử lý / giao</div>
               </div>
             </div>
           </div>

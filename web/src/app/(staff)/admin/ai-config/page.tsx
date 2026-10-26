@@ -161,9 +161,9 @@ export default function AdminAiConfigPage() {
 
   return (
     <PermissionGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]} requiredPermissions={["MANAGE_AI_MODEL_FEATURE_FLAG"]}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="AI Models & Cấu hình"
+          title="Mô hình AI"
           subtitle="Quản lý các phiên bản mô hình gợi ý thời trang và chọn phiên bản đang phục vụ cửa hàng."
           actions={
             <div className="flex items-center gap-2.5">
@@ -171,7 +171,7 @@ export default function AdminAiConfigPage() {
                 <Button variant="outline">Cờ tính năng AI</Button>
               </Link>
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={fetchModels}
                 loading={loading}
                 icon={<RefreshCw className="w-4 h-4" />}
@@ -187,7 +187,7 @@ export default function AdminAiConfigPage() {
 
         {/* Chỉ báo khi chưa có mô hình nào đang phục vụ (mô hình đang chạy đã hiện trong bảng) */}
         {!loading && !activeModel && (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center">
             <p className="text-sm font-semibold text-slate-900">Chưa có mô hình nào đang phục vụ</p>
             <p className="mt-1 text-sm text-slate-500">
               {models.length > 0
@@ -216,7 +216,7 @@ export default function AdminAiConfigPage() {
         {/* ─── Modal đăng ký ─── */}
         {showRegisterModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <h3 className="text-sm font-semibold text-slate-900">Đăng ký phiên bản mô hình</h3>
                 <button

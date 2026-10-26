@@ -117,15 +117,15 @@ export default function StoreOwnerLogsPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         {/* Top Control Bar */}
         <PageHeader
-          title="Nhật ký Hoạt động"
+          title="Nhật ký hoạt động"
           subtitle="Lịch sử thao tác và audit log của các nhân viên thuộc cửa hàng quản lý."
           actions={
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={fetchLogs}
               loading={loading}
               icon={<RefreshCw className="w-4 h-4" />}
