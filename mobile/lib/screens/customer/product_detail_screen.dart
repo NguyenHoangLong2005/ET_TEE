@@ -233,7 +233,7 @@ class _ProductInfoState extends State<_ProductInfo> {
       if (v.colorHex != null) byHex.putIfAbsent(v.colorHex!, () => _ColorOpt(v.color, v.colorHex!, v.colorCode));
     }
     _colors = byHex.values.toList();
-    _sizes = p.variants.map((v) => v.size).where((s) => s.isNotEmpty).toSet().toList();
+    _sizes = sortSizes(p.variants.map((v) => v.size).where((s) => s.isNotEmpty).toSet());
     for (final v in p.variants) {
       if (v.colorHex == null || v.size.isEmpty) continue;
       final key = '${v.colorHex}__${v.size}';

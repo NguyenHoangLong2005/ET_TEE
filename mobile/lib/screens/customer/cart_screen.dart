@@ -92,14 +92,12 @@ class _CartScreenState extends State<CartScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.emerald50, Color(0xFFF0FDFA), AppColors.emerald50]),
+                color: AppColors.emerald50,
                 border: Border.all(color: AppColors.emerald100),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Row(children: [
                 Icon(Icons.local_shipping_outlined, size: 16, color: AppColors.emerald600),
-                SizedBox(width: 6),
-                Icon(Icons.auto_awesome, size: 15, color: AppColors.emerald600),
                 SizedBox(width: 6),
                 Expanded(child: Text('Miễn phí giao hàng toàn quốc cho mọi đơn hàng', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF064E3B)))),
               ]),

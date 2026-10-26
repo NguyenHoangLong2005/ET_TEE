@@ -2,6 +2,8 @@ import 'package:ettee_app/core/format.dart';
 import 'package:ettee_app/models/product.dart';
 import 'package:ettee_app/services/product_service.dart';
 import 'package:ettee_app/screens/staff/content_screens.dart';
+import 'package:ettee_app/screens/staff/marketing_shell.dart';
+import 'package:ettee_app/screens/staff/owner_extra_screens.dart';
 import 'package:ettee_app/services/auth_service.dart';
 import 'package:ettee_app/services/recommendation_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +13,27 @@ void main() {
     expect(formatVnd(52794.36), '53.000');
     expect(formatNumber(1234567), '1.234.567');
     expect(roundVnd(299400), 299000);
+  });
+
+  test('size pickers list sizes in size order', () {
+    expect(sortSizes(['42', '43', '40', '41']), ['40', '41', '42', '43']);
+    expect(sortSizes(['XL', 'S', '2XL', 'M', 'L']), ['S', 'M', 'L', 'XL', '2XL']);
+    expect(sortSizes(['110', '90', '100']), ['90', '100', '110']);
+    expect(sortSizes(['Free size', 'M', '38']), ['M', '38', 'Free size']);
+  });
+
+  test('category slugs drop Vietnamese diacritics', () {
+    expect(slugify('Áo thun Nam'), 'ao-thun-nam');
+    expect(slugify('Đầm dự tiệc — Mùa hè 2026!'), 'dam-du-tiec-mua-he-2026');
+    expect(slugify('Quần ống suông ỹ ữ ợ'), 'quan-ong-suong-y-u-o');
+  });
+
+  test('staff routes stay inside the role workspace', () {
+    expect(staffMayOpen('WAREHOUSE_STAFF', '/staff/warehouse/inventory'), isTrue);
+    expect(staffMayOpen('WAREHOUSE_STAFF', '/owner/products'), isFalse);
+    expect(staffMayOpen('SHOP_OWNER', '/staff/cskh/tickets/abc'), isTrue);
+    expect(staffMayOpen('SALES_STAFF', '/staff/profile'), isTrue);
+    expect(workspaceFor('ADMIN').nav.map((n) => n.$2), contains('/admin/backup'));
   });
 
   test('role normalisation', () {

@@ -174,7 +174,8 @@ class SectionHeader extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [Text(title.toUpperCase(), style: headline(20)), ?badge],
+                    // Phones narrower than 400px get a smaller title so it stays on one line next to the action.
+                    children: [Text(title.toUpperCase(), style: headline(MediaQuery.sizeOf(context).width < 400 ? 17 : 20)), ?badge],
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),

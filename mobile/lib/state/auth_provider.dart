@@ -12,6 +12,8 @@ class AppUser {
   final List<String> permissions;
   final String phone;
   final bool isEmailVerified;
+  /// Branch of shop-bound staff (null for customers and corporate roles).
+  final int? shopId;
 
   AppUser({
     required this.id,
@@ -21,6 +23,7 @@ class AppUser {
     this.permissions = const [],
     this.phone = '',
     this.isEmailVerified = false,
+    this.shopId,
   });
 
   factory AppUser.fromMap(Map<String, dynamic> m) => AppUser(
@@ -31,6 +34,7 @@ class AppUser {
         permissions: (m['permissions'] is List ? m['permissions'] as List : const []).map((e) => '$e').toList(),
         phone: '${m['phone'] ?? ''}',
         isEmailVerified: m['status'] == 'ACTIVE' || m['isEmailVerified'] == true,
+        shopId: m['shopId'] == null ? null : int.tryParse('${m['shopId']}'),
       );
 
   Map<String, dynamic> toMap() => {
@@ -42,6 +46,7 @@ class AppUser {
         'permissions': permissions,
         'phone': phone,
         'status': isEmailVerified ? 'ACTIVE' : null,
+        'shopId': shopId,
       };
 
   AppUser copyWith({String? fullName, String? phone}) => AppUser(

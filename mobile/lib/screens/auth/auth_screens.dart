@@ -12,14 +12,11 @@ import '../../services/auth_service.dart';
 import '../../state/auth_provider.dart';
 import '../../widgets/common.dart';
 import '../../widgets/store_scaffold.dart';
+import '../staff/marketing_shell.dart';
 
 /// Where a signed-in user lands: marketing staff get their workspace, other staff roles
 /// are web-only, customers go back to the shop.
-String homeForRole(String role) {
-  if (role == 'MARKETING_STAFF') return '/staff/marketing';
-  if (staffRoles.contains(role)) return '/staff/unsupported';
-  return '/';
-}
+String homeForRole(String role) => staffRoles.contains(role) ? workspaceFor(role).home : '/';
 
 String passwordChangePath(String role) => staffRoles.contains(role) ? '/staff/change-password' : '/account/change-password';
 

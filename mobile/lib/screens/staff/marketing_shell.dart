@@ -7,7 +7,9 @@ import '../../services/auth_service.dart';
 import '../../state/auth_provider.dart';
 import '../../widgets/common.dart';
 
-const marketingNav = [
+typedef NavItem = (String label, String path, IconData icon);
+
+const marketingNav = <NavItem>[
   ('Tổng quan', '/staff/marketing', Icons.dashboard_outlined),
   ('Trang chủ', '/staff/marketing/homepage', Icons.web_outlined),
   ('Bài viết', '/staff/marketing/posts', Icons.article_outlined),
@@ -16,18 +18,99 @@ const marketingNav = [
   ('Hiệu quả', '/staff/marketing/analytics', Icons.bar_chart),
 ];
 
+/// One staff workspace in the app: who it is for, where it starts and its menu (web role-navigation.config).
+class Workspace {
+  final String label;
+  final String prefix;
+  final List<NavItem> nav;
+  const Workspace(this.label, this.prefix, this.nav);
+  String get home => nav.first.$2;
+}
+
+const _warehouse = Workspace('KHO HÀNG', '/staff/warehouse', [
+  ('Tổng quan', '/staff/warehouse', Icons.dashboard_outlined),
+  ('Xuất hàng', '/staff/warehouse/fulfillment', Icons.local_shipping_outlined),
+  ('Tồn kho', '/staff/warehouse/inventory', Icons.inventory_2_outlined),
+  ('Nhập hàng', '/staff/warehouse/receiving', Icons.move_to_inbox_outlined),
+  ('Đề xuất nhập', '/staff/warehouse/replenishment', Icons.playlist_add_outlined),
+]);
+const _shipping = Workspace('VẬN CHUYỂN', '/staff/shipping', [
+  ('Tổng quan', '/staff/shipping', Icons.dashboard_outlined),
+  ('Đơn chờ tạo vận đơn', '/staff/shipping/orders', Icons.receipt_long_outlined),
+  ('Kiện hàng', '/staff/shipping/shipments', Icons.local_shipping_outlined),
+  ('Ngoại lệ', '/staff/shipping/exceptions', Icons.report_problem_outlined),
+  ('Đối soát COD', '/staff/shipping/cod', Icons.payments_outlined),
+]);
+const _sales = Workspace('BÁN HÀNG', '/staff/sales', [
+  ('Tổng quan', '/staff/sales', Icons.dashboard_outlined),
+  ('Đơn hàng', '/staff/sales/orders', Icons.shopping_cart_outlined),
+]);
+const _cskh = Workspace('CHĂM SÓC KHÁCH HÀNG', '/staff/cskh', [
+  ('Ticket hỗ trợ', '/staff/cskh', Icons.support_agent_outlined),
+  ('Đánh giá & bình luận', '/staff/cskh/reviews', Icons.rate_review_outlined),
+]);
+const _owner = Workspace('QUẢN LÝ CỬA HÀNG', '/owner', [
+  ('Tổng quan', '/owner', Icons.dashboard_outlined),
+  ('Hàng đợi phê duyệt', '/owner/approvals', Icons.fact_check_outlined),
+  ('Đơn hàng', '/owner/orders', Icons.shopping_cart_outlined),
+  ('Sản phẩm & giá', '/owner/products', Icons.checkroom),
+  ('Tồn kho', '/owner/inventory', Icons.inventory_2_outlined),
+  ('Khuyến mãi', '/owner/promotions', Icons.local_offer_outlined),
+  ('Danh mục', '/owner/categories', Icons.category_outlined),
+  ('Nhà sản xuất', '/owner/manufacturers', Icons.factory_outlined),
+  ('Nhà cung cấp', '/owner/suppliers', Icons.store_outlined),
+  ('Nhân sự', '/owner/staff', Icons.groups_outlined),
+  ('Lịch làm việc & xếp ca', '/owner/shifts', Icons.event_note_outlined),
+  ('Ticket hỗ trợ', '/staff/cskh', Icons.support_agent_outlined),
+  ('Nhật ký', '/owner/logs', Icons.history_outlined),
+]);
+const _admin = Workspace('QUẢN TRỊ HỆ THỐNG', '/admin', [
+  ('Tổng quan hệ thống', '/admin', Icons.monitor_heart_outlined),
+  ('Người dùng', '/admin/users', Icons.manage_accounts_outlined),
+  ('Phân quyền (RBAC)', '/admin/rbac', Icons.admin_panel_settings_outlined),
+  ('Chi nhánh', '/admin/shops', Icons.storefront_outlined),
+  ('Danh mục toàn hệ thống', '/admin/categories', Icons.category_outlined),
+  ('Mô hình AI', '/admin/ai-models', Icons.memory),
+  ('Cờ tính năng AI', '/admin/feature-flags', Icons.toggle_on_outlined),
+  ('Nhật ký kiểm toán', '/admin/audit-logs', Icons.history_outlined),
+  ('Nhật ký email', '/admin/mailing', Icons.mail_outline),
+  ('Nhật ký máy chủ', '/admin/logs', Icons.terminal),
+  ('Sao lưu & khôi phục', '/admin/backup', Icons.backup_outlined),
+]);
+
+Workspace workspaceFor(String role) => switch (role) {
+      'MARKETING_STAFF' => const Workspace('MARKETING & KINH DOANH', '/staff/marketing', marketingNav),
+      'WAREHOUSE_STAFF' => _warehouse,
+      'SHIPPING_STAFF' => _shipping,
+      'SALES_STAFF' || 'STAFF' => _sales,
+      'CSKH_STAFF' => _cskh,
+      'SHOP_OWNER' => _owner,
+      _ => _admin,
+    };
+
+/// Paths a role may open: its own workspace, plus the support tickets the owner also handles
+/// (backend StaffSupportTicketController allows SHOP_OWNER) and the shared password screen.
+bool staffMayOpen(String role, String path) {
+  if (path == '/staff/change-password' || path == '/staff/profile') return true;
+  final ws = workspaceFor(role);
+  if (path == ws.prefix || path.startsWith('${ws.prefix}/')) return true;
+  return role == 'SHOP_OWNER' && (path == '/staff/cskh' || path.startsWith('/staff/cskh/'));
+}
+
 /// Staff chrome (web StaffSidebar + StaffHeader): slate-50 page, white top bar, sidebar as a drawer.
-class MarketingShell extends StatelessWidget {
+/// The menu is the signed-in role's workspace.
+class StaffShell extends StatelessWidget {
   final String path;
   final String title;
   final Widget body;
   final Widget? floatingAction;
   final List<Widget>? actions;
-  const MarketingShell({super.key, required this.path, required this.title, required this.body, this.floatingAction, this.actions});
+  const StaffShell({super.key, required this.path, required this.title, required this.body, this.floatingAction, this.actions});
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+    final ws = workspaceFor(user?.role ?? 'MARKETING_STAFF');
     return Scaffold(
       backgroundColor: AppColors.slate50,
       drawer: Drawer(
@@ -41,7 +124,7 @@ class MarketingShell extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
               decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.slate100))),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('MARKETING & KINH DOANH', style: labelCaps(size: 10, color: AppColors.slate400)),
+                Text(ws.label, style: labelCaps(size: 10, color: AppColors.slate400)),
                 const SizedBox(height: 4),
                 const Text('ET.TEE Studio', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ]),
@@ -50,7 +133,7 @@ class MarketingShell extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(8),
                 children: [
-                  for (final (label, href, icon) in marketingNav)
+                  for (final (label, href, icon) in ws.nav)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Material(
@@ -76,6 +159,15 @@ class MarketingShell extends StatelessWidget {
                       ),
                     ),
                   const Divider(height: 24),
+                  ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.person_outline, size: 18, color: AppColors.slate400),
+                    title: const Text('Hồ sơ cá nhân', style: TextStyle(fontSize: 14, color: AppColors.slate500)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/staff/profile');
+                    },
+                  ),
                   ListTile(
                     dense: true,
                     leading: const Icon(Icons.lock_outline, size: 18, color: AppColors.slate400),
@@ -118,6 +210,8 @@ class MarketingShell extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         titleSpacing: 0,
+        // Detail pages are pushed on top of a list: show back instead of the menu (no system back on iOS).
+        leading: Navigator.of(context).canPop() ? const BackButton() : null,
         title: Row(children: [
           Container(width: 4, height: 20, color: AppColors.red600),
           const SizedBox(width: 10),
@@ -127,10 +221,19 @@ class MarketingShell extends StatelessWidget {
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.slate200)),
       ),
       floatingActionButton: floatingAction,
-      body: body,
+      // Staff colour rule: text links stay neutral, colour is kept for status.
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.slate700)),
+        ),
+        child: body,
+      ),
     );
   }
 }
+
+/// The marketing screens predate the other workspaces and still use this name.
+typedef MarketingShell = StaffShell;
 
 Future<void> logoutAndExit(BuildContext context) async {
   final ok = await confirmDialog(context, 'Đăng xuất', 'Bạn có chắc muốn đăng xuất khỏi tài khoản nhân viên?', confirm: 'Đăng xuất', danger: false);

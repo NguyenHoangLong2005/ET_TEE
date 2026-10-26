@@ -55,9 +55,7 @@ class _AnnouncementBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 32,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Color(0xFFDC2626), Color(0xFFE11D48), Color(0xFFDC2626)]),
-        ),
+        color: AppColors.primary,
         alignment: Alignment.center,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

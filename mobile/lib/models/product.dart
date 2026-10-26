@@ -154,7 +154,29 @@ class Product {
   String get categoryLabel => categoryName ?? 'Sản phẩm';
 
   List<String> get colorHexes => variants.map((v) => v.colorHex).whereType<String>().toSet().toList();
-  List<String> get sizes => variants.map((v) => v.size).where((s) => s.isNotEmpty).toSet().toList();
+  List<String> get sizes => sortSizes(variants.map((v) => v.size).where((s) => s.isNotEmpty).toSet());
+}
+
+const _letterRank = {'XXS': 0, 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '2XL': 6, 'XXXL': 7, '3XL': 7, '4XL': 8, '5XL': 9};
+
+/// Size pickers in size order (web lib/utils/sizeOrder): XS → 4XL, numbers ascending
+/// (shoe sizes, kids' heights), anything else alphabetically last. Variants come back in
+/// insertion order, which listed one product's sizes as "42 43 40 41".
+List<String> sortSizes(Iterable<String> sizes) {
+  (int, num, String) key(String size) {
+    final s = size.trim().toUpperCase();
+    final rank = _letterRank[s];
+    if (rank != null) return (0, rank, s);
+    final n = num.tryParse(s.replaceAll(',', '.')) ?? num.tryParse(RegExp(r'^\d+([.,]\d+)?').stringMatch(s)?.replaceAll(',', '.') ?? '');
+    return n != null ? (1, n, s) : (2, 0, s);
+  }
+
+  return sizes.toList()
+    ..sort((a, b) {
+      final (ga, va, sa) = key(a);
+      final (gb, vb, sb) = key(b);
+      return ga != gb ? ga - gb : (va != vb ? va.compareTo(vb) : sa.compareTo(sb));
+    });
 }
 
 String? _nonEmpty(dynamic v) {

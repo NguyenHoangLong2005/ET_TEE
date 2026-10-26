@@ -421,7 +421,9 @@ Future<bool> _sendForApproval(String method, String path, {Object? body, require
 
 /// Port of web staff/dashboard/marketing/vouchers/page.tsx.
 class StaffVouchersScreen extends StatefulWidget {
-  const StaffVouchersScreen({super.key});
+  /// The owner workspace reuses it as its promotions page (web store-owner/promotions).
+  final String shellPath;
+  const StaffVouchersScreen({super.key, this.shellPath = '/staff/marketing/vouchers'});
 
   @override
   State<StaffVouchersScreen> createState() => _StaffVouchersScreenState();
@@ -499,7 +501,7 @@ class _StaffVouchersScreenState extends State<StaffVouchersScreen> {
     final active = _vouchers.where((v) => v['status'] == 'ACTIVE').length;
     final usages = _vouchers.fold<num>(0, (s, v) => s + toNum(v['usageCount'] ?? v['usedCount']));
     return MarketingShell(
-      path: '/staff/marketing/vouchers',
+      path: widget.shellPath,
       title: 'Voucher & Mã Khuyến Mãi',
       actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh, size: 20), tooltip: 'Làm mới')],
       floatingAction: FloatingActionButton.extended(
