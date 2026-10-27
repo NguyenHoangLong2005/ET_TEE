@@ -45,7 +45,7 @@ export default function StoresPage() {
 
         {/* Hero Header */}
         <div className="bg-white text-slate-900 p-8 md:p-12 rounded-3xl mb-10 shadow-md relative overflow-hidden border border-slate-200/80">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl space-y-3">
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900">
               Hệ Thống Showroom ET.TEE
@@ -65,7 +65,7 @@ export default function StoresPage() {
               placeholder="Nhập tên đường, quận huyện hoặc tên cửa hàng..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium outline-none focus:border-amber-500 text-slate-900 transition-colors"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium outline-none focus:border-primary text-slate-900 transition-colors"
             />
           </div>
         </div>
@@ -89,11 +89,11 @@ export default function StoresPage() {
               filteredStores.map((store) => (
                 <div
                   key={store.id}
-                  className="bg-white p-6 rounded-3xl border border-slate-200/80 hover:border-amber-400 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 space-y-4 flex flex-col justify-between group"
+                  className="bg-white p-6 rounded-3xl border border-slate-200/80 hover:border-primary-400 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 space-y-4 flex flex-col justify-between group"
                 >
                   <div className="space-y-3">
-                    <h3 className="font-black text-slate-900 text-lg flex items-center gap-2 group-hover:text-amber-600 transition-colors">
-                      <Store className="w-5 h-5 text-amber-600 shrink-0" />
+                    <h3 className="font-black text-slate-900 text-lg flex items-center gap-2 group-hover:text-primary-600 transition-colors">
+                      <Store className="w-5 h-5 text-primary-600 shrink-0" />
                       <span>{store.name}</span>
                     </h3>
 
@@ -104,7 +104,7 @@ export default function StoresPage() {
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4 text-xs">
-                    <a href={`tel:${store.phone?.replace(/\s/g, '')}`} className="flex items-center gap-1.5 hover:text-amber-600 font-medium text-slate-500 text-[11px]">
+                    <a href={`tel:${store.phone?.replace(/\s/g, '')}`} className="flex items-center gap-1.5 hover:text-primary-600 font-medium text-slate-500 text-[11px]">
                       <Phone className="w-3.5 h-3.5 text-slate-400" />
                       <span>{store.phone}</span>
                     </a>
@@ -113,7 +113,7 @@ export default function StoresPage() {
                       href={`https://maps.google.com/?q=${encodeURIComponent(store.address)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20 shrink-0 hover:scale-105"
+                      className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-primary/20 shrink-0 hover:scale-105"
                     >
                       <Navigation className="w-3.5 h-3.5" />
                       <span>Chỉ đường</span>

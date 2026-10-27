@@ -110,7 +110,7 @@ export default function StaffChangePasswordPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader title="Đổi mật khẩu" subtitle="Dùng mật khẩu riêng, mạnh và không trùng với dịch vụ khác." />
 
       <div className="max-w-2xl">

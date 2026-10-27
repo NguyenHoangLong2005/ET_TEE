@@ -10,7 +10,7 @@ import { getApiBaseUrl } from '@/lib/api-config';
 import SafeImage from '@/components/ui/SafeImage';
 import BankTransferPayment from '@/components/orders/BankTransferPayment';
 
-const formatVnd = (value: number) => `${Math.round(value).toLocaleString('vi-VN')}đ`;
+const formatVnd = (value: number) => `${Math.round(value).toLocaleString('vi-VN')}₫`;
 const POLL_MS = 5000;
 // OrderResponse carries the state as `orderStatus`; there is no `status` field.
 const orderStatusOf = (o: any): string | undefined => o?.orderStatus ?? o?.status;

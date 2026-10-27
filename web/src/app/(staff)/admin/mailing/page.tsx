@@ -282,13 +282,13 @@ export default function MailingLogsPage() {
 
   return (
     <PermissionGuard requiredPermissions={['MANAGE_MAILING']}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Nhật ký email"
           subtitle="Lịch sử email hệ thống đã gửi tới khách hàng: xác thực tài khoản, xác nhận đơn hàng và các thông báo khác."
           actions={
             <Button
-              variant="secondary"
+              variant="outline"
               icon={<RefreshCw className="w-4 h-4" />}
               onClick={() => { summaryLoaded.current = false; fetchLogs(); }}
               loading={isLoading}
@@ -315,7 +315,7 @@ export default function MailingLogsPage() {
             </>
           ) : (
             [0, 1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 animate-pulse" aria-hidden="true">
+              <div key={i} className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 animate-pulse" aria-hidden="true">
                 <div className="h-3 w-24 bg-slate-200 rounded" />
                 <div className="h-7 w-16 bg-slate-200 rounded" />
               </div>
@@ -441,7 +441,7 @@ export default function MailingLogsPage() {
         {/* ─── Chi tiết ─── */}
         {selectedLog && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-900">Chi tiết email #{selectedLog.id}</h3>
                 <button

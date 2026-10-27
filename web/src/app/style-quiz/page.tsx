@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Check, RefreshCw, Shirt, UserCheck, Palette, ShoppingBag } from 'lucide-react';
+import { Ruler, ArrowRight, Check, RefreshCw, Shirt, UserCheck, Palette, ShoppingBag } from 'lucide-react';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import PageHero from '@/components/ui/PageHero';
 import { toast } from 'sonner';
@@ -61,13 +61,13 @@ export default function StyleQuizPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 text-slate-900">
-      <PageBreadcrumb items={[{ label: 'AI Style Quiz' }]} />
+      <PageBreadcrumb items={[{ label: 'Trắc nghiệm phong cách' }]} />
 
       <PageHero 
-        badge="AI STYLIST"
+        badge="STYLE QUIZ"
         badgeText="Tối ưu kích cỡ & Phong cách"
-        title="STYLE QUIZ AI"
-        subtitle="Khám phá bộ sưu tập được may đo riêng cho vóc dáng & thần thái của bạn chỉ trong 3 bước đơn giản."
+        title="TÌM SIZE & PHONG CÁCH"
+        subtitle="Trả lời 3 câu hỏi về số đo và gu ăn mặc, ET.TEE gợi ý cỡ và phom dáng hợp với bạn."
       />
 
       <div className="max-w-3xl mx-auto">
@@ -247,7 +247,6 @@ export default function StyleQuizPage() {
           <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-sm flex flex-col items-center justify-center min-h-[360px]">
             <div className="relative mb-6">
               <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-              <Sparkles className="w-6 h-6 text-primary absolute inset-0 m-auto animate-pulse" />
             </div>
             <h3 className="text-xl font-black text-slate-900 uppercase mb-2">Đang lưu thông tin của bạn...</h3>
             <p className="text-slate-500 text-xs max-w-md">Vui lòng chờ trong giây lát.</p>
@@ -283,11 +282,11 @@ export default function StyleQuizPage() {
             /* RESULT STATE */
             <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm text-center animate-in zoom-in-95 duration-300">
               <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="w-8 h-8" />
+                <Ruler className="w-8 h-8" />
               </div>
 
               <span className="text-xs font-black uppercase tracking-widest text-primary bg-red-50 px-3.5 py-1.5 rounded-full inline-block mb-3">
-                HỒ SƠ THỜI TRANG ĐÃ SẴN SÀNG
+                GỢI Ý CỠ CỦA BẠN
               </span>
 
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase mb-4 tracking-tight">

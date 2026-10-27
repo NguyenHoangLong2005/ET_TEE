@@ -12,6 +12,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import SizeGuideModal from '@/components/products/SizeGuideModal';
 import SizeSuggestionChip from './SizeSuggestionChip';
 import StoreStockModal from '@/components/products/StoreStockModal';
+import { sortSizes } from '@/lib/utils/sizeOrder';
 
 // Checkout and the cart check availableQuantity; max(stock, available) showed items as
 // in stock that the server then refused.
@@ -23,7 +24,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const urlColor = searchParams.get('color');
 
   const availableColors = Array.from(new Map((product.variants || []).filter(v => v.colorHex).map(v => [v.colorHex, { name: v.color, hex: v.colorHex, code: v.colorCode }])).values());
-  const availableSizes = Array.from(new Set((product.variants || []).filter(v => v.size).map(v => v.size)));
+  const availableSizes = sortSizes(Array.from(new Set((product.variants || []).filter(v => v.size).map(v => v.size as string))));
 
   const stockMap = new Map<string, number>();
   (product.variants || []).forEach(v => {
@@ -149,19 +150,28 @@ export default function ProductInfo({ product }: { product: Product }) {
         </div>
 
         {/* Product Title */}
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 uppercase leading-tight mb-3 tracking-tight">
+        {/* Sentence case: the catalogue names are long ("... - Mã 007 - Mẫu 3628") and in
+            capitals they filled three lines of shouting. */}
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 leading-snug mb-3 tracking-tight">
           {product.name}
         </h1>
 
         {/* Rating & Social Proof summary */}
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100 text-xs">
-          <div className="flex items-center text-amber-500">
-            {'★'.repeat(Math.round(product.averageRating || 0))}
-            <span className="text-slate-200">{'★'.repeat(5 - Math.round(product.averageRating || 0))}</span>
-          </div>
-          <span className="font-bold text-slate-900">{product.averageRating?.toFixed(1) || '0.0'}/5</span>
-          <span className="text-slate-300">•</span>
-          <span className="text-slate-500">{product.totalReviews || 0} đánh giá</span>
+          {(product.totalReviews || 0) > 0 ? (
+            <>
+              <div className="flex items-center text-amber-500">
+                {'★'.repeat(Math.round(product.averageRating || 0))}
+                <span className="text-slate-200">{'★'.repeat(5 - Math.round(product.averageRating || 0))}</span>
+              </div>
+              <span className="font-bold text-slate-900">{(product.averageRating || 0).toFixed(1)}/5</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-slate-500">{product.totalReviews} đánh giá</span>
+            </>
+          ) : (
+            // "0.0/5 · 0 đánh giá" read as a zero-star rating rather than "no reviews yet".
+            <span className="text-slate-500">Chưa có đánh giá</span>
+          )}
           <span className="text-slate-300">•</span>
           <span className="text-slate-500">Đã bán {product.soldCount || 0}</span>
         </div>
@@ -181,7 +191,7 @@ export default function ProductInfo({ product }: { product: Product }) {
         {/* Free Shipping Alert Banner */}
         <div className="border border-slate-200 bg-slate-50/70 rounded-2xl p-3.5 mb-6 flex items-center gap-2.5 text-xs text-slate-800">
           <Truck className="w-4 h-4 shrink-0 text-primary" />
-          <span>Freeship toàn quốc cho đơn hàng từ <strong className="font-black text-slate-900">499.000₫</strong></span>
+          <span>Freeship toàn quốc cho <strong className="font-black text-slate-900">mọi đơn hàng</strong></span>
         </div>
 
         {/* Color Picker */}
@@ -356,7 +366,7 @@ export default function ProductInfo({ product }: { product: Product }) {
         <div className="grid grid-cols-3 gap-2 pt-6 border-t border-slate-100 text-center">
           <div className="flex flex-col items-center p-2">
             <Truck className="w-5 h-5 text-slate-800 mb-2 stroke-1" />
-            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Freeship từ 499k</span>
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Freeship mọi đơn</span>
           </div>
           <div className="flex flex-col items-center p-2 border-x border-slate-100">
             <RefreshCcw className="w-5 h-5 text-slate-800 mb-2 stroke-1" />

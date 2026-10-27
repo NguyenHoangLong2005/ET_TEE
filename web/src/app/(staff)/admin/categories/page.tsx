@@ -271,7 +271,7 @@ export default function AdminCategoriesPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN', 'SHOP_OWNER']} requiredPermissions={['MANAGE_CATEGORY']}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Danh mục sản phẩm"
           subtitle="Cấu trúc danh mục hiển thị trên cửa hàng, dùng để phân loại và lọc sản phẩm."
@@ -281,7 +281,7 @@ export default function AdminCategoriesPage() {
           ]}
           actions={
             <div className="flex items-center gap-2.5">
-              <Button variant="secondary" onClick={fetchTree} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>
+              <Button variant="outline" onClick={fetchTree} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>
                 Làm mới
               </Button>
               <Button onClick={() => openAddModal()} icon={<Plus className="w-4 h-4" />}>
@@ -307,12 +307,12 @@ export default function AdminCategoriesPage() {
 
         <div className="space-y-3">
           {loading ? (
-            <div className="p-12 text-center text-slate-500 text-sm flex flex-col items-center gap-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div className="p-12 text-center text-slate-500 text-sm flex flex-col items-center gap-2 bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
               <RefreshCw className="w-6 h-6 animate-spin text-primary" />
               <span>Đang tải danh mục...</span>
             </div>
           ) : tree.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-sm">
               <EmptyState
                 icon={FolderTree}
                 title="Chưa có danh mục nào"
@@ -332,7 +332,7 @@ export default function AdminCategoriesPage() {
       {/* React Modal Form for Add/Edit Category */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl text-slate-800 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl text-slate-800 animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900">
                 <span>

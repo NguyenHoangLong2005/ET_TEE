@@ -79,6 +79,13 @@ public class Voucher {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    /** UPDATE | DELETE khi dang co yeu cau sua/xoa cho chu cua hang duyet; chi dien o danh sach quan tri. */
+    @Transient
+    private String pendingChange;
+
+    public String getPendingChange() { return pendingChange; }
+    public void setPendingChange(String pendingChange) { this.pendingChange = pendingChange; }
+
     public String getGrantedToCustomerId() { return grantedToCustomerId; }
     public void setGrantedToCustomerId(String grantedToCustomerId) { this.grantedToCustomerId = grantedToCustomerId; }
 

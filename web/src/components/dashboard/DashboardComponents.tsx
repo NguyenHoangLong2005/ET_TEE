@@ -13,7 +13,9 @@ import { LucideIcon } from 'lucide-react';
  * 2. Icons default to text-muted (#94A3B8).
  * 3. Icon only changes color when semantic meaning requires it.
  * 4. No rainbow multi-color cards.
- * 5. Metric values use JetBrains Mono (font-mono).
+ * 5. Metric values use the page font with tabular figures (mono is kept for codes/IDs; a
+ *    26px mono amount next to sans labels looked like a different app and broke "847.000 ₫"
+ *    onto two lines).
  * 6. Color is used ONLY to communicate semantic state.
  *
  * VALID semantic tones for StatCard icon:
@@ -51,12 +53,13 @@ interface StatCardProps {
   color?: 'blue' | 'green' | 'orange' | 'purple' | 'red' | 'slate' | 'success' | 'warning' | 'danger' | 'info';
 }
 
-const TONE_ICON_STYLE: Record<StatCardTone, React.CSSProperties> = {
-  default: { color: '#94A3B8' },
-  success: { color: '#059669' },
-  warning: { color: '#D97706' },
-  danger:  { color: '#DC2626' },
-  info:    { color: '#2563EB' },
+/** Icon chip per tone: tinted square, so a row of cards reads at a glance without rainbow cards. */
+const TONE_ICON_CLASS: Record<StatCardTone, string> = {
+  default: 'bg-slate-100 text-slate-500',
+  success: 'bg-emerald-50 text-emerald-600',
+  warning: 'bg-amber-50 text-amber-600',
+  danger:  'bg-red-50 text-red-600',
+  info:    'bg-blue-50 text-blue-600',
 };
 
 function legacyColorToTone(color?: StatCardProps['color']): StatCardTone {
@@ -73,42 +76,31 @@ export function StatCard({
   title, value, icon: Icon, tone, trend, subtitle, badge, className = '', color,
 }: StatCardProps) {
   const resolvedTone: StatCardTone = tone ?? legacyColorToTone(color);
-  const iconStyle = TONE_ICON_STYLE[resolvedTone];
-
   return (
     <div
-      className={`bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 ${className}`}
-      style={{ boxShadow: 'var(--shadow-flat, 0 1px 2px rgba(15,23,42,0.04))' }}
+      className={`bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col gap-3 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.03)] ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <p
-              className="text-[11px] font-bold text-slate-400 uppercase"
-              style={{ letterSpacing: '0.06em' }}
-            >
-              {title}
-            </p>
+            <p className="text-[13px] font-medium text-slate-500">{title}</p>
             {badge}
           </div>
         </div>
-        <Icon className="w-4 h-4 shrink-0 mt-0.5" style={iconStyle} aria-hidden="true" />
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${TONE_ICON_CLASS[resolvedTone]}`}>
+          <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
+        </span>
       </div>
 
-      <p
-        className="text-2xl font-bold text-slate-900 leading-none"
-        style={{ fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)', fontVariantNumeric: 'tabular-nums' }}
-      >
+      <p className="text-[22px] 2xl:text-[26px] font-bold text-slate-900 leading-tight tracking-tight tabular-nums">
         {value}
       </p>
 
       {trend && (
-        <div
-          className="flex items-center gap-1 text-xs font-medium"
-          style={{ color: trend.isPositive ? '#059669' : '#DC2626' }}
-        >
-          <span>{trend.isPositive ? '↑' : '↓'}</span>
-          <span>{trend.value}%</span>
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-medium">
+          <span className={`inline-flex items-center whitespace-nowrap rounded-md px-1.5 py-0.5 ${trend.isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+            {trend.isPositive ? '↑' : '↓'} {trend.value}%
+          </span>
           <span className="text-slate-400 font-normal">{trend.label ?? 'so với tuần trước'}</span>
         </div>
       )}
@@ -133,10 +125,9 @@ interface DashboardCardProps {
 export function DashboardCard({ title, children, action, className = '', noPadding }: DashboardCardProps) {
   return (
     <div
-      className={`bg-white rounded-xl border border-slate-200 overflow-hidden ${className}`}
-      style={{ boxShadow: 'var(--shadow-flat)' }}
+      className={`bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.03)] ${className}`}
     >
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
         {action && (
           <button onClick={action.onClick} className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
@@ -162,7 +153,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">{title}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
         {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-3">{actions}</div>}

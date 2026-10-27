@@ -574,7 +574,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
       header: 'Tổng tiền',
       align: 'right',
       render: (order) => (
-        <span className="font-bold text-slate-900 text-sm font-mono whitespace-nowrap">
+        <span className="font-bold text-slate-900 text-sm tabular-nums whitespace-nowrap">
           {Number(order.total || 0).toLocaleString("vi-VN")} ₫
         </span>
       )
@@ -651,7 +651,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
 
   return (
     <PermissionGuard requiredPermissions={['VIEW_NEW_ORDER']}>
-      <main className="min-h-screen bg-slate-50/60 p-6 md:p-8 text-slate-900 font-sans antialiased space-y-6 max-w-7xl mx-auto">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Đơn hàng"
           subtitle="Xác nhận, xác minh thông tin nhận hàng, ghi chú và hủy đơn của chi nhánh."
@@ -734,7 +734,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
 
         {/* Modal Xem nhật ký ghi chú */}
         {selected && (
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md space-y-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-amber-600" />
@@ -757,7 +757,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                         Tạo bởi: {note.createdBy || "Nhân viên Bán hàng"}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400 font-mono shrink-0">
+                    <span className="text-[11px] text-slate-400 tabular-nums shrink-0">
                       {note.createdAt ? new Date(note.createdAt).toLocaleString("vi-VN") : ""}
                     </span>
                   </div>
@@ -773,7 +773,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* 1. Modal Xem chi tiết đơn hàng */}
         {activeModal === "view" && targetOrder && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-slate-900 flex flex-col max-h-[90vh]">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-slate-900 flex flex-col max-h-[90vh]">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="font-bold text-lg flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-blue-600" />
@@ -819,7 +819,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                   </div>
                   <div>
                     <span className="text-slate-500 block mb-1 font-semibold">Thời gian đặt:</span>
-                    <span className="font-mono text-slate-700">{new Date(targetOrder.createdAt || Date.now()).toLocaleString("vi-VN")}</span>
+                    <span className="tabular-nums text-slate-700">{new Date(targetOrder.createdAt || Date.now()).toLocaleString("vi-VN")}</span>
                   </div>
                 </div>
 
@@ -856,8 +856,8 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                             </td>
                             <td className="p-3 text-slate-500">{item.variantInfo || "-"}</td>
                             <td className="p-3 text-center font-mono font-bold">{item.quantity}</td>
-                            <td className="p-3 text-right font-mono">{Number(item.price || 0).toLocaleString("vi-VN")} ₫</td>
-                            <td className="p-3 text-right font-mono font-bold text-emerald-600">{Number(item.lineTotal ?? (item.price || 0) * item.quantity).toLocaleString("vi-VN")} ₫</td>
+                            <td className="p-3 text-right tabular-nums">{Number(item.price || 0).toLocaleString("vi-VN")} ₫</td>
+                            <td className="p-3 text-right tabular-nums font-bold text-emerald-600">{Number(item.lineTotal ?? (item.price || 0) * item.quantity).toLocaleString("vi-VN")} ₫</td>
                           </tr>
                         ))}
                       </tbody>
@@ -868,7 +868,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                 {/* Total */}
                 <div className="flex justify-between items-center pt-3 border-t border-slate-200 text-base">
                   <span className="font-bold text-slate-700">Tổng tiền thanh toán:</span>
-                  <span className="font-extrabold text-emerald-600 text-xl font-mono">{Number(targetOrder.total).toLocaleString("vi-VN")} ₫</span>
+                  <span className="font-extrabold text-emerald-600 text-xl tabular-nums">{Number(targetOrder.total).toLocaleString("vi-VN")} ₫</span>
                 </div>
               </div>
               <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
@@ -887,7 +887,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* 2. Modal Xác minh thông tin nhận hàng */}
         {activeModal === "verify" && targetOrder && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="font-bold text-base flex items-center gap-2 text-blue-700">
                   <ShieldCheck className="w-5 h-5 text-blue-600" />
@@ -941,7 +941,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                   <button 
                     type="submit" 
                     disabled={busy !== null} 
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
                   >
                     Lưu & Xác minh
                   </button>
@@ -954,7 +954,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* 3. Modal Đổi trạng thái đơn hàng */}
         {activeModal === "status" && targetOrder && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="font-bold text-base flex items-center gap-2 text-indigo-700">
                   <Edit3 className="w-5 h-5 text-indigo-600" />
@@ -1017,7 +1017,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                   <button 
                     type="submit" 
                     disabled={busy !== null || !statusNew} 
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
                   >
                     Lưu thay đổi
                   </button>
@@ -1030,7 +1030,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* 4. Modal Hủy đơn hàng */}
         {activeModal === "cancel" && targetOrder && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="font-bold text-base flex items-center gap-2 text-rose-700">
                   <AlertTriangle className="w-5 h-5 text-rose-600" />
@@ -1092,7 +1092,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* 5. Modal Ghi chú đơn hàng */}
         {activeModal === "note" && targetOrder && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-slate-900">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-amber-600" />
@@ -1128,7 +1128,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
                   <button 
                     type="submit" 
                     disabled={busy !== null} 
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover font-bold text-sm text-white shadow-sm transition disabled:opacity-50"
                   >
                     Lưu ghi chú
                   </button>
@@ -1141,7 +1141,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
         {/* Modal Tạo đơn hàng mới */}
         {activeModal === "create" && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-slate-900 flex flex-col max-h-[90vh]">
+            <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl text-slate-900 flex flex-col max-h-[90vh]">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <Plus className="w-5 h-5 text-primary" />
@@ -1316,7 +1316,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
           </div>
         )}
 
-      </main>
+      </div>
     </PermissionGuard>
   );
 }

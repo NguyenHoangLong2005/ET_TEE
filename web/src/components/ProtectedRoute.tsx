@@ -1,8 +1,40 @@
 "use client";
 
 import Link from "next/link";
+import { ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasAnyPermission, hasAnyRole } from "@/lib/auth";
+
+// Same light card as /403: these screens used to be a dark slate-950 page with violet
+// buttons, unlike anything else in the staff area or the storefront.
+function Notice({ title, text, showLogin }: { title: string; text: string; showLogin?: boolean }) {
+  return (
+  <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 max-w-md w-full text-center">
+      <div className="w-14 h-14 bg-primary-50 border border-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <ShieldAlert className="w-7 h-7 text-primary" />
+      </div>
+      <h1 className="text-xl font-black uppercase tracking-tight text-slate-900 mb-2">{title}</h1>
+      <p className="text-slate-500 text-sm mb-6 leading-relaxed">{text}</p>
+      <div className="flex flex-col sm:flex-row justify-center gap-3">
+        {showLogin && (
+          <Link href="/auth/login" className="px-6 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-bold uppercase text-xs tracking-wider transition-colors">
+            Đăng nhập
+          </Link>
+        )}
+        <Link
+          href="/"
+          className={showLogin
+            ? 'px-6 py-3 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-full font-bold uppercase text-xs tracking-wider transition-colors'
+            : 'px-6 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-bold uppercase text-xs tracking-wider transition-colors'}
+        >
+          Về trang chủ
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+}
 
 export default function ProtectedRoute({
   allowedRoles = [],
@@ -17,8 +49,9 @@ export default function ProtectedRoute({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-6 py-4 text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-3 text-sm text-slate-500">
+          <span className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
           Đang kiểm tra quyền truy cập...
         </div>
       </div>
@@ -26,23 +59,7 @@ export default function ProtectedRoute({
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl border border-rose-500/30 bg-slate-900 p-8 text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-rose-400 font-bold">Access denied</p>
-          <h1 className="mt-4 text-3xl font-black text-white">Bạn chưa đăng nhập</h1>
-          <p className="mt-3 text-sm text-slate-300">Vui lòng đăng nhập để tiếp tục sử dụng chức năng này.</p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link href="/auth/login" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold">
-              Đăng nhập
-            </Link>
-            <Link href="/" className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-200 font-semibold">
-              Về trang chủ
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <Notice title="Bạn chưa đăng nhập" text="Vui lòng đăng nhập để tiếp tục sử dụng chức năng này." showLogin />;
   }
 
   const userRoles = (user as any).roles || [user.role];
@@ -50,22 +67,7 @@ export default function ProtectedRoute({
   const hasRequiredPermission = allowedPermissions.length === 0 || hasAnyPermission(user.permissions, allowedPermissions, userRoles);
 
   if (!hasRequiredRole || !hasRequiredPermission) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl border border-amber-500/30 bg-slate-900 p-8 text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-amber-400 font-bold">Forbidden</p>
-          <h1 className="mt-4 text-3xl font-black text-white">Không đủ quyền truy cập</h1>
-          <p className="mt-3 text-sm text-slate-300">
-            Tài khoản hiện tại không có quyền để xem nội dung này. Vui lòng liên hệ quản trị viên.
-          </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link href="/" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold">
-              Quay lại trang chủ
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <Notice title="Không đủ quyền truy cập" text="Tài khoản hiện tại không có quyền xem nội dung này. Vui lòng liên hệ quản trị viên." />;
   }
 
   return <>{children}</>;

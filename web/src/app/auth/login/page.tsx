@@ -213,7 +213,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-slate-50/50 flex items-center justify-center min-h-[85vh] px-4 py-12 text-slate-900">
+    <div className="flex-1 flex flex-col justify-center px-4 py-10 sm:px-6 lg:px-8 text-slate-900 items-center">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-md border border-slate-200/80 p-8 md:p-10">
           <div className="text-center mb-8">
@@ -246,8 +246,8 @@ export default function LoginPage() {
 
             {/* Email Field */}
             <div>
-              <label htmlFor={emailId} className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Email hoặc Username
+              <label htmlFor={emailId} className="block text-sm font-semibold text-slate-700 mb-1.5">
+                Email hoặc tên đăng nhập
               </label>
               <div className="relative">
                 <input
@@ -284,7 +284,7 @@ export default function LoginPage() {
             {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor={passwordId} className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label htmlFor={passwordId} className="block text-sm font-semibold text-slate-700">
                   Mật khẩu
                 </label>
               </div>
@@ -338,8 +338,8 @@ export default function LoginPage() {
 
             {/* Captcha Field */}
             <div>
-              <label htmlFor={captchaId} className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Mã xác thực (Captcha)
+              <label htmlFor={captchaId} className="block text-sm font-semibold text-slate-700 mb-1.5">
+                Mã xác thực
               </label>
               <div className="flex items-center gap-3">
                 <div className="relative flex-1 min-w-0">
@@ -353,7 +353,7 @@ export default function LoginPage() {
                     maxLength={6}
                     aria-invalid={!!fieldErrors.captcha}
                     aria-describedby={fieldErrors.captcha ? captchaErrId : undefined}
-                    className={`appearance-none block w-full px-4 py-3 border rounded-xl shadow-xs placeholder-slate-400 focus:outline-none text-[15px] font-mono tracking-wider uppercase ${
+                    className={`appearance-none block w-full px-4 py-3 border rounded-xl shadow-xs placeholder-slate-400 focus:outline-none text-[15px] font-mono tracking-wider uppercase placeholder:font-sans placeholder:normal-case placeholder:tracking-normal ${
                       fieldErrors.captcha 
                         ? 'border-red-300 text-red-900 focus:ring-2 focus:ring-primary/40 focus:border-primary' 
                         : 'border-slate-300 focus:ring-2 focus:ring-primary/40 focus:border-primary'

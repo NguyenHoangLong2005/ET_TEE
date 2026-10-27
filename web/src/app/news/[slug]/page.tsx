@@ -91,7 +91,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           
           {/* Category & Date Header */}
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 text-xs">
-            <span className="bg-amber-100 text-amber-900 font-bold uppercase tracking-wider px-3 py-1 rounded-full text-[11px] border border-amber-300">
+            <span className="bg-primary-100 text-primary-900 font-bold uppercase tracking-wider px-3 py-1 rounded-full text-[11px] border border-primary-300">
               {article.category}
             </span>
 
@@ -107,7 +107,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           </h1>
 
           {article.summary && (
-            <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200/80 font-semibold text-slate-800 text-xs leading-relaxed italic">
+            <div className="p-4 bg-primary-50/80 rounded-2xl border border-primary-200/80 font-semibold text-slate-800 text-xs leading-relaxed italic">
               "{article.summary}"
             </div>
           )}
@@ -129,10 +129,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500">Chia sẻ bài viết này:</span>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
+              <button className="px-3 py-1.5 bg-slate-100 hover:bg-primary-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
                 Facebook
               </button>
-              <button className="px-3 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
+              <button className="px-3 py-1.5 bg-slate-100 hover:bg-primary-100 text-slate-900 rounded-lg text-xs font-bold transition-colors">
                 Copy Link
               </button>
             </div>
@@ -146,13 +146,13 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
           <h3 className="text-sm font-black uppercase text-slate-900">Bài viết liên quan</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {related.map(r => (
-              <Link key={r.slug} href={`/news/${r.slug}`} className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-amber-400 transition-all flex gap-4">
+              <Link key={r.slug} href={`/news/${r.slug}`} className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-primary-400 transition-all flex gap-4">
                 <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={r.img} alt={r.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-amber-600 uppercase">{r.category}</span>
+                  <span className="text-[10px] font-bold text-primary-600 uppercase">{r.category}</span>
                   <h4 className="font-bold text-slate-900 text-xs line-clamp-2 leading-snug">{r.title}</h4>
                 </div>
               </Link>

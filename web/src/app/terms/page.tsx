@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { FileText, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export const metadata = {
-  title: 'Điều Khoản Sử Dụng & Dịch Vụ | ET.TEE Studio',
+  title: 'Điều Khoản Sử Dụng & Dịch Vụ',
   description: 'Các quy định chung về điều khoản giao dịch, tài khoản người dùng và sở hữu trí tuệ tại website ET.TEE.',
 };
 

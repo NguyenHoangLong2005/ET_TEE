@@ -150,7 +150,7 @@ export default function AdminServerLogsPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} requiredPermissions={['VIEW_SYS_ERROR_LOG']}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Nhật ký máy chủ"
           subtitle="Theo dõi thông báo kỹ thuật, cảnh báo và lỗi của hệ thống gần đây nhất."
@@ -165,7 +165,7 @@ export default function AdminServerLogsPage() {
               <Button variant="outline" icon={<Download className="w-4 h-4" />} onClick={handleDownload}>
                 Tải về
               </Button>
-              <Button variant="secondary" icon={<RefreshCw className="w-4 h-4" />} onClick={() => fetchLogs()} loading={loading}>
+              <Button variant="outline" icon={<RefreshCw className="w-4 h-4" />} onClick={() => fetchLogs()} loading={loading}>
                 Làm mới
               </Button>
             </div>
@@ -260,7 +260,7 @@ export default function AdminServerLogsPage() {
         </p>
 
         {/* ─── Danh sách log ─── */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(16,24,40,0.04)] overflow-hidden">
           <div ref={bodyRef} className="max-h-[640px] min-h-[320px] overflow-y-auto overflow-x-hidden">
             {loading && lines.length === 0 ? (
               <div className="p-12 text-center text-sm text-slate-500">Đang nạp log từ máy chủ...</div>

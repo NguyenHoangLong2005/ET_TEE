@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import SectionHeader from './SectionHeader';
 import ProductCard from '../ui/ProductCard';
 import { Product } from '@/lib/services/productService';
 
@@ -14,26 +14,17 @@ export default function OutfitSection({ products }: OutfitSectionProps) {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-14 md:py-18 bg-slate-50">
+    <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4 xl:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
-          <div>
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-black mb-1 inline-block">Styling Guide</span>
-            <h2 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight mb-2">Gợi Ý Phối Đồ & Lookbook</h2>
-            <p className="text-slate-500 text-sm max-w-xl">
-              Hết đau đầu với câu hỏi "Hôm nay mặc gì?". Khám phá phong cách thời trang phối đồ tone-sur-tone cực chất.
-            </p>
-          </div>
-          <Link 
-            href="/products?category=family" 
-            className="inline-flex items-center gap-1.5 text-sm font-bold uppercase text-slate-500 hover:text-black transition-colors group"
-          >
-            <span>Xem tất cả</span>
-            <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-          </Link>
-        </div>
+        {/* The products are simply the family category (matching sets for the whole family);
+            the old "Gợi ý phối đồ & Lookbook / tone-sur-tone" copy promised styling it never showed. */}
+        <SectionHeader
+          title="Đồ gia đình"
+          subtitle="Trang phục đồng bộ cho bố mẹ và bé, mặc cùng nhau thật ăn ý"
+          viewAllLink="/products?category=family"
+        />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.slice(0, 4).map((product, idx) => (
             <ProductCard 
               key={product.id || idx}

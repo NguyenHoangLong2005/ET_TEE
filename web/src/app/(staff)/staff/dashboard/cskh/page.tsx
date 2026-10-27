@@ -95,12 +95,19 @@ export default function CskhDashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
 
+  const TICKET_STATUS_LABEL: Record<string, string> = {
+    OPEN: 'Mới', PENDING: 'Chờ', IN_PROGRESS: 'Đang xử lý', ESCALATED: 'Chuyển cấp', RESOLVED: 'Đã xử lý', CLOSED: 'Đã đóng',
+  };
+
   const ticketColumns: Column<TicketItem>[] = [
     {
       key: 'id',
       header: 'Ticket',
       render: t => (
-        <span className="font-mono text-xs font-bold text-slate-700">#{t.id}</span>
+        // ids are UUIDs: the first block is enough to tell tickets apart, the full id stays in the tooltip
+        <span className="font-mono text-xs font-bold text-slate-700 whitespace-nowrap" title={String(t.id)}>
+          #{String(t.id).split('-')[0]}
+        </span>
       ),
     },
     {
@@ -133,8 +140,8 @@ export default function CskhDashboardPage() {
         const s = (t.status || '').toUpperCase();
         return (
           <StatusBadge
-            tone={s === 'RESOLVED' || s === 'CLOSED' ? 'success' : s === 'PENDING' ? 'warning' : 'info'}
-            label={s === 'RESOLVED' ? 'Đã xử lý' : s === 'CLOSED' ? 'Đã đóng' : s === 'PENDING' ? 'Chờ' : t.status}
+            tone={s === 'RESOLVED' || s === 'CLOSED' ? 'success' : s === 'PENDING' || s === 'OPEN' ? 'warning' : 'info'}
+            label={TICKET_STATUS_LABEL[s] ?? t.status}
           />
         );
       },
@@ -150,9 +157,9 @@ export default function CskhDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-8 text-slate-800">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader
-        title={`${greeting}, ${firstName} 👋`}
+        title={`${greeting}, ${firstName}`}
         subtitle={`Tổng quan CSKH · Đồng bộ lúc: ${lastRefresh.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
         breadcrumbs={[
           { label: 'Nhân viên', href: '/staff/tickets' },
@@ -176,28 +183,28 @@ export default function CskhDashboardPage() {
           title="Tickets Đang mở"
           value={loading ? '...' : (openCount ?? '—')}
           icon={Ticket}
-          color="warning"
+          color="slate"
           subtitle="Chưa được giải quyết"
         />
         <StatCard
           title="Đã giải quyết hôm nay"
           value={loading ? '...' : (resolvedToday ?? '—')}
           icon={CheckCircle2}
-          color="success"
+          color="slate"
           subtitle="Tickets đóng trong ngày"
         />
         <StatCard
           title="Thời gian phản hồi TB"
           value="—"
           icon={Clock}
-          color="info"
+          color="slate"
           subtitle="Chưa có dữ liệu thống kê"
         />
         <StatCard
           title="Voucher đã cấp"
           value="—"
           icon={Tag}
-          color="purple"
+          color="slate"
           subtitle="Đền bù cho khách hàng"
         />
       </div>
@@ -205,34 +212,34 @@ export default function CskhDashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Link
           href="/staff/tickets"
-          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl transition-all block group shadow-2xs hover:shadow-sm"
+          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl transition-all block group shadow-2xs hover:shadow-sm"
         >
-          <Ticket className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform mb-2" />
-          <p className="text-xs font-bold text-slate-900">Hàng đợi Tickets</p>
+          <Ticket className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors mb-2" />
+          <p className="text-xs font-bold text-slate-900">Hàng đợi ticket</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Xử lý yêu cầu khách hàng</p>
         </Link>
         <Link
           href="/staff/reviews"
-          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl transition-all block group shadow-2xs hover:shadow-sm"
+          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl transition-all block group shadow-2xs hover:shadow-sm"
         >
-          <MessageSquare className="w-5 h-5 text-indigo-600 group-hover:scale-110 transition-transform mb-2" />
-          <p className="text-xs font-bold text-slate-900">Đánh giá & Comment</p>
+          <MessageSquare className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors mb-2" />
+          <p className="text-xs font-bold text-slate-900">Đánh giá & bình luận</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Duyệt review sản phẩm</p>
         </Link>
         <Link
           href="/staff/support"
-          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl transition-all block group shadow-2xs hover:shadow-sm"
+          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl transition-all block group shadow-2xs hover:shadow-sm"
         >
-          <Users className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform mb-2" />
-          <p className="text-xs font-bold text-slate-900">Hỗ trợ Khách hàng</p>
+          <Users className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors mb-2" />
+          <p className="text-xs font-bold text-slate-900">Hỗ trợ khách hàng</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Trung tâm hỗ trợ</p>
         </Link>
         <Link
           href="/staff/tickets"
-          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl transition-all block group shadow-2xs hover:shadow-sm"
+          className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl transition-all block group shadow-2xs hover:shadow-sm"
         >
-          <CheckCircle2 className="w-5 h-5 text-rose-600 group-hover:scale-110 transition-transform mb-2" />
-          <p className="text-xs font-bold text-slate-900">Tickets chờ xử lý</p>
+          <CheckCircle2 className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors mb-2" />
+          <p className="text-xs font-bold text-slate-900">Ticket chờ xử lý</p>
           <p className="text-[11px] text-slate-500 mt-0.5">Ưu tiên cao</p>
         </Link>
       </div>
@@ -240,8 +247,8 @@ export default function CskhDashboardPage() {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <Ticket className="w-4 h-4 text-amber-600" />
-            <span>Tickets Gần đây</span>
+            <Ticket className="w-4 h-4 text-slate-400" />
+            <span>Ticket gần đây</span>
           </div>
         }
         subtitle="10 yêu cầu hỗ trợ mới nhất từ khách hàng"
@@ -249,9 +256,9 @@ export default function CskhDashboardPage() {
         footer={
           <Link
             href="/staff/tickets"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-amber-600 ml-auto"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-primary ml-auto"
           >
-            Xem tất cả Tickets
+            Xem tất cả ticket
           </Link>
         }
       >

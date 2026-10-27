@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<<<<<<< HEAD
     <application
         android:label="ettee_staff"
+=======
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="ET.TEE"
+        android:usesCleartextTraffic="true"
+>>>>>>> main
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -41,5 +48,13 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+<<<<<<< HEAD
+=======
+        <!-- url_launcher: PayOS checkout page -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+>>>>>>> main
     </queries>
 </manifest>

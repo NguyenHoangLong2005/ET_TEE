@@ -13,7 +13,7 @@ const NAV = [
   { href: '/staff/marketing/dashboard',  label: 'Tổng quan',  icon: LayoutDashboard },
   { href: '/staff/dashboard/marketing/homepage', label: 'Trang chủ', icon: ImageIcon },
   { href: '/staff/marketing/vouchers',   label: 'Voucher',    icon: Tag },
-  { href: '/staff/marketing/analytics',  label: 'Analytics',  icon: BarChart3 },
+  { href: '/staff/marketing/analytics',  label: 'Hiệu quả',  icon: BarChart3 },
 ];
 
 export default function MarketingSidebar() {

@@ -122,7 +122,7 @@ export default async function ProductsPage({
   const typeMap: Record<string, string> = {
     'tshirt': 'Áo thun', 't-shirt': 'Áo thun', 'shirt': 'Áo sơ mi', 'polo': 'Áo polo',
     'pants': 'Quần', 'trousers': 'Quần', 'jeans': 'Quần jeans', 'shorts': 'Quần short',
-    'jacket': 'Áo khoác', 'coat': 'Áo khoác', 'dress': 'Váy', 'skirt': 'Chân váy',
+    'jacket': 'Áo khoác', 'coat': 'Áo khoác', 'dress': 'Đầm', 'skirt': 'Chân váy',
     'accessory': 'Phụ kiện', 'accessories': 'Phụ kiện', 'homewear': 'Đồ mặc nhà',
     'set': 'Set đồ', 'family-set': 'Set gia đình',
   };
@@ -152,9 +152,9 @@ export default async function ProductsPage({
   }
   if (minPrice || maxPrice) {
     let priceLabel = '';
-    if (minPrice && maxPrice) priceLabel = `${minPrice.toLocaleString('vi-VN')}đ - ${maxPrice.toLocaleString('vi-VN')}đ`;
-    else if (minPrice) priceLabel = `Từ ${minPrice.toLocaleString('vi-VN')}đ`;
-    else if (maxPrice) priceLabel = `Dưới ${maxPrice.toLocaleString('vi-VN')}đ`;
+    if (minPrice && maxPrice) priceLabel = `${minPrice.toLocaleString('vi-VN')}₫ - ${maxPrice.toLocaleString('vi-VN')}₫`;
+    else if (minPrice) priceLabel = `Từ ${minPrice.toLocaleString('vi-VN')}₫`;
+    else if (maxPrice) priceLabel = `Dưới ${maxPrice.toLocaleString('vi-VN')}₫`;
     activeFilters.push({ key: 'price', label: priceLabel, params: ['minPrice', 'maxPrice'] });
   }
 

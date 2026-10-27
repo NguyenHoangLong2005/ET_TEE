@@ -1,14 +1,15 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Camera, Search, X } from 'lucide-react';
+import { Camera, ImagePlus, Search, X } from 'lucide-react';
 import ProductCard from '@/components/ui/ProductCard';
 import { SearchService, SearchResult } from '@/lib/services/searchService';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 5 * 1024 * 1024;
+const EXAMPLES = ['váy đi tiệc cho phụ nữ', 'áo khoác chống nắng cho bé', 'quần jean nam', 'đồ ngủ cho bé', 'giày đi tiệc nữ'];
 
 export default function SearchClient({
   initialQuery,
@@ -24,6 +25,7 @@ export default function SearchClient({
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   const result = imageResult ?? initialResult;
 
@@ -48,6 +50,7 @@ export default function SearchClient({
     if (file.size > MAX_BYTES) return setError('Ảnh tối đa 5 MB.');
     if (preview) URL.revokeObjectURL(preview);
     setPreview(URL.createObjectURL(file));
+    setQuery('');
     setLoading(true);
     try {
       setImageResult(await SearchService.searchByImage(file, 24));
@@ -60,11 +63,40 @@ export default function SearchClient({
     }
   };
 
+  // Paste a screenshot / copied image anywhere on the page (Ctrl+V) to search by it.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const item = Array.from(e.clipboardData?.items ?? []).find(i => i.kind === 'file' && i.type.startsWith('image/'));
+      if (!item) return;
+      e.preventDefault();
+      onFile(item.getAsFile() ?? undefined);
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  });
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    onFile(e.dataTransfer.files?.[0]);
+  };
+
   return (
-    <>
+    <div
+      onDragOver={e => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setDragging(true); } }}
+      onDragLeave={e => { if (e.currentTarget === e.target) setDragging(false); }}
+      onDrop={onDrop}
+      className="relative"
+    >
+      {dragging && (
+        <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-primary bg-primary-50/80 flex flex-col items-center justify-center gap-2 text-primary font-bold pointer-events-none">
+          <ImagePlus className="w-8 h-8" />
+          Thả ảnh vào đây để tìm sản phẩm giống
+        </div>
+      )}
       <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-slate-900 mb-2">Tìm kiếm</h1>
       <p className="text-sm text-slate-500 mb-6">
-        Mô tả món bạn cần bằng lời (ví dụ: &ldquo;váy đi tiệc cho phụ nữ&rdquo;) hoặc tải lên một tấm ảnh.
+        Mô tả món bạn cần bằng lời, hoặc tìm bằng ảnh: bấm &ldquo;Tìm bằng ảnh&rdquo;, kéo thả ảnh vào trang hay dán ảnh (Ctrl+V).
       </p>
 
       <form onSubmit={submit} className="flex gap-2 mb-4">
@@ -76,10 +108,16 @@ export default function SearchClient({
             placeholder="Bạn đang tìm gì?"
             maxLength={200}
             aria-label="Từ khóa tìm kiếm"
-            className="w-full border border-slate-200 rounded-full pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-slate-900"
+            className="w-full border border-slate-200 rounded-full pl-11 pr-10 py-3 text-sm focus:outline-none focus:border-slate-900"
           />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} aria-label="Xóa từ khóa"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-900">
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
-        <button type="submit" className="bg-slate-900 text-white rounded-full px-6 text-sm font-bold">
+        <button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 text-sm font-bold transition-colors">
           Tìm
         </button>
         <button
@@ -112,11 +150,34 @@ export default function SearchClient({
 
       {error && <p className="text-sm text-red-600 mb-6">{error}</p>}
 
+      {!result && !preview && !loading && (
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <span className="text-xs text-slate-500">Thử:</span>
+          {EXAMPLES.map(ex => (
+            <button key={ex} type="button" onClick={() => router.push(`/search?q=${encodeURIComponent(ex)}`)}
+              className="px-3 py-1.5 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:border-slate-900 transition-colors">
+              {ex}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {loading && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-[3/4] rounded-2xl bg-slate-100 animate-pulse" />)}
+        </div>
+      )}
+
       {result && !loading && (
         result.products.length === 0 ? (
-          <p className="text-slate-500 text-sm">Không tìm thấy sản phẩm phù hợp.</p>
+          <p className="text-slate-500 text-sm">
+            Không tìm thấy sản phẩm phù hợp. Thử mô tả khác (ví dụ thêm &ldquo;nam&rdquo;, &ldquo;nữ&rdquo;, &ldquo;bé&rdquo;) hoặc tìm bằng ảnh.
+          </p>
         ) : (
           <>
+            {imageResult && (
+              <p className="text-xs text-slate-500 mb-4">{result.products.length} sản phẩm giống ảnh của bạn</p>
+            )}
             {!imageResult && initialQuery && (
               <p className="text-xs text-slate-500 mb-4">
                 {result.products.length} kết quả cho &ldquo;{initialQuery}&rdquo; ·{' '}
@@ -146,6 +207,6 @@ export default function SearchClient({
           </>
         )
       )}
-    </>
+    </div>
   );
 }

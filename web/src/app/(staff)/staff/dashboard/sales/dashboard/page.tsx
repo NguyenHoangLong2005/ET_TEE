@@ -160,11 +160,11 @@ export default function SalesDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-8 space-y-6 text-slate-800">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
       {/* ─── Header ─── */}
       <PageHeader
-        title="Bảng Điều Khiển Bán Hàng"
+        title="Bảng điều khiển bán hàng"
         subtitle={`Tổng quan xử lý đơn hàng tại chi nhánh${lastSync ? ` · Cập nhật lúc ${lastSync.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
         badge={<span className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">BÁN HÀNG</span>}
         breadcrumbs={[
@@ -233,7 +233,7 @@ export default function SalesDashboardPage() {
 
       {/* ─── Alert banner nếu có đơn cần xử lý ─── */}
       {!loading && urgentCount > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center justify-between">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-100">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -259,7 +259,7 @@ export default function SalesDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Recent Orders table */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-600" />
@@ -280,7 +280,7 @@ export default function SalesDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 flex flex-col">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs p-6 flex flex-col">
           <h3 className="text-sm font-semibold text-slate-900 mb-5">Thao tác nhanh</h3>
           <div className="grid grid-cols-2 gap-3 flex-1">
             {QUICK_ACTIONS.map((action) => (

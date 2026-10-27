@@ -96,7 +96,7 @@ function CategoryForm({
   const blockedParents = selectedId != null ? descendantIds(categories, selectedId) : new Set<number>();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl max-w-lg w-full overflow-hidden">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
@@ -114,7 +114,7 @@ function CategoryForm({
               placeholder="VD: Thời trang Nam, Thời trang Nữ..."
               value={form.name}
               onChange={onNameChange}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div>
@@ -126,7 +126,7 @@ function CategoryForm({
               required
               value={form.slug}
               onChange={(e) => onFormChange({ slug: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div>
@@ -134,7 +134,7 @@ function CategoryForm({
             <select
               value={form.parentId}
               onChange={(e) => onFormChange({ parentId: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="">-- Không có (Danh mục gốc) --</option>
               {categories
@@ -150,7 +150,7 @@ function CategoryForm({
                 min={0}
                 value={form.displayOrder}
                 onChange={(e) => onFormChange({ displayOrder: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027]"
+                className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div>
@@ -160,7 +160,7 @@ function CategoryForm({
                   type="checkbox"
                   checked={form.active}
                   onChange={(e) => onFormChange({ active: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-300 accent-[#E50027]"
+                  className="w-4 h-4 rounded border-slate-300 accent-primary"
                 />
                 Hiển thị trên cửa hàng
               </label>
@@ -173,7 +173,7 @@ function CategoryForm({
               placeholder="Mô tả ngắn về danh mục..."
               value={form.description}
               onChange={(e) => onFormChange({ description: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E50027]/20 focus:border-[#E50027] resize-none"
+              className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
             />
           </div>
           <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
@@ -360,8 +360,8 @@ export default function StoreOwnerCategoriesPage() {
         >
           {!searchTerm.trim() && (cat.depth ?? 0) > 0 && <CornerDownRight className="w-3.5 h-3.5 text-[#EC8D9A] shrink-0" />}
           <div>
-            <div className={`text-zinc-900 ${(cat.depth ?? 0) === 0 ? 'font-bold' : 'font-medium'}`}>{cat.name}</div>
-            <div className="text-xs font-mono text-zinc-400 mt-0.5">{cat.slug}</div>
+            <div className={`text-slate-900 ${(cat.depth ?? 0) === 0 ? 'font-bold' : 'font-medium'}`}>{cat.name}</div>
+            <div className="text-xs font-mono text-slate-400 mt-0.5">{cat.slug}</div>
           </div>
         </div>
       ),
@@ -371,8 +371,8 @@ export default function StoreOwnerCategoriesPage() {
       header: 'Trạng thái',
       render: (cat) =>
         cat.active === false ? (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />Đang ẩn
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />Đang ẩn
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
@@ -385,8 +385,8 @@ export default function StoreOwnerCategoriesPage() {
       header: 'Danh mục cha',
       render: (cat) =>
         cat.parentName ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 text-xs font-medium">
-            <Layers className="w-3 h-3 text-zinc-400" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">
+            <Layers className="w-3 h-3 text-slate-400" />
             {cat.parentName}
           </span>
         ) : (
@@ -398,13 +398,13 @@ export default function StoreOwnerCategoriesPage() {
       header: 'Mô tả',
       render: (cat) =>
         cat.description ? (
-          <span className="line-clamp-2 max-w-[320px] text-xs text-zinc-600" title={cat.description}>
+          <span className="line-clamp-2 max-w-[320px] text-xs text-slate-600" title={cat.description}>
             {cat.description}
           </span>
         ) : (
           <button
             onClick={() => openEdit(cat)}
-            className="text-xs italic text-zinc-400 hover:text-[#E50027] transition-colors"
+            className="text-xs italic text-slate-400 hover:text-primary transition-colors"
           >
             Chưa có mô tả — thêm
           </button>
@@ -418,14 +418,14 @@ export default function StoreOwnerCategoriesPage() {
         <div className="flex items-center justify-end gap-1.5">
           <button
             onClick={() => openEdit(cat)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             title="Sửa"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={() => openDelete(cat)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50 transition-colors"
             title="Xóa"
           >
             <Trash2 className="w-4 h-4" />
@@ -443,7 +443,7 @@ export default function StoreOwnerCategoriesPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
 
         <PageHeader
           title="Danh mục sản phẩm"
@@ -466,9 +466,9 @@ export default function StoreOwnerCategoriesPage() {
             { label: 'Danh mục gốc', value: stats.roots },
             { label: 'Đang ẩn', value: stats.hidden },
           ].map(s => (
-            <div key={s.label} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 border-l-4 border-l-[#E50027]/70">
-              <div className="text-xs font-medium text-zinc-500">{s.label}</div>
-              <div className="text-2xl font-bold text-zinc-900 tabular-nums">{s.value}</div>
+            <div key={s.label} className="rounded-xl border border-slate-200 bg-white px-4 py-3 border-l-4 border-l-primary/70">
+              <div className="text-xs font-medium text-slate-500">{s.label}</div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">{s.value}</div>
             </div>
           ))}
         </div>

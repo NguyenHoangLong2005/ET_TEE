@@ -157,13 +157,13 @@ export default function AdminShopsPage() {
 
   return (
     <PermissionGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1400px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
-          title="Quản lý Chi nhánh"
+          title="Quản lý chi nhánh"
           subtitle="Danh sách chi nhánh của chuỗi ET.TEE. Ngừng hoạt động một chi nhánh không xóa đơn hàng/nhân viên đã gắn với nó."
           actions={
             <div className="flex items-center gap-2.5">
-              <Button variant="secondary" onClick={fetchShops} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>
+              <Button variant="outline" onClick={fetchShops} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>
                 Làm mới
               </Button>
               <Button onClick={openCreate} icon={<Plus className="w-4 h-4" />}>
@@ -184,7 +184,7 @@ export default function AdminShopsPage() {
 
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-md overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <h3 className="text-sm font-semibold text-slate-900">
                   {editingShop ? `Sửa: ${editingShop.name}` : 'Thêm chi nhánh mới'}

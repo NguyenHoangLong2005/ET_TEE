@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -35,7 +35,10 @@ export default function CheckoutPage() {
     voucherCode: '',
   });
 
-  const [voucherInfo, setVoucherInfo] = useState<{ discountAmount: number; finalTotal: number; name: string; freeShipping: boolean } | null>(null);
+  // appliedSubtotal: the cart subtotal the discount was computed for (re-checked when it changes).
+  const [voucherInfo, setVoucherInfo] = useState<{ code: string; discountAmount: number; finalTotal: number; name: string; freeShipping: boolean; appliedSubtotal: number } | null>(null);
+  // Only the latest validation may update the summary.
+  const voucherRequest = useRef(0);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
   // Codes this shopper can use on this cart, best first (public + their personal vouchers)
@@ -45,43 +48,57 @@ export default function CheckoutPage() {
   // price checkout charges. Summing raw salePrice/price here showed a different total.
   const calculateSubtotal = () => (cart?.items || []).reduce((sum, item) => sum + item.itemTotal, 0);
 
-  const applyVoucher = async (codeOverride?: string) => {
+  const applyVoucher = async (codeOverride?: string, revalidating = false) => {
     const code = (codeOverride ?? formData.voucherCode).trim().toUpperCase();
-    if (codeOverride) setFormData(prev => ({ ...prev, voucherCode: code }));
+    if (codeOverride && !revalidating) setFormData(prev => ({ ...prev, voucherCode: code }));
+    const requestId = ++voucherRequest.current;
     if (!code) {
       setVoucherInfo(null);
       setVoucherError(null);
+      setVoucherLoading(false);
       return;
     }
+    const subtotal = calculateSubtotal();
     setVoucherLoading(true);
     setVoucherError(null);
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/marketing/vouchers/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(getAuthHeaders() as Record<string, string>) },
-        body: JSON.stringify({ code, subtotal: calculateSubtotal() }),
+        body: JSON.stringify({ code, subtotal }),
       });
       const json = await res.json();
+      if (requestId !== voucherRequest.current) return;
       if (json.success) {
         setVoucherInfo({
+          code,
           discountAmount: json.data.discountAmount,
           finalTotal: json.data.finalTotal,
           name: json.data.name,
           freeShipping: json.data.freeShipping,
+          appliedSubtotal: subtotal,
         });
-        toast.success('Áp dụng voucher thành công');
+        if (!revalidating) toast.success('Áp dụng voucher thành công');
       } else {
+        const message = json.message || 'Voucher không hợp lệ';
         setVoucherInfo(null);
-        setVoucherError(json.message || 'Voucher không hợp lệ');
-        toast.error(json.message || 'Voucher không hợp lệ');
+        setVoucherError(revalidating ? `Mã ${code} không còn áp dụng cho giỏ hàng hiện tại: ${message}` : message);
+        toast.error(revalidating ? `Đã bỏ mã ${code}: ${message}` : message);
       }
     } catch {
+      if (requestId !== voucherRequest.current) return;
       setVoucherInfo(null);
       setVoucherError('Không thể kiểm tra voucher');
       toast.error('Không thể kiểm tra voucher');
     } finally {
-      setVoucherLoading(false);
+      if (requestId === voucherRequest.current) setVoucherLoading(false);
     }
+  };
+
+  const clearVoucher = () => {
+    voucherRequest.current++;
+    setVoucherLoading(false);
+    setVoucherInfo(null);
   };
 
   const [bankConfig, setBankConfig] = useState<any>(null);
@@ -130,6 +147,24 @@ export default function CheckoutPage() {
 
   // Re-ranked whenever the cart total changes (minimum-order conditions depend on it)
   const cartTotal = calculateSubtotal();
+
+  // A code applied on the cart page arrives as ?voucher=CODE; apply it once the cart is loaded.
+  const cartVoucherChecked = useRef(false);
+  useEffect(() => {
+    if (cartVoucherChecked.current || cartTotal <= 0) return;
+    cartVoucherChecked.current = true;
+    const code = new URLSearchParams(window.location.search).get('voucher');
+    if (code) Promise.resolve().then(() => applyVoucher(code));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal]);
+
+  // The discount was computed for the subtotal at apply time; if the cart changes (cart drawer,
+  // another tab) the old discount and total stayed on screen. Re-check against the new total.
+  useEffect(() => {
+    if (!voucherInfo || voucherInfo.appliedSubtotal === cartTotal) return;
+    Promise.resolve().then(() => (cartTotal <= 0 ? clearVoucher() : applyVoucher(voucherInfo.code, true)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal, voucherInfo]);
   useEffect(() => {
     if (cartTotal <= 0) return;
     let cancelled = false;
@@ -533,7 +568,7 @@ export default function CheckoutPage() {
                     <p className="text-xs text-slate-500 mt-1">{item.color} / {item.size}</p>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-slate-500">x{item.quantity}</span>
-                      <span className="font-bold text-slate-900">{formatVnd(item.salePrice || item.price)}đ</span>
+                      <span className="font-bold text-slate-900">{formatVnd(item.salePrice || item.price)}₫</span>
                     </div>
                   </div>
                 </div>
@@ -543,7 +578,7 @@ export default function CheckoutPage() {
             <div className="border-t border-slate-200 pt-4 space-y-3 text-sm">
               <div className="flex justify-between text-slate-600">
                 <span>Tạm tính</span>
-                <span className="font-medium text-slate-900">{subtotal.toLocaleString('vi-VN')}đ</span>
+                <span className="font-medium text-slate-900">{subtotal.toLocaleString('vi-VN')}₫</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Phí vận chuyển</span>
@@ -552,12 +587,12 @@ export default function CheckoutPage() {
               {voucherInfo ? (
                 <div className="flex justify-between text-emerald-700 font-medium">
                   <span>Giảm giá ({formData.voucherCode})</span>
-                  <span>-{voucherInfo.discountAmount.toLocaleString('vi-VN')}đ</span>
+                  <span>-{voucherInfo.discountAmount.toLocaleString('vi-VN')}₫</span>
                 </div>
               ) : null}
               <div className="flex justify-between font-black text-xl text-slate-900 border-t border-slate-200 pt-4 mt-2">
                 <span>Tổng cộng</span>
-                <span className="text-primary">{(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : subtotal).toLocaleString('vi-VN')}đ</span>
+                <span className="text-primary">{(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : subtotal).toLocaleString('vi-VN')}₫</span>
               </div>
             </div>
 
@@ -583,8 +618,8 @@ export default function CheckoutPage() {
                     // Editing the code after it was applied used to keep showing
                     // the old "Đã áp dụng X" banner (and the old discount) even
                     // though it no longer matched what's typed.
-                    if (voucherInfo && next !== formData.voucherCode) {
-                      setVoucherInfo(null);
+                    if (next !== formData.voucherCode) {
+                      clearVoucher();
                     }
                   }}
                   className="flex-1 min-w-0 px-3.5 h-11 border border-slate-300 rounded-xl text-sm font-mono uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
@@ -600,8 +635,8 @@ export default function CheckoutPage() {
               </div>
               {voucherInfo ? (
                 <div className="mt-2.5 text-xs text-emerald-700 font-medium flex items-center justify-between">
-                  <span>✓ Đã áp dụng <strong>{voucherInfo.name}</strong> (-{voucherInfo.discountAmount.toLocaleString('vi-VN')}đ)</span>
-                  <button type="button" onClick={() => { setVoucherInfo(null); setFormData({ ...formData, voucherCode: '' }); }} className="underline text-slate-500 hover:text-slate-900 ml-2">
+                  <span>✓ Đã áp dụng <strong>{voucherInfo.name}</strong> (-{voucherInfo.discountAmount.toLocaleString('vi-VN')}₫)</span>
+                  <button type="button" onClick={() => { clearVoucher(); setFormData({ ...formData, voucherCode: '' }); }} className="underline text-slate-500 hover:text-slate-900 ml-2">
                     Xóa
                   </button>
                 </div>

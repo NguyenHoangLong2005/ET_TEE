@@ -149,8 +149,10 @@ export const ProductService = {
   },
 
   async getSaleProducts(limit: number = 8): Promise<Product[]> {
-    const res = await this.getProducts({ pageSize: limit, sort: 'price-asc' }); // Simplification for sale
-    return res.items || [];
+    // "Ưu đãi đặc biệt" used to be just the cheapest items (sort=price-asc), so it showed
+    // full-price socks. discount-desc puts isSale products first; keep only those.
+    const res = await this.getProducts({ pageSize: limit, status: 'sale', sort: 'discount-desc' });
+    return (res.items || []).filter((p) => p.isSale || (p.salePrice != null && p.salePrice < p.price));
   },
 
   async getFamilyOutfitProducts(limit: number = 4): Promise<Product[]> {

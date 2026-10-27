@@ -36,6 +36,10 @@ const STATE_UI: Record<StockState, { label: string; badge: string; bar: string }
 const actionBtn =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition disabled:opacity-50";
 
+const ADJUSTMENT_LABEL: Record<string, string> = {
+  PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", REJECTED: "Từ chối", REVISION_REQUESTED: "Cần chỉnh sửa",
+};
+
 type Adjustment = {
   id: number;
   inventory: { id: number; productName: string };
@@ -102,7 +106,11 @@ export default function WarehouseInventoryPage() {
     {
       key: "status",
       header: "Trạng thái",
+<<<<<<< HEAD
       render: (a) => <StatusBadge status={a.status} label={a.status === "APPROVED" ? "Đã duyệt" : "Từ chối"} />,
+=======
+      render: (a) => <StatusBadge status={a.status} label={ADJUSTMENT_LABEL[a.status] ?? a.status} />,
+>>>>>>> main
     },
   ];
 
@@ -207,7 +215,7 @@ export default function WarehouseInventoryPage() {
       key: "product",
       header: "Sản phẩm",
       render: (item) => (
-        <div className="max-w-[18rem]">
+        <div className="min-w-[14rem] max-w-[20rem]">
           <div className="font-semibold text-slate-900 line-clamp-2" title={item.productName}>{item.productName}</div>
           <div className="text-[11px] text-slate-400 font-mono mt-0.5">SP #{item.productId}</div>
         </div>
@@ -264,7 +272,7 @@ export default function WarehouseInventoryPage() {
         <div className="flex items-center gap-1.5">
           <Link
             href={`/staff/dashboard/warehouse/receiving?productId=${item.productId}`}
-            className={`${actionBtn} border-primary-600 bg-primary-600 text-white hover:bg-primary-700`}
+            className={`${actionBtn} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`}
           >
             <PackagePlus className="h-3.5 w-3.5" /> Nhập thêm
           </Link>
@@ -290,12 +298,12 @@ export default function WarehouseInventoryPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900 md:px-10">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
-          title="Tồn Kho & Vị Trí Hàng"
+          title="Tồn kho & vị trí hàng"
           subtitle="Quản lý chi tiết vị trí lưu trữ và số lượng hàng hóa thực tế trong kho"
-          badge={<span className="bg-primary-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">KHO HÀNG</span>}
+          badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           breadcrumbs={[
             { label: "Kho hàng", href: "/staff/dashboard/warehouse/dashboard" },
             { label: "Tồn kho" },
@@ -322,7 +330,7 @@ export default function WarehouseInventoryPage() {
               key={key}
               onClick={() => setTab(key)}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
-                tab === key ? "bg-primary-600 text-white shadow" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                tab === key ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               {label}
@@ -350,7 +358,7 @@ export default function WarehouseInventoryPage() {
                     onClick={() => setStockFilter(key)}
                     className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                       stockFilter === key
-                        ? "border-primary-600 bg-primary-600 text-white"
+                        ? "border-slate-900 bg-slate-900 text-white"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -383,7 +391,7 @@ export default function WarehouseInventoryPage() {
       {/* Location Modal */}
       {activeModal === "location" && selectedItem && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-xl text-slate-900">
+          <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-xl text-slate-900">
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <h2 className="font-bold text-base flex items-center gap-2 text-sky-700">
                 <MapPin className="w-5 h-5 text-sky-600" />
@@ -420,7 +428,7 @@ export default function WarehouseInventoryPage() {
       {/* Adjustment Modal */}
       {activeModal === "adjustment" && selectedItem && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-xl text-slate-900">
+          <div className="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md overflow-hidden shadow-xl text-slate-900">
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <h2 className="font-bold text-base flex items-center gap-2 text-primary-700">
                 <Sliders className="w-5 h-5 text-primary-600" />
@@ -477,6 +485,6 @@ export default function WarehouseInventoryPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

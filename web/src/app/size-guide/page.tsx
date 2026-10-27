@@ -2,7 +2,7 @@ import Link from 'next/link';
 import SizeGuideClient from './SizeGuideClient';
 
 export const metadata = {
-  title: 'Hướng Dẫn Chọn Size Chuẩn ET.TEE | ET.TEE Studio',
+  title: 'Hướng Dẫn Chọn Size Chuẩn ET.TEE',
   description: 'Bảng quy đổi kích thước chuẩn cho áo sơ mi, áo thun, polo, quần nam nữ và trẻ em ET.TEE. Công cụ tính size tự động theo chiều cao, cân nặng.',
 };
 

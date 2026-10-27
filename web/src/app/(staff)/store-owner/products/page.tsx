@@ -10,7 +10,8 @@ import DataTable, { Column } from '@/components/ui/DataTable';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import SafeImage from '@/components/ui/SafeImage';
 import { toast } from 'sonner';
-import { RefreshCw, Search, X, Save, RotateCcw, Pencil, Plus, Trash2, Tag } from 'lucide-react';
+import Link from 'next/link';
+import { RefreshCw, Search, X, Save, RotateCcw, Pencil, Plus, Trash2, Tag, FileUp } from 'lucide-react';
 import ProductFormModal from './ProductFormModal';
 
 /** One price for the whole system: these are the product's real list / promotional prices. */
@@ -299,7 +300,7 @@ export default function StoreOwnerProductsPage() {
       width: '140px',
       align: 'right',
       render: (p) => (
-        <span className={`font-mono text-sm ${hasSale(p) ? 'text-slate-400 line-through' : 'font-bold text-slate-900'}`}>{money(p.basePrice)}</span>
+        <span className={`tabular-nums text-sm ${hasSale(p) ? 'text-slate-400 line-through' : 'font-bold text-slate-900'}`}>{money(p.basePrice)}</span>
       ),
     },
     {
@@ -310,7 +311,7 @@ export default function StoreOwnerProductsPage() {
       render: (p) =>
         hasSale(p) ? (
           <div className="text-right">
-            <span className="font-mono text-sm font-bold text-primary">{money(p.baseSalePrice)}</span>
+            <span className="tabular-nums text-sm font-bold text-primary">{money(p.baseSalePrice)}</span>
             <div className="text-[11px] font-semibold text-emerald-600">
               -{Math.round((((p.basePrice as number) - (p.baseSalePrice as number)) / (p.basePrice as number)) * 100)}%
             </div>
@@ -342,15 +343,15 @@ export default function StoreOwnerProductsPage() {
       render: (p) => (
         <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
           <button type="button" title="Sửa giá nhanh" aria-label="Sửa giá nhanh" onClick={() => openEdit(p)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors">
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors">
             <Tag className="w-4 h-4" />
           </button>
           <button type="button" title="Chỉnh sửa sản phẩm" aria-label="Chỉnh sửa sản phẩm" onClick={() => setFormFor(p.id)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors">
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors">
             <Pencil className="w-4 h-4" />
           </button>
           <button type="button" title="Xóa sản phẩm" aria-label="Xóa sản phẩm" onClick={() => openDelete(p)}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-[#E50027] hover:bg-[#FFF0F2] transition-colors">
+            className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50 transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -360,15 +361,18 @@ export default function StoreOwnerProductsPage() {
 
   return (
     <PermissionGuard allowedRoles={['SHOP_OWNER', 'ADMIN', 'SUPER_ADMIN']}>
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-slate-800">
+      <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Sản phẩm & giá bán"
           subtitle="Thêm, chỉnh sửa, xóa sản phẩm và cập nhật giá, khuyến mãi, trạng thái bán. Mọi thay đổi áp dụng cho toàn hệ thống."
           actions={
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
               <Button variant="outline" onClick={fetchProducts} loading={loading} icon={<RefreshCw className="w-4 h-4" />}>
                 Làm mới
               </Button>
+              <Link href="/store-owner/products/import">
+                <Button variant="outline" icon={<FileUp className="w-4 h-4" />}>Nhập từ file</Button>
+              </Link>
               <Button onClick={() => setFormFor(null)} icon={<Plus className="w-4 h-4" />}>
                 Thêm sản phẩm
               </Button>
@@ -464,7 +468,7 @@ export default function StoreOwnerProductsPage() {
         {/* Chỉnh sửa giá và trạng thái bán */}
         {editing && (
           <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-900">Giá và trạng thái bán</h3>
                 <button type="button" onClick={() => setEditing(null)} aria-label="Đóng" className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
@@ -528,7 +532,7 @@ export default function StoreOwnerProductsPage() {
 
                   <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
                     <p className="text-xs font-bold uppercase text-slate-500">Khách sẽ thấy</p>
-                    <p className="mt-1 text-2xl font-bold text-primary font-mono">{money(parsed.shown)}</p>
+                    <p className="mt-1 text-2xl font-bold text-primary tabular-nums">{money(parsed.shown)}</p>
                     {parsed.percentOff > 0 && <p className="text-xs text-emerald-700 mt-0.5">Giảm {parsed.percentOff}% so với giá niêm yết</p>}
                     {!form.active && <p className="text-xs text-rose-600 mt-0.5">Sản phẩm đang tạm ngưng bán.</p>}
                   </div>

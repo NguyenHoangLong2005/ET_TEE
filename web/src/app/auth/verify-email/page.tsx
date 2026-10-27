@@ -129,7 +129,7 @@ function VerifyEmailForm() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex-1 bg-slate-50/50 flex flex-col justify-center py-16 sm:px-6 lg:px-8 min-h-[calc(100vh-64px)]">
+    <div className="flex-1 flex flex-col justify-center px-4 py-10 sm:px-6 lg:px-8 text-slate-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <h2 className="mt-4 text-center text-3xl font-black uppercase tracking-tight text-slate-900">
           Xác thực Email

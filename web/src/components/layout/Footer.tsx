@@ -12,14 +12,14 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-[#f4f4f4] text-[#18181B] text-[13px] border-t border-slate-200">
+    <footer className="bg-slate-50 text-slate-900 text-[13px] border-t border-slate-200">
       <div className="container mx-auto px-4 xl:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12">
           
           {/* Brand & Contact */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-6">
-              <h2 className="text-2xl font-black tracking-tighter text-primary uppercase">ET.TEE</h2>
+              <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">ET.TEE</span>
             </Link>
             <p className="text-slate-600 mb-6 max-w-sm leading-relaxed">
               Thương hiệu thời trang gia đình hàng đầu Việt Nam. Chất lượng vượt trội, thiết kế đa dụng cho cuộc sống hằng ngày.
@@ -67,21 +67,22 @@ export default function Footer() {
 
           {/* Social */}
           <div>
-            <h3 className="font-bold text-[14px] uppercase tracking-wider mb-5">TÀI KHOẢN KẾT NỐI</h3>
+            <h3 className="font-bold text-[14px] uppercase tracking-wider mb-5">TÀI KHOẢN</h3>
             <ul className="space-y-4 text-slate-600 mb-8">
               <li><Link href="/account/profile" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Tài khoản của tôi</Link></li>
               <li><Link href="/account/orders" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Lịch sử đơn hàng</Link></li>
               <li><Link href="/wishlist" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Danh sách yêu thích</Link></li>
             </ul>
             
-            <div className="flex items-center gap-4">
-              <a href="https://facebook.com" className="w-10 h-10 bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-sm font-bold" aria-label="Facebook">
+            <h3 className="font-bold text-[14px] uppercase tracking-wider mb-4">KẾT NỐI</h3>
+            <div className="flex items-center gap-3">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-xs font-bold" aria-label="Facebook">
                 FB
               </a>
-              <a href="https://instagram.com" className="w-10 h-10 bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-sm font-bold" aria-label="Instagram">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-xs font-bold" aria-label="Instagram">
                 IG
               </a>
-              <a href="https://youtube.com" className="w-10 h-10 bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-sm font-bold" aria-label="Youtube">
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white border border-slate-300 flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-xs font-bold" aria-label="Youtube">
                 YT
               </a>
             </div>
@@ -92,9 +93,9 @@ export default function Footer() {
         <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>Bản quyền © 2026 ET.TEE. Bảo lưu mọi quyền.</p>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-[#18181B] hover:underline transition-colors">Chính sách bảo mật</Link>
+            <Link href="/privacy" className="hover:text-slate-900 hover:underline transition-colors">Chính sách bảo mật</Link>
             <span className="w-px h-3 bg-slate-300"></span>
-            <Link href="/terms" className="hover:text-[#18181B] hover:underline transition-colors">Điều khoản sử dụng</Link>
+            <Link href="/terms" className="hover:text-slate-900 hover:underline transition-colors">Điều khoản sử dụng</Link>
           </div>
         </div>
       </div>

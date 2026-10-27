@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getApiBaseUrl } from "@/lib/api-config";
 import { getAuthHeaders } from "@/lib/auth";
+import {
+  AlertCircle, BarChart3, ChevronRight, Eye, FileText, LayoutTemplate, MousePointerClick, Percent, Tag, TrendingUp,
+} from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
+import Card from "@/components/ui/Card";
+import StatCard from "@/components/ui/StatCard";
 
 type Overview = { impressions: number; clicks: number; ctr: number; revenue: number };
 type Counts = {
@@ -100,82 +106,84 @@ export default function MarketingDashboardPage() {
   ].filter(Boolean) as { text: string; href: string; cta: string }[];
 
   const metrics = [
-    { label: "Lượt hiển thị", value: fmtNum(overview.impressions) },
-    { label: "Lượt click", value: fmtNum(overview.clicks) },
-    { label: "CTR", value: `${overview.ctr.toFixed(1)}%` },
-    { label: "Doanh thu từ khuyến mãi", value: fmtMoney(overview.revenue) },
+    { label: "Lượt hiển thị", value: fmtNum(overview.impressions), icon: Eye },
+    { label: "Lượt click", value: fmtNum(overview.clicks), icon: MousePointerClick },
+    { label: "CTR", value: `${overview.ctr.toFixed(1)}%`, icon: Percent },
+    { label: "Doanh thu từ khuyến mãi", value: fmtMoney(overview.revenue), icon: TrendingUp },
   ];
 
   const sections = [
-    { href: "/staff/dashboard/marketing/homepage", label: "Trang chủ", stat: `${counts.activeBanners} banner đang hiển thị` },
-    { href: "/staff/dashboard/marketing/vouchers", label: "Voucher", stat: `${counts.activeVouchers} đang hiệu lực` },
-    { href: "/staff/dashboard/marketing/posts", label: "Bài viết", stat: `${counts.publishedPosts} đã đăng · ${counts.draftPosts} nháp` },
-    { href: "/staff/dashboard/marketing/analytics", label: "Hiệu quả", stat: "Báo cáo chi tiết" },
+    { href: "/staff/dashboard/marketing/homepage", label: "Trang chủ", icon: LayoutTemplate, stat: `${counts.activeBanners} banner đang hiển thị` },
+    { href: "/staff/dashboard/marketing/vouchers", label: "Voucher", icon: Tag, stat: `${counts.activeVouchers} đang hiệu lực` },
+    { href: "/staff/dashboard/marketing/posts", label: "Bài viết", icon: FileText, stat: `${counts.publishedPosts} đã đăng · ${counts.draftPosts} nháp` },
+    { href: "/staff/dashboard/marketing/analytics", label: "Hiệu quả", icon: BarChart3, stat: "Báo cáo chi tiết" },
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900 md:p-8">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="border-l-4 border-red-600 pl-3 text-xl font-semibold">Marketing</h1>
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
+      <PageHeader
+        title="Tổng quan marketing"
+        subtitle="Hiệu quả banner, voucher và bài viết trong kỳ đã chọn."
+        actions={
+          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
             {PERIODS.map(p => (
               <button
                 key={p.days}
                 type="button"
                 onClick={() => setDays(p.days)}
-                className={`rounded-md px-3 py-1 ${days === p.days ? "bg-red-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+                className={`rounded-md px-3 py-1.5 font-medium transition-colors ${days === p.days ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
               >
                 {p.label}
               </button>
             ))}
           </div>
+        }
+      />
+
+      {failed && (
+        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Không tải được dữ liệu.
+          <button type="button" onClick={() => void load()} className="font-medium underline">Thử lại</button>
         </div>
+      )}
 
-        {failed && (
-          <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            Không tải được dữ liệu.
-            <button type="button" onClick={() => void load()} className="font-medium underline">Thử lại</button>
-          </div>
-        )}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {metrics.map(m => (
+          <StatCard key={m.label} title={m.label} value={loading ? "—" : m.value} icon={m.icon} />
+        ))}
+      </div>
 
-        <section className="grid grid-cols-2 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white lg:grid-cols-4">
-          {metrics.map(m => (
-            <div key={m.label} className="border-t-2 border-red-600 p-4">
-              <p className="text-xs text-slate-500">{m.label}</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-red-700">{loading ? "…" : m.value}</p>
-            </div>
-          ))}
-        </section>
-
-        {todo.length > 0 && (
-          <section className="rounded-lg border border-slate-200 bg-white">
-            <h2 className="border-b border-slate-100 px-4 py-2.5 text-sm font-medium">Cần xử lý</h2>
-            <ul className="divide-y divide-slate-100">
-              {todo.map(t => (
-                <li key={t.text} className="flex items-center justify-between px-4 py-3 text-sm">
-                  <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-red-600" />{t.text}</span>
-                  <Link href={t.href} className="font-medium text-red-600 underline underline-offset-2 hover:text-red-700">{t.cta}</Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section className="rounded-lg border border-slate-200 bg-white">
-          <h2 className="border-b border-slate-100 px-4 py-2.5 text-sm font-medium">Quản lý</h2>
+      {todo.length > 0 && (
+        <Card noPadding title="Cần xử lý">
           <ul className="divide-y divide-slate-100">
-            {sections.map(s => (
-              <li key={s.href}>
-                <Link href={s.href} className="group flex items-center justify-between px-4 py-3 text-sm hover:bg-red-50/60">
-                  <span className="font-medium">{s.label}</span>
-                  <span className="text-slate-500 group-hover:text-red-600">{loading ? "…" : s.stat} →</span>
-                </Link>
+            {todo.map(t => (
+              <li key={t.text} className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
+                <span className="flex items-center gap-2.5 text-slate-700">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-500" />{t.text}
+                </span>
+                <Link href={t.href} className="shrink-0 font-medium text-slate-900 underline underline-offset-2 hover:text-primary">{t.cta}</Link>
               </li>
             ))}
           </ul>
-        </section>
-      </div>
-    </main>
+        </Card>
+      )}
+
+      <Card noPadding title="Quản lý">
+        <ul className="divide-y divide-slate-100">
+          {sections.map(s => (
+            <li key={s.href}>
+              <Link href={s.href} className="group flex items-center gap-3 px-5 py-3.5 text-sm hover:bg-slate-50">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-primary-50 group-hover:text-primary">
+                  <s.icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="flex-1 font-semibold text-slate-900">{s.label}</span>
+                <span className="text-slate-500">{loading ? "…" : s.stat}</span>
+                <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
   );
 }

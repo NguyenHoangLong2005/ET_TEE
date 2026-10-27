@@ -25,4 +25,16 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("SELECT oi FROM OrderItem oi JOIN oi.order o WHERE o.id = :orderId AND oi.product.id = :productId")
     List<OrderItem> findItemsByOrderAndProduct(@Param("orderId") Long orderId, @Param("productId") Long productId);
+
+    /**
+     * Units ordered per (product, shop) since a date, for restock suggestions. Rows are
+     * [productId, shopId, quantity]; orders in the given statuses (never placed, cancelled,
+     * returned) are left out.
+     */
+    @Query("SELECT oi.product.id, o.shopId, SUM(oi.quantity) FROM OrderItem oi JOIN oi.order o "
+            + "WHERE oi.product.id IN :productIds AND o.createdAt >= :since AND o.status NOT IN :excluded "
+            + "GROUP BY oi.product.id, o.shopId")
+    List<Object[]> sumQuantityByProductAndShopSince(@Param("productIds") java.util.Collection<Long> productIds,
+                                                    @Param("since") java.time.LocalDateTime since,
+                                                    @Param("excluded") java.util.Collection<com.nguyenhoanglong.entity.OrderStatus> excluded);
 }

@@ -6,6 +6,7 @@ import {
   DollarSign, Package, Clock, Eye, X, ShieldAlert, Hash
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { carrierLabel } from '@/lib/shipping';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatCard } from '@/components/ui/StatCard';
@@ -206,7 +207,7 @@ export default function ShippingCodPage() {
       key: 'totalCodAmount',
       header: 'Tổng tiền COD',
       render: (rec) => (
-        <span className="font-mono font-bold text-emerald-600 text-sm">
+        <span className="tabular-nums font-bold text-slate-900 text-sm">
           {rec.totalCodAmount.toLocaleString('vi-VN')} ₫
         </span>
       )
@@ -290,7 +291,7 @@ export default function ShippingCodPage() {
         key: 'carrier',
         header: 'Hãng Vận Chuyển',
         render: (s) => (
-          <span className="font-medium text-slate-700">{s.carrierName || 'Tự giao hàng'}</span>
+          <span className="font-medium text-slate-700">{carrierLabel(s.carrierName) || 'Tự giao hàng'}</span>
         ),
       },
       {
@@ -307,7 +308,7 @@ export default function ShippingCodPage() {
         header: 'Tiền Thu Hộ (COD)',
         align: 'right',
         render: (s) => (
-          <span className="font-mono font-bold text-sm text-emerald-600">
+          <span className="tabular-nums font-bold text-sm text-slate-900">
             {(s.codAmount || 0).toLocaleString('vi-VN')} ₫
           </span>
         ),
@@ -317,25 +318,25 @@ export default function ShippingCodPage() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
       <PageHeader
-        title="Quản Lý & Đối Soát Tài Chính COD"
+        title="Quản lý & đối soát tài chính COD"
         subtitle="Đối soát thu hộ COD chuẩn nghiệp vụ tài chính, tự động lập phiếu và theo dõi vết giao dịch"
         breadcrumbs={[
-          { label: 'Bộ phận vận chuyển', href: '/staff/dashboard/shipping' },
+          { label: 'Bộ phận vận chuyển', href: '/staff/dashboard/shipping/dashboard' },
           { label: 'Đối soát COD' },
         ]}
         actions={
           <div className="flex items-center gap-2">
             <Button
-              variant={activeTab === 'pending' ? 'primary' : 'secondary'}
+              variant={activeTab === 'pending' ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('pending')}
             >
               Chờ đối soát ({pendingShipments.length})
             </Button>
             <Button
-              variant={activeTab === 'history' ? 'primary' : 'secondary'}
+              variant={activeTab === 'history' ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => setActiveTab('history')}
             >
@@ -351,26 +352,26 @@ export default function ShippingCodPage() {
           title="Vận đơn chờ đối soát"
           value={pendingShipments.length}
           icon={Package}
-          color="blue"
+          color="slate"
         />
         <StatCard
           title="Tổng tiền COD đọng"
           value={`${totalPendingAmount.toLocaleString('vi-VN')} ₫`}
           icon={DollarSign}
-          color="warning"
+          color="slate"
         />
         <StatCard
           title="Phiếu đối soát đã lập"
           value={historyList.length}
           icon={FileText}
-          color="purple"
+          color="slate"
         />
       </div>
 
       {/* TAB 1: PENDING COD SHIPMENTS */}
       {activeTab === 'pending' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <input
@@ -406,7 +407,7 @@ export default function ShippingCodPage() {
 
           {/* Bottom Floating Action Bar when items selected */}
           {selectedIds.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-6 z-40 border border-slate-200">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-6 py-3.5 rounded-xl shadow-xl flex items-center gap-6 z-40 border border-slate-200">
               <div>
                 <span className="text-xs text-slate-500 block">Đã chọn</span>
                 <span className="font-bold text-sm text-slate-900">{selectedIds.length} kiện hàng</span>
@@ -414,7 +415,7 @@ export default function ShippingCodPage() {
               <div className="h-8 w-px bg-slate-200" />
               <div>
                 <span className="text-xs text-slate-500 block">Tổng tiền COD</span>
-                <span className="font-mono font-bold text-base text-emerald-600">{selectedTotalCod.toLocaleString('vi-VN')} ₫</span>
+                <span className="tabular-nums font-bold text-base text-slate-900">{selectedTotalCod.toLocaleString('vi-VN')} ₫</span>
               </div>
               <Button
                 variant="primary"
@@ -446,10 +447,10 @@ export default function ShippingCodPage() {
       {/* Modal Confirm Create Reconciliation Sheet */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-emerald-600" /> Xác Nhận Lập Phiếu Đối Soát COD
+                <ShieldAlert className="w-4 h-4 text-slate-400" /> Xác Nhận Lập Phiếu Đối Soát COD
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -460,14 +461,14 @@ export default function ShippingCodPage() {
             </div>
 
             <form onSubmit={handleCreateReconciliation} className="p-5 space-y-4 text-xs">
-              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-emerald-900">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-slate-900">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium text-emerald-700">Số lượng vận đơn:</span>
-                  <strong className="font-bold text-sm text-emerald-900">{selectedIds.length} kiện</strong>
+                  <span className="font-medium text-slate-500">Số lượng vận đơn:</span>
+                  <strong className="font-bold text-sm text-slate-900">{selectedIds.length} kiện</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="font-medium text-emerald-700">Tổng tiền thu hộ COD:</span>
-                  <strong className="font-mono font-bold text-base text-emerald-800">{selectedTotalCod.toLocaleString('vi-VN')} ₫</strong>
+                  <span className="font-medium text-slate-500">Tổng tiền thu hộ COD:</span>
+                  <strong className="tabular-nums font-bold text-base text-slate-900">{selectedTotalCod.toLocaleString('vi-VN')} ₫</strong>
                 </div>
               </div>
 
@@ -514,11 +515,11 @@ export default function ShippingCodPage() {
       {/* Drawer/Modal Sheet Detail */}
       {selectedSheetDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-600" /> Chi Tiết Phiếu Đối Soát #{selectedSheetDetail.reconciliationCode}
+                  <FileText className="w-4 h-4 text-slate-400" /> Chi Tiết Phiếu Đối Soát #{selectedSheetDetail.reconciliationCode}
                 </h3>
                 <span className="text-[11px] text-slate-500 block mt-0.5">
                   Lập bởi: {selectedSheetDetail.reconciledByName || selectedSheetDetail.reconciledBy} • {new Date(selectedSheetDetail.reconciledAt).toLocaleString('vi-VN')}
@@ -544,7 +545,7 @@ export default function ShippingCodPage() {
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">Tổng tiền COD</span>
-                  <strong className="text-emerald-700 font-mono text-sm">{selectedSheetDetail.totalCodAmount.toLocaleString('vi-VN')} ₫</strong>
+                  <strong className="text-slate-900 tabular-nums text-sm">{selectedSheetDetail.totalCodAmount.toLocaleString('vi-VN')} ₫</strong>
                 </div>
               </div>
 
@@ -573,7 +574,7 @@ export default function ShippingCodPage() {
                           <td className="p-3 font-mono font-bold text-slate-900">{item.trackingCode || item.shipmentId}</td>
                           <td className="p-3 font-semibold text-primary">{item.orderCode || '—'}</td>
                           <td className="p-3 text-slate-700">{item.customerName || '—'}</td>
-                          <td className="p-3 text-right font-mono font-bold text-emerald-600">
+                          <td className="p-3 text-right tabular-nums font-bold text-slate-900">
                             {item.codAmount.toLocaleString('vi-VN')} ₫
                           </td>
                         </tr>

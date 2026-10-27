@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import SectionHeader, { CarouselArrow } from './SectionHeader';
 import ProductCard from '../ui/ProductCard';
+import { markNextViewSource, ViewSource } from '@/lib/services/behaviorTracking';
 
 import { Product } from '@/lib/services/productService';
 
@@ -14,9 +15,11 @@ interface ProductCarouselProps {
   products: Product[];
   /** Render inside a page that already provides the container/vertical spacing (e.g. PDP). */
   embedded?: boolean;
+  /** Record the product page opened from this carousel with this source (click-through). */
+  trackSource?: ViewSource;
 }
 
-export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor = 'bg-white', products, embedded = false }: ProductCarouselProps) {
+export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor = 'bg-white', products, embedded = false, trackSource }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -48,45 +51,12 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
   return (
     <section className={embedded ? 'mb-16' : `py-12 md:py-16 ${bgColor}`}>
       <div className={embedded ? '' : 'container mx-auto px-4 xl:px-8'}>
-        {/* Header */}
-        <div className="flex items-end justify-between mb-8 border-b border-slate-200 pb-3">
-          <div>
-            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase relative inline-block pb-2">
-              {title}
-              <span className="absolute bottom-0 left-0 w-1/2 h-1 bg-primary"></span>
-            </h2>
-            {subtitle && <p className="text-sm text-slate-500 font-medium">{subtitle}</p>}
+        <SectionHeader title={title} subtitle={subtitle} viewAllLink={viewAllLink}>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <CarouselArrow direction="left" disabled={!canScrollLeft} onClick={() => scroll('left')} />
+            <CarouselArrow direction="right" disabled={!canScrollRight} onClick={() => scroll('right')} />
           </div>
-
-          <div className="flex items-center gap-4">
-            {viewAllLink && (
-              <a href={viewAllLink} className="text-sm font-bold tracking-widest uppercase text-slate-500 hover:text-slate-900 transition-colors hidden sm:block">
-                Xem tất cả
-              </a>
-            )}
-            {/* Navigation Arrows */}
-            <div className="hidden sm:flex gap-2">
-              <button
-                onClick={() => scroll('left')}
-                disabled={!canScrollLeft}
-                className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${
-                  canScrollLeft ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-slate-100 text-slate-300'
-                }`}
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll('right')}
-                disabled={!canScrollRight}
-                className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${
-                  canScrollRight ? 'border-slate-300 text-slate-700 hover:bg-slate-50' : 'border-slate-100 text-slate-300'
-                }`}
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        </SectionHeader>
 
         <div 
           ref={scrollRef}
@@ -95,7 +65,11 @@ export default function ProductCarousel({ title, subtitle, viewAllLink, bgColor 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {products.map((product) => (
-            <div key={product.id} className="w-[calc(50%-8px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start">
+            <div
+              key={product.id}
+              className="w-[calc(50%-8px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start"
+              onClickCapture={trackSource ? () => markNextViewSource(product.id, trackSource) : undefined}
+            >
               <ProductCard 
                 id={product.slug}
                 productId={product.id}
