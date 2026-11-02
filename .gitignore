@@ -77,3 +77,6 @@ scripts/check_*.py
 scripts/test_*.py
 scripts/fast_seed.py
 scripts/seed_3000_products_to_db.py
+
+# deploy/ runtime data on the VPS
+deploy/data/

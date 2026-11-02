@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.env
+.env.*
+!.env.example
+tsconfig.tsbuildinfo
+test*.py
+test*.js
+fix_*
+*.txt

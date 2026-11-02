@@ -1,0 +1,59 @@
+# Production stack for one VPS. Run from this folder:  docker compose up -d --build
+# The database stays on Supabase; only Caddy (ports 80/443) is reachable from outside.
+name: fashion
+
+services:
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      UPLOAD_DIR: /app/uploads
+      SEED_DEMO_ACCOUNTS: "false"
+      APP_SEARCH_EMBEDDERURL: http://embedder:8090
+    volumes:
+      - uploads:/app/uploads
+      - ./data/logs:/app/logs
+      - ./data/models-live:/app/models-live
+    depends_on:
+      - embedder
+
+  # Shares the backend's network namespace on purpose: the backend only trusts X-Forwarded-For
+  # (rate limits, audit IPs) when the caller is loopback, which is how Next reaches it here
+  # (BACKEND_URL defaults to http://127.0.0.1:8081). Its port 3000 is therefore reached as backend:3000.
+  web:
+    build:
+      context: ../web
+      args:
+        NEXT_PUBLIC_SITE_URL: https://${DOMAIN}
+    restart: unless-stopped
+    network_mode: service:backend
+    depends_on:
+      - backend
+
+  embedder:
+    build: ../services/embedder
+    restart: unless-stopped
+    environment:
+      EMBEDDER_THREADS: ${EMBEDDER_THREADS:-2}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  uploads:
+  caddy_data:
+  caddy_config:
