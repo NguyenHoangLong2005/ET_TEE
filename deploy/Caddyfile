@@ -5,6 +5,13 @@
 	request_body {
 		max_size 25MB
 	}
+	# Android app download: files in deploy/data/downloads, e.g. /ettee.apk
+	@download path /ettee.apk
+	handle @download {
+		root * /srv/downloads
+		header Content-Disposition "attachment; filename=ettee.apk"
+		file_server
+	}
 	# web shares the backend's network namespace (see docker-compose.yml)
 	reverse_proxy backend:3000
 }

@@ -43,7 +43,7 @@ Nếu đã có ảnh upload hoặc model retrain trên máy local, chép lên VP
 scp -r backend/models-live/* user@vps:~/fashion/deploy/data/models-live/
 ```
 
-Ảnh sản phẩm upload nằm trong volume `fashion_uploads`. Để nạp ảnh cũ vào, xem mục 6.
+Ảnh sản phẩm upload nằm trong volume `fashion_uploads`. Để nạp ảnh cũ vào, xem mục 7.
 
 ## 4. Chạy
 
@@ -74,7 +74,19 @@ Sau khi `backend` được tạo lại, `web` cũng phải tạo lại theo vì 
 **Webhook thanh toán:** nếu dùng SePay hoặc PayOS, đổi webhook URL trong trang quản trị của họ sang
 `https://<DOMAIN>/api/...`.
 
-## 6. Sao lưu ảnh upload
+## 6. App Android (APK)
+
+Build APK trỏ về server thật trên máy dev rồi chép lên VPS. File được tải tại `https://<DOMAIN>/ettee.apk`:
+
+```bash
+# trong mobile/
+flutter build apk --release --dart-define=API_BASE_URL=https://<DOMAIN> --dart-define=ASSET_BASE_URL=https://<DOMAIN>
+scp build/app/outputs/flutter-apk/app-release.apk root@<IP-VPS>:/opt/fashion/deploy/data/downloads/ettee.apk
+```
+
+Mỗi bản mới nên tăng `version:` trong `mobile/pubspec.yaml`, nếu không Android sẽ không cho cài đè.
+
+## 7. Sao lưu ảnh upload
 
 ```bash
 # sao lưu

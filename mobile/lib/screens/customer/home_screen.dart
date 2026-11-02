@@ -249,7 +249,9 @@ class _HeroBannerState extends State<_HeroBanner> {
 void openLink(BuildContext context, String href) {
   if (href.startsWith('http')) {
     final uri = Uri.tryParse(href);
-    if (uri != null && (uri.host == 'localhost' || uri.host == '127.0.0.1')) {
+    // Links back to our own storefront (dev or the deployed domain) open in-app
+    final ownHost = Uri.tryParse(AppConfig.apiBase)?.host;
+    if (uri != null && (uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == ownHost)) {
       context.push(uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path);
     }
     return;
