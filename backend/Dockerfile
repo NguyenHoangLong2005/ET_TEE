@@ -1,5 +1,7 @@
 # Spring Boot backend: build the fat jar with Maven, run it on a JRE-only image.
-FROM maven:3.9-eclipse-temurin-21 AS build
+# JDK 25 like local dev: since JDK 23 javac skips implicit annotation processing, so Lombok stays inert.
+# On JDK 21 Lombok runs and its generated constructors clash with the hand-written ones.
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /src
 # Dependencies first so a source-only change reuses this layer
 COPY pom.xml .
@@ -7,7 +9,7 @@ RUN mvn -q -B dependency:go-offline
 COPY src ./src
 RUN mvn -q -B package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 RUN useradd --system --uid 10001 app \
  && mkdir -p uploads logs models-live \
