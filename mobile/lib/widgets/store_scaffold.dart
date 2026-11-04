@@ -240,7 +240,7 @@ class _MenuDrawer extends StatelessWidget {
                   for (final (label, href) in const [
                     ('Hướng dẫn chọn size', '/size-guide'),
                     ('Trắc nghiệm phong cách', '/style-quiz'),
-                    ('Hệ thống cửa hàng', '/stores'),
+                    ('Cửa hàng', '/stores'),
                     ('Câu hỏi thường gặp', '/faq'),
                     ('Chính sách khách hàng', '/policy'),
                     ('Liên hệ', '/contact'),

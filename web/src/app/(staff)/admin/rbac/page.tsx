@@ -30,7 +30,7 @@ const PROTECTED_ROLES = ["ADMIN", "SHOP_OWNER", "USER", "STAFF"];
 
 const GROUP_LABELS: Record<string, string> = {
   ADMIN:            "Quản trị Hệ thống",
-  SHOP_OWNER:       "Chủ cửa hàng & Chi nhánh",
+  SHOP_OWNER:       "Chủ cửa hàng",
   SALES_STAFF:      "Bán hàng & Đơn hàng",
   CSKH_STAFF:       "Chăm sóc Khách hàng (CSKH)",
   WAREHOUSE_STAFF:  "Kho vận & Tồn kho",

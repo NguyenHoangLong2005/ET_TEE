@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, MapPin, Phone, Search } from 'lucide-react';
+import { X, MapPin, Phone } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface StoreStockModalProps {
@@ -16,8 +16,8 @@ interface StoreStockModalProps {
 type Shop = {
   id: number;
   name: string;
-  address: string;
-  phone: string;
+  address?: string | null;
+  phone?: string | null;
 };
 
 export default function StoreStockModal({
@@ -31,14 +31,14 @@ export default function StoreStockModal({
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      apiClient.get<Shop[]>('/api/shops/active')
-        .then((data) => setShops(Array.isArray(data) ? data : []))
+      // He thong chi co mot cua hang.
+      apiClient.get<Shop>('/api/shops/current')
+        .then((data) => setShops(data ? [data] : []))
         .catch(() => setError('Không thể tải danh sách cửa hàng.'))
         .finally(() => setLoading(false));
     } else {
@@ -51,10 +51,7 @@ export default function StoreStockModal({
 
   if (!isOpen || !mounted) return null;
 
-  const filteredStores = shops.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStores = shops;
 
   const modalContent = (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -90,33 +87,18 @@ export default function StoreStockModal({
            branch's physical inventory aren't linked), so we no longer
            fabricate "còn hàng"/size-availability per store. */}
         <div className="px-6 pt-4 text-[11px] text-amber-800 bg-amber-50 border-b border-amber-100 py-2">
-          Hệ thống chưa hỗ trợ tra cứu tồn kho theo thời gian thực tại từng cửa hàng. Vui lòng gọi trực tiếp cửa hàng để xác nhận trước khi ghé mua.
-        </div>
-
-        {/* Search */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm theo tên/địa chỉ</label>
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Nhập tên quận/huyện..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 outline-none focus:border-amber-500"
-            />
-          </div>
+          Vui lòng gọi cửa hàng để xác nhận còn đúng size/màu trước khi ghé mua.
         </div>
 
         {/* Stores List */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {loading ? (
-            <div className="py-12 text-center text-slate-500 text-xs">Đang tải danh sách cửa hàng...</div>
+            <div className="py-12 text-center text-slate-500 text-xs">Đang tải thông tin cửa hàng...</div>
           ) : error ? (
             <div className="py-12 text-center text-rose-600 text-xs">{error}</div>
           ) : filteredStores.length === 0 ? (
             <div className="py-12 text-center text-slate-500 text-xs">
-              Không tìm thấy cửa hàng ET.TEE nào phù hợp.
+              Chưa có thông tin cửa hàng.
             </div>
           ) : (
             filteredStores.map((store) => (
@@ -126,7 +108,7 @@ export default function StoreStockModal({
 
                   <p className="text-xs text-slate-600 flex items-start gap-1.5 leading-relaxed">
                     <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
-                    <span>{store.address}</span>
+                    <span>{store.address || 'Đang cập nhật địa chỉ'}</span>
                   </p>
 
                   <div className="flex items-center gap-4 text-[11px] text-slate-500 pt-1">
@@ -142,7 +124,7 @@ export default function StoreStockModal({
                     Gọi Cửa Hàng
                   </a>
                   <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent(store.address)}`}
+                    href={`https://maps.google.com/?q=${encodeURIComponent(store.address || store.name)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 sm:flex-initial px-4 py-2 border border-slate-300 hover:border-slate-900 text-slate-800 font-bold text-xs rounded-xl text-center transition-colors"
@@ -157,7 +139,7 @@ export default function StoreStockModal({
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 text-center font-medium">
-          Hotline hỗ trợ giữ hàng tại showroom: <strong>1900 1234</strong> (8:00 - 22:00)
+          Cửa hàng mở cửa 8:00 - 22:00 hằng ngày
         </div>
 
       </div>

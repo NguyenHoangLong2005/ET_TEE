@@ -1,5 +1,6 @@
 package com.nguyenhoanglong.service;
 
+import com.nguyenhoanglong.config.SingleShop;
 import com.nguyenhoanglong.entity.Role;
 import com.nguyenhoanglong.entity.User;
 import org.springframework.http.HttpStatus;
@@ -7,11 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Kiem tra quyen so huu chi nhanh, dung chung cho moi module (san pham tai
- * chi nhanh, nha cung ung rieng, nhan vien, ...) de tranh copy-paste logic.
+ * Kiem tra quyen thao tac len ban ghi co shop_id, dung chung cho moi module
+ * (san pham, nha cung ung, nhan vien, ...).
  *
- * Quy uoc loi (theo quyet dinh Q4): truy cap cheo chi nhanh luon tra ve 403
- * voi thong diep chung, KHONG lo ma chi nhanh hay id ban ghi trong thong diep.
+ * <p>He thong chi quan ly MOT cua hang ({@link SingleShop}). Ban ghi co
+ * shop_id null (du lieu cu "dung chung toan chuoi") va tai khoan chua gan
+ * shop_id deu duoc hieu la thuoc cua hang duy nhat. Lop kiem tra van duoc giu
+ * de chan du lieu le mang shop_id khac (neu con sot lai tu thoi nhieu chi nhanh).</p>
+ *
+ * Quy uoc loi: luon tra ve 403 voi thong diep chung, KHONG lo id ban ghi.
  */
 @Service
 public class StoreAccessGuard {
@@ -25,9 +30,8 @@ public class StoreAccessGuard {
     }
 
     /**
-     * Xac nhan nguoi dung hien tai duoc phep thao tac len mot ban ghi thuoc
-     * chi nhanh {@code resourceShopId}. ADMIN luon duoc phep. SHOP_OWNER/staff
-     * chi duoc phep khi resourceShopId trung voi shopId cua chinh ho.
+     * ADMIN luon duoc phep. Nguoi khac duoc phep khi ban ghi thuoc cua hang
+     * (shop_id null hoac bang shop cua ho, mac dinh la cua hang duy nhat).
      *
      * @throws ResponseStatusException 403 neu khong co quyen.
      */
@@ -36,17 +40,12 @@ public class StoreAccessGuard {
         if (user.getRole() == Role.ADMIN) {
             return;
         }
-        if (resourceShopId == null || user.getShopId() == null || !resourceShopId.equals(user.getShopId())) {
+        if (!SingleShop.orDefault(resourceShopId).equals(SingleShop.orDefault(user.getShopId()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, DENIED_MESSAGE);
         }
     }
 
-    /**
-     * Nhu {@link #assertOwnsShop(Long)} nhung cho tai nguyen DUNG CHUNG toan
-     * chuoi (resourceShopId == null, vi du nha cung ung khong gan chi nhanh
-     * nao). Chi ADMIN duoc sua/xoa; SHOP_OWNER chi duoc doc (khong goi ham
-     * nay cho thao tac ghi tren tai nguyen dung chung).
-     */
+    /** Chi ADMIN duoc phep. */
     public void assertIsAdmin() {
         if (!currentUserService.isAdmin()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, DENIED_MESSAGE);
@@ -54,20 +53,11 @@ public class StoreAccessGuard {
     }
 
     /**
-     * ADMIN luon qua. SHOP_OWNER/staff chi qua khi resourceShopId trung voi
-     * shop cua ho; resourceShopId == null (tai nguyen dung chung) thi KHONG
-     * qua - dung cho cac thao tac ghi (sua/xoa) tren nha cung ung, vi
-     * SHOP_OWNER chi duoc sua nha cung ung RIENG cua chi nhanh minh, khong
-     * duoc dong gop sua nha cung ung dung chung.
+     * Cho thao tac ghi (sua/xoa). Truoc day ban ghi "dung chung" (shop_id
+     * null) chi ADMIN moi sua duoc; voi mot cua hang, chu cua hang so huu toan
+     * bo du lieu nen quy tac giong {@link #assertOwnsShop(Long)}.
      */
     public void assertOwnsShopForWrite(Long resourceShopId) {
-        User user = currentUserService.getCurrentUser();
-        if (user.getRole() == Role.ADMIN) {
-            return;
-        }
-        if (resourceShopId == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, DENIED_MESSAGE);
-        }
         assertOwnsShop(resourceShopId);
     }
 }

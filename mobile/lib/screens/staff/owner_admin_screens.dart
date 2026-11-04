@@ -901,19 +901,17 @@ class _UsersScreenState extends State<UsersScreen> {
 
   // ── account actions (web admin/users, store-owner/staff) ──
 
-  /// Roles that belong to a branch (backend UserServiceImpl.SHOP_BOUND_ROLES).
-  static const _shopBound = ['SHOP_OWNER', 'SALES_STAFF', 'CSKH_STAFF', 'WAREHOUSE_STAFF', 'SHIPPING_STAFF', 'STAFF'];
+  // Mot cua hang: backend tu gan nhan vien vao cua hang duy nhat, app khong chon chi nhanh.
   static const _shopRoles = ['SALES_STAFF', 'CSKH_STAFF', 'WAREHOUSE_STAFF', 'SHIPPING_STAFF', 'MARKETING_STAFF'];
 
   Future<(List<(String, String)>, List<(String, String)>)> _roleAndShopOptions() async {
     if (!widget.admin) return ([for (final r in _shopRoles) (r, roleLabel[r] ?? r)], const <(String, String)>[]);
-    final r = await Future.wait([_api.get('/api/admin/rbac/roles'), _api.get('/api/shops/active')]);
+    final r = await _api.get('/api/admin/rbac/roles');
     final roles = [
-      for (final x in asList(r[0]).whereType<Map>())
+      for (final x in asList(r).whereType<Map>())
         if (x['code'] != 'SUPER_ADMIN') ('${x['code']}', roleLabel[x['code']] ?? '${x['name'] ?? x['code']}'),
     ];
-    final shops = [for (final s in asList(r[1]).whereType<Map>()) ('${s['id']}', '${s['name']}')];
-    return (roles, shops);
+    return (roles, const <(String, String)>[]);
   }
 
   Future<void> _showPassword(String name, String pwd) => showDialog(
@@ -956,7 +954,7 @@ class _UsersScreenState extends State<UsersScreen> {
       return Toast.error(e is ApiException ? e.message : 'Không tải được danh sách vai trò');
     }
     if (!mounted) return;
-    final (roles, shops) = opts;
+    final (roles, _) = opts;
     final user = context.read<AuthProvider>().user;
     String? temp;
     final r = await formSheet(
@@ -969,20 +967,17 @@ class _UsersScreenState extends State<UsersScreen> {
         const FormFieldSpec('phone', 'Số điện thoại', type: TextInputType.phone),
         const FormFieldSpec('employeeCode', 'Mã nhân viên'),
         FormFieldSpec('roleCode', 'Vai trò', options: roles, initial: widget.admin ? 'SALES_STAFF' : roles.first.$1),
-        if (widget.admin && shops.isNotEmpty) FormFieldSpec('shopId', 'Chi nhánh (vai trò thuộc chi nhánh)', options: shops),
         const FormFieldSpec('initialPassword', 'Mật khẩu ban đầu'),
       ],
       confirm: 'Tạo',
       submit: (v) async {
         if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v['email']!)) throw ApiException('Email không đúng định dạng');
-        final bound = _shopBound.contains(v['roleCode']);
         final res = await _api.post(widget.admin ? '/api/admin/users' : '$_owner/staff', {
           'fullName': v['fullName'],
           'email': v['email']!.toLowerCase(),
           if (v['phone']!.isNotEmpty) 'phone': v['phone'],
           if (v['employeeCode']!.isNotEmpty) 'employeeCode': v['employeeCode'],
           'roleCode': v['roleCode'],
-          if (widget.admin && bound && (v['shopId'] ?? '').isNotEmpty) 'shopId': int.parse(v['shopId']!),
           if (!widget.admin && user?.shopId != null) 'shopId': user!.shopId,
           if (v['initialPassword']!.isNotEmpty) 'initialPassword': v['initialPassword'],
         });
@@ -1020,7 +1015,7 @@ class _UsersScreenState extends State<UsersScreen> {
       return Toast.error(e is ApiException ? e.message : 'Không tải được danh sách vai trò');
     }
     if (!mounted) return;
-    final (roles, shops) = opts;
+    final (roles, _) = opts;
     final r = await formSheet(
       context,
       title: 'Sửa tài khoản',
@@ -1030,7 +1025,6 @@ class _UsersScreenState extends State<UsersScreen> {
         FormFieldSpec('phone', 'Số điện thoại', initial: '${u['phone'] ?? ''}', type: TextInputType.phone),
         FormFieldSpec('employeeCode', 'Mã nhân viên', initial: '${u['employeeCode'] ?? ''}'),
         FormFieldSpec('roleCode', 'Vai trò', options: roles, initial: '${u['role'] ?? ''}'),
-        if (shops.isNotEmpty) FormFieldSpec('shopId', 'Chi nhánh (vai trò thuộc chi nhánh)', options: shops, initial: '${u['shopId'] ?? ''}'),
       ],
       confirm: 'Lưu',
       submit: (v) => _api.put('/api/admin/users/${u['id']}', {
@@ -1038,7 +1032,6 @@ class _UsersScreenState extends State<UsersScreen> {
         if (v['phone']!.isNotEmpty) 'phone': v['phone'],
         if (v['employeeCode']!.isNotEmpty) 'employeeCode': v['employeeCode'],
         'roleCode': v['roleCode'],
-        if (_shopBound.contains(v['roleCode']) && (v['shopId'] ?? '').isNotEmpty) 'shopId': int.parse(v['shopId']!),
       }),
     );
     if (r != null) {

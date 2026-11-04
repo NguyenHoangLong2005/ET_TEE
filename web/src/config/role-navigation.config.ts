@@ -57,13 +57,13 @@ export const ADMIN_NAV_GROUPS: NavGroupConfig[] = [
     items: [
       { label: 'Quản lý người dùng', path: '/admin/users', icon: Users, allowedRoles: ['ADMIN'] },
       { label: 'Phân quyền (RBAC)', path: '/admin/rbac', icon: Sliders, allowedRoles: ['ADMIN'] },
-      { label: 'Quản lý chi nhánh', path: '/admin/shops', icon: Building2, allowedRoles: ['ADMIN'] },
+      { label: 'Thông tin cửa hàng', path: '/admin/shops', icon: Store, allowedRoles: ['ADMIN'] },
     ]
   },
   {
     groupName: 'DỮ LIỆU DÙNG CHUNG',
     items: [
-      { label: 'Danh mục toàn hệ thống', path: '/admin/categories', icon: Tag, allowedRoles: ['ADMIN'] },
+      { label: 'Danh mục sản phẩm', path: '/admin/categories', icon: Tag, allowedRoles: ['ADMIN'] },
     ]
   },
   {
@@ -113,6 +113,7 @@ export const STORE_OWNER_NAV_GROUPS: NavGroupConfig[] = [
   {
     groupName: 'QUẢN LÝ',
     items: [
+      { label: 'Thông tin cửa hàng', path: '/store-owner/store-info', icon: Store },
       { label: 'Nhân sự', path: '/store-owner/staff', icon: Users },
       { label: 'Lịch làm việc & xếp ca', path: '/store-owner/shifts', icon: CheckSquare },
       { label: 'Hàng đợi phê duyệt', path: '/store-owner/approvals', icon: FileText },
@@ -195,7 +196,7 @@ const ALL_ROUTES_REGISTRY: Record<string, { label: string; section: string }> = 
   '/admin/users': { label: 'Quản lý người dùng', section: 'Quản trị' },
   '/admin/rbac': { label: 'Cấu hình phân quyền (RBAC)', section: 'Quản trị' },
   '/admin/categories': { label: 'Danh mục sản phẩm', section: 'Quản trị' },
-  '/admin/shops': { label: 'Quản lý chi nhánh', section: 'Quản trị' },
+  '/admin/shops': { label: 'Thông tin cửa hàng', section: 'Quản trị' },
   '/admin/ai-config': { label: 'Mô hình AI', section: 'Quản trị' },
   '/admin/ai-feature-flags': { label: 'Cờ tính năng AI', section: 'Quản trị' },
   '/admin/audit-logs': { label: 'Nhật ký kiểm toán', section: 'Quản trị' },
@@ -215,6 +216,7 @@ const ALL_ROUTES_REGISTRY: Record<string, { label: string; section: string }> = 
   '/store-owner/inventory': { label: 'Quản lý tồn kho', section: 'Cửa hàng' },
   '/store-owner/manufacturers': { label: 'Quản lý nhà sản xuất', section: 'Cửa hàng' },
   '/store-owner/suppliers': { label: 'Quản lý nhà cung cấp', section: 'Cửa hàng' },
+  '/store-owner/store-info': { label: 'Thông tin cửa hàng', section: 'Cửa hàng' },
   '/store-owner/staff': { label: 'Quản lý nhân sự', section: 'Cửa hàng' },
   '/store-owner/shifts': { label: 'Lịch làm việc & xếp ca', section: 'Cửa hàng' },
   '/store-owner/approvals': { label: 'Hàng đợi phê duyệt', section: 'Cửa hàng' },

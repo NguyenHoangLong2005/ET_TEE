@@ -447,7 +447,7 @@ export default function StoreOwnerCategoriesPage() {
 
         <PageHeader
           title="Danh mục sản phẩm"
-          subtitle="Danh mục dùng chung cho toàn hệ thống. Xóa chỉ được khi không còn danh mục con, sản phẩm và đơn hàng chưa hoàn tất liên quan."
+          subtitle="Danh mục sản phẩm của cửa hàng. Xóa chỉ được khi không còn danh mục con, sản phẩm và đơn hàng chưa hoàn tất liên quan."
           actions={
             <div className="flex items-center gap-2.5">
               <Button variant="outline" onClick={fetchCategories} loading={isLoading} icon={<RefreshCw className="w-4 h-4" />}>

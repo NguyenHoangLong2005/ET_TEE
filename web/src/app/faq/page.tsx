@@ -31,7 +31,7 @@ const FAQ_DATA = [
     icon: RefreshCcw,
     items: [
       { q: 'Chính sách đổi trả 30 ngày áp dụng ra sao?', a: 'Trong vòng 30 ngày kể từ khi nhận hàng, nếu sản phẩm chưa qua sử dụng, còn nguyên tem mác, bạn có thể đổi size, đổi màu hoặc đổi mẫu khác hoàn toàn miễn phí.' },
-      { q: 'Tôi có thể đổi hàng tại cửa hàng trực tiếp không?', a: 'Có! Bạn có thể mang sản phẩm tới bất kỳ cửa hàng nào trong hệ thống ET.TEE (xem danh sách tại trang Hệ thống cửa hàng) để đổi hàng trực tiếp.' },
+      { q: 'Tôi có thể đổi hàng tại cửa hàng trực tiếp không?', a: 'Có! Bạn có thể mang sản phẩm tới cửa hàng ET.TEE (xem địa chỉ tại trang Cửa hàng) để đổi hàng trực tiếp.' },
       { q: 'Nếu đổi trả qua bưu điện thì ai trả phí ship?', a: 'ET.TEE sẽ hỗ trợ phí ship 2 chiều nếu lỗi do sản phẩm bị chật size hoặc giao sai mẫu. Trường hợp khách muốn đổi mẫu theo sở thích, khách hàng hỗ trợ phí gửi hàng.' },
     ]
   },

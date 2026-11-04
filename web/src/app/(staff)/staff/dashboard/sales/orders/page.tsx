@@ -654,7 +654,7 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
       <div className="mx-auto w-full max-w-[1440px] space-y-6 p-6 lg:p-8 text-slate-900">
         <PageHeader
           title="Đơn hàng"
-          subtitle="Xác nhận, xác minh thông tin nhận hàng, ghi chú và hủy đơn của chi nhánh."
+          subtitle="Xác nhận, xác minh thông tin nhận hàng, ghi chú và hủy đơn của cửa hàng."
           actions={
             <div className="flex items-center gap-2.5">
               <button

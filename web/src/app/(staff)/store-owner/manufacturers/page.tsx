@@ -226,7 +226,7 @@ export default function ManufacturersPage() {
         {/* Header */}
         <PageHeader
           title="Quản lý nhà sản xuất"
-          subtitle="Quản lý các đối tác gia công và xưởng sản xuất (dùng chung toàn hệ thống). Số sản phẩm là số sản phẩm đã chọn nhà sản xuất này trong form sản phẩm."
+          subtitle="Quản lý các đối tác gia công và xưởng sản xuất. Số sản phẩm là số sản phẩm đã chọn nhà sản xuất này trong form sản phẩm."
           actions={
             <div className="flex items-center gap-2.5">
               <Button

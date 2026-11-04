@@ -57,32 +57,23 @@ public class AdminUserApiIntegrationTest {
     }
 
     @Test
-    @DisplayName("Case 2: Role-ShopId consistency validation for all 5 shop-bound roles")
+    @DisplayName("Case 2: Single shop - store roles are always assigned to the one shop")
     public void testCase2_RoleShopIdValidation() {
         List<String> shopBoundRoleCodes = List.of("SHOP_OWNER", "SALES_STAFF", "CSKH_STAFF", "WAREHOUSE_STAFF", "SHIPPING_STAFF", "STAFF");
 
         int index = 1;
         for (String roleCode : shopBoundRoleCodes) {
-            UserCreateDto missingShopDto = new UserCreateDto();
-            missingShopDto.setEmployeeCode("EMP-NOSHOP-" + index);
-            missingShopDto.setFullName("Staff Missing Shop " + roleCode);
-            missingShopDto.setEmail("noshop." + roleCode.toLowerCase() + index + "@et.tee");
-            missingShopDto.setRoleCode(roleCode);
-            missingShopDto.setShopId(null);
+            UserCreateDto dto = new UserCreateDto();
+            dto.setEmployeeCode("EMP-NOSHOP-" + index);
+            dto.setFullName("Staff " + roleCode);
+            dto.setEmail("noshop." + roleCode.toLowerCase() + index + "@et.tee");
+            dto.setRoleCode(roleCode);
+            // Khong gui shopId (null) hoac gui shop khac deu quy ve cua hang duy nhat.
+            dto.setShopId(index % 2 == 0 ? null : 2L);
 
-            ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
-                userService.createUser(missingShopDto);
-            }, "Expected 400 Bad Request when " + roleCode + " missing shopId");
-
-            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-            assertTrue(ex.getReason().contains("bắt buộc phải thuộc một Cửa hàng"),
-                    "Reason should explain mandatory shopId for " + roleCode + ", got: " + ex.getReason());
-
-            // Creating with valid shopId should succeed
-            missingShopDto.setShopId((long) index);
-            UserAdminDto created = userService.createUser(missingShopDto);
+            UserAdminDto created = userService.createUser(dto);
             assertNotNull(created.getId());
-            assertEquals((long) index, created.getShopId());
+            assertEquals(com.nguyenhoanglong.config.SingleShop.ID, created.getShopId());
             assertEquals(roleCode, created.getRole());
 
             index++;

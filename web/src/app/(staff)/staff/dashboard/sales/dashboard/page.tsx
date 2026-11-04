@@ -165,7 +165,7 @@ export default function SalesDashboardPage() {
       {/* ─── Header ─── */}
       <PageHeader
         title="Bảng điều khiển bán hàng"
-        subtitle={`Tổng quan xử lý đơn hàng tại chi nhánh${lastSync ? ` · Cập nhật lúc ${lastSync.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
+        subtitle={`Tổng quan xử lý đơn hàng của cửa hàng${lastSync ? ` · Cập nhật lúc ${lastSync.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}`}
         badge={<span className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">BÁN HÀNG</span>}
         breadcrumbs={[
           { label: "Staff Hub", href: "/staff/dashboard" },

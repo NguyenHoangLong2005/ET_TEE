@@ -188,15 +188,6 @@ export default function ShippingCodPage() {
       )
     },
     {
-      key: 'shop',
-      header: 'Chi nhánh',
-      render: (rec) => (
-        <span className="text-slate-600 font-medium">
-          {rec.shopId ? `Chi nhánh #${rec.shopId}` : 'Hội sở (HQ)'}
-        </span>
-      )
-    },
-    {
       key: 'itemCount',
       header: 'Số kiện',
       render: (rec) => (
@@ -534,11 +525,7 @@ export default function ShippingCodPage() {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-4 flex-1 text-xs">
-              <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <div>
-                  <span className="text-slate-500 block text-[11px]">Chi nhánh</span>
-                  <strong className="text-slate-900">{selectedSheetDetail.shopId ? `Chi nhánh #${selectedSheetDetail.shopId}` : 'Hội sở (HQ)'}</strong>
-                </div>
+              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <div>
                   <span className="text-slate-500 block text-[11px]">Số kiện đối soát</span>
                   <strong className="text-slate-900">{selectedSheetDetail.itemCount} kiện</strong>

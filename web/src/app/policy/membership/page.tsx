@@ -41,7 +41,7 @@ export default function MembershipPolicyPage() {
           <div className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed">
             
             <p>
-              Tất cả khách hàng có tài khoản tại ET.TEE đều tự động trở thành hội viên của <strong>ET.TEE Club</strong>. Mỗi lần mua sắm tại bất kỳ kênh online hay showroom nào, bạn đều được tích lũy điểm thưởng và hưởng hàng loạt đặc quyền VIP.
+              Tất cả khách hàng có tài khoản tại ET.TEE đều tự động trở thành hội viên của <strong>ET.TEE Club</strong>. Mỗi lần mua sắm online hay tại cửa hàng, bạn đều được tích lũy điểm thưởng và hưởng hàng loạt đặc quyền VIP.
             </p>
 
             {/* Tiers Grid */}

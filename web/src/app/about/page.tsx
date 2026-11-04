@@ -43,7 +43,7 @@ export default function AboutPage() {
               href="/stores" 
               className="px-8 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-bold uppercase text-xs tracking-wider shadow-2xs transition-all"
             >
-              Hệ Thống Cửa Hàng
+              Cửa Hàng ET.TEE
             </Link>
           </div>
         </div>

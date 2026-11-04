@@ -94,7 +94,6 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                     children: [
                       InfoLine(Icons.mail_outline, '${p['email'] ?? ''}'),
                       InfoLine(Icons.badge_outlined, roleLabel[p['role']] ?? '${p['role'] ?? ''}'),
-                      if (p['shopId'] != null) InfoLine(Icons.storefront_outlined, 'Chi nhánh #${p['shopId']}'),
                       if (p['createdAt'] != null) InfoLine(Icons.event, 'Tham gia ${formatDate(p['createdAt'])}'),
                       const SizedBox(height: 14),
                       _field('Họ tên', _name),

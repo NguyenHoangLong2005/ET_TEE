@@ -387,7 +387,7 @@ export default function SalesDashboardPage() {
               ) : recent.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-400">
-                    Chưa có đơn hàng nào tại chi nhánh của bạn.
+                    Chưa có đơn hàng nào tại cửa hàng.
                   </td>
                 </tr>
               ) : recent.map(o => (

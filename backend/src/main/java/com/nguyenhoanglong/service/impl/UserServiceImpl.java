@@ -327,11 +327,9 @@ public class UserServiceImpl implements UserService {
 
     private Long validateAndResolveShopId(Role role, Long shopId) {
         if (SHOP_BOUND_ROLES.contains(role)) {
-            if (shopId == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Vai trò " + role.name() + " (Chủ shop / Nhân viên cửa hàng) bắt buộc phải thuộc một Cửa hàng (shopId không được để trống)");
-            }
-            return shopId;
+            // Mo hinh mot cua hang: nhan vien cua hang luon thuoc cua hang duy nhat,
+            // bo qua shopId client gui len.
+            return com.nguyenhoanglong.config.SingleShop.ID;
         } else {
             // Corporate roles (ADMIN, MARKETING_STAFF, USER): shopId is null
             return null;

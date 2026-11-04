@@ -665,7 +665,7 @@ class _StyleQuizScreenState extends State<StyleQuizScreen> {
 
 // ─── Stores ─────────────────────────────────────────────────────────────────
 
-/// Port of web app/stores: active branches from /api/shops/active.
+/// Port of web app/stores: thong tin cua hang duy nhat tu /api/shops/current.
 class StoresScreen extends StatefulWidget {
   const StoresScreen({super.key});
 
@@ -674,9 +674,9 @@ class StoresScreen extends StatefulWidget {
 }
 
 class _StoresScreenState extends State<StoresScreen> {
-  List<Map<String, dynamic>>? _shops;
+  Map<String, dynamic>? _shop;
+  bool _loaded = false;
   String? _error;
-  String _q = '';
 
   @override
   void initState() {
@@ -686,17 +686,24 @@ class _StoresScreenState extends State<StoresScreen> {
 
   Future<void> _load() async {
     try {
-      final d = await Api.instance.get('/api/shops/active');
-      if (mounted) setState(() => _shops = asList(d).whereType<Map<String, dynamic>>().toList());
+      final d = await Api.instance.get('/api/shops/current');
+      if (mounted) {
+        setState(() {
+          _shop = d is Map<String, dynamic> ? d : null;
+          _loaded = true;
+          _error = null;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Không thể tải danh sách cửa hàng. Vui lòng thử lại sau.');
+      if (mounted) setState(() => _error = 'Không thể tải thông tin cửa hàng. Vui lòng thử lại sau.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final q = _q.toLowerCase();
-    final shops = (_shops ?? []).where((s) => '${s['name'] ?? ''}'.toLowerCase().contains(q) || '${s['address'] ?? ''}'.toLowerCase().contains(q)).toList();
+    final s = _shop;
+    final address = '${s?['address'] ?? ''}'.trim();
+    final phone = '${s?['phone'] ?? ''}'.trim();
     return StoreScaffold(
       background: AppColors.slate50,
       body: RefreshIndicator(
@@ -705,62 +712,47 @@ class _StoresScreenState extends State<StoresScreen> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
           children: [
             const _Hero(
-              title: 'Hệ thống showroom ET.TEE',
-              text: 'Thử đồ trực tiếp và nhận tư vấn từ đội ngũ ET.TEE tại cửa hàng gần nhất.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              onChanged: (v) => setState(() => _q = v),
-              decoration: InputDecoration(
-                hintText: 'Tên đường, quận huyện hoặc tên cửa hàng...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.slate400),
-                filled: true,
-                fillColor: Colors.white,
-                isDense: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-              ),
+              title: 'Cửa hàng ET.TEE',
+              text: 'Ghé cửa hàng để thử đồ trực tiếp và nhận tư vấn từ đội ngũ ET.TEE.',
             ),
             const SizedBox(height: 16),
             if (_error != null)
               NoticeBox(_error!)
-            else if (_shops == null)
-              const LoadingView(message: 'Đang tải danh sách cửa hàng...')
-            else if (shops.isEmpty)
-              EmptyPanel(
-                icon: Icons.storefront_outlined,
-                title: _shops!.isEmpty ? 'Hiện chưa có cửa hàng nào được công bố.' : 'Không tìm thấy cửa hàng phù hợp.',
-              )
+            else if (!_loaded)
+              const LoadingView(message: 'Đang tải thông tin cửa hàng...')
+            else if (s == null)
+              const EmptyPanel(icon: Icons.storefront_outlined, title: 'Chưa có thông tin cửa hàng.')
             else
-              for (final s in shops)
-                AppCard(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      const Icon(Icons.storefront_outlined, color: AppColors.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text('${s['name'] ?? ''}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900))),
-                    ]),
+              AppCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    const Icon(Icons.storefront_outlined, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('${s['name'] ?? ''}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900))),
+                  ]),
+                  if (address.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       const Icon(Icons.place_outlined, size: 16, color: AppColors.slate400),
                       const SizedBox(width: 6),
-                      Expanded(child: Text('${s['address'] ?? ''}', style: const TextStyle(fontSize: 13, color: AppColors.slate600, height: 1.5))),
+                      Expanded(child: Text(address, style: const TextStyle(fontSize: 13, color: AppColors.slate600, height: 1.5))),
                     ]),
-                    const Divider(height: 24, color: AppColors.slate100),
-                    Row(children: [
-                      if ('${s['phone'] ?? ''}'.isNotEmpty)
-                        TextButton.icon(
-                          onPressed: () => _open('tel:${'${s['phone']}'.replaceAll(' ', '')}'),
-                          icon: const Icon(Icons.phone_outlined, size: 16, color: AppColors.slate500),
-                          label: Text('${s['phone']}', style: const TextStyle(color: AppColors.slate600, fontSize: 12)),
-                        ),
-                      const Spacer(),
+                  ],
+                  const Divider(height: 24, color: AppColors.slate100),
+                  Row(children: [
+                    if (phone.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () => _open('tel:${phone.replaceAll(' ', '')}'),
+                        icon: const Icon(Icons.phone_outlined, size: 16, color: AppColors.slate500),
+                        label: Text(phone, style: const TextStyle(color: AppColors.slate600, fontSize: 12)),
+                      ),
+                    const Spacer(),
+                    if (address.isNotEmpty)
                       PillButton('Chỉ đường', height: 38, icon: Icons.navigation_outlined, radius: BorderRadius.circular(12),
-                          onPressed: () => _open('https://maps.google.com/?q=${Uri.encodeComponent('${s['address'] ?? ''}')}')),
-                    ]),
+                          onPressed: () => _open('https://maps.google.com/?q=${Uri.encodeComponent(address)}')),
                   ]),
-                ),
+                ]),
+              ),
           ],
         ),
       ),
@@ -865,7 +857,7 @@ class _FaqScreenState extends State<FaqScreen> {
     ]),
     ('return', 'Đổi trả 30 ngày', Icons.autorenew, [
       ('Chính sách đổi trả 30 ngày áp dụng ra sao?', 'Trong 30 ngày kể từ khi nhận hàng, sản phẩm chưa sử dụng, còn tem mác được đổi size, màu hoặc mẫu khác miễn phí.'),
-      ('Tôi có thể đổi hàng tại cửa hàng không?', 'Có. Mang sản phẩm tới bất kỳ cửa hàng ET.TEE nào (xem trang Hệ thống cửa hàng) để đổi trực tiếp.'),
+      ('Tôi có thể đổi hàng tại cửa hàng không?', 'Có. Mang sản phẩm tới cửa hàng ET.TEE (xem trang Cửa hàng) để đổi trực tiếp.'),
       ('Đổi trả qua bưu điện thì ai trả phí ship?', 'ET.TEE hỗ trợ phí ship 2 chiều nếu chật size hoặc giao sai mẫu. Đổi mẫu theo sở thích thì khách hỗ trợ phí gửi hàng.'),
     ]),
     ('size', 'Hướng dẫn chọn size', Icons.straighten, [
@@ -1285,7 +1277,7 @@ class PolicyDetailScreen extends StatelessWidget {
             'Trong 30 ngày kể từ ngày giao hàng thành công.',
           ]),
           _SectionTitle(Icons.verified_user_outlined, '2. Cách đổi hàng'),
-          _Para('Cách 1 — tại showroom: mang sản phẩm kèm hóa đơn hoặc số điện thoại đến bất kỳ cửa hàng ET.TEE nào để thử và đổi ngay.'),
+          _Para('Cách 1 — tại cửa hàng: mang sản phẩm kèm hóa đơn hoặc số điện thoại đến cửa hàng ET.TEE để thử và đổi ngay.'),
           _Para('Cách 2 — tận nhà: gọi Hotline 1900 1234, nhân viên giao sản phẩm mới và thu hồi sản phẩm cũ cùng lúc.'),
         ]);
       case 'warranty':
@@ -1303,7 +1295,7 @@ class PolicyDetailScreen extends StatelessWidget {
         ]);
       case 'membership':
         return _ArticlePage(eyebrow: 'ET.TEE Club Loyalty', title: 'Chương trình khách hàng thân thiết', children: [
-          const _Para('Mọi khách hàng có tài khoản ET.TEE đều là hội viên ET.TEE Club, được tích điểm ở cả online và showroom.'),
+          const _Para('Mọi khách hàng có tài khoản ET.TEE đều là hội viên ET.TEE Club, được tích điểm ở cả online và tại cửa hàng.'),
           const _SectionTitle(Icons.workspace_premium_outlined, 'Các hạng hội viên & đặc quyền'),
           for (var i = 0; i < _tiers.length; i++)
             Container(
