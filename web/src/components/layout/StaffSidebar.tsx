@@ -94,7 +94,7 @@ export default function StaffSidebar({ mobileOpen, onMobileClose }: StaffSidebar
             </span>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-slate-900">ET.TEE Store</p>
-              <p className="text-[10px] text-slate-400">Chi nhánh đang quản lý</p>
+              <p className="text-[10px] text-slate-400">Cửa hàng đang quản lý</p>
             </div>
           </div>
         </div>

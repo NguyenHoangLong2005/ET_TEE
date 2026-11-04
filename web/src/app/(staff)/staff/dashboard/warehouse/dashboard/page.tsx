@@ -121,7 +121,7 @@ export default function WarehouseDashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         <PageHeader
           title="Tổng quan kho hàng"
-          subtitle={`Xử lý đơn hàng, xuất nhập kho & tồn kho chi nhánh • Cập nhật lúc: ${lastSync ? lastSync.toLocaleTimeString("vi-VN") : "—"}`}
+          subtitle={`Xử lý đơn hàng, xuất nhập kho & tồn kho cửa hàng • Cập nhật lúc: ${lastSync ? lastSync.toLocaleTimeString("vi-VN") : "—"}`}
           badge={<span className="bg-slate-100 text-slate-600 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider">KHO HÀNG</span>}
           actions={
             <div className="flex items-center gap-2">

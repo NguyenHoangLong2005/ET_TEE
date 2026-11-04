@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { Plus, Edit2, Trash2, X, RefreshCw, Save, Lock } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw, Save } from 'lucide-react';
 import PermissionGuard from '@/components/auth/PermissionGuard';
 import PageHeader from '@/components/ui/PageHeader';
 import Button from '@/components/ui/Button';
@@ -48,16 +48,9 @@ const labelClass = 'block text-xs font-bold text-slate-700 uppercase tracking-wi
 export default function SuppliersPage() {
   const { user } = useAuth();
   const isAdmin = getActiveRole(user?.role ? [user.role] : (user as any)?.roles) === 'ADMIN';
-  /**
-   * A SHOP_OWNER may edit shared suppliers and the ones private to their own branch, but never
-   * another branch's; only their own branch's suppliers can be deleted, because deleting a
-   * shared one would remove it for every branch. ADMIN may change everything.
-   * (The backend enforces the same rules.)
-   */
-  const canEditSupplier = (item: Supplier) =>
-    isAdmin || item.shopId == null || item.shopId === user?.shopId;
-  const canDeleteSupplier = (item: Supplier) =>
-    isAdmin || (item.shopId != null && item.shopId === user?.shopId);
+  // Mot cua hang: chu cua hang (va ADMIN) so huu toan bo nha cung cap.
+  const canEditSupplier = (_item: Supplier) => true;
+  const canDeleteSupplier = (_item: Supplier) => true;
 
   const [data, setData] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
@@ -201,13 +194,6 @@ export default function SuppliersPage() {
           <div className="font-bold text-slate-900 break-words">{item.name}</div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-400">
             <span className="font-mono">#{item.id}</span>
-            {item.shopId == null ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
-                <Lock className="w-3 h-3" /> Dùng chung
-              </span>
-            ) : (
-              <span className="rounded-full bg-primary-50 px-2 py-0.5 font-medium text-primary-700">Riêng</span>
-            )}
           </div>
         </div>
       ),
@@ -296,11 +282,7 @@ export default function SuppliersPage() {
 
         <PageHeader
           title="Quản lý nhà cung cấp"
-          subtitle={
-            isAdmin
-              ? 'Đối tác cung ứng vải, nguyên phụ liệu và đóng gói (dùng chung + riêng từng cửa hàng).'
-              : 'Nhà cung cấp dùng chung chỉ xem được; bạn thêm, sửa, xóa được nhà cung cấp riêng của mình.'
-          }
+          subtitle="Đối tác cung ứng vải, nguyên phụ liệu và đóng gói của cửa hàng."
           badge={isAdmin ? 'HỆ THỐNG' : undefined}
           actions={
             <div className="flex items-center gap-2.5">
@@ -422,14 +404,6 @@ export default function SuppliersPage() {
                   />
                 </div>
 
-                {!editingItem && !isAdmin && (
-                  <p className="text-xs text-slate-500">Nhà cung cấp mới sẽ là nhà cung cấp riêng của bạn.</p>
-                )}
-                {editingItem && editingItem.shopId == null && (
-                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                    Đây là nhà cung cấp dùng chung: thay đổi sẽ áp dụng cho tất cả.
-                  </p>
-                )}
 
                 <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={closeModal} disabled={isSaving}>Hủy</Button>

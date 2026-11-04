@@ -53,17 +53,9 @@ public class AdminShopController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<ShopDto>> createShop(@RequestBody ShopDto request) {
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên chi nhánh không được để trống");
-        }
-        Shop shop = new Shop();
-        shop.setName(request.getName().trim());
-        shop.setAddress(request.getAddress() != null ? request.getAddress().trim() : null);
-        shop.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
-        shop.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
-        Shop saved = shopRepository.save(shop);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Tạo chi nhánh thành công", toDto(saved)));
+        // He thong chi quan ly mot cua hang (xem SingleShop): khong tao chi nhanh moi.
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Hệ thống chỉ quản lý một cửa hàng, không thể tạo thêm chi nhánh");
     }
 
     @PutMapping("/{id}")
@@ -80,7 +72,8 @@ public class AdminShopController {
         // du ca hai truong khi sua (form sua chi nhanh gui nguyen doi tuong).
         shop.setAddress(request.getAddress() != null ? request.getAddress().trim() : null);
         shop.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
-        if (request.getIsActive() != null) {
+        // Cua hang duy nhat khong duoc tat (khach se khong con thay thong tin cua hang).
+        if (request.getIsActive() != null && !com.nguyenhoanglong.config.SingleShop.ID.equals(id)) {
             shop.setIsActive(request.getIsActive());
         }
 

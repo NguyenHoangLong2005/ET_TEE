@@ -76,7 +76,7 @@ export default function Header() {
 
           <div className="hidden md:flex items-center gap-4 text-[11px] text-red-100">
             <Link href="/news" className="hover:underline">Tin tức</Link>
-            <Link href="/stores" className="hover:underline">Hệ thống cửa hàng</Link>
+            <Link href="/stores" className="hover:underline">Cửa hàng</Link>
             <Link href="/faq" className="hover:underline">Hỗ trợ khách hàng</Link>
           </div>
         </div>

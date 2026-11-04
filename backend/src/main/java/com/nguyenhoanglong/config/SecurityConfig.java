@@ -126,6 +126,8 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                     "/api/marketing/posts", "/api/marketing/posts/*").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/marketing/posts/*/view").permitAll()
+                // Thong tin cua hang duy nhat cho trang Lien he / chan trang (PUT van can dang nhap).
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/current").permitAll()
 
                 // Order lookup by code: guests (X-Guest-Cart-Token) must reach it after
                 // checkout. OrderService.getOrderDetails enforces ownership (owner user or

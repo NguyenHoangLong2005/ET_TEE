@@ -30,8 +30,9 @@ public class UserShopIdFixer implements CommandLineRunner {
     public void run(String... args) {
         try {
             List<Role> staffRoles = List.of(
-                Role.SALES_STAFF, 
-                Role.WAREHOUSE_STAFF, 
+                Role.SALES_STAFF,
+                Role.CSKH_STAFF,
+                Role.WAREHOUSE_STAFF,
                 Role.SHIPPING_STAFF, 
                 Role.STAFF, 
                 Role.SHOP_OWNER

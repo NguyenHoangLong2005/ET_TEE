@@ -135,12 +135,6 @@ export default function StaffProfilePage() {
               </span>
             </div>
             <dl className="mt-6 space-y-3 border-t border-slate-100 pt-4 text-sm">
-              {profile.shopId != null && (
-                <div className="flex justify-between gap-3">
-                  <dt className="text-slate-500">Chi nhánh</dt>
-                  <dd className="font-semibold text-slate-900">#{profile.shopId}</dd>
-                </div>
-              )}
               <div className="flex justify-between gap-3">
                 <dt className="text-slate-500">Trạng thái</dt>
                 <dd className="font-semibold text-emerald-600">{profile.status === 'ACTIVE' ? 'Đang hoạt động' : profile.status || '—'}</dd>

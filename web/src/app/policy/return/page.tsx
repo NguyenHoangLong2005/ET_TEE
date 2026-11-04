@@ -63,8 +63,8 @@ export default function ReturnPolicyPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="font-bold text-slate-900 text-xs">Cách 1: Đổi Trực Tiếp Tại Showroom</span>
-                  <p className="text-slate-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến bất kỳ cửa hàng nào trong hệ thống ET.TEE để thử và đổi ngay.</p>
+                  <span className="font-bold text-slate-900 text-xs">Cách 1: Đổi Trực Tiếp Tại Cửa Hàng</span>
+                  <p className="text-slate-500 text-xs">Mang sản phẩm kèm hóa đơn/số điện thoại đến cửa hàng ET.TEE để thử và đổi ngay.</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="font-bold text-slate-900 text-xs">Cách 2: Đổi Tận Nhà Qua Shipper</span>

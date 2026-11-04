@@ -90,14 +90,12 @@ public class CurrentUserService {
      *         duoc gan vao chi nhanh nao.
      */
     public Long resolveShopIdForWrite(Long requestedShopId) {
+        // Mo hinh mot cua hang: moi thao tac ghi deu vao cua hang duy nhat,
+        // ke ca ADMIN va tai khoan chua duoc gan shop_id.
         User user = getCurrentUser();
         if (user.getRole() == Role.ADMIN) {
-            return requestedShopId;
+            return com.nguyenhoanglong.config.SingleShop.orDefault(requestedShopId);
         }
-        if (user.getShopId() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Tài khoản của bạn chưa được gán vào cửa hàng nào");
-        }
-        return user.getShopId();
+        return com.nguyenhoanglong.config.SingleShop.orDefault(user.getShopId());
     }
 }

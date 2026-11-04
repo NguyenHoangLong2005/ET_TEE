@@ -46,7 +46,7 @@ export default function Footer() {
             <h3 className="font-bold text-[14px] uppercase tracking-wider mb-5">VỀ ET.TEE</h3>
             <ul className="space-y-4 text-slate-600">
               <li><Link href="/about" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Giới thiệu</Link></li>
-              <li><Link href="/stores" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Danh sách cửa hàng</Link></li>
+              <li><Link href="/stores" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Địa chỉ cửa hàng</Link></li>
               <li><Link href="/careers" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Tuyển dụng</Link></li>
               <li><Link href="/news" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Tin tức</Link></li>
               <li><Link href="/contact" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Liên hệ</Link></li>

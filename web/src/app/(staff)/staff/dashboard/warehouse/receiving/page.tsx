@@ -137,7 +137,7 @@ export default function WarehouseReceivingPage() {
     }
   }, []);
 
-  // Danh sách nhà cung cấp do chủ cửa hàng tạo (dùng chung + của chi nhánh).
+  // Danh sách nhà cung cấp do chủ cửa hàng tạo .
   const loadSuppliers = useCallback(async () => {
     try {
       const page = await staffRequest<{ items?: Supplier[] }>("/api/suppliers?size=200");

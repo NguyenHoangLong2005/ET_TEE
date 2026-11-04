@@ -17,7 +17,7 @@ import {
   Users, Shield, UserPlus, Search, Lock, Unlock,
   Key, Eye, CheckCircle, XCircle, AlertTriangle,
   ChevronLeft, ChevronRight, Trash2, Plus, RefreshCw,
-  Mail, Building, Crown, Filter, UserCog,
+  Mail, Filter, UserCog,
 } from "lucide-react";
 
 /* ───────────── types ───────────── */
@@ -184,13 +184,6 @@ export default function AdminUsersPage() {
     employeeCode: "", fullName: "", email: "",
     phone: "", roleCode: "SALES_STAFF", initialPassword: "", shopId: "" as string | number,
   });
-  const [shops, setShops] = useState<{ id: number; name: string; isActive: boolean }[]>([]);
-  /**
-   * Vai tro bat buoc thuoc mot chi nhanh - phai khop chinh xac
-   * UserServiceImpl.SHOP_BOUND_ROLES ben backend. ADMIN/MARKETING_STAFF/USER
-   * la vai tro "corporate", khong gan chi nhanh nao (shopId luon null).
-   */
-  const SHOP_BOUND_ROLES = ["SHOP_OWNER", "SALES_STAFF", "CSKH_STAFF", "WAREHOUSE_STAFF", "SHIPPING_STAFF", "STAFF"];
   const [showAdminConfirm, setShowAdminConfirm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [lockUserId, setLockUserId] = useState<string | null>(null);
@@ -227,15 +220,6 @@ export default function AdminUsersPage() {
   const [toggling, setToggling] = useState<string | null>(null);
 
   /* ── loaders ── */
-  const loadShops = useCallback(async () => {
-    try {
-      const data = await apiClient.get<{ id: number; name: string; isActive: boolean }[]>("/api/shops/active");
-      setShops(data || []);
-    } catch (e: any) {
-      toast.error(e.message || "Lỗi khi tải danh sách chi nhánh");
-    }
-  }, []);
-
   const loadRoles = useCallback(async (retain = false, silent?: unknown) => {
     try {
       if (silent !== true) setLoadingRoles(true);
@@ -282,7 +266,7 @@ export default function AdminUsersPage() {
     } catch {}
   }, []);
 
-  useEffect(() => { loadRoles(); loadStats(); loadShops(); }, []);
+  useEffect(() => { loadRoles(); loadStats(); }, []);
   useEffect(() => { setPage(0); }, [keyword, roleFilter, statusFilter]);
   useEffect(() => {
     if (activeTab === "users") loadUsers();
@@ -291,12 +275,7 @@ export default function AdminUsersPage() {
 
   /* ── user actions ── */
   const submitCreateUser = async () => {
-    const isShopBound = SHOP_BOUND_ROLES.includes(createForm.roleCode);
-    if (isShopBound && !createForm.shopId) {
-      setError("Vai trò này bắt buộc phải chọn chi nhánh");
-      return;
-    }
-    const resolvedShopId = isShopBound ? Number(createForm.shopId) : undefined;
+    // Mot cua hang: backend tu gan nhan vien vao cua hang duy nhat.
 
     try {
       setCreating(true);
@@ -307,7 +286,6 @@ export default function AdminUsersPage() {
         email: createForm.email.trim(),
         phone: createForm.phone.trim() || undefined,
         roleCode: createForm.roleCode,
-        shopId: resolvedShopId,
         initialPassword: createForm.initialPassword || undefined,
       });
       toast.success("Tạo tài khoản thành công!");
@@ -413,15 +391,10 @@ export default function AdminUsersPage() {
 
   const handleChangeRole = async () => {
     if (!roleEditUser) return;
-    const { roleCode, shopId, fullName, employeeCode, phone } = roleEditForm;
+    const { roleCode, fullName, employeeCode, phone } = roleEditForm;
     if (!fullName.trim()) { toast.error("Họ tên không được để trống"); return; }
     if (phone.trim() && !/^[0-9+\s\-]{8,15}$/.test(phone.trim())) {
       toast.error("Số điện thoại không hợp lệ (8-15 chữ số)");
-      return;
-    }
-    const isShopBound = SHOP_BOUND_ROLES.includes(roleCode);
-    if (isShopBound && !shopId) {
-      toast.error("Vai trò này bắt buộc phải chọn chi nhánh");
       return;
     }
     try {
@@ -431,7 +404,6 @@ export default function AdminUsersPage() {
         fullName: fullName.trim(),
         phone: phone.trim() || undefined,
         roleCode,
-        shopId: isShopBound ? Number(shopId) : undefined,
       });
       toast.success(`Đã cập nhật thông tin ${fullName.trim()}`);
       setRoleEditUser(null);
@@ -581,21 +553,6 @@ export default function AdminUsersPage() {
           </span>
           <div className="text-[11px] text-slate-400 mt-1">{u.permissions?.length || 0} quyền</div>
         </div>
-      ),
-    },
-    {
-      key: "shop",
-      header: "Chi nhánh",
-      render: (u) => (
-        u.shopId ? (
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
-            <Building className="w-3 h-3" /> Shop #{u.shopId}
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs bg-slate-900 text-white px-2.5 py-1 rounded-md">
-            <Crown className="w-3 h-3" /> HQ
-          </span>
-        )
       ),
     },
     {
@@ -868,19 +825,6 @@ export default function AdminUsersPage() {
                   </select>
                 </div>
 
-                {SHOP_BOUND_ROLES.includes(createForm.roleCode) && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Chi nhánh *</label>
-                    <select value={createForm.shopId}
-                      onChange={e => setCreateForm(prev => ({ ...prev, shopId: e.target.value }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium text-slate-900"
-                    >
-                      <option value="">-- Chọn chi nhánh --</option>
-                      {shops.map(sh => <option key={sh.id} value={sh.id}>{sh.name}</option>)}
-                    </select>
-                  </div>
-                )}
-
                 {["ADMIN", "SUPER_ADMIN"].includes(createForm.roleCode) && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -969,18 +913,6 @@ export default function AdminUsersPage() {
                     {roles.map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
                   </select>
                 </div>
-                {SHOP_BOUND_ROLES.includes(roleEditForm.roleCode) && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Chi nhánh *</label>
-                    <select value={roleEditForm.shopId}
-                      onChange={e => setRoleEditForm(prev => ({ ...prev, shopId: e.target.value }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    >
-                      <option value="">-- Chọn chi nhánh --</option>
-                      {shops.map(sh => <option key={sh.id} value={sh.id}>{sh.name}</option>)}
-                    </select>
-                  </div>
-                )}
                 {["ADMIN", "SUPER_ADMIN"].includes(roleEditForm.roleCode) && roleEditForm.roleCode !== roleEditUser.role && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -1142,7 +1074,6 @@ export default function AdminUsersPage() {
                   {[
                     { label: "Email", value: viewUser.email },
                     { label: "Điện thoại", value: viewUser.phone || "—" },
-                    { label: "Chi nhánh", value: viewUser.shopId ? `Shop #${viewUser.shopId}` : "Headquarter" },
                     { label: "Ngày tạo", value: fmt(viewUser.createdAt) },
                   ].map(f => (
                     <div key={f.label} className="p-3 bg-slate-50 rounded-lg border border-slate-100">

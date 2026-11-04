@@ -163,7 +163,7 @@ export default function ContactPage() {
                     <option value="size">Tư vấn chọn Size / Kích cỡ</option>
                     <option value="order">Tra cứu tình trạng Đơn hàng</option>
                     <option value="return">Yêu cầu Đổi trả 30 ngày</option>
-                    <option value="partner">Hợp tác kinh doanh / Showroom</option>
+                    <option value="partner">Hợp tác kinh doanh</option>
                   </select>
                 </div>
 
@@ -218,7 +218,7 @@ export default function ContactPage() {
             </div>
 
             <div className="p-4 bg-primary-50/80 rounded-2xl border border-primary-200 text-xs text-slate-800">
-              Bạn cần tư vấn mua hàng gấp? Vui lòng gọi trực tiếp Hotline <strong>1900 1234</strong> để được nhân viên hỗ trợ giữ hàng tại showroom gần nhất ngay lập tức.
+              Bạn cần tư vấn mua hàng gấp? Vui lòng gọi trực tiếp Hotline <strong>1900 1234</strong> để được nhân viên hỗ trợ giữ hàng tại cửa hàng ngay lập tức.
             </div>
           </div>
 

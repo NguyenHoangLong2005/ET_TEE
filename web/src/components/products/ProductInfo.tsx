@@ -386,7 +386,7 @@ export default function ProductInfo({ product }: { product: Product }) {
             className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <MapPin className="w-4 h-4 text-amber-500" />
-            <span>Xem cửa hàng còn sản phẩm gần bạn</span>
+            <span>Xem tại cửa hàng</span>
           </button>
         </div>
 
