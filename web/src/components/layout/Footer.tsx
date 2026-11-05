@@ -47,6 +47,7 @@ export default function Footer() {
             <ul className="space-y-4 text-slate-600">
               <li><Link href="/about" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Giới thiệu</Link></li>
               <li><Link href="/stores" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Địa chỉ cửa hàng</Link></li>
+              <li><Link href="/style-quiz" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Trắc nghiệm size &amp; phong cách</Link></li>
               <li><Link href="/careers" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Tuyển dụng</Link></li>
               <li><Link href="/news" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Tin tức</Link></li>
               <li><Link href="/contact" className="hover:text-primary hover:underline underline-offset-4 transition-colors">Liên hệ</Link></li>

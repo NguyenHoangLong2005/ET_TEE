@@ -3,6 +3,7 @@ package com.nguyenhoanglong.controller.staff;
 import com.nguyenhoanglong.dto.CreateCodReconciliationDto;
 import com.nguyenhoanglong.entity.User;
 import com.nguyenhoanglong.repository.UserRepository;
+import com.nguyenhoanglong.service.ImageStorageService;
 import com.nguyenhoanglong.service.ShippingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -10,9 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/staff/shipping")
@@ -22,10 +25,13 @@ import java.math.BigDecimal;
 public class StaffShippingController {
     private final ShippingService service;
     private final UserRepository userRepository;
+    private final ImageStorageService imageStorage;
 
-    public StaffShippingController(ShippingService service, UserRepository userRepository) {
+    public StaffShippingController(ShippingService service, UserRepository userRepository,
+                                   ImageStorageService imageStorage) {
         this.service = service;
         this.userRepository = userRepository;
+        this.imageStorage = imageStorage;
     }
 
     private User getCurrentUser() {
@@ -111,6 +117,17 @@ public class StaffShippingController {
     public ResponseEntity<?> resolveException(@PathVariable Long id, @RequestBody ResolveRequest request) {
         User actor = getCurrentUser();
         return ResponseEntity.ok(service.resolveException(actor, id, request.note(), Boolean.TRUE.equals(request.returnToSender())));
+    }
+
+    /**
+     * Tai anh bang chung giao hang (chup tai cho nhan). Truoc day form chi co o nhap URL nen anh
+     * bang chung thuc te khong bao gio co; gio anh duoc luu tren may chu va xem duoc ngay.
+     * Tra ve {"url": "/api/uploads/proofs/..."} de gui kem /shipments/{id}/proof.
+     */
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).UPLOAD_POD)")
+    @PostMapping(value = "/proof-image", consumes = "multipart/form-data")
+    public ResponseEntity<Map<String, String>> uploadProofImage(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("url", imageStorage.store(file, "proofs")));
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).UPLOAD_POD)")

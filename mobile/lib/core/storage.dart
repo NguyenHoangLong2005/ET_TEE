@@ -102,6 +102,10 @@ class AppStorage {
 
   Future<void> setSizeProfile(Map<String, dynamic> body) => _prefs.setString(_kSizeProfile, jsonEncode(body));
 
+  /// Khach da bam "De sau" o loi moi nhap so do (theo tai khoan, tren may nay).
+  bool measurePromptDismissed(String email) => _prefs.getBool('measure_prompt_dismissed:$email') ?? false;
+  Future<void> dismissMeasurePrompt(String email) => _prefs.setBool('measure_prompt_dismissed:$email', true);
+
   static String _uuid() {
     final r = Random.secure();
     final b = List<int>.generate(16, (_) => r.nextInt(256));

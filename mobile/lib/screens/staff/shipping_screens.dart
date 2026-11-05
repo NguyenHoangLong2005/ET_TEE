@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/api.dart';
 import '../../core/format.dart';
@@ -277,21 +278,58 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
     await _loader.currentState?.reload();
   }
 
+  /// Hoi chup / chon anh bang chung roi tai len; tra ve URL tren may chu (null = bo qua).
+  Future<String?> _pickProofImage() async {
+    final source = await showModalBottomSheet<ImageSource?>(
+      context: context,
+      builder: (c) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const ListTile(title: Text('Ảnh bằng chứng giao hàng', style: TextStyle(fontWeight: FontWeight.w700))),
+          ListTile(leading: const Icon(Icons.photo_camera_outlined), title: const Text('Chụp ảnh'),
+              onTap: () => Navigator.pop(c, ImageSource.camera)),
+          ListTile(leading: const Icon(Icons.photo_library_outlined), title: const Text('Chọn từ thư viện'),
+              onTap: () => Navigator.pop(c, ImageSource.gallery)),
+          ListTile(leading: const Icon(Icons.skip_next_outlined), title: const Text('Bỏ qua, không có ảnh'),
+              onTap: () => Navigator.pop(c)),
+        ]),
+      ),
+    );
+    if (source == null) return null;
+    final file = await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 85);
+    if (file == null) return null;
+    final bytes = await file.readAsBytes();
+    if (bytes.length > 5 * 1024 * 1024) {
+      Toast.error('Ảnh lớn hơn 5MB');
+      return null;
+    }
+    try {
+      final res = await _api.upload('$_base/proof-image', 'file', bytes, file.name);
+      if (!res.success) throw ApiException(res.errorMessage('Không thể tải ảnh lên'));
+      final url = (res.data as Map?)?['url'];
+      return url == null ? null : '$url';
+    } catch (e) {
+      Toast.error(e is ApiException ? e.message : 'Không thể tải ảnh lên');
+      return null;
+    }
+  }
+
   Future<void> _proof(Map s) async {
     final cod = toNum(s['codAmount']) > 0;
+    final image = await _pickProofImage();
+    if (!mounted) return;
     final r = await formSheet(
       context,
       title: 'Xác nhận giao thành công',
-      subtitle: 'Đơn ${s['orderCode']}${cod ? ' · Thu hộ ${vnd(toNum(s['codAmount']))}' : ''}',
+      subtitle: 'Đơn ${s['orderCode']}${cod ? ' · Thu hộ ${vnd(toNum(s['codAmount']))}' : ''}'
+          '${image != null ? ' · Đã đính kèm ảnh' : ' · Không có ảnh'}',
       fields: [
         FormFieldSpec('receiver', 'Người nhận', initial: '${s['customerName'] ?? ''}', required: true),
-        const FormFieldSpec('image', 'Link ảnh bằng chứng', type: TextInputType.url, hint: 'https://...'),
         const FormFieldSpec('note', 'Ghi chú', lines: 2),
       ],
       confirm: 'Đã giao',
       submit: (v) => _api.post('$_base/shipments/${s['id']}/proof', {
         'receiverName': v['receiver'],
-        if (v['image']!.isNotEmpty) 'imageUrl': v['image'],
+        'imageUrl': ?image,
         if (v['note']!.isNotEmpty) 'note': v['note'],
       }),
     );
@@ -398,6 +436,25 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
           if (s['shippingAddress'] != null) InfoLine(Icons.place_outlined, '${s['shippingAddress']}'),
           if (toNum(s['codAmount']) > 0) InfoLine(Icons.payments_outlined, 'Thu hộ ${vnd(toNum(s['codAmount']))}'),
           if (st == 'DELIVERED' && s['deliveredAt'] != null) InfoLine(Icons.check, 'Giao lúc ${formatDateTime(s['deliveredAt'])}'),
+          if ('${s['deliveryProofUrl'] ?? ''}'.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+                icon: const Icon(Icons.image_outlined, size: 16),
+                label: const Text('Xem ảnh bằng chứng', style: TextStyle(fontSize: 12)),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (c) => Dialog(
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      NetImage('${s['deliveryProofUrl']}', fit: BoxFit.contain, height: 420),
+                      TextButton(onPressed: () => Navigator.pop(c), child: const Text('Đóng')),
+                    ]),
+                  ),
+                ),
+              ),
+            ),
           if (st != 'DELIVERED' && s['handoverAt'] != null) InfoLine(Icons.handshake_outlined, 'Bàn giao lúc ${formatDateTime(s['handoverAt'])}'),
           if (st == 'PENDING' || st == 'HANDED_OVER' || st == 'IN_TRANSIT') ...[
             const SizedBox(height: 10),

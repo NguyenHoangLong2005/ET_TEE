@@ -260,6 +260,8 @@ export default function ProductInfo({ product }: { product: Product }) {
             <SizeSuggestionChip
               slug={product.slug}
               refreshKey={showSizeGuide}
+              selectedSize={selectedSize}
+              onOpenGuide={() => setShowSizeGuide(true)}
               onSelect={(sz) => {
                 // chart labels say 2XL, the catalogue sells XXL
                 const match = availableSizes.find(s => s === sz || (sz === '2XL' && s === 'XXL')) ?? sz;
