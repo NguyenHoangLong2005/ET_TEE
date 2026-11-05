@@ -1,156 +1,111 @@
 package com.nguyenhoanglong.controller.admin;
 
 import com.nguyenhoanglong.entity.AiModelVersion;
-import com.nguyenhoanglong.entity.FeatureFlag;
-import com.nguyenhoanglong.entity.SystemNotification;
+import com.nguyenhoanglong.recsys.OutfitModel;
+import com.nguyenhoanglong.recsys.SasrecModel;
 import com.nguyenhoanglong.repository.AiModelVersionRepository;
-import com.nguyenhoanglong.repository.FeatureFlagRepository;
-import com.nguyenhoanglong.repository.SystemNotificationRepository;
+import com.nguyenhoanglong.service.AiFeatureFlags;
+import com.nguyenhoanglong.service.CartComplementService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Trang admin "Mo hinh AI": CHI XEM.
+ *
+ * <p>Bang ai_model_versions la nhat ky do scripts/pipeline/retrain.py ghi sau moi lan huan
+ * luyen; khong co gi trong he thong doc bang nay de chon mo hinh. Truoc day trang co nut
+ * "Dang ky mo hinh" va "Kich hoat" - chi them dong / doi co is_active roi bao "he thong da
+ * chuyen sang phuc vu..." trong khi mo hinh dang chay khong doi. Da bo hai thao tac do.</p>
+ *
+ * <p>"Co tinh nang AI": danh sach co dinh trong {@link AiFeatureFlags}, moi co duoc chuc nang
+ * tuong ung kiem tra that truoc khi chay mo hinh.</p>
+ *
+ * <p>Cot "dang phuc vu" gio tinh tu phien ban backend THUC SU dang nap: file SASRec / CSN
+ * outfit trong thu muc mo hinh live, va model_version cua luat FP-Growth trong CSDL.</p>
+ */
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_AI_MODEL_FEATURE_FLAG)")
 public class AdminAiConfigController {
 
-    private final FeatureFlagRepository featureFlagRepository;
+    /** Ten ma retrain.py ghi vao ai_model_versions (REGISTRY_NAME). */
+    static final String SASREC = "SASRec - Danh rieng cho ban (trang chu)";
+    static final String OUTFIT = "CSN outfit - Phoi tron bo (PDP)";
+    static final String FPGROWTH = "FP-Growth - Thuong duoc mua kem (gio hang)";
+
     private final AiModelVersionRepository modelVersionRepository;
-    private final SystemNotificationRepository notificationRepository;
+    private final SasrecModel sasrec;
+    private final OutfitModel outfit;
+    private final CartComplementService cartComplements;
+    private final AiFeatureFlags aiFlags;
 
-    public AdminAiConfigController(FeatureFlagRepository featureFlagRepository,
-                                   AiModelVersionRepository modelVersionRepository,
-                                   SystemNotificationRepository notificationRepository) {
-        this.featureFlagRepository = featureFlagRepository;
+    public AdminAiConfigController(AiModelVersionRepository modelVersionRepository,
+                                   SasrecModel sasrec,
+                                   OutfitModel outfit,
+                                   CartComplementService cartComplements,
+                                   AiFeatureFlags aiFlags) {
+        this.aiFlags = aiFlags;
         this.modelVersionRepository = modelVersionRepository;
-        this.notificationRepository = notificationRepository;
+        this.sasrec = sasrec;
+        this.outfit = outfit;
+        this.cartComplements = cartComplements;
     }
 
-    // This used to auto-seed fictional data on startup: feature flags
-    // claiming "Trợ lý AI tư vấn chọn size" and "Dự báo nhu cầu nhập kho
-    // bằng Machine Learning" exist and are ON, plus a fake model
-    // "ET-StyleMatch v2.1-turbo" described as using "Contrastive Learning &
-    // Fashion-CLIP" - none of which exists anywhere in this codebase (grep
-    // confirms nothing reads FeatureFlag/AiModelVersion to gate any real
-    // behavior). An admin opening this screen would see specific, detailed
-    // claims about AI systems that are pure fiction. Removed the seeding;
-    // the CRUD below is real and still usable once/if an actual feature
-    // flag or model registry is needed, it just starts empty and honest
-    // instead of pre-populated with invented capabilities.
-
-    @GetMapping("/feature-flags")
-    public ResponseEntity<?> getFeatureFlags() {
-        return ResponseEntity.ok(featureFlagRepository.findAll());
-    }
-
-    @PostMapping("/feature-flags")
-    public ResponseEntity<?> saveFeatureFlag(@RequestBody Map<String, Object> payload) {
-        String key = (String) payload.get("key");
-        if (key == null || key.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Key không được để trống"));
-        }
-        key = key.trim().toLowerCase().replaceAll("[^a-z0-9_-]", "_");
-
-        FeatureFlag flag = featureFlagRepository.findById(key).orElse(new FeatureFlag());
-        flag.setKey(key);
-        if (payload.containsKey("description")) {
-            flag.setDescription((String) payload.get("description"));
-        }
-        if (payload.containsKey("enabled")) {
-            flag.setEnabled(Boolean.parseBoolean(String.valueOf(payload.get("enabled"))));
-        }
-        flag.setUpdatedAt(LocalDateTime.now());
-        featureFlagRepository.save(flag);
-
-        return ResponseEntity.ok(flag);
-    }
-
-    @PostMapping("/feature-flags/{key}")
-    public ResponseEntity<?> toggleFeatureFlag(@PathVariable String key, @RequestBody Map<String, Object> payload) {
-        FeatureFlag flag = featureFlagRepository.findById(key).orElse(new FeatureFlag());
-        flag.setKey(key);
-        boolean enabled = Boolean.parseBoolean(String.valueOf(payload.getOrDefault("enabled", !flag.isEnabled())));
-        flag.setEnabled(enabled);
-        flag.setUpdatedAt(LocalDateTime.now());
-        featureFlagRepository.save(flag);
-
-        // Notify admins
-        try {
-            SystemNotification notif = new SystemNotification();
-            notif.setType("AI_FEATURE_CHANGED");
-            notif.setTitle("Thay đổi cờ tính năng: " + key);
-            notif.setMessage("Cờ tính năng AI '" + key + "' vừa được chuyển sang trạng thái: " + (enabled ? "BẬT" : "TẮT"));
-            notif.setSeverity("INFO");
-            notif.setTargetUrl("/admin/ai-feature-flags");
-            notif.setCreatedAt(LocalDateTime.now());
-            notificationRepository.save(notif);
-        } catch (Exception ignored) {
-        }
-
-        return ResponseEntity.ok(flag);
-    }
-
-    @DeleteMapping("/feature-flags/{key}")
-    public ResponseEntity<?> deleteFeatureFlag(@PathVariable String key) {
-        if (!featureFlagRepository.existsById(key)) {
-            return ResponseEntity.notFound().build();
-        }
-        featureFlagRepository.deleteById(key);
-        return ResponseEntity.ok(Map.of("message", "Đã xóa cờ tính năng " + key));
-    }
-
+    /**
+     * Moi phien ban da huan luyen, moi nhat truoc. {@code active} = true chi khi day dung la
+     * phien ban backend dang dung de phuc vu khach.
+     */
     @GetMapping("/model-versions")
-    public ResponseEntity<?> getModelVersions() {
-        return ResponseEntity.ok(modelVersionRepository.findAll());
+    public ResponseEntity<List<Map<String, Object>>> getModelVersions() {
+        Map<String, String> serving = new HashMap<>();
+        if (sasrec.isAvailable()) serving.put(SASREC, sasrec.version());
+        if (outfit.isAvailable()) serving.put(OUTFIT, outfit.version());
+        String fp = cartComplements.servingModelVersion();
+        if (fp != null) serving.put(FPGROWTH, fp);
+
+        List<Map<String, Object>> rows = modelVersionRepository.findAll().stream()
+                .sorted(Comparator.comparing(AiModelVersion::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(m -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("id", m.getId());
+                    row.put("modelName", m.getModelName());
+                    row.put("version", m.getVersion());
+                    row.put("description", m.getDescription());
+                    row.put("createdAt", m.getCreatedAt());
+                    row.put("active", Objects.equals(serving.get(m.getModelName()), m.getVersion()));
+                    return row;
+                })
+                .toList();
+        return ResponseEntity.ok(rows);
     }
 
-    @PostMapping("/model-versions")
-    public ResponseEntity<?> registerModelVersion(@RequestBody Map<String, Object> payload) {
-        String name = (String) payload.get("modelName");
-        String version = (String) payload.get("version");
-        if (name == null || version == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Tên model và phiên bản là bắt buộc"));
+    /** Bon cong tac AI co dinh, kem trang thai bat/tat. */
+    @GetMapping("/feature-flags")
+    public ResponseEntity<List<AiFeatureFlags.FlagState>> getFeatureFlags() {
+        return ResponseEntity.ok(aiFlags.list());
+    }
+
+    /** Bat/tat mot cong tac; co hieu luc voi khach ngay lap tuc. Body: {"enabled": true|false}. */
+    @PutMapping("/feature-flags/{key}")
+    public ResponseEntity<AiFeatureFlags.FlagState> setFeatureFlag(@PathVariable String key,
+                                                                   @RequestBody Map<String, Object> body) {
+        AiFeatureFlags.Flag flag = AiFeatureFlags.Flag.byKey(key)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có công tắc AI này"));
+        Object enabled = body == null ? null : body.get("enabled");
+        if (!(enabled instanceof Boolean b)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu trường enabled (true/false)");
         }
-
-        AiModelVersion model = new AiModelVersion();
-        model.setModelName(name.trim());
-        model.setVersion(version.trim());
-        model.setDescription((String) payload.getOrDefault("description", ""));
-        model.setActive(Boolean.parseBoolean(String.valueOf(payload.getOrDefault("active", false))));
-        model.setCreatedAt(LocalDateTime.now());
-        modelVersionRepository.save(model);
-
-        return ResponseEntity.ok(model);
-    }
-
-    @PostMapping("/model-versions/{id}/activate")
-    public ResponseEntity<?> activateModelVersion(@PathVariable Long id) {
-        return modelVersionRepository.findById(id).map(model -> {
-            // Deactivate all models
-            List<AiModelVersion> all = modelVersionRepository.findAll();
-            for (AiModelVersion m : all) {
-                m.setActive(m.getId().equals(id));
-                modelVersionRepository.save(m);
-            }
-
-            try {
-                SystemNotification notif = new SystemNotification();
-                notif.setType("AI_FEATURE_CHANGED");
-                notif.setTitle("Kích hoạt phiên bản AI mới: " + model.getModelName() + " (" + model.getVersion() + ")");
-                notif.setMessage("Hệ thống đã chuyển sang phục vụ bằng mô hình AI " + model.getModelName() + " phiên bản " + model.getVersion());
-                notif.setSeverity("SUCCESS");
-                notif.setTargetUrl("/admin/ai-config");
-                notif.setCreatedAt(LocalDateTime.now());
-                notificationRepository.save(notif);
-            } catch (Exception ignored) {
-            }
-
-            return ResponseEntity.ok(Map.of("message", "Đã kích hoạt phiên bản " + model.getVersion(), "model", model));
-        }).orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(aiFlags.set(flag, b));
     }
 }

@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { getActiveRole, getRoleDisplayName } from '@/lib/auth';
 import {
-  LogOut, ChevronDown, ChevronRight, User, KeyRound, Bell, Menu, Store,
+  LogOut, ChevronDown, ChevronRight, User, KeyRound, Bell, Menu,
   CheckCircle2, AlertTriangle, AlertCircle, HardDrive, ScrollText, ExternalLink, Star,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -151,14 +151,6 @@ export default function StaffHeader({ onOpenMenu }: { onOpenMenu: () => void }) 
 
       {/* Right */}
       <div className="flex shrink-0 items-center gap-1.5">
-        <Link
-          href="/"
-          className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 md:inline-flex"
-          title="Mở trang cửa hàng"
-        >
-          <Store className="h-4 w-4" /> Xem cửa hàng
-        </Link>
-
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button

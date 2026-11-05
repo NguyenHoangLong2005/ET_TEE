@@ -67,7 +67,7 @@ export const ADMIN_NAV_GROUPS: NavGroupConfig[] = [
     ]
   },
   {
-    groupName: 'AI & TÍNH NĂNG MỚI',
+    groupName: 'AI',
     items: [
       { label: 'Mô hình AI', path: '/admin/ai-config', icon: Cpu, allowedRoles: ['ADMIN'] },
       { label: 'Cờ tính năng AI', path: '/admin/ai-feature-flags', icon: Sparkles, allowedRoles: ['ADMIN'] },

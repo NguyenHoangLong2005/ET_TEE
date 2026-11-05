@@ -40,6 +40,14 @@ public class ForYouService {
     private final ProductService productService;
     private final SasrecModel model;
 
+    /** Cong tac AI (null trong test tu tao service bang tay = coi nhu bat). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private AiFeatureFlags aiFlags;
+
+    private boolean aiOn(AiFeatureFlags.Flag f) {
+        return aiFlags == null || aiFlags.isEnabled(f);
+    }
+
     public ForYouService(UserBehaviorEventRepository eventRepository, ProductRepository productRepository,
                          ProductService productService, SasrecModel model) {
         this.eventRepository = eventRepository;
@@ -51,6 +59,8 @@ public class ForYouService {
     @Transactional(readOnly = true)
     public ForYouResult recommend(String userKey, int limit) {
         if (userKey == null) return new ForYouResult(Strategy.NONE, null, List.of());
+        // Admin tat "Danh rieng cho ban": khong goi mo hinh, trang chu an khoi nay.
+        if (!aiOn(AiFeatureFlags.Flag.FOR_YOU)) return new ForYouResult(Strategy.NONE, null, List.of());
         List<Long> recent = new ArrayList<>(eventRepository.findRecentProductIds(
                 userKey, SEQUENCE_EVENTS, PageRequest.of(0, HISTORY_WINDOW)));
         if (recent.isEmpty()) return new ForYouResult(Strategy.NONE, null, List.of());
