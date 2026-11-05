@@ -471,17 +471,32 @@ class _StyleQuizScreenState extends State<StyleQuizScreen> {
     }
     final loggedIn = context.read<AuthProvider>().user != null;
     setState(() => _saving = true);
+    final height = num.tryParse(_height.text.trim());
+    final weight = num.tryParse(_weight.text.trim());
+    // Goi y size o trang san pham dung so do nay ngay, ke ca khi chua dang nhap.
+    await SizeAdvisorService.saveBody({'height': height, 'weight': weight});
+    var saved = false;
     if (loggedIn) {
       try {
+        // PUT ghi de toan bo ho so so do: gop voi so do hien co (truoc day lam trac nghiem xoa mat
+        // vong nguc / eo / vai / size ua thich da nhap). Vong dang khong phai kieu mac: giu kieu mac cu.
+        Map current = const {};
+        try {
+          final d = await Api.instance.get('/api/account/measurements');
+          if (d is Map) current = d;
+        } catch (_) {}
+        final quizNote = 'Trắc nghiệm: vóc dáng=$_body, phong cách=$_style, gam màu=$_palette';
         await Api.instance.put('/api/account/measurements', {
-          'measurementProfileType': 'SELF_ADULT',
-          'heightCm': num.tryParse(_height.text.trim()),
-          'weightKg': num.tryParse(_weight.text.trim()),
-          'fitPreference': _body,
-          'note': 'Style quiz: phong cách=$_style, gam màu=$_palette',
+          ...current.cast<String, dynamic>(),
+          'measurementProfileType': (current['measurementProfileType'] as String?) ?? 'SELF_ADULT',
+          'heightCm': height,
+          'weightKg': weight,
+          'fitPreference': current['fitPreference'],
+          'note': (current['note'] as String?)?.isNotEmpty == true ? current['note'] : quizNote,
         });
-      } catch (_) {
-        // the suggestion below is still shown
+        saved = true;
+      } catch (e) {
+        Toast.error(e is ApiException ? e.message : 'Không lưu được số đo vào hồ sơ, vui lòng thử lại.');
       }
     }
     if (!mounted) return;
@@ -489,7 +504,11 @@ class _StyleQuizScreenState extends State<StyleQuizScreen> {
       _saving = false;
       _done = true;
     });
-    Toast.success(loggedIn ? 'Đã lưu số đo của bạn vào hồ sơ tài khoản.' : 'Đã ghi nhận câu trả lời. Đăng nhập để lưu số đo vào hồ sơ của bạn.');
+    if (!loggedIn) {
+      Toast.success('Đã ghi nhận số đo trên máy này. Đăng nhập để lưu vào hồ sơ của bạn.');
+    } else if (saved) {
+      Toast.success('Đã lưu số đo của bạn vào hồ sơ tài khoản.');
+    }
   }
 
   String get _size {

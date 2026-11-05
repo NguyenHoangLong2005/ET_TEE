@@ -8,6 +8,7 @@ import PageHero from '@/components/ui/PageHero';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api-client';
+import { SizeAdvisorService } from '@/lib/services/sizeAdvisorService';
 
 export default function StyleQuizPage() {
   const { user } = useAuth();
@@ -34,24 +35,39 @@ export default function StyleQuizPage() {
     // /account/measurements), so at least save that much truthfully for a
     // logged-in user instead of discarding the answers.
     setIsAnalyzing(true);
+    const heightCm = Number(formData.height);
+    const weightKg = Number(formData.weight);
+    // Goi y size o trang san pham dung so do nay ngay, ke ca khi chua dang nhap.
+    SizeAdvisorService.saveBody({ height: heightCm, weight: weightKg });
+    let saved = false;
     if (user) {
       try {
+        // PUT ghi de toan bo ho so so do, nen gop voi so do hien co: truoc day lam trac nghiem
+        // xoa mat vong nguc / eo / vai / size ua thich khach da nhap o trang So do.
+        const current = await apiClient.get<Record<string, unknown>>('/api/account/measurements').catch(() => null);
+        const quizNote = `Trắc nghiệm: vóc dáng=${formData.bodyType}, phong cách=${formData.style}, gam màu=${formData.colorPreference}`;
         await apiClient.put('/api/account/measurements', {
-          measurementProfileType: 'SELF_ADULT',
-          heightCm: Number(formData.height),
-          weightKg: Number(formData.weight),
-          fitPreference: formData.bodyType,
-          note: `Style quiz: phong cách=${formData.style}, gam màu=${formData.colorPreference}`,
+          ...(current ?? {}),
+          measurementProfileType: (current?.measurementProfileType as string) || 'SELF_ADULT',
+          heightCm,
+          weightKg,
+          // Vong dang (thon gon / can doi / ...) khong phai kieu mac (om / vua / rong): giu nguyen
+          // lua chon kieu mac cua khach, chi ghi vong dang vao ghi chu.
+          fitPreference: (current?.fitPreference as string) || null,
+          note: (current?.note as string) || quizNote,
         });
-      } catch {
-        // Non-fatal: still show the (locally computed) suggestion below.
+        saved = true;
+      } catch (e: any) {
+        toast.error(e?.message || 'Không lưu được số đo vào hồ sơ, vui lòng thử lại.');
       }
     }
     setIsAnalyzing(false);
     setIsCompleted(true);
-    toast.success(user
-      ? 'Đã lưu số đo của bạn vào hồ sơ tài khoản.'
-      : 'Đã ghi nhận câu trả lời. Đăng nhập để lưu số đo vào hồ sơ của bạn.');
+    if (!user) {
+      toast.success('Đã ghi nhận số đo trên máy này. Đăng nhập để lưu vào hồ sơ của bạn.');
+    } else if (saved) {
+      toast.success('Đã lưu số đo của bạn vào hồ sơ tài khoản.');
+    }
   };
 
   const handleReset = () => {
