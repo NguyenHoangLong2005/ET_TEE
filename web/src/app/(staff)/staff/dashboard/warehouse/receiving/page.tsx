@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, RefreshCw, ArrowDownToLine, Search, MapPin, X, ArrowRight, History, PackagePlus } from "lucide-react";
+import { Plus, RefreshCw, ArrowDownToLine, Search, MapPin, X, ArrowRight, History, PackagePlus, FileSpreadsheet } from "lucide-react";
+import InboundFileImport from "@/components/staff/InboundFileImport";
 import { toast } from "sonner";
 import { staffAction, staffList, staffRequest, errorMessage } from "@/lib/staff-api";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -60,7 +61,7 @@ function Field({ label, required, hint, children, className = "" }: { label: str
 }
 
 export default function WarehouseReceivingPage() {
-  const [tab, setTab] = useState<"new" | "history">("new");
+  const [tab, setTab] = useState<"new" | "file" | "history">("new");
   const [products, setProducts] = useState<PickProduct[]>([]);
   const [history, setHistory] = useState<Receipt[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -292,7 +293,7 @@ export default function WarehouseReceivingPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex w-fit gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-            {([["new", "Tạo phiếu mới", PackagePlus], ["history", "Lịch sử nhập", History]] as const).map(([key, label, Icon]) => (
+            {([["new", "Tạo phiếu mới", PackagePlus], ["file", "Nhập bằng file", FileSpreadsheet], ["history", "Lịch sử nhập", History]] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
@@ -308,6 +309,8 @@ export default function WarehouseReceivingPage() {
             Hôm nay <b className="text-slate-800">{todayCount}</b> phiếu · tổng nhập gần đây <b className="text-slate-800">{totalQty.toLocaleString("vi-VN")}</b> sản phẩm
           </p>
         </div>
+
+        {tab === "file" && <InboundFileImport suppliers={suppliers} onImported={reload} />}
 
         {tab === "new" && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

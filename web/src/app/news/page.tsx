@@ -3,6 +3,11 @@ import { Newspaper, Clock, Eye, ArrowRight, Tag } from 'lucide-react';
 import SafeImage from '@/components/ui/SafeImage';
 import { getApiBaseUrl } from '@/lib/api-config';
 
+// Render per request: the page used to be prerendered during `docker build`, when the backend is not
+// running, so every deploy shipped an empty news list until someone's visit triggered a background
+// re-render. The API response itself is still cached for 60s (fetch revalidate below).
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Tin Tức & Blog Thời Trang',
   description: 'Cập nhật tin tức mới nhất về xu hướng thời trang, mẹo phối đồ nam nữ, bí quyết chọn size và kiến thức về các loại chất liệu cao cấp từ ET.TEE.',

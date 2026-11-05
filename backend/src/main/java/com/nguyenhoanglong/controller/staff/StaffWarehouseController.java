@@ -1,9 +1,13 @@
 package com.nguyenhoanglong.controller.staff;
 
+import com.nguyenhoanglong.service.InboundImportService;
 import com.nguyenhoanglong.service.WarehouseService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/staff/warehouse")
@@ -24,9 +28,11 @@ import org.springframework.web.bind.annotation.*;
         "or hasRole('SHOP_OWNER')")
 public class StaffWarehouseController {
     private final WarehouseService service;
+    private final InboundImportService inboundImport;
 
-    public StaffWarehouseController(WarehouseService service) {
+    public StaffWarehouseController(WarehouseService service, InboundImportService inboundImport) {
         this.service = service;
+        this.inboundImport = inboundImport;
     }
 
     @GetMapping("/inventory")
@@ -47,6 +53,29 @@ public class StaffWarehouseController {
                 request.productId(), request.productName(), request.quantity(), request.location(),
                 request.supplierId(), request.note(), request.variantId()
         ));
+    }
+
+    /**
+     * Nhap kho tu file .xlsx/.csv (cot SKU, So luong, Vi tri kho, Ghi chu). dryRun=true (mac dinh)
+     * chi kiem tra; dryRun=false nhap tat ca trong mot giao dich, co dong loi thi khong nhap dong nao.
+     */
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
+    @PostMapping(value = "/inbound/import", consumes = "multipart/form-data")
+    public ResponseEntity<InboundImportService.Report> importInbound(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) Long supplierId,
+            @RequestParam(required = false) String note,
+            @RequestParam(defaultValue = "true") boolean dryRun) {
+        return ResponseEntity.ok(inboundImport.importFile(file, supplierId, note, dryRun));
+    }
+
+    @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
+    @GetMapping("/inbound/import/template")
+    public ResponseEntity<byte[]> inboundImportTemplate() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"mau-nhap-kho.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(inboundImport.buildTemplate());
     }
 
     @PreAuthorize("hasAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).INBOUND_STOCK) or hasRole('SHOP_OWNER')")
