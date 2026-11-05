@@ -26,6 +26,26 @@ function readTabFromUrl(): Tab {
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
+/**
+ * Anh chup dien thoai thuong 4-8MB, vuot gioi han 5MB cua may chu. Thu nho canh dai nhat ve 1600px
+ * (JPEG 85%) truoc khi tai len, giong ban app. Anh nho san hoac khong doc duoc thi gui nguyen.
+ */
+async function shrinkPhoto(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.type === "image/gif" || file.size < 1_500_000) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, "image/jpeg", 0.85));
+    return blob ? new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }) : file;
+  } catch {
+    return file;
+  }
+}
+
 export default function ShippingShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -496,7 +516,7 @@ export default function ShippingShipmentsPage() {
                           setProofUploading(true);
                           try {
                             const form = new FormData();
-                            form.append("file", file);
+                            form.append("file", await shrinkPhoto(file));
                             const res = await apiClient.post<{ url: string }>("/api/staff/shipping/proof-image", form);
                             if (!res?.url) throw new Error("Không nhận được đường dẫn ảnh");
                             setProofImageUrl(res.url);

@@ -84,7 +84,8 @@ public class AdminBackupController {
                 fileInfo.put("fileName", file.getName());
                 fileInfo.put("size", file.length());
                 fileInfo.put("sizeFormatted", formatFileSize(file.length()));
-                fileInfo.put("createdAt", LocalDateTime.ofEpochSecond(file.lastModified() / 1000, 0, java.time.ZoneOffset.UTC));
+                fileInfo.put("createdAt", // gio cua may chu (Asia/Ho_Chi_Minh) nhu moi moc thoi gian khac, khong phai UTC
+                        LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(file.lastModified()), java.time.ZoneId.systemDefault()));
                 fileInfo.put("type", file.getName().contains("baseline") ? "SCHEDULED" : "MANUAL");
                 fileInfo.put("status", "COMPLETED");
                 files.add(fileInfo);
