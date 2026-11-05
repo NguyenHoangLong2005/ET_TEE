@@ -43,6 +43,7 @@ export default function ShippingShipmentsPage() {
 
   const [proofReceiver, setProofReceiver] = useState("");
   const [proofImageUrl, setProofImageUrl] = useState("");
+  const [proofUploading, setProofUploading] = useState(false);
   const [proofNote, setProofNote] = useState("");
   const [isSubmittingProof, setIsSubmittingProof] = useState(false);
 
@@ -476,10 +477,37 @@ export default function ShippingShipmentsPage() {
                     className="w-full rounded-xl border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-sky-400" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">URL ảnh bằng chứng (tùy chọn)</label>
-                  <input type="url" value={proofImageUrl} onChange={e => setProofImageUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full rounded-xl border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-sky-400" />
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Ảnh bằng chứng giao hàng</label>
+                  {proofImageUrl ? (
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={proofImageUrl} alt="Ảnh bằng chứng" className="h-20 w-20 rounded-xl border border-slate-200 object-cover" />
+                      <button type="button" onClick={() => setProofImageUrl("")}
+                        className="text-xs font-semibold text-slate-500 hover:text-rose-600">Chọn ảnh khác</button>
+                    </div>
+                  ) : (
+                    <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 p-3 text-sm text-slate-600 hover:border-sky-400 hover:bg-sky-50 ${proofUploading ? "pointer-events-none opacity-60" : ""}`}>
+                      {proofUploading ? "Đang tải ảnh lên..." : "Chụp hoặc chọn ảnh (JPG, PNG, tối đa 5MB)"}
+                      <input type="file" accept="image/*" capture="environment" className="hidden"
+                        onChange={async e => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!file) return;
+                          setProofUploading(true);
+                          try {
+                            const form = new FormData();
+                            form.append("file", file);
+                            const res = await apiClient.post<{ url: string }>("/api/staff/shipping/proof-image", form);
+                            if (!res?.url) throw new Error("Không nhận được đường dẫn ảnh");
+                            setProofImageUrl(res.url);
+                          } catch (err: any) {
+                            toast.error(err?.message || "Không tải được ảnh");
+                          } finally {
+                            setProofUploading(false);
+                          }
+                        }} />
+                    </label>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Ghi chú xác nhận</label>
@@ -488,7 +516,7 @@ export default function ShippingShipmentsPage() {
                 </div>
                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                   <Button variant="outline" size="sm" type="button" onClick={() => setProofModal(null)}>Hủy</Button>
-                  <Button variant="primary" size="sm" type="submit" loading={isSubmittingProof}>Xác nhận giao thành công</Button>
+                  <Button variant="primary" size="sm" type="submit" loading={isSubmittingProof} disabled={proofUploading}>Xác nhận giao thành công</Button>
                 </div>
               </form>
             </div>
