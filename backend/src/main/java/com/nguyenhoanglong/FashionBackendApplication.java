@@ -11,7 +11,15 @@ import java.util.stream.Stream;
 @SpringBootApplication
 public class FashionBackendApplication {
 
+    /** Cua hang o Viet Nam: moi thoi gian he thong ghi (LocalDateTime.now(), log) theo gio nay. */
+    public static final String SHOP_TIME_ZONE = "Asia/Ho_Chi_Minh";
+
     static {
+        // Thoi gian duoc luu dang LocalDateTime (khong kem mui gio) va web/app hien thi nguyen
+        // gia tri do. Container tren VPS chay UTC nen truoc day moi moc thoi gian (nhat ky email,
+        // nhat ky kiem toan, file log, don hang...) cham 7 tieng. Dat mac dinh truoc khi Spring
+        // va Logback khoi dong de may nao chay backend cung ghi cung mot mui gio.
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(SHOP_TIME_ZONE));
         loadDotEnv();
     }
 
