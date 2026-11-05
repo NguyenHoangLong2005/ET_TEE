@@ -8,6 +8,8 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      # Gio Viet Nam cho moi thoi gian he thong ghi (backend cung tu dat trong FashionBackendApplication).
+      TZ: Asia/Ho_Chi_Minh
       UPLOAD_DIR: /app/uploads
       SEED_DEMO_ACCOUNTS: "false"
       APP_SEARCH_EMBEDDERURL: http://embedder:8090
@@ -27,6 +29,8 @@ services:
       args:
         NEXT_PUBLIC_SITE_URL: https://${DOMAIN}
     restart: unless-stopped
+    environment:
+      TZ: Asia/Ho_Chi_Minh
     network_mode: service:backend
     depends_on:
       - backend

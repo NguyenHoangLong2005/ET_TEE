@@ -115,9 +115,10 @@ class ProductService {
     throw ApiException('Không thể tải danh mục');
   }
 
+  /// He thong chi co mot cua hang: tra ve danh sach mot phan tu (thong tin cua hang do).
   static Future<List<Map<String, dynamic>>> activeShops() async {
-    final d = await _api.get('/api/shops/active');
-    return asList(d).whereType<Map<String, dynamic>>().toList();
+    final d = await _api.get('/api/shops/current');
+    return d is Map<String, dynamic> ? [d] : <Map<String, dynamic>>[];
   }
 }
 

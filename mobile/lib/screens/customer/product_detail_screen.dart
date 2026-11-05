@@ -559,7 +559,7 @@ class _ProductInfoState extends State<_ProductInfo> {
             ),
             onPressed: () => showStoreStock(context, p.name, _colors.where((c) => c.hex == _color).map((c) => c.name).firstOrNull, _size),
             icon: const Icon(Icons.location_on_outlined, size: 17, color: AppColors.amber500),
-            label: const Text('Xem cửa hàng còn sản phẩm gần bạn', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            label: const Text('Xem tại cửa hàng', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           ),
         ),
       ],
@@ -818,7 +818,6 @@ class _StoreStockSheet extends StatefulWidget {
 class _StoreStockSheetState extends State<_StoreStockSheet> {
   List<Map<String, dynamic>>? _shops;
   String? _error;
-  String _q = '';
 
   @override
   void initState() {
@@ -832,9 +831,7 @@ class _StoreStockSheetState extends State<_StoreStockSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final shops = (_shops ?? [])
-        .where((s) => '${s['name']}'.toLowerCase().contains(_q.toLowerCase()) || '${s['address']}'.toLowerCase().contains(_q.toLowerCase()))
-        .toList();
+    final shops = _shops ?? const <Map<String, dynamic>>[];
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.75,
@@ -845,7 +842,7 @@ class _StoreStockSheetState extends State<_StoreStockSheet> {
           Row(children: [
             const Icon(Icons.location_on_outlined, color: AppColors.amber500),
             const SizedBox(width: 8),
-            const Expanded(child: Text('Hệ thống cửa hàng ET.TEE', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+            const Expanded(child: Text('Cửa hàng ET.TEE', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
             IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
           ]),
           Text(
@@ -853,17 +850,12 @@ class _StoreStockSheetState extends State<_StoreStockSheet> {
             style: const TextStyle(fontSize: 12, color: AppColors.slate500),
           ),
           const SizedBox(height: 14),
-          TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search, size: 18), hintText: 'Tìm theo tên hoặc địa chỉ'),
-            onChanged: (v) => setState(() => _q = v),
-          ),
-          const SizedBox(height: 14),
           if (_error != null)
             Text(_error!, style: const TextStyle(color: AppColors.red600))
           else if (_shops == null)
             const LoadingView()
           else if (shops.isEmpty)
-            const Padding(padding: EdgeInsets.all(20), child: Text('Không tìm thấy cửa hàng phù hợp.', textAlign: TextAlign.center))
+            const Padding(padding: EdgeInsets.all(20), child: Text('Chưa có thông tin cửa hàng.', textAlign: TextAlign.center))
           else
             for (final s in shops)
               Container(

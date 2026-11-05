@@ -35,6 +35,14 @@ public class OutfitService {
     private final ProductRepository productRepository;
     private final ProductService productService;
 
+    /** Cong tac AI (null trong test tu tao service bang tay = coi nhu bat). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private AiFeatureFlags aiFlags;
+
+    private boolean aiOn(AiFeatureFlags.Flag f) {
+        return aiFlags == null || aiFlags.isEnabled(f);
+    }
+
     public OutfitService(OutfitModel model, ProductRepository productRepository, ProductService productService) {
         this.model = model;
         this.productRepository = productRepository;
@@ -46,7 +54,9 @@ public class OutfitService {
         Product anchor = productRepository.findBySlug(slug)
                 .filter(p -> "ACTIVE".equals(p.getStatus()))
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
-        String anchorSlot = model.isAvailable() ? model.slotOfType(anchor.getProductType()) : null;
+        // Admin tat "Phoi tron bo" AI: dung bo phoi gan tay (RULE) thay vi mo hinh CSN.
+        boolean useModel = aiOn(AiFeatureFlags.Flag.OUTFIT) && model.isAvailable();
+        String anchorSlot = useModel ? model.slotOfType(anchor.getProductType()) : null;
         if (anchorSlot == null || !model.knows(anchor.getId())) {
             List<OutfitPiece> pieces = productService.getOutfits(slug).stream()
                     .map(p -> new OutfitPiece(null, p, List.of()))

@@ -80,6 +80,14 @@ public class SemanticSearchService {
     private final ProductRepository productRepository;
     private final ProductService productService;
 
+    /** Cong tac AI (null trong test tu tao service bang tay = coi nhu bat). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private AiFeatureFlags aiFlags;
+
+    private boolean aiOn(AiFeatureFlags.Flag f) {
+        return aiFlags == null || aiFlags.isEnabled(f);
+    }
+
     public SemanticSearchService(EmbedderClient embedder, JdbcTemplate jdbc, ProductRepository productRepository,
                                  ProductService productService) {
         this.embedder = embedder;
@@ -95,7 +103,8 @@ public class SemanticSearchService {
         if (q.length() > 200) q = q.substring(0, 200);
 
         List<Long> keyword = keywordIds(q, POOL);
-        float[] vector = embedder.embedText(q);
+        // Admin tat "Tim kiem thong minh": chi tim theo tu khoa, khong goi embedder.
+        float[] vector = aiOn(AiFeatureFlags.Flag.SMART_SEARCH) ? embedder.embedText(q) : null;
         if (vector == null) {
             return new SearchResult(Strategy.KEYWORD,
                     productService.getActiveProductsInOrder(cap(boostIntent(q, keyword), limit)));
@@ -108,6 +117,9 @@ public class SemanticSearchService {
 
     @Transactional(readOnly = true)
     public SearchResult searchByImage(byte[] image, String filename, String contentType, int limit) {
+        if (!aiOn(AiFeatureFlags.Flag.SMART_SEARCH)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Tìm kiếm bằng ảnh đang tắt");
+        }
         float[] vector = embedder.embedImage(image, filename, contentType);
         if (vector == null) {
             throw new ResponseStatusException(embedder.isCoolingDown() ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.BAD_REQUEST,

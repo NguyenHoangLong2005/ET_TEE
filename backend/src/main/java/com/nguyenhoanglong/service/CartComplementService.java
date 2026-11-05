@@ -55,6 +55,14 @@ public class CartComplementService {
     private volatile String modelVersion;
     private volatile long loadedAt;
 
+    /** Cong tac AI (null trong test tu tao service bang tay = coi nhu bat). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private AiFeatureFlags aiFlags;
+
+    private boolean aiOn(AiFeatureFlags.Flag f) {
+        return aiFlags == null || aiFlags.isEnabled(f);
+    }
+
     public CartComplementService(JdbcTemplate jdbc, CartRepository cartRepository, UserRepository userRepository,
                                  ProductService productService) {
         this.jdbc = jdbc;
@@ -71,6 +79,8 @@ public class CartComplementService {
 
     @Transactional(readOnly = true)
     public CartComplements forCart(String userEmail, String guestToken, int limit) {
+        // Admin tat "Thuong duoc mua kem": gio hang an khoi goi y.
+        if (!aiOn(AiFeatureFlags.Flag.CART_COMPLEMENTS)) return new CartComplements(null, List.of());
         Optional<Cart> cart = Optional.empty();
         if (userEmail != null) {
             cart = userRepository.findByEmail(userEmail).flatMap(u -> cartRepository.findByUserId(u.getId()));
@@ -180,6 +190,15 @@ public class CartComplementService {
         this.popularSegments = List.copyOf(popularSegments);
         this.modelVersion = modelVersion;
         this.loadedAt = System.currentTimeMillis();
+    }
+
+    /**
+     * Phien ban FP-Growth dang thuc su phuc vu (model_version cua cac luat dang nap), hoac null
+     * khi chua co luat nao - dung cho trang admin "Mo hinh AI".
+     */
+    public String servingModelVersion() {
+        ensureLoaded();
+        return rules.isEmpty() ? null : modelVersion;
     }
 
     private void ensureLoaded() {

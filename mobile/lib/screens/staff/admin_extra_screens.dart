@@ -13,42 +13,41 @@ import 'owner_extra_screens.dart' show slugify;
 import 'staff_common.dart';
 
 /// Admin pages beyond users/audit/monitoring (web admin/rbac, shops, categories, ai-config,
-/// ai-feature-flags, mailing, logs, backup).
+/// mailing, logs, backup).
 
 final _api = Api.instance;
 
 List<Map<String, dynamic>> _rows(dynamic d) => asList(d).whereType<Map<String, dynamic>>().toList();
 
-// ─── Branches ───────────────────────────────────────────────────────────────
+// ─── Store info (single store) ──────────────────────────────────────────────
 
+/// He thong chi quan ly mot cua hang: chi sua ten / dia chi / dien thoai, khong them chi nhanh.
 class ShopsScreen extends StatelessWidget {
   const ShopsScreen({super.key});
 
   @override
   Widget build(BuildContext context) => CrudScreen(
     path: '/admin/shops',
-    title: 'Chi nhánh',
-    noun: 'chi nhánh',
-    searchHint: 'Tìm chi nhánh...',
-    load: (_) async => _rows(await _api.get('/api/admin/shops')),
+    title: 'Thông tin cửa hàng',
+    noun: 'cửa hàng',
+    intro: 'Tên, địa chỉ và số điện thoại hiển thị cho khách ở trang Cửa hàng.',
+    canCreate: false,
+    load: (_) async {
+      final d = await _api.get('/api/shops/current');
+      return d is Map<String, dynamic> ? [d] : <Map<String, dynamic>>[];
+    },
     itemTitle: (s) => '${s['name']}',
     itemLines: (s) => [(Icons.place_outlined, '${s['address'] ?? ''}'), (Icons.phone_outlined, '${s['phone'] ?? ''}')],
-    badge: (s) => activeBadge(s['isActive'] != false),
     fields: (s) => [
-      FormFieldSpec('name', 'Tên chi nhánh', initial: '${s?['name'] ?? ''}', required: true),
+      FormFieldSpec('name', 'Tên cửa hàng', initial: '${s?['name'] ?? ''}', required: true),
       FormFieldSpec('address', 'Địa chỉ', initial: '${s?['address'] ?? ''}', lines: 2),
       FormFieldSpec('phone', 'Số điện thoại', initial: '${s?['phone'] ?? ''}', type: TextInputType.phone),
-      boolField('isActive', 'Trạng thái', s?['isActive'] != false),
     ],
-    save: (s, v) {
-      final body = {
-        'name': v['name'],
-        'address': v['address']!.isEmpty ? null : v['address'],
-        'phone': v['phone']!.isEmpty ? null : v['phone'],
-        'isActive': v['isActive'] == 'true',
-      };
-      return s == null ? _api.post('/api/admin/shops', body) : _api.put('/api/admin/shops/${s['id']}', body);
-    },
+    save: (_, v) => _api.put('/api/shops/current', {
+      'name': v['name'],
+      'address': v['address']!.isEmpty ? null : v['address'],
+      'phone': v['phone']!.isEmpty ? null : v['phone'],
+    }),
   );
 }
 
@@ -122,8 +121,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
   );
 }
 
-// ─── Feature flags ──────────────────────────────────────────────────────────
+// ─── AI feature flags (4 fixed, real switches) ──────────────────────────────
 
+/// Bon cong tac co dinh (backend AiFeatureFlags); moi cong tac duoc chuc nang tuong ung kiem tra
+/// that truoc khi chay mo hinh. Chi bat/tat, khong tao / xoa co.
 class FeatureFlagsScreen extends StatelessWidget {
   const FeatureFlagsScreen({super.key});
 
@@ -132,42 +133,34 @@ class FeatureFlagsScreen extends StatelessWidget {
     path: '/admin/feature-flags',
     title: 'Cờ tính năng AI',
     noun: 'cờ tính năng',
-    searchHint: 'Tìm theo khóa...',
-    intro: 'Bật / tắt các tính năng gợi ý và AI mà không cần triển khai lại.',
+    intro: 'Bật / tắt từng chức năng AI trên website và ứng dụng. Có hiệu lực với khách sau vài giây.',
+    canCreate: false,
     editable: false,
     load: (_) async => _rows(await _api.get('/api/admin/feature-flags')),
-    searchText: (f) => '${f['key']} ${f['description']}',
-    itemTitle: (f) => '${f['key']}',
+    searchText: (f) => '${f['label']} ${f['description']}',
+    itemTitle: (f) => '${f['label'] ?? f['key']}',
     itemLines: (f) => [
       (Icons.notes, '${f['description'] ?? ''}'),
       if (f['updatedAt'] != null) (Icons.schedule, 'Cập nhật ${formatDateTime(f['updatedAt'])}'),
     ],
     badge: (f) => ToneBadge(f['enabled'] == true ? 'Đang bật' : 'Đang tắt', tone: f['enabled'] == true ? 'green' : 'gray'),
-    fields: (_) => [
-      const FormFieldSpec('key', 'Khóa (VD: RECOMMENDATION_V2)', required: true),
-      const FormFieldSpec('description', 'Mô tả', lines: 2),
-      boolField('enabled', 'Trạng thái', true, on: 'Bật', off: 'Tắt'),
-    ],
-    save: (_, v) {
-      final key = v['key']!.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z0-9_]+'), '_');
-      return _api.post('/api/admin/feature-flags', {'key': key, 'description': v['description'], 'enabled': v['enabled'] == 'true'});
-    },
     actions: [
       (
         'Bật / tắt',
         Icons.toggle_on_outlined,
         (f) => runAction(
-          () => _api.post('/api/admin/feature-flags/${f['key']}', {'enabled': f['enabled'] != true}),
-          f['enabled'] == true ? 'Đã tắt ${f['key']}' : 'Đã bật ${f['key']}',
+          () => _api.put('/api/admin/feature-flags/${f['key']}', {'enabled': f['enabled'] != true}),
+          f['enabled'] == true ? 'Đã tắt ${f['label']}' : 'Đã bật ${f['label']}',
         ),
       ),
     ],
-    delete: (f) => _api.delete('/api/admin/feature-flags/${f['key']}'),
   );
 }
 
-// ─── AI model versions ──────────────────────────────────────────────────────
+// ─── AI model versions (read-only) ──────────────────────────────────────────
 
+/// Chi xem: phien ban do pipeline huan luyen tao ra; "Dang phuc vu" lay tu phien ban backend
+/// dang nap that (xem AdminAiConfigController).
 class AiModelsScreen extends StatelessWidget {
   const AiModelsScreen({super.key});
 
@@ -177,30 +170,14 @@ class AiModelsScreen extends StatelessWidget {
     title: 'Mô hình AI',
     noun: 'phiên bản mô hình',
     searchHint: 'Tìm mô hình...',
-    intro: 'Mỗi mô hình chỉ có một phiên bản đang dùng; kích hoạt phiên bản khác sẽ thay thế phiên bản hiện tại.',
+    intro: 'Phiên bản mới do pipeline huấn luyện lại tạo và tự đưa vào phục vụ. "Đang phục vụ" là phiên bản máy chủ đang nạp.',
+    canCreate: false,
     editable: false,
-    load: (_) async => _rows(await _api.get('/api/admin/model-versions'))..sort((a, b) => '${b['createdAt']}'.compareTo('${a['createdAt']}')),
+    load: (_) async => _rows(await _api.get('/api/admin/model-versions')),
     searchText: (m) => '${m['modelName']} ${m['version']} ${m['description']}',
     itemTitle: (m) => '${m['modelName']} · ${m['version']}',
     itemLines: (m) => [(Icons.notes, '${m['description'] ?? ''}'), (Icons.schedule, formatDateTime(m['createdAt']))],
-    badge: (m) => m['active'] == true ? const ToneBadge('Đang dùng', tone: 'green') : null,
-    fields: (_) => [
-      const FormFieldSpec('modelName', 'Tên mô hình', required: true, hint: 'sasrec'),
-      const FormFieldSpec('version', 'Phiên bản', required: true, hint: 'v2'),
-      const FormFieldSpec('description', 'Mô tả', lines: 2),
-      boolField('active', 'Kích hoạt ngay', false, on: 'Có', off: 'Không'),
-    ],
-    save: (_, v) => _api.post('/api/admin/model-versions', {...v, 'active': v['active'] == 'true'}),
-    actions: [
-      (
-        'Kích hoạt phiên bản này',
-        Icons.play_circle_outline,
-        (m) async {
-          if (m['active'] == true) return Toast.info('Phiên bản này đang được dùng');
-          await runAction(() => _api.post('/api/admin/model-versions/${m['id']}/activate', {}), 'Đã kích hoạt ${m['modelName']} ${m['version']}');
-        },
-      ),
-    ],
+    badge: (m) => m['active'] == true ? const ToneBadge('Đang phục vụ', tone: 'green') : const ToneBadge('Bản cũ', tone: 'gray'),
   );
 }
 
@@ -209,7 +186,7 @@ class AiModelsScreen extends StatelessWidget {
 const _protectedRoles = ['ADMIN', 'SHOP_OWNER', 'USER', 'STAFF'];
 const _permGroups = {
   'ADMIN': 'Quản trị Hệ thống',
-  'SHOP_OWNER': 'Chủ cửa hàng & Chi nhánh',
+  'SHOP_OWNER': 'Chủ cửa hàng',
   'SALES_STAFF': 'Bán hàng & Đơn hàng',
   'CSKH_STAFF': 'Chăm sóc Khách hàng (CSKH)',
   'WAREHOUSE_STAFF': 'Kho vận & Tồn kho',
