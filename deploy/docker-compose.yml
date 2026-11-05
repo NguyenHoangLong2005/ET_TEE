@@ -11,6 +11,10 @@ services:
       # Gio Viet Nam cho moi thoi gian he thong ghi (backend cung tu dat trong FashionBackendApplication).
       TZ: Asia/Ho_Chi_Minh
       UPLOAD_DIR: /app/uploads
+      # Du lieu demo (DemoDataSeeder): chay mot lan voi
+      #   APP_DEMO_SEED_ENABLED=true docker compose up -d --no-deps backend
+      # Bo qua neu da co don demo, nen de lai cung khong tao trung.
+      APP_DEMO_SEED_ENABLED: ${APP_DEMO_SEED_ENABLED:-false}
       SEED_DEMO_ACCOUNTS: "false"
       APP_SEARCH_EMBEDDERURL: http://embedder:8090
     volumes:
