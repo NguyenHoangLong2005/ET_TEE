@@ -593,7 +593,13 @@ public class OrderService {
                 r.setProductSlug(item.getProduct() != null ? item.getProduct().getSlug() : null);
                 r.setReviewed(item.isReviewed());
                 r.setProductName(item.getProductNameSnapshot());
-                r.setImage(item.getImageSnapshot());
+                // Don cu co the khong luu anh luc dat: dung anh hien tai cua san pham.
+                String image = item.getImageSnapshot();
+                if ((image == null || image.isBlank()) && item.getProduct() != null
+                        && item.getProduct().getImages() != null && !item.getProduct().getImages().isEmpty()) {
+                    image = item.getProduct().getImages().get(0).getImageUrl();
+                }
+                r.setImage(image);
                 r.setColor(item.getColorSnapshot());
                 r.setSize(item.getSizeSnapshot());
                 r.setUnitPrice(item.getUnitPrice());

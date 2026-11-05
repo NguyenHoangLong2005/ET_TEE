@@ -329,8 +329,8 @@ public class DemoDataSeeder {
                 case "GHTK" -> "S" + (10000000 + rnd.nextInt(89999999)) + ".DM";
                 default -> "JT" + (1000000000L + rnd.nextInt(899999999));
             };
-            Shipment s = as(shippingUser, () -> shipping.createShipment(shippingUser, orderId, carrier, tracking,
-                    cod ? total : BigDecimal.ZERO));
+            // null: ShippingService tu tinh tien thu ho tu don (tranh lech so le khi doi double -> BigDecimal).
+            Shipment s = as(shippingUser, () -> shipping.createShipment(shippingUser, orderId, carrier, tracking, null));
             shipmentId = s.getId();
             step("_SHIPMENT");
             if (stage == Stage.SHIP_PENDING) return;

@@ -3,6 +3,11 @@ import { notFound } from 'next/navigation';
 import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api-config';
 import ViewTracker from './ViewTracker';
+// Render per request: the page used to be prerendered during `docker build`, when the backend is not
+// running, so every deploy shipped an empty news list until someone's visit triggered a background
+// re-render. The API response itself is still cached for 60s (fetch revalidate below).
+export const dynamic = 'force-dynamic';
+
 
 // Staff write plain text in the posts form: blank line between paragraphs, "## " for a section
 // heading, "- " for bullets. Rendered as React text rather than innerHTML so a post cannot inject markup.

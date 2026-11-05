@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Package, Eye, AlertCircle, RefreshCcw } from 'lucide-react';
+import SafeImage from '@/components/ui/SafeImage';
 import { getAuthHeaders } from '@/lib/auth';
 import { getApiBaseUrl } from '@/lib/api-config';
 
@@ -197,16 +198,10 @@ export default function AccountOrdersPage() {
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item: any, index: number) => (
                     <div key={index} className="flex gap-4">
-                      {/* Product Image placeholder */}
-                      <div className="w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200/80 overflow-hidden">
-                        {item.imageUrl ? (
-                           // eslint-disable-next-line @next/next/no-img-element
-                          <img 
-                            src={item.imageUrl} 
-                            alt={item.productName} 
-                            onError={(e) => (e.currentTarget.src = '/images/products/placeholder.webp')}
-                            className="w-full h-full object-cover" 
-                          />
+                      {/* API tra anh o truong `image` (OrderItemResponse); truoc day doc `imageUrl` nen luon trong */}
+                      <div className="relative w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-slate-200/80 overflow-hidden">
+                        {item.image ? (
+                          <SafeImage src={item.image} alt={item.productName} fill sizes="80px" className="object-cover" />
                         ) : (
                           <Package className="w-8 h-8 text-slate-300" />
                         )}
