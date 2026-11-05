@@ -2,15 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/api.dart';
 import '../../core/config.dart';
+import '../../core/storage.dart';
 import '../../core/theme.dart';
 import '../../core/toast.dart';
 import '../../models/product.dart';
 import '../../services/product_service.dart';
 import '../../services/recommendation_service.dart';
 import '../../services/shop_service.dart';
+import '../../state/auth_provider.dart';
 import '../../widgets/common.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/store_scaffold.dart';
@@ -29,10 +32,67 @@ class _HomeScreenState extends State<HomeScreen> {
   int _trendingDays = 0;
   int _reload = 0;
 
+  /// Moi lan mo app chi hoi toi da mot lan.
+  static bool _measurePromptShown = false;
+
   @override
   void initState() {
     super.initState();
     _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAskMeasurements());
+  }
+
+  /// Khach chua co so do (thuong la vua dang ky): moi nhap de duoc goi y size o trang san pham.
+  Future<void> _maybeAskMeasurements() async {
+    if (_measurePromptShown || !mounted) return;
+    final user = context.read<AuthProvider>().user;
+    if (user == null || user.role != 'USER') return;
+    if (AppStorage.instance.measurePromptDismissed(user.email)) return;
+    try {
+      final d = await Api.instance.get('/api/account/measurements');
+      final m = d is Map ? d : const {};
+      if (m['heightCm'] != null && m['weightKg'] != null) return;
+    } catch (_) {
+      return;
+    }
+    if (!mounted || _measurePromptShown) return;
+    _measurePromptShown = true;
+    final go = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Row(children: [
+              Icon(Icons.straighten, color: AppColors.primary),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Chọn size dễ hơn với số đo của bạn',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            const Text(
+              'Cho ET.TEE biết chiều cao, cân nặng và kiểu mặc yêu thích, mỗi sản phẩm sẽ gợi ý size vừa với bạn.',
+              style: TextStyle(fontSize: 13, color: AppColors.slate600, height: 1.5),
+            ),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(child: PillButton('Nhập số đo (1 phút)', height: 44, onPressed: () => Navigator.pop(c, true))),
+              const SizedBox(width: 8),
+              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Để sau')),
+            ]),
+          ]),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (go == true) {
+      context.push('/style-quiz');
+    } else {
+      await AppStorage.instance.dismissMeasurePrompt(user.email);
+    }
   }
 
   Future<void> _load() async {

@@ -215,6 +215,9 @@ export default function Header() {
                     <Link href="/account/orders" className="block px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-red-600 transition-colors">
                       Lịch sử đơn hàng
                     </Link>
+                    <Link href="/style-quiz" className="block px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-red-600 transition-colors">
+                      Số đo &amp; gợi ý size
+                    </Link>
                     <button 
                       onClick={handleLogout} 
                       className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 flex items-center transition-colors border-t border-slate-100 mt-1"
@@ -313,6 +316,13 @@ export default function Header() {
                     className="flex items-center gap-3 py-2.5 px-3 text-sm font-semibold text-slate-700 hover:text-slate-900"
                   >
                     Lịch sử đơn hàng
+                  </Link>
+                  <Link
+                    href="/style-quiz"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 py-2.5 px-3 text-sm font-semibold text-slate-700 hover:text-slate-900"
+                  >
+                    Số đo &amp; gợi ý size
                   </Link>
                   <button
                     onClick={() => {

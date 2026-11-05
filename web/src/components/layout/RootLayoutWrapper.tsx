@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
+import MeasurementPrompt from '@/components/account/MeasurementPrompt';
 
 export default function RootLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +22,7 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
       </main>
       {!hideCustomerShell && <Footer />}
       {!hideCustomerShell && <CartDrawer />}
+      {!hideCustomerShell && <MeasurementPrompt />}
     </div>
   );
 }

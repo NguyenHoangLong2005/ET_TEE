@@ -306,6 +306,17 @@ class _ProductInfoState extends State<_ProductInfo> {
     }
   }
 
+  /// Bang tinh size; dong lai thi lam moi goi y (so do vua nhap duoc dung ngay).
+  Future<void> _openSizeGuide(Product p) async {
+    final picked = await showSizeGuide(context, p);
+    if (!mounted) return;
+    if (picked != null) {
+      _pickSize(picked);
+      Toast.success('Đã tự động chọn Size $picked');
+    }
+    setState(() => _adviceKey++);
+  }
+
   void _pickSize(String sz) {
     // chart labels say 2XL, the catalogue sells XXL
     final match = _sizes.firstWhere((s) => s == sz || (sz == '2XL' && s == 'XXL'), orElse: () => sz);
@@ -442,20 +453,19 @@ class _ProductInfoState extends State<_ProductInfo> {
             ])),
             const Spacer(),
             GestureDetector(
-              onTap: () async {
-                final picked = await showSizeGuide(context, p);
-                if (picked != null) {
-                  _pickSize(picked);
-                  Toast.success('Đã tự động chọn Size $picked');
-                }
-                setState(() => _adviceKey++);
-              },
+              onTap: () => _openSizeGuide(p),
               child: const Text('Hướng dẫn chọn size',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.slate500, decoration: TextDecoration.underline)),
             ),
           ]),
           const SizedBox(height: 10),
-          _SizeSuggestionChip(key: ValueKey(_adviceKey), slug: p.slug, onSelect: _pickSize),
+          _SizeSuggestionChip(
+            key: ValueKey(_adviceKey),
+            slug: p.slug,
+            selectedSize: _size,
+            onSelect: _pickSize,
+            onOpenGuide: () => _openSizeGuide(p),
+          ),
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final s in _sizes)
               GestureDetector(
@@ -567,11 +577,28 @@ class _ProductInfoState extends State<_ProductInfo> {
   }
 }
 
-/// "Gợi ý cho bạn: size L" from saved measurements; hidden until there are some.
+/// "XXL" va "2XL" la cung mot size.
+String _normSize(String? s) {
+  final t = (s ?? '').trim().toUpperCase();
+  return t == 'XXL' ? '2XL' : t == 'XXXL' ? '3XL' : t;
+}
+
+/// Goi y size canh o chon size, tu so do cua khach (ho so tai khoan, hoac bang tinh size tren may):
+/// - chua co so do: loi moi mo bang tinh size,
+/// - co so do: "Goi y cho ban: size L" (cham de chon),
+/// - khach chon size khac: nhac nhe size goi y vua hon (khong chan them vao gio).
 class _SizeSuggestionChip extends StatefulWidget {
   final String slug;
+  final String selectedSize;
   final ValueChanged<String> onSelect;
-  const _SizeSuggestionChip({super.key, required this.slug, required this.onSelect});
+  final VoidCallback onOpenGuide;
+  const _SizeSuggestionChip({
+    super.key,
+    required this.slug,
+    required this.selectedSize,
+    required this.onSelect,
+    required this.onOpenGuide,
+  });
 
   @override
   State<_SizeSuggestionChip> createState() => _SizeSuggestionChipState();
@@ -588,18 +615,45 @@ class _SizeSuggestionChipState extends State<_SizeSuggestionChip> {
     });
   }
 
+  Widget _pill({required Widget child, required Color bg, required Color border, VoidCallback? onTap}) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999), border: Border.all(color: border)),
+          child: child,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final a = _advice;
+    if (a?.reason == 'NEED_MEASUREMENTS') {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _pill(
+          onTap: widget.onOpenGuide,
+          bg: AppColors.slate50,
+          border: AppColors.slate200,
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.straighten, size: 14, color: AppColors.slate700),
+            SizedBox(width: 6),
+            Flexible(
+              child: Text('Nhập chiều cao, cân nặng để được gợi ý size',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.slate700)),
+            ),
+          ]),
+        ),
+      );
+    }
     if (a?.size == null) return const SizedBox.shrink();
+    final mismatch = widget.selectedSize.isNotEmpty && _normSize(widget.selectedSize) != _normSize(a!.size);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () => widget.onSelect(a.size!),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-              color: AppColors.emerald50, borderRadius: BorderRadius.circular(999), border: Border.all(color: AppColors.emerald200)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _pill(
+          onTap: () => widget.onSelect(a.size!),
+          bg: AppColors.emerald50,
+          border: AppColors.emerald200,
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.straighten, size: 14, color: AppColors.emerald800),
             const SizedBox(width: 6),
@@ -611,7 +665,42 @@ class _SizeSuggestionChipState extends State<_SizeSuggestionChip> {
             ),
           ]),
         ),
-      ),
+        if (mismatch) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text.rich(TextSpan(style: const TextStyle(fontSize: 12, color: Color(0xFF78350F), height: 1.4), children: [
+                const TextSpan(text: 'Bạn đang chọn size '),
+                TextSpan(text: widget.selectedSize, style: const TextStyle(fontWeight: FontWeight.w800)),
+                const TextSpan(text: ', nhưng theo số đo của bạn '),
+                TextSpan(text: 'size ${a.size}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                const TextSpan(text: ' sẽ vừa hơn.'),
+              ])),
+              if (a.reasons.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(a.reasons.take(2).join(' · '),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF92400E))),
+                ),
+              GestureDetector(
+                onTap: () => widget.onSelect(a.size!),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text('Đổi sang ${a.size}',
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF78350F), decoration: TextDecoration.underline)),
+                ),
+              ),
+            ]),
+          ),
+        ],
+      ]),
     );
   }
 }
