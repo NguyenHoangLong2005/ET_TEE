@@ -113,7 +113,7 @@ public class StaffWarehouseController {
     @PostMapping("/inventory/{id}/adjustments")
     public ResponseEntity<?> createAdjustment(@PathVariable Long id, @RequestBody AdjustmentRequest request) {
         return ResponseEntity.ok(service.createAdjustmentRequest(
-                id, request.difference(), request.reason()
+                id, request.variantId(), request.difference(), request.reason()
         ));
     }
 
@@ -221,7 +221,7 @@ public class StaffWarehouseController {
     public record RestockRequestBody(Long inventoryId, Integer quantity, String note) {}
     public record CountRequest(Integer actualQuantity) {}
     public record LocationRequest(String location) {}
-    public record AdjustmentRequest(Integer difference, String reason) {}
+    public record AdjustmentRequest(Long variantId, Integer difference, String reason) {}
     public record RejectRequest(String reason) {}
     public record StocktakeRequest(String warehouseLocation, Long createdBy) {}
     public record StocktakeResultRequest(Integer actualQuantity) {}

@@ -512,6 +512,9 @@ class _ProductInfoState extends State<_ProductInfo> {
             canDecrease: _qty > 1,
             canIncrease: _stockOfVariant > 0 ? _qty < _stockOfVariant : _qty < 10,
             onChanged: (q) => setState(() => _qty = q),
+            onIncreaseBlocked: () => Toast.info(_stockOfVariant > 0
+                ? 'Chỉ còn $_stockOfVariant sản phẩm trong kho'
+                : 'Tối đa 10 sản phẩm mỗi lần thêm'),
           ),
           const SizedBox(width: 12),
           Expanded(

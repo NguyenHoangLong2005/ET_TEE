@@ -655,7 +655,12 @@ public class MarketingService {
         } else { // PERCENT
             discount = subtotal.multiply(voucher.getDiscountValue())
                     .divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-            if (voucher.getMaxDiscountAmount() != null && discount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
+            // The voucher form saves 0 when "Giảm tối đa" is left empty, and the staff list and
+            // the customer voucher card both treat 0 as "no cap". Here 0 capped the discount at
+            // 0₫, so a code like SALE99 was "applied" but took nothing off.
+            if (voucher.getMaxDiscountAmount() != null
+                    && voucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0
+                    && discount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
                 discount = voucher.getMaxDiscountAmount();
             }
             if (discount.compareTo(subtotal) > 0) discount = subtotal;

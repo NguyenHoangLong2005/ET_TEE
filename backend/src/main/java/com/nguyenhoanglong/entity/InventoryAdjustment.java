@@ -15,6 +15,14 @@ public class InventoryAdjustment {
     @JoinColumn(name = "inventory_id", nullable = false)
     private Inventory inventory;
 
+    /** Bien the (mau / size) can dieu chinh; null voi phieu cu hoac san pham khong co bien the. */
+    @Column(name = "variant_id")
+    private Long variantId;
+
+    /** "Mau / Size" luc tao phieu, de hien thi ma khong can join. */
+    @Column(name = "variant_label", length = 255)
+    private String variantLabel;
+
     @Column(name = "difference", nullable = false)
     private Integer difference;
 
@@ -41,6 +49,10 @@ public class InventoryAdjustment {
     public void setId(Long id) { this.id = id; }
     public Inventory getInventory() { return inventory; }
     public void setInventory(Inventory inventory) { this.inventory = inventory; }
+    public Long getVariantId() { return variantId; }
+    public void setVariantId(Long variantId) { this.variantId = variantId; }
+    public String getVariantLabel() { return variantLabel; }
+    public void setVariantLabel(String variantLabel) { this.variantLabel = variantLabel; }
     public Integer getDifference() { return difference; }
     public void setDifference(Integer difference) { this.difference = difference; }
     public String getReason() { return reason; }

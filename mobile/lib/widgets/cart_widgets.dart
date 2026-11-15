@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/config.dart';
 import '../core/format.dart';
 import '../core/theme.dart';
+import '../core/toast.dart';
 import '../models/cart.dart';
 import '../services/recommendation_service.dart';
 import '../state/cart_provider.dart';
@@ -191,6 +192,9 @@ class CartLine extends StatelessWidget {
                         canDecrease: item.quantity > 1,
                         canIncrease: item.quantity < item.availableQuantity,
                         onChanged: (q) => cart.updateQuantity(item.id, q),
+                        onIncreaseBlocked: () => Toast.info(item.availableQuantity <= 0
+                            ? 'Phân loại này đã hết hàng'
+                            : 'Chỉ còn ${item.availableQuantity} sản phẩm trong kho'),
                         small: true,
                       ),
                       const Spacer(),
@@ -223,13 +227,16 @@ class QtyStepper extends StatelessWidget {
   final bool canIncrease;
   final ValueChanged<int> onChanged;
   final bool small;
-  const QtyStepper({super.key, required this.value, required this.canDecrease, required this.canIncrease, required this.onChanged, this.small = false});
+  /// Tapped "+" while [canIncrease] is false (e.g. stock limit): lets the caller explain
+  /// why instead of the button silently doing nothing.
+  final VoidCallback? onIncreaseBlocked;
+  const QtyStepper({super.key, required this.value, required this.canDecrease, required this.canIncrease, required this.onChanged, this.small = false, this.onIncreaseBlocked});
 
   @override
   Widget build(BuildContext context) {
     final s = small ? 32.0 : 44.0;
-    Widget btn(IconData icon, bool enabled, int next) => InkWell(
-          onTap: enabled ? () => onChanged(next) : null,
+    Widget btn(IconData icon, bool enabled, int next, [VoidCallback? onBlocked]) => InkWell(
+          onTap: enabled ? () => onChanged(next) : onBlocked,
           child: SizedBox(
             width: s,
             height: s,
@@ -250,7 +257,7 @@ class QtyStepper extends StatelessWidget {
             width: small ? 30 : 44,
             child: Text('$value', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
           ),
-          btn(Icons.add, canIncrease, value + 1),
+          btn(Icons.add, canIncrease, value + 1, onIncreaseBlocked),
         ],
       ),
     );

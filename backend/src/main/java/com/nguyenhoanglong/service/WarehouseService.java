@@ -188,9 +188,7 @@ public class WarehouseService {
             variant.setAvailableQuantity((variant.getAvailableQuantity() != null ? variant.getAvailableQuantity() : 0) + quantity);
             variants.save(variant);
             ProductServiceImpl.invalidateListingCache();
-            variantLabel = java.util.stream.Stream.of(variant.getColor(), variant.getSize())
-                    .filter(s -> s != null && !s.isBlank())
-                    .collect(java.util.stream.Collectors.joining(" / "));
+            variantLabel = variantLabel(variant);
         }
 
         GoodsReceipt receipt = new GoodsReceipt();
@@ -244,27 +242,101 @@ public class WarehouseService {
 
     // ========== Inventory Adjustment Workflow ==========
 
+    /**
+     * The storefront sells per variant (cart and checkout read product_variants), so an
+     * adjustment must say which colour / size it corrects. It used to only carry the
+     * per-product inventory row, and approving it changed a total nothing sold from.
+     */
     @Transactional
-    public InventoryAdjustment createAdjustmentRequest(Long id, Integer difference, String reason) {
+    public InventoryAdjustment createAdjustmentRequest(Long id, Long variantId, Integer difference, String reason) {
         String requesterUserId = resolveUserId();
         if (difference == null || difference == 0) throw new IllegalArgumentException("Chênh lệch phải là số nguyên khác 0");
         String cleanReason = blankToNull(reason);
         if (cleanReason == null) throw new IllegalArgumentException("Vui lòng nhập lý do điều chỉnh");
         Inventory target = inventory(id);
-        if (target.getQuantityOnHand() + difference < 0) {
+        ProductVariant variant = resolveAdjustmentVariant(target, variantId);
+        if (variant != null) {
+            int sellable = variant.getAvailableQuantity() != null ? variant.getAvailableQuantity() : 0;
+            if (sellable + difference < 0) {
+                throw new IllegalArgumentException("Điều chỉnh làm tồn của " + variantLabel(variant)
+                        + " âm (còn bán được: " + sellable + ")");
+            }
+        } else if (target.getQuantityOnHand() + difference < 0) {
             throw new IllegalArgumentException("Điều chỉnh làm tồn kho âm (tồn hiện tại: " + target.getQuantityOnHand() + ")");
         }
         InventoryAdjustment a = new InventoryAdjustment();
         a.setInventory(target);
+        if (variant != null) {
+            a.setVariantId(variant.getId());
+            a.setVariantLabel(variantLabel(variant));
+        }
         a.setDifference(difference);
         a.setReason(cleanReason);
         a.setStatus("PENDING");
         a.setRequesterUserId(requesterUserId);
-        log.info("Inventory adjustment requested: id {} diff {} reason {} requestedBy {}", id, difference, reason, requesterUserId);
+        log.info("Inventory adjustment requested: id {} variant {} diff {} reason {} requestedBy {}", id, variantId, difference, reason, requesterUserId);
         InventoryAdjustment saved = adjustments.save(a);
         approvalNotifications.notifyOwnersOfRequest(target.getShopId(), "Yêu cầu điều chỉnh tồn kho mới",
-                target.getProductName() + ": " + (difference > 0 ? "+" : "") + difference + ". Lý do: " + cleanReason);
+                adjustmentTitle(saved) + ": " + (difference > 0 ? "+" : "") + difference + ". Lý do: " + cleanReason);
         return saved;
+    }
+
+    /** A product with variants must name one; the variant must belong to the inventory's product. */
+    private ProductVariant resolveAdjustmentVariant(Inventory target, Long variantId) {
+        if (variantId == null) {
+            if (!variants.findByProductId(target.getProductId()).isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn màu / size cần điều chỉnh");
+            }
+            return null;
+        }
+        return variants.findById(variantId)
+                .filter(v -> v.getProduct() != null && target.getProductId().equals(v.getProduct().getId()))
+                .orElseThrow(() -> new IllegalArgumentException("Biến thể không thuộc sản phẩm này"));
+    }
+
+    static String variantLabel(ProductVariant v) {
+        String label = java.util.stream.Stream.of(v.getColor(), v.getSize())
+                .filter(x -> x != null && !x.isBlank())
+                .collect(java.util.stream.Collectors.joining(" / "));
+        return label.isEmpty() ? v.getSku() : label;
+    }
+
+    /** "Ao thun (Den / M)" for notifications and the approval list. */
+    public static String adjustmentTitle(InventoryAdjustment a) {
+        String name = a.getInventory() != null ? a.getInventory().getProductName() : "Sản phẩm";
+        return a.getVariantLabel() == null ? name : name + " (" + a.getVariantLabel() + ")";
+    }
+
+    /**
+     * Applies an approved adjustment: the variant's stock (what customers can buy) and the
+     * product's warehouse total move together. Both approval paths (warehouse API and the
+     * store-owner approvals page) go through here; they used to update only the total.
+     */
+    @Transactional
+    public void applyApprovedAdjustment(InventoryAdjustment a) {
+        Inventory i = inventories.findByIdWithLock(a.getInventory().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tồn kho"));
+        int diff = a.getDifference();
+        if (a.getVariantId() != null) {
+            ProductVariant v = variants.findByIdWithPessimisticLock(a.getVariantId())
+                    .orElseThrow(() -> new IllegalArgumentException("Biến thể của phiếu điều chỉnh không còn tồn tại"));
+            int stock = v.getStock() != null ? v.getStock() : 0;
+            int sellable = v.getAvailableQuantity() != null ? v.getAvailableQuantity() : 0;
+            if (sellable + diff < 0 || stock + diff < 0) {
+                throw new IllegalArgumentException("Điều chỉnh làm tồn của " + variantLabel(v)
+                        + " âm (còn bán được: " + sellable + ")");
+            }
+            v.setStock(stock + diff);
+            v.setAvailableQuantity(sellable + diff);
+            variants.save(v);
+            ProductServiceImpl.invalidateListingCache();
+            i.setQuantityOnHand(Math.max(0, i.getQuantityOnHand() + diff));
+        } else {
+            int next = i.getQuantityOnHand() + diff;
+            if (next < 0) throw new IllegalArgumentException("Điều chỉnh làm tồn kho âm");
+            i.setQuantityOnHand(next);
+        }
+        inventories.save(i);
     }
 
     @Transactional
@@ -284,27 +356,13 @@ public class WarehouseService {
             throw new IllegalArgumentException("Phiếu điều chỉnh đã được xử lý");
         }
         
-        Inventory i = inventories.findByIdWithLock(a.getInventory().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tồn kho"));
-        
-        int next = i.getQuantityOnHand() + a.getDifference();
-        if (next < 0) {
-            throw new IllegalArgumentException("Điều chỉnh làm tồn kho âm");
-        }
-        
-        i.setQuantityOnHand(next);
-        inventories.save(i);
-        // approvedBy used to come straight from the request body (a client
-        // could stamp anyone's id on the approval). The column is Long while
-        // User.id is a String, so there's no safe id to store here without a
-        // schema change; log the real authenticated approver instead of
-        // trusting client input.
+        applyApprovedAdjustment(a);
         a.setStatus("APPROVED");
 
-        log.info("Inventory adjustment approved: id {} new qty {} approvedBy {}", id, next, approverUserId);
+        log.info("Inventory adjustment approved: id {} diff {} approvedBy {}", id, a.getDifference(), approverUserId);
         InventoryAdjustment saved = adjustments.save(a);
         approvalNotifications.notifyRequesterOfDecision(a.getRequesterUserId(),
-                "Điều chỉnh tồn kho " + i.getProductName() + " (" + (a.getDifference() > 0 ? "+" : "") + a.getDifference() + ")",
+                "Điều chỉnh tồn kho " + adjustmentTitle(a) + " (" + (a.getDifference() > 0 ? "+" : "") + a.getDifference() + ")",
                 "APPROVED", null, WAREHOUSE_INVENTORY_URL);
         return saved;
     }

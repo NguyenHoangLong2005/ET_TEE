@@ -78,6 +78,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = async (itemId: number, quantity: number) => {
+    // The "+" button used to be disabled at the stock limit, so clicking it did nothing and
+    // the customer never learned why. Explain instead of silently ignoring the click.
+    const item = cart?.items?.find((i) => i.id === itemId);
+    if (item && quantity > item.quantity && quantity > item.availableQuantity) {
+      toast.warning(item.availableQuantity <= 0
+        ? 'Phân loại này đã hết hàng'
+        : `Chỉ còn ${item.availableQuantity} sản phẩm trong kho`);
+      return;
+    }
     try {
       const newCart = await CartService.updateQuantity(itemId, quantity);
       setCart(newCart);
