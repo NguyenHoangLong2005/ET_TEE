@@ -206,8 +206,9 @@ export default function CartPage() {
                           <button 
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30"
-                            disabled={item.quantity >= item.availableQuantity}
+                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30 aria-disabled:opacity-30"
+                            aria-disabled={item.quantity >= item.availableQuantity}
+                          title={item.quantity >= item.availableQuantity ? `Chỉ còn ${item.availableQuantity} sản phẩm trong kho` : undefined}
                             aria-label="Tăng số lượng"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -250,8 +251,9 @@ export default function CartPage() {
                       <button 
                         type="button"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30"
-                        disabled={item.quantity >= item.availableQuantity}
+                        className="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded-r-xl transition-colors disabled:opacity-30 aria-disabled:opacity-30"
+                        aria-disabled={item.quantity >= item.availableQuantity}
+                          title={item.quantity >= item.availableQuantity ? `Chỉ còn ${item.availableQuantity} sản phẩm trong kho` : undefined}
                         aria-label="Tăng số lượng"
                       >
                         <Plus className="w-3.5 h-3.5" />

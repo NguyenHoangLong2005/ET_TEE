@@ -120,8 +120,9 @@ export default function CartDrawer() {
                         <span className="w-8 text-center text-xs font-black text-slate-900">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 rounded-r-xl disabled:opacity-40 transition-colors"
-                          disabled={item.quantity >= item.availableQuantity}
+                          className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 rounded-r-xl disabled:opacity-40 aria-disabled:opacity-40 transition-colors"
+                          aria-disabled={item.quantity >= item.availableQuantity}
+                          title={item.quantity >= item.availableQuantity ? `Chỉ còn ${item.availableQuantity} sản phẩm trong kho` : undefined}
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>

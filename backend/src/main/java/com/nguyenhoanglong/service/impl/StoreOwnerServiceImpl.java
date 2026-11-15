@@ -49,6 +49,10 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
     @org.springframework.beans.factory.annotation.Autowired
     private com.nguyenhoanglong.service.MarketingService marketingService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private com.nguyenhoanglong.service.WarehouseService warehouseService;
+
     public StoreOwnerServiceImpl(ProductVariantRepository variantRepository,
                                  ManufacturerRepository manufacturerRepository,
                                  SupplierRepository supplierRepository,
@@ -589,11 +593,10 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         // JOIN FETCH inventory, loc san theo shopId + status.
         List<InventoryAdjustment> adjustments = inventoryAdjustmentRepository.findPendingApprovalByShopId(shopId);
         for (InventoryAdjustment adj : adjustments) {
-            Inventory inv = adj.getInventory();
             items.add(StoreApprovalItemDto.builder()
                     .approvalId("INV_ADJ-" + adj.getId())
                     .type("INVENTORY_ADJUSTMENT")
-                    .title("Duyet dieu chinh ton kho: " + inv.getProductName())
+                    .title("Duyệt điều chỉnh tồn kho: " + com.nguyenhoanglong.service.WarehouseService.adjustmentTitle(adj))
                     .description("Ly do: " + adj.getReason() + " | Thay doi: " + (adj.getDifference() > 0 ? "+" : "") + adj.getDifference())
                     .requestedBy(adj.getRequestedBy() != null ? "NV Kho #" + adj.getRequestedBy() : "Nhan vien kho")
                     .status(adj.getStatus())
@@ -743,26 +746,29 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
 
         if ("APPROVED".equals(actionStr)) {
-            adj.setStatus("APPROVED");
+            // Same path as the warehouse approval: also moves the variant's sellable stock,
+            // which used to stay unchanged here (only the product total moved).
             if (adj.getInventory() != null) {
-                Inventory inv = adj.getInventory();
-                int newQty = Math.max(0, inv.getQuantityOnHand() + adj.getDifference());
-                inv.setQuantityOnHand(newQty);
-                inventoryRepository.save(inv);
+                try {
+                    warehouseService.applyApprovedAdjustment(adj);
+                } catch (IllegalArgumentException ex) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+                }
             }
+            adj.setStatus("APPROVED");
         } else {
             adj.setStatus(actionStr);
         }
         inventoryAdjustmentRepository.save(adj);
 
-        String prodName = (adj.getInventory() != null) ? adj.getInventory().getProductName() : "San pham";
+        String prodName = com.nguyenhoanglong.service.WarehouseService.adjustmentTitle(adj);
         approvalNotifications.notifyRequesterOfDecision(adj.getRequesterUserId(),
                 "Điều chỉnh tồn kho " + prodName + " (" + (adj.getDifference() > 0 ? "+" : "") + adj.getDifference() + ")",
                 actionStr, actionDto.getNote(), com.nguyenhoanglong.service.WarehouseService.WAREHOUSE_INVENTORY_URL);
         return StoreApprovalItemDto.builder()
                 .approvalId("INV_ADJ-" + adj.getId())
                 .type("INVENTORY_ADJUSTMENT")
-                .title("Dieu chinh ton kho: " + prodName)
+                .title("Điều chỉnh tồn kho: " + prodName)
                 .description("Ly do: " + adj.getReason())
                 .requestedBy(adj.getRequestedBy() != null ? adj.getRequestedBy().toString() : "Kho")
                 .status(adj.getStatus())

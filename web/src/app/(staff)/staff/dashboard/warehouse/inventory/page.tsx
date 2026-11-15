@@ -40,9 +40,13 @@ const ADJUSTMENT_LABEL: Record<string, string> = {
   PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", REJECTED: "Từ chối", REVISION_REQUESTED: "Cần chỉnh sửa",
 };
 
+type VariantOption = { id: number; sku: string; color?: string | null; size?: string | null; availableQuantity?: number | null };
+const variantLabel = (v: VariantOption) => [v.color, v.size].filter(Boolean).join(" / ") || v.sku;
+
 type Adjustment = {
   id: number;
   inventory: { id: number; productName: string };
+  variantLabel?: string | null;
   difference: number;
   reason: string;
   status: string;
@@ -64,6 +68,15 @@ export default function WarehouseInventoryPage() {
   const [locationInput, setLocationInput] = useState("");
   const [adjustmentInput, setAdjustmentInput] = useState("");
   const [reasonInput, setReasonInput] = useState("");
+  // Customers buy a colour / size, so an adjustment targets one variant's stock; the
+  // product-level total alone changed nothing that the storefront sells from.
+  const [variants, setVariants] = useState<VariantOption[]>([]);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+  const [variantId, setVariantId] = useState("");
+  const chosenVariant = variants.find((v) => String(v.id) === variantId) ?? null;
+  // The stock the difference applies to: the chosen variant's, or the product total when the
+  // product has no variants.
+  const currentStock = chosenVariant ? (chosenVariant.availableQuantity ?? 0) : (selectedItem?.quantityOnHand ?? 0);
 
   const filteredItems = useMemo(() => {
     const base = stockFilter === "ALL" ? items : items.filter(i => stockState(i) === stockFilter);
@@ -92,7 +105,12 @@ export default function WarehouseInventoryPage() {
 
   const adjustmentColumns: Column<Adjustment>[] = [
     { key: "id", header: "Mã phiếu", render: (a) => <span className="font-mono font-bold text-slate-900">#{a.id}</span> },
-    { key: "product", header: "Sản phẩm", render: (a) => <span className="font-semibold text-slate-800">{a.inventory?.productName ?? `Tồn #${a.inventory?.id}`}</span> },
+    { key: "product", header: "Sản phẩm", render: (a) => (
+      <span className="font-semibold text-slate-800">
+        {a.inventory?.productName ?? `Tồn #${a.inventory?.id}`}
+        {a.variantLabel && <span className="ml-1 font-normal text-slate-500">({a.variantLabel})</span>}
+      </span>
+    ) },
     {
       key: "difference",
       header: "Chênh lệch",
@@ -143,7 +161,17 @@ export default function WarehouseInventoryPage() {
     setSelectedItem(item);
     setAdjustmentInput("0");
     setReasonInput("");
+    setVariants([]);
+    setVariantId("");
     setActiveModal("adjustment");
+    setVariantsLoading(true);
+    staffList<VariantOption>(`/api/staff/warehouse/products/${item.productId}/variants`)
+      .then((list) => {
+        setVariants(list);
+        if (list.length === 1) setVariantId(String(list[0].id));
+      })
+      .catch(() => setVariants([]))
+      .finally(() => setVariantsLoading(false));
   };
 
   const handleRequestAdjustment = async (e: React.FormEvent) => {
@@ -154,8 +182,12 @@ export default function WarehouseInventoryPage() {
       toast.error("Chênh lệch phải là số nguyên khác 0");
       return; 
     }
-    if (selectedItem.quantityOnHand + difference < 0) {
-      toast.error(`Không thể giảm quá tồn hiện tại (${selectedItem.quantityOnHand})`);
+    if (variants.length > 0 && !chosenVariant) {
+      toast.error("Vui lòng chọn màu / size cần điều chỉnh");
+      return;
+    }
+    if (currentStock + difference < 0) {
+      toast.error(`Không thể giảm quá tồn hiện tại (${currentStock})`);
       return;
     }
     if (!reasonInput.trim()) {
@@ -166,6 +198,7 @@ export default function WarehouseInventoryPage() {
     setBusy(selectedItem.id); setError("");
     try {
       await staffAction(`/api/staff/warehouse/inventory/${selectedItem.id}/adjustments`, "POST", {
+        variantId: chosenVariant ? chosenVariant.id : undefined,
         difference, reason: reasonInput.trim(),
       });
       toast.success("Đã gửi đề nghị điều chỉnh. Tồn kho chỉ thay đổi sau khi chủ cửa hàng duyệt.");
@@ -409,8 +442,31 @@ export default function WarehouseInventoryPage() {
             <form onSubmit={handleRequestAdjustment} className="p-5 space-y-4 text-xs">
               <div className="p-3 bg-primary-50 border border-primary-200 rounded-xl space-y-1 text-primary-800">
                 <p><strong>Sản phẩm:</strong> {selectedItem.productName} (ID: #{selectedItem.productId})</p>
-                <p><strong>Tồn kho hiện tại:</strong> {selectedItem.quantityOnHand}</p>
+                <p><strong>Tổng tồn của sản phẩm:</strong> {selectedItem.quantityOnHand}</p>
+                {chosenVariant && (
+                  <p><strong>Tồn của {variantLabel(chosenVariant)}:</strong> {chosenVariant.availableQuantity ?? 0}</p>
+                )}
               </div>
+
+              {(variantsLoading || variants.length > 0) && (
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Màu / Size cần điều chỉnh *</label>
+                  <select
+                    required
+                    value={variantId}
+                    disabled={variantsLoading}
+                    onChange={(e) => setVariantId(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-600 bg-white"
+                  >
+                    <option value="">{variantsLoading ? "Đang tải biến thể..." : "— Chọn biến thể —"}</option>
+                    {variants.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {variantLabel(v)} · còn {v.availableQuantity ?? 0}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">Chênh lệch số lượng (+ tăng, - giảm) *</label>
@@ -422,11 +478,11 @@ export default function WarehouseInventoryPage() {
                   placeholder="Ví dụ: -2 hoặc +5"
                   className="w-full rounded-xl border border-slate-300 p-2.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary-600"
                 />
-                {Number.isInteger(Number(adjustmentInput)) && Number(adjustmentInput) !== 0 && (
-                  <p className={`mt-1.5 ${selectedItem.quantityOnHand + Number(adjustmentInput) < 0 ? "text-rose-600 font-semibold" : "text-slate-500"}`}>
-                    Tồn sau điều chỉnh (nếu được duyệt):{" "}
-                    <b className="font-mono">{selectedItem.quantityOnHand + Number(adjustmentInput)}</b>
-                    {selectedItem.quantityOnHand + Number(adjustmentInput) < 0 && " — không thể âm"}
+                {Number.isInteger(Number(adjustmentInput)) && Number(adjustmentInput) !== 0 && (variants.length === 0 || chosenVariant) && (
+                  <p className={`mt-1.5 ${currentStock + Number(adjustmentInput) < 0 ? "text-rose-600 font-semibold" : "text-slate-500"}`}>
+                    Tồn {chosenVariant ? `của ${variantLabel(chosenVariant)} ` : ""}sau điều chỉnh (nếu được duyệt):{" "}
+                    <b className="font-mono">{currentStock + Number(adjustmentInput)}</b>
+                    {currentStock + Number(adjustmentInput) < 0 && " — không thể âm"}
                   </p>
                 )}
               </div>
