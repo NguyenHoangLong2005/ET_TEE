@@ -95,6 +95,7 @@ public class DataSeeder implements CommandLineRunner {
                 Role.WAREHOUSE_STAFF, "Nhân viên Quản lý Kho",
                 Role.SHIPPING_STAFF, "Nhân viên Vận chuyển / Shipper",
                 Role.MARKETING_STAFF, "Nhân viên Marketing",
+                Role.CSKH_STAFF, "Nhân viên Chăm sóc khách hàng",
                 Role.STAFF, "Nhân viên Cửa hàng (Chung)",
                 Role.USER, "Khách hàng mua sắm"
         );
@@ -171,13 +172,14 @@ public class DataSeeder implements CommandLineRunner {
 
         for (Role r : Role.values()) {
             String code = r.name();
-            if (!roleRepository.existsById(code)) {
-                roleRepository.save(RoleEntity.builder()
-                        .code(code)
-                        .name(roleNames.getOrDefault(r, code))
-                        .description("Quyền hạn cho vai trò " + roleNames.getOrDefault(r, code))
-                        .build());
-            }
+            // Defaults are a starting point for a role seen for the first time. Re-adding every missing
+            // default on each start silently re-granted whatever an admin had revoked.
+            if (roleRepository.existsById(code)) continue;
+            roleRepository.save(RoleEntity.builder()
+                    .code(code)
+                    .name(roleNames.getOrDefault(r, code))
+                    .description("Quyền hạn cho vai trò " + roleNames.getOrDefault(r, code))
+                    .build());
 
             List<String> perms = rolePermissions.getOrDefault(r, List.of());
             for (String perm : perms) {

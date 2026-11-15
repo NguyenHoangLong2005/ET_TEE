@@ -308,4 +308,15 @@ class ReviewServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("NOT_PURCHASED");
     }
+
+    @Test
+    void guestProvesPurchaseWithEmailOrPhone() {
+        com.nguyenhoanglong.entity.Order o = new com.nguyenhoanglong.entity.Order();
+        o.setCustomerEmail("Guest@Example.com");
+        o.setCustomerPhone("0901 234 567");
+        org.assertj.core.api.Assertions.assertThat(ReviewService.matchesContact(o, "guest@example.com")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(ReviewService.matchesContact(o, "0901234567")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(ReviewService.matchesContact(o, "0901234568")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(ReviewService.matchesContact(o, "")).isFalse();
+    }
 }

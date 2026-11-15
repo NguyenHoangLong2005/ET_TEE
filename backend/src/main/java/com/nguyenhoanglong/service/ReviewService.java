@@ -108,7 +108,7 @@ public class ReviewService {
         } else if (orderCode != null && email != null) {
             // Guest logic
             com.nguyenhoanglong.entity.Order order = orderItemRepository.findOrderByCode(orderCode);
-            if (order == null || !email.equalsIgnoreCase(order.getCustomerEmail())) {
+            if (order == null || !matchesContact(order, email)) {
                 res.setCanReview(false);
                 res.setReason("NOT_PURCHASED"); // Treat as not found/not purchased
                 return res;
@@ -190,7 +190,7 @@ public class ReviewService {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing order authentication for guest review");
             }
             if (!request.getOrderCode().equals(order.getOrderCode()) || 
-                !request.getCustomerEmailOrPhone().equalsIgnoreCase(order.getCustomerEmail())) {
+                !matchesContact(order, request.getCustomerEmailOrPhone())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "NOT_PURCHASED");
             }
             customerName = order.getCustomerName() != null ? order.getCustomerName() : customerName;
@@ -236,6 +236,20 @@ public class ReviewService {
         productRepository.recalculateProductRating(product.getId());
         
         return mapToResponse(review);
+    }
+
+    /**
+     * Guest proof of purchase: the e-mail or the phone number given at checkout. The field is called
+     * customerEmailOrPhone but only the e-mail was compared, so a guest who typed the phone was told
+     * they had not bought the product.
+     */
+    static boolean matchesContact(com.nguyenhoanglong.entity.Order order, String value) {
+        if (value == null || value.isBlank()) return false;
+        String v = value.trim();
+        if (order.getCustomerEmail() != null && v.equalsIgnoreCase(order.getCustomerEmail().trim())) return true;
+        String digits = v.replaceAll("[^0-9]", "");
+        String phone = order.getCustomerPhone() == null ? "" : order.getCustomerPhone().replaceAll("[^0-9]", "");
+        return digits.length() >= 8 && digits.equals(phone);
     }
 
     public List<ReviewResponse> getUserReviews(String userId) {
