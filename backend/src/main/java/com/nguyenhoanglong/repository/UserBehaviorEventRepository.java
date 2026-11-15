@@ -30,6 +30,14 @@ public interface UserBehaviorEventRepository extends JpaRepository<UserBehaviorE
                                     org.springframework.data.domain.Pageable pageable);
 
     /** A guest who signs in keeps the browsing history recorded under their guest key. */
+    /** PURCHASE events written at checkout for an order that was later cancelled or returned. */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM UserBehaviorEvent e WHERE e.userId = :userId AND e.eventType = 'PURCHASE' "
+            + "AND e.productId IN :productIds AND e.createdAt >= :from AND e.createdAt <= :to")
+    int deletePurchases(@Param("userId") String userId, @Param("productIds") java.util.Collection<Long> productIds,
+                        @Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to);
+
     @Modifying
     @Transactional
     @Query("UPDATE UserBehaviorEvent e SET e.userId = :userId WHERE e.userId = :guestKey")

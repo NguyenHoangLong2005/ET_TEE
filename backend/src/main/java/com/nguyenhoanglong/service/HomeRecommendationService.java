@@ -76,7 +76,7 @@ public class HomeRecommendationService {
         for (int days : TRENDING_WINDOWS) {
             Timestamp since = Timestamp.valueOf(LocalDateTime.now().minusDays(days));
             List<Long> ids = jdbc.queryForList(TRENDING_SQL, Long.class, since, limit);
-            result = new Trending(days, productService.getActiveProductsInOrder(ids));
+            result = new Trending(days, com.nguyenhoanglong.util.Availability.inStockOnly(productService.getActiveProductsInOrder(ids)));
             if (result.products().size() >= limit) break;
         }
         trendingCache = new CachedTrending(now, limit, result);

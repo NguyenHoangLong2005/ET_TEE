@@ -13,6 +13,12 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     boolean existsBySku(String sku);
     List<ProductVariant> findByProductId(Long productId);
 
+    /** Units still sellable per product (checkout deducts available_quantity at once). */
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT pv.product.id, COALESCE(SUM(pv.availableQuantity), 0) FROM ProductVariant pv "
+                    + "WHERE pv.product.id IN :ids GROUP BY pv.product.id")
+    List<Object[]> sumAvailableByProductIds(@org.springframework.data.repository.query.Param("ids") java.util.Collection<Long> ids);
+
     // Listing pages only need the distinct colors/sizes per product. Loading every variant
     // (~30 per product, ~100 KB per page) over the remote DB link costs seconds, while
     // these grouped projections return a few rows per product.

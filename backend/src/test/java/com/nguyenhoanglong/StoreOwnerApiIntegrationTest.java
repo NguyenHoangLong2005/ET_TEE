@@ -202,7 +202,7 @@ public class StoreOwnerApiIntegrationTest {
     @DisplayName("Case 4: Staff performance evaluations rating and validation")
     public void testCase4_StaffPerformanceEvaluation() {
         Long shopId = 1L;
-        String userId = "EMP-STAFF-EVAL";
+        String userId = user("eval", Role.SALES_STAFF, shopId).getId();
 
         // Rating > 5 -> 400 Bad Request
         StaffPerformanceEvaluationCreateDto invalidEval = new StaffPerformanceEvaluationCreateDto(userId, "2026-09", 6, new BigDecimal("100"), "Rất tốt");

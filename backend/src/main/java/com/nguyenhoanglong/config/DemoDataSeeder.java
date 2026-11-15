@@ -396,6 +396,12 @@ public class DemoDataSeeder {
                             ts(t), orderId, label);
                 }
             });
+            // Revenue is reported by orders.delivered_at; keep it on the back-dated delivery time
+            // instead of "now" (the moment the seeder ran the real delivery step).
+            LocalDateTime deliveredStep = stepTimes.get("DELIVERED");
+            if (deliveredStep != null) {
+                jdbc.update("UPDATE orders SET delivered_at = ? WHERE id = ?", ts(deliveredStep), orderId);
+            }
             if (shipmentId == null) return;
             LocalDateTime handover = stepTimes.get("_HANDOVER");
             LocalDateTime delivered = stepTimes.get("DELIVERED");

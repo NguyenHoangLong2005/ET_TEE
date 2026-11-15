@@ -82,7 +82,9 @@ public class OutfitService {
 
         List<Long> all = rankedBySlot.values().stream().flatMap(List::stream).distinct().toList();
         Map<Long, ProductDto> active = new HashMap<>();
-        productService.getActiveProductsInOrder(all).forEach(p -> active.put(p.getId(), p));
+        productService.getActiveProductsInOrder(all).stream()
+                .filter(com.nguyenhoanglong.util.Availability::inStock)
+                .forEach(p -> active.put(p.getId(), p));
         List<OutfitPiece> pieces = new ArrayList<>();
         for (String slot : slotOrder) {
             List<ProductDto> available = rankedBySlot.get(slot).stream()

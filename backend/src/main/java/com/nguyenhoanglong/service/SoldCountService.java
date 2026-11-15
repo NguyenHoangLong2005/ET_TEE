@@ -27,7 +27,8 @@ public class SoldCountService {
     /**
      * Cac trang thai nghia la "da ban xong".
      * Theo OrderStateMachine, DELIVERED la trang thai thanh cong duy nhat: khong co
-     * COMPLETED, khong co luong ban tai quay di tat. Tap hop de o day de khi them
+     * COMPLETED. Don ban tai quay (khach nhan hang ngay) duoc tao thang o DELIVERED
+     * (SalesOrderService.createSalesOrder). Tap hop de o day de khi them
      * trang thai thanh cong moi thi chi phai sua mot cho.
      */
     public static final Set<OrderStatus> SOLD_STATUSES = Set.of(OrderStatus.DELIVERED);

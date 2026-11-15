@@ -419,8 +419,10 @@ class _SalesOrderDetailScreenState extends State<SalesOrderDetailScreen> {
               Wrap(spacing: 8, runSpacing: 8, children: [
                 if (st == 'PENDING_PAYMENT' && o['paymentMethod'] == 'BANK_TRANSFER')
                   StaffButton('Đã nhận tiền', height: 40, icon: Icons.account_balance_outlined, onPressed: () => _confirmPayment(o)),
-                // Final orders have nothing left for sales to change (web isFinal).
-                if (!const ['DELIVERED', 'CANCELLED', 'REFUNDED'].contains(st))
+                // Final orders have nothing left for sales to change (web isFinal), except a paid
+                // order that was cancelled: it still needs "Đã hoàn tiền cho khách".
+                if (!const ['DELIVERED', 'CANCELLED', 'REFUNDED'].contains(st)
+                    || (st == 'CANCELLED' && o['paymentStatus'] == 'REFUND_PENDING'))
                   StaffButton('Đổi trạng thái', height: 40, icon: Icons.swap_horiz, onPressed: () => _status(o)),
                 if (canVerify) StaffButton('Xác minh', style: PillStyle.outline, height: 40, icon: Icons.fact_check_outlined, onPressed: () => _verify(o)),
                 StaffButton('Ghi chú', style: PillStyle.outline, height: 40, icon: Icons.note_add_outlined, onPressed: _note),
@@ -528,7 +530,8 @@ class _SalesCreateOrderScreenState extends State<SalesCreateOrderScreen> {
         'customerName': _name.text.trim(),
         'phone': _phone.text.trim(),
         if (_email.text.trim().isNotEmpty) 'customerEmail': _email.text.trim(),
-        'shippingAddress': _address.text.trim().isEmpty ? 'Thanh toán & nhận tại cửa hàng (POS)' : _address.text.trim(),
+        // Left empty = sold at the counter: the server completes the order right away.
+        if (_address.text.trim().isNotEmpty) 'shippingAddress': _address.text.trim(),
         'paymentMethod': _payment,
         'items': [
           for (final l in _lines) {'variantId': l.variant.id, 'quantity': l.quantity},

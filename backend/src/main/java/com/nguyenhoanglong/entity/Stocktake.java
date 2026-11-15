@@ -24,6 +24,14 @@ public class Stocktake {
     @Column(name = "actual_quantity")
     private Integer actualQuantity;
 
+    /** On-hand the system had at this location when the count was entered. */
+    @Column(name = "system_quantity")
+    private Integer systemQuantity;
+
+    /** actual - system; non-zero means an adjustment is needed. */
+    @Column(name = "difference_quantity")
+    private Integer differenceQuantity;
+
     @Column(name = "status", nullable = false, length = 30)
     private String status = "OPEN";
 
@@ -40,6 +48,10 @@ public class Stocktake {
     public void setShopId(Long shopId) { this.shopId = shopId; }
     public Integer getActualQuantity() { return actualQuantity; }
     public void setActualQuantity(Integer actualQuantity) { this.actualQuantity = actualQuantity; }
+    public Integer getSystemQuantity() { return systemQuantity; }
+    public void setSystemQuantity(Integer systemQuantity) { this.systemQuantity = systemQuantity; }
+    public Integer getDifferenceQuantity() { return differenceQuantity; }
+    public void setDifferenceQuantity(Integer differenceQuantity) { this.differenceQuantity = differenceQuantity; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

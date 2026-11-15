@@ -169,11 +169,22 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
 
     private static final BigDecimal PRICE_STEP = BigDecimal.valueOf(1000);
 
+    /**
+     * A deleted product is gone for good (its slug was freed, carts were cleaned). Editing it
+     * or bulk-activating it used to put it back on sale under its "-deleted-" slug.
+     */
+    private static void rejectDeleted(Product product) {
+        if ("DELETED".equalsIgnoreCase(product.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm đã bị xóa");
+        }
+    }
+
     @Override
     @Transactional
     public ShopProductDto updateProductPricing(Long productId, ProductPriceUpdateDto dto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm với ID: " + productId));
+        rejectDeleted(product);
 
         BigDecimal price = dto.getPrice();
         BigDecimal salePrice = dto.getSalePrice();
@@ -450,6 +461,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     public StoreProductFormDto updateProduct(Long productId, StoreProductFormDto f) {
         Product p = productRepository.findByIdWithDetails(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm với ID: " + productId));
+        rejectDeleted(p);
         validateProductForm(f);
         String before = describePricing(p);
 
@@ -508,6 +520,9 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     @org.springframework.beans.factory.annotation.Autowired
     private com.nguyenhoanglong.service.ProductRemovalService productRemovalService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.nguyenhoanglong.service.ReplenishmentAdvisor replenishmentAdvisor;
+
     /** Branch of the signed-in user; admins (no branch) fall back to the default shop 1. */
     private Long currentActorShopId() {
         var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
@@ -539,6 +554,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
         int changed = 0;
         for (Product product : productRepository.findAllById(sanitizeBulkIds(productIds))) {
+            if ("DELETED".equalsIgnoreCase(product.getStatus())) continue;
             String before = describePricing(product);
             switch (act) {
                 case "ACTIVATE" -> {
@@ -842,6 +858,12 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         if (staff.getShopId() == null || !staff.getShopId().equals(shopId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nhân viên không thuộc chi nhánh của bạn");
         }
+        // The page checked duplicates only among the shifts it had loaded; the API took any.
+        String newType = createDto.getShiftType().trim().toUpperCase();
+        if (shopWorkShiftRepository.existsByShopIdAndUserIdAndShiftDateAndShiftTypeIgnoreCase(
+                shopId, staff.getId(), createDto.getShiftDate(), newType)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Nhân viên đã được phân ca này trong ngày " + createDto.getShiftDate());
+        }
 
         ShopWorkShift shift = new ShopWorkShift();
         shift.setShopId(shopId);
@@ -868,10 +890,16 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Khong co quyen sua ca lam viec cua shop khac");
         }
 
-        if (updateDto.getShiftDate() != null) shift.setShiftDate(updateDto.getShiftDate());
-        if (updateDto.getShiftType() != null && !updateDto.getShiftType().trim().isEmpty()) {
-            shift.setShiftType(updateDto.getShiftType().trim().toUpperCase());
+        java.time.LocalDate nextDate = updateDto.getShiftDate() != null ? updateDto.getShiftDate() : shift.getShiftDate();
+        String nextType = updateDto.getShiftType() != null && !updateDto.getShiftType().trim().isEmpty()
+                ? updateDto.getShiftType().trim().toUpperCase() : shift.getShiftType();
+        boolean moved = !nextDate.equals(shift.getShiftDate()) || !nextType.equalsIgnoreCase(shift.getShiftType());
+        if (moved && shopWorkShiftRepository.existsByShopIdAndUserIdAndShiftDateAndShiftTypeIgnoreCase(
+                shopId, shift.getUserId(), nextDate, nextType)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Nhân viên đã được phân ca này trong ngày " + nextDate);
         }
+        shift.setShiftDate(nextDate);
+        shift.setShiftType(nextType);
         if (updateDto.getNote() != null) shift.setNote(updateDto.getNote().trim());
         if (updateDto.getStatus() != null && !updateDto.getStatus().trim().isEmpty()) {
             shift.setStatus(updateDto.getStatus().trim().toUpperCase());
@@ -925,8 +953,21 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Diem danh gia rating phai thuoc tu 1 den 5 sao");
         }
 
-        String fullName = resolveUserFullName(createDto.getUserId().trim());
         String period = createDto.getEvaluationPeriod().trim();
+        if (!period.matches("\\d{4}-(0[1-9]|1[0-2])")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kỳ đánh giá phải có dạng YYYY-MM (ví dụ 2026-11)");
+        }
+        // Any id used to be accepted: a customer, an unknown id, or the owner rating themself.
+        User evaluated = userRepository.findById(createDto.getUserId().trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhân viên"));
+        if (evaluated.getShopId() == null || !evaluated.getShopId().equals(shopId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nhân viên không thuộc cửa hàng của bạn");
+        }
+        if (evaluated.getRole() == null || evaluated.getRole() == Role.USER
+                || evaluated.getRole() == Role.SHOP_OWNER || evaluated.getRole() == Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ đánh giá được nhân viên của cửa hàng");
+        }
+        String fullName = evaluated.getFullName() != null ? evaluated.getFullName() : resolveUserFullName(evaluated.getId());
 
         StaffPerformanceEvaluation eval = staffPerformanceEvaluationRepository
                 .findByShopIdAndUserIdAndEvaluationPeriod(shopId, createDto.getUserId().trim(), period)
@@ -1045,12 +1086,19 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         long cancelledOrders = countByStatus.getOrDefault("CANCELLED", 0L);
         long refundedOrders = countByStatus.getOrDefault("REFUNDED", 0L);
 
-        BigDecimal totalRevenue = BigDecimal.valueOf(amountByStatus.getOrDefault("DELIVERED", 0.0));
+        // Revenue is what was delivered in the period (orders.delivered_at), not what was ordered
+        // in it. All-time, the two are the same set of orders.
+        Double rangeSum = ranged
+                ? orderRepository.sumRevenueForShopBetween(shopId, Order.REVENUE_STATUSES,
+                        rangeFrom.atStartOfDay(), rangeTo.plusDays(1).atStartOfDay())
+                : Double.valueOf(amountByStatus.getOrDefault("DELIVERED", 0.0)
+                        + amountByStatus.getOrDefault("RETURN_REQUESTED", 0.0));
+        BigDecimal totalRevenue = BigDecimal.valueOf(rangeSum != null ? rangeSum : 0.0);
 
         LocalDate today = LocalDate.now();
         LocalDate monthStart = today.withDayOfMonth(1);
-        Double monthSum = orderRepository.sumAmountForShopByStatusBetween(
-                shopId, OrderStatus.DELIVERED,
+        Double monthSum = orderRepository.sumRevenueForShopBetween(
+                shopId, Order.REVENUE_STATUSES,
                 monthStart.atStartOfDay(), monthStart.plusMonths(1).atStartOfDay());
         BigDecimal monthRevenue = BigDecimal.valueOf(monthSum != null ? monthSum : 0.0);
 
@@ -1058,7 +1106,8 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         long activeStaff = userRepository.countByShopIdAndStatus(shopId, "ACTIVE");
 
         long totalProducts = inventoryRepository.countByShopId(shopId);
-        long lowStockProducts = inventoryRepository.countLowStockByShopId(shopId);
+        // Same rule as the replenishment page (sellable stock, not just what is still on the shelf).
+        long lowStockProducts = replenishmentAdvisor.lowStock(inventoryRepository.findLiveByShopId(shopId)).size();
 
         List<StoreApprovalItemDto> pendingApprovals = getPendingApprovals(shopId);
 
@@ -1117,7 +1166,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
                     "granularity", days <= 62 ? "day" : "month"));
 
             // Change vs the range of the same length immediately before this one.
-            Double previous = orderRepository.sumAmountForShopByStatusBetween(shopId, OrderStatus.DELIVERED,
+            Double previous = orderRepository.sumRevenueForShopBetween(shopId, Order.REVENUE_STATUSES,
                     rangeFrom.minusDays(days).atStartOfDay(), rangeFrom.atStartOfDay());
             double previousRevenue = previous != null ? previous : 0.0;
             if (previousRevenue > 0) {
@@ -1132,7 +1181,11 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
                 LocalDate day = toLocalDate(row[0]);
                 if (day == null) continue;
                 ordersByDay.put(day, ((Number) row[1]).longValue());
-                revenueByDay.put(day, row[2] != null ? ((Number) row[2]).doubleValue() : 0.0);
+            }
+            for (Object[] row : orderRepository.aggregateDailyRevenueForShopBetween(shopId, Order.REVENUE_STATUSES,
+                    rangeFrom.atStartOfDay(), rangeTo.plusDays(1).atStartOfDay())) {
+                LocalDate day = toLocalDate(row[0]);
+                if (day != null) revenueByDay.put(day, row[1] != null ? ((Number) row[1]).doubleValue() : 0.0);
             }
 
             List<Map<String, Object>> series = new ArrayList<>();
@@ -1172,7 +1225,11 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             LocalDate day = toLocalDate(row[0]);
             if (day == null) continue;
             dailyOrderCount.put(day, new long[]{ ((Number) row[1]).longValue() });
-            dailyRevenueSum.put(day, row[2] != null ? ((Number) row[2]).doubleValue() : 0.0);
+        }
+        for (Object[] row : orderRepository.aggregateDailyRevenueForShopBetween(shopId, Order.REVENUE_STATUSES,
+                today.minusDays(6).atStartOfDay(), today.plusDays(1).atStartOfDay())) {
+            LocalDate day = toLocalDate(row[0]);
+            if (day != null) dailyRevenueSum.put(day, row[1] != null ? ((Number) row[1]).doubleValue() : 0.0);
         }
 
         List<Map<String, Object>> dailyRevenue = new ArrayList<>();
@@ -1448,10 +1505,11 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
 
         boolean shopLevelRole = role == Role.SALES_STAFF || role == Role.CSKH_STAFF
-                || role == Role.WAREHOUSE_STAFF || role == Role.SHIPPING_STAFF;
+                || role == Role.WAREHOUSE_STAFF || role == Role.SHIPPING_STAFF
+                || role == Role.MARKETING_STAFF;
         if (!shopLevelRole) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Chủ shop chỉ có thể tạo tài khoản nhân viên cấp cửa hàng (Bán hàng, CSKH, Kho, Vận chuyển)");
+                    "Chủ shop chỉ có thể tạo tài khoản nhân viên cấp cửa hàng (Bán hàng, CSKH, Kho, Vận chuyển, Marketing)");
         }
 
         // A blank password used to mean the shared "EtTee@123456"; generate one and return it once.
@@ -1503,8 +1561,29 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể khóa tài khoản Quản trị viên");
         }
 
+        // Same rule as resetShopStaffPassword: an owner manages staff, not a peer owner and not
+        // their own account.
+        User statusActor = userRepository.findByEmail(actor)
+                .orElseGet(() -> userRepository.findById(actor).orElse(null));
+        boolean statusActorIsAdmin = statusActor != null && statusActor.getRole() == Role.ADMIN;
+        if (!statusActorIsAdmin && (staff.getRole() == Role.SHOP_OWNER || staff.getRole() == Role.USER
+                || (statusActor != null && statusActor.getId().equals(staff.getId())))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ được khóa / mở khóa tài khoản nhân viên của cửa hàng");
+        }
+
         String oldStatus = staff.getStatus();
-        String newStatus = statusDto.getStatus() != null ? statusDto.getStatus().toUpperCase() : "ACTIVE";
+        String newStatus = statusDto.getStatus() != null ? statusDto.getStatus().trim().toUpperCase() : "";
+        // Anything that was not "LOCKED" used to mean "activate", which also revived an account
+        // the admin had deleted (BANNED) or one that never verified its e-mail.
+        if (!"LOCKED".equals(newStatus) && !"ACTIVE".equals(newStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ (chấp nhận: ACTIVE, LOCKED)");
+        }
+        if ("BANNED".equalsIgnoreCase(oldStatus)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản đã bị quản trị viên xóa, không thể thay đổi trạng thái");
+        }
+        if ("ACTIVE".equals(newStatus) && !"LOCKED".equalsIgnoreCase(oldStatus) && !"ACTIVE".equalsIgnoreCase(oldStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ mở khóa được tài khoản đang bị khóa");
+        }
 
         if ("LOCKED".equals(newStatus)) {
             staff.setStatus("LOCKED");

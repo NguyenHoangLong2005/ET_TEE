@@ -16,8 +16,8 @@ export default function Newsletter() {
     if (!email.trim()) return;
     setSending(true);
     try {
-      await CustomerMarketingService.subscribeNewsletter(email.trim());
-      toast.success('Đã đăng ký! Bạn sẽ nhận email khi ET.TEE có ưu đãi mới.');
+      const message = await CustomerMarketingService.subscribeNewsletter(email.trim());
+      toast.success(message);
       setEmail('');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Không đăng ký được, vui lòng thử lại.');

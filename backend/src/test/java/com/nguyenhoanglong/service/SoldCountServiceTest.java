@@ -129,4 +129,18 @@ class SoldCountServiceTest {
         soldCountService.syncForStatus(order, OrderStatus.REFUNDED);
         verify(productRepository, times(1)).decrementSoldCount(1L, 3); // van chi 1 lan
     }
+
+    @Test
+    void deliveredAt_isStampedOnceAndSurvivesARejectedReturn() {
+        com.nguyenhoanglong.entity.Order order = new com.nguyenhoanglong.entity.Order();
+        org.assertj.core.api.Assertions.assertThat(order.getDeliveredAt()).isNull();
+
+        order.setStatus(com.nguyenhoanglong.entity.OrderStatus.DELIVERED);
+        java.time.LocalDateTime first = order.getDeliveredAt();
+        org.assertj.core.api.Assertions.assertThat(first).isNotNull();
+
+        order.setStatus(com.nguyenhoanglong.entity.OrderStatus.RETURN_REQUESTED);
+        order.setStatus(com.nguyenhoanglong.entity.OrderStatus.DELIVERED); // return rejected
+        org.assertj.core.api.Assertions.assertThat(order.getDeliveredAt()).isSameAs(first);
+    }
 }

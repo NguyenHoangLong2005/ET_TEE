@@ -211,7 +211,8 @@ export default function SalesOrdersPage() {
       customerName: createOrderData.customerName.trim(),
       customerEmail: createOrderData.customerEmail.trim() || undefined,
       phone: createOrderData.phone.trim(),
-      shippingAddress: createOrderData.shippingAddress.trim() || "Thanh toán & nhận tại cửa hàng (POS)",
+      // Left empty = sold at the counter: the server completes the order right away.
+      shippingAddress: createOrderData.shippingAddress.trim() || undefined,
       paymentMethod: createOrderData.paymentMethod,
       items: createItems.map(i => ({ variantId: Number(i.variantId), quantity: Number(i.quantity) })),
       note: createOrderData.note.trim() || undefined,
@@ -401,6 +402,13 @@ export default function SalesOrdersPage() {
     }
 
     if (!(await perform(targetOrder.id, "status", "PUT", { status: statusNew, reason: statusReason.trim() || undefined }))) return;
+
+    // Refunding a cancelled order settles the payment only; the order stays cancelled.
+    if (targetOrder.status === "CANCELLED" && statusNew === "REFUNDED") {
+      updateLocalOrder(targetOrder.id, ord => ({ ...ord, paymentStatus: "REFUNDED" }));
+      toast.success("Đã ghi nhận hoàn tiền cho khách");
+      return;
+    }
 
     updateLocalOrder(targetOrder.id, ord => ({
       ...ord,
@@ -602,7 +610,9 @@ Chỉ xác nhận sau khi đã đối chiếu sao kê ngân hàng.`)) return;
       align: 'right',
       render: (order) => {
         // RETURNED still needs "mark refunded"; RETURN_REQUESTED needs approve / reject.
-        const isFinal = ["DELIVERED", "CANCELLED", "REFUNDED"].includes(order.status);
+        // A paid order that was cancelled still needs "mark refunded".
+        const awaitingRefund = order.status === "CANCELLED" && order.paymentStatus === "REFUND_PENDING";
+        const isFinal = ["DELIVERED", "CANCELLED", "REFUNDED"].includes(order.status) && !awaitingRefund;
         return (
           <div className="flex items-center justify-end gap-1.5">
             {!isFinal && (

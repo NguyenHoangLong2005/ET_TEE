@@ -73,7 +73,7 @@ public class ForYouService {
             if (!sequence.isEmpty()) {
                 // over-fetch: some ranked ids may have gone inactive since training
                 List<Long> ids = model.recommend(sequence, limit * 2, exclude);
-                List<ProductDto> products = productService.getActiveProductsInOrder(ids);
+                List<ProductDto> products = com.nguyenhoanglong.util.Availability.inStockOnly(productService.getActiveProductsInOrder(ids));
                 if (!products.isEmpty()) {
                     return new ForYouResult(Strategy.SASREC, model.version(), cap(products, limit));
                 }
@@ -84,7 +84,7 @@ public class ForYouService {
         try {
             productRepository.enableHnswIterativeScan();
             List<Long> ids = productRepository.findNearestToMeanEmbedding(lastItems, new ArrayList<>(exclude), limit);
-            List<ProductDto> products = productService.getActiveProductsInOrder(ids);
+            List<ProductDto> products = com.nguyenhoanglong.util.Availability.inStockOnly(productService.getActiveProductsInOrder(ids));
             if (!products.isEmpty()) {
                 return new ForYouResult(Strategy.CLIP_RECENT, "CLIP mean of last " + CLIP_RECENT_ITEMS, products);
             }

@@ -85,7 +85,10 @@ public class EmailCampaignService {
                 FROM marketing_subscriptions s LEFT JOIN users u ON LOWER(u.email) = LOWER(s.email)
                 WHERE s.status = 'SUBSCRIBED'
                 """;
-        String hasOrder = "EXISTS (SELECT 1 FROM orders o WHERE o.user_id = a.user_id AND o.status NOT IN ('CANCELLED', 'REFUNDED', 'RETURNED'))";
+        // Same rule as the NEW_CUSTOMER voucher check (OrderRepository.existsByUserIdAndStatusNot):
+        // only cancelled orders are ignored. Also skipping returned / refunded ones mailed a
+        // "new customer" code to people the checkout then refused it for.
+        String hasOrder = "EXISTS (SELECT 1 FROM orders o WHERE o.user_id = a.user_id AND o.status <> 'CANCELLED')";
         List<Map<String, Object>> rows = switch (segment) {
             case ALL_SUBSCRIBERS -> jdbc.queryForList(subscribed);
             case NEW_CUSTOMERS -> jdbc.queryForList("SELECT * FROM (" + subscribed + ") a WHERE a.user_id IS NOT NULL AND NOT " + hasOrder);
@@ -141,7 +144,41 @@ public class EmailCampaignService {
         return c;
     }
 
+    /**
+     * A failure outside the per-recipient loop (audience query, body) used to leave the campaign
+     * in SENDING forever, and only a DRAFT can be sent. Nothing sent yet: back to DRAFT so it can
+     * be retried. Partly sent: FAILED, so it is not mailed twice to those who already got it.
+     */
     void deliver(EmailCampaign c, Voucher voucher) {
+        try {
+            deliverAll(c, voucher);
+        } catch (RuntimeException e) {
+            log.error("Campaign {} could not be delivered", c.getId(), e);
+            markInterrupted(c);
+        }
+    }
+
+    private void markInterrupted(EmailCampaign c) {
+        long sent = messages.countByCampaignAndStatus(c.getId(), "SENT");
+        c.setRecipients((int) sent);
+        c.setStatus(sent == 0 ? "DRAFT" : "FAILED");
+        if (sent > 0) c.setSentAt(LocalDateTime.now());
+        campaigns.save(c);
+    }
+
+    /** A restart kills the background send; such campaigns would otherwise show "đang gửi" forever. */
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void recoverInterruptedCampaigns() {
+        try {
+            for (EmailCampaign c : campaigns.findAllByOrderByCreatedAtDesc()) {
+                if ("SENDING".equals(c.getStatus())) markInterrupted(c);
+            }
+        } catch (RuntimeException e) {
+            log.warn("Could not recover interrupted e-mail campaigns", e);
+        }
+    }
+
+    private void deliverAll(EmailCampaign c, Voucher voucher) {
         List<Recipient> recipients = audience(Segment.valueOf(c.getSegment()));
         String body = body(c, voucher);
         int sent = 0;

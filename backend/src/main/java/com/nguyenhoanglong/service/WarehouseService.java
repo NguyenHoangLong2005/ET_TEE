@@ -565,10 +565,23 @@ public class WarehouseService {
         if ("COMPLETED".equals(s.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phiếu kiểm kê đã hoàn thành, không thể sửa");
         }
+        // The count used to be stored and compared with nothing. Record what the system had at this
+        // location and the gap, and tell the store owner when they differ so an adjustment is filed.
+        int system = inventories.findByShopIdAndWarehouseLocationIgnoreCase(s.getShopId(), s.getWarehouseLocation())
+                .stream().mapToInt(i -> i.getQuantityOnHand() != null ? i.getQuantityOnHand() : 0).sum();
         s.setActualQuantity(actualQuantity);
+        s.setSystemQuantity(system);
+        s.setDifferenceQuantity(actualQuantity - system);
         s.setStatus("COMPLETED");
-        log.info("Stocktake {} completed with actual qty {}", id, actualQuantity);
-        return stocktakes.save(s);
+        log.info("Stocktake {} completed: actual {} vs system {}", id, actualQuantity, system);
+        Stocktake saved = stocktakes.save(s);
+        if (saved.getDifferenceQuantity() != 0) {
+            approvalNotifications.notifyOwnersOfRequest(saved.getShopId(), "Kiểm kê lệch tồn kho",
+                    "Vị trí " + saved.getWarehouseLocation() + ": đếm được " + actualQuantity + ", hệ thống ghi " + system
+                            + " (" + (saved.getDifferenceQuantity() > 0 ? "+" : "") + saved.getDifferenceQuantity()
+                            + "). Cần lập phiếu điều chỉnh tồn kho.");
+        }
+        return saved;
     }
 
     // ========== Replenishment ==========
@@ -577,10 +590,10 @@ public class WarehouseService {
     @Transactional(readOnly = true)
     public List<ReplenishmentAdvisor.Suggestion> getReplenishmentSuggestions() {
         Long shopId = resolveShopId();
-        List<Inventory> low = (shopId == null)
-                ? inventories.findAllReplenishmentSuggestions()
-                : inventories.findReplenishmentSuggestionsByShopId(shopId);
-        return replenishmentAdvisor.suggest(low);
+        List<Inventory> live = (shopId == null)
+                ? inventories.findAllLive()
+                : inventories.findLiveByShopId(shopId);
+        return replenishmentAdvisor.suggest(replenishmentAdvisor.lowStock(live));
     }
 
     @Transactional
@@ -704,29 +717,43 @@ public class WarehouseService {
                 o.getCreatedAt() == null ? null : o.getCreatedAt().toString(), count, lines);
     }
 
-    /** Reserves every line or none: a short line aborts the transaction before any reservation is kept. */
+    /**
+     * Reserves every line or none: a short line aborts the transaction before any reservation is kept.
+     * The warehouse counts per product, so two sizes of one product are reserved as one total. Line by
+     * line, the reservation record kept only the last line's quantity (recordReservation overwrote it)
+     * and cancelling the order released less than had been reserved.
+     */
     private void reserveStockForPicking(Order order) {
         if (order.getItems() == null || order.getItems().isEmpty()) {
             return;
         }
 
+        Map<Long, Integer> quantityByProduct = new LinkedHashMap<>();
+        Map<Long, String> nameByProduct = new LinkedHashMap<>();
         for (OrderItem item : order.getItems()) {
-            Inventory inventory = inventories.findByProductIdWithLock(item.getProduct().getId())
-                    .orElse(null);
-            int quantity = item.getQuantity() != null ? item.getQuantity() : 0;
+            Long productId = item.getProduct().getId();
+            quantityByProduct.merge(productId, item.getQuantity() != null ? item.getQuantity() : 0, Integer::sum);
+            nameByProduct.putIfAbsent(productId, item.getProductNameSnapshot());
+        }
+
+        for (Map.Entry<Long, Integer> line : quantityByProduct.entrySet()) {
+            Long productId = line.getKey();
+            int quantity = line.getValue();
+            String name = nameByProduct.get(productId);
+            Inventory inventory = inventories.findByProductIdWithLock(productId).orElse(null);
 
             if (inventory == null) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Sản phẩm \"" + item.getProductNameSnapshot() + "\" chưa có trong kho");
+                        "Sản phẩm \"" + name + "\" chưa có trong kho");
             }
             int available = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
             if (available < quantity) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Không đủ tồn để lấy \"" + item.getProductNameSnapshot() + "\": cần " + quantity + ", khả dụng " + available);
+                        "Không đủ tồn để lấy \"" + name + "\": cần " + quantity + ", khả dụng " + available);
             }
             inventory.setQuantityReserved(inventory.getQuantityReserved() + quantity);
             inventories.save(inventory);
-            recordReservation(order, item.getProduct().getId(), quantity);
+            recordReservation(order, productId, quantity);
         }
     }
 

@@ -41,7 +41,9 @@ public class AuthController {
                 try {
                     String userId = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                             .or(() -> userRepository.findByEmail(request.getEmail())).map(u -> u.getId()).orElse(null);
-                    marketingSubscriptions.subscribe(request.getEmail(), userId, MarketingSubscriptionService.SOURCE_REGISTER);
+                    // Takes effect when the account's e-mail is verified (AuthService.verifyEmail).
+                    marketingSubscriptions.requestSubscription(request.getEmail(), userId,
+                            MarketingSubscriptionService.SOURCE_REGISTER, false);
                 } catch (RuntimeException ignored) {
                     // invalid email would already have failed registration
                 }

@@ -126,7 +126,11 @@ public class PayOsService {
     public String sync(Order order) {
         if (!isEnabled() || !"BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod())) return null;
         if (BankTransferPaymentService.isPaid(order)) return "PAID";
-        if (order.getStatus() != OrderStatus.PENDING_PAYMENT) return null;
+        // A cancelled order that never got its money may still have been paid on PayOS just
+        // before or after the cancel; that payment has to surface as a refund.
+        boolean cancelledUnpaid = order.getStatus() == OrderStatus.CANCELLED
+                && "WAITING_TRANSFER".equalsIgnoreCase(order.getPaymentStatus());
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT && !cancelledUnpaid) return null;
 
         JsonNode info;
         try {
@@ -142,10 +146,33 @@ public class PayOsService {
         String status = info.path("status").asText(null);
         long due = Math.round(order.getTotalAmount() == null ? 0 : order.getTotalAmount());
         if ("PAID".equals(status) && info.path("amountPaid").asLong() >= due) {
-            bankTransferPaymentService.markPaid(order, "PAYOS",
-                    "Thanh toán qua PayOS (mã thanh toán " + info.path("id").asText() + ")");
+            if (cancelledUnpaid) {
+                bankTransferPaymentService.recordLatePayment(order, "PAYOS",
+                        "PayOS mã thanh toán " + info.path("id").asText());
+            } else {
+                bankTransferPaymentService.markPaid(order, "PAYOS",
+                        "Thanh toán qua PayOS (mã thanh toán " + info.path("id").asText() + ")");
+            }
         }
         return status;
+    }
+
+    /**
+     * Closes the order's open PayOS link (order cancelled, expired, or switched to COD) so the
+     * customer cannot pay an order that is no longer waiting for money. Best effort and never
+     * throws: no link, an already closed link or PayOS being down must not block the cancel.
+     */
+    public void cancelLink(Order order, String reason) {
+        if (!isEnabled() || order == null || order.getId() == null) return;
+        try {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("cancellationReason", reason == null || reason.isBlank() ? "Đơn hàng đã hủy" : reason);
+            JsonNode res = call(HttpRequest.newBuilder(URI.create(API + "/" + order.getId() + "/cancel"))
+                    .POST(HttpRequest.BodyPublishers.ofString(write(body))));
+            log.info("PayOS cancel link for {}: {} {}", order.getOrderCode(), res.path("code").asText(), res.path("desc").asText());
+        } catch (RuntimeException e) {
+            log.warn("PayOS cancel link failed for {}: {}", order.getOrderCode(), e.getMessage());
+        }
     }
 
     private JsonNode paymentInfo(Long orderCode) {

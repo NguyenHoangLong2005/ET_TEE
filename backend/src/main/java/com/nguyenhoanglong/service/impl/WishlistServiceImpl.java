@@ -47,7 +47,9 @@ public class WishlistServiceImpl implements WishlistService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Yêu cầu phải có thông tin xác thực hoặc guest token");
         }
 
+        // A paused product stays saved (it may come back) but is not shown while it cannot be bought.
         return items.stream()
+                .filter(item -> item.getProduct() != null && "ACTIVE".equals(item.getProduct().getStatus()))
                 .map(item -> mapToProductDto(item.getProduct()))
                 .collect(Collectors.toList());
     }
@@ -60,6 +62,9 @@ public class WishlistServiceImpl implements WishlistService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        if (!"ACTIVE".equals(product.getStatus())) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không còn kinh doanh");
+        }
 
         if (userEmail != null) {
             User user = userRepository.findByEmail(userEmail)
@@ -106,11 +111,14 @@ public class WishlistServiceImpl implements WishlistService {
         long count = 0;
         if (userEmail != null) {
             User user = userRepository.findByEmail(userEmail).orElse(null);
+            // Same items getWishlist shows (only products on sale), or the badge and the page disagree.
             if (user != null) {
-                count = wishlistRepository.countByUserId(user.getId());
+                count = wishlistRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
+                        .filter(i -> i.getProduct() != null && "ACTIVE".equals(i.getProduct().getStatus())).count();
             }
         } else if (guestToken != null) {
-            count = wishlistRepository.countByGuestToken(guestToken);
+            count = wishlistRepository.findByGuestTokenOrderByCreatedAtDesc(guestToken).stream()
+                    .filter(i -> i.getProduct() != null && "ACTIVE".equals(i.getProduct().getStatus())).count();
         } else {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Yêu cầu phải có thông tin xác thực hoặc guest token");
         }

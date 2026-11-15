@@ -121,4 +121,34 @@ class MarketingConsentTest {
         assertEquals("EMAIL_DISABLED", mailer(false).send(MarketingMessage.Kind.CAMPAIGN, "a@b.vn", null, "S", "b", 1L, null).reason());
         verifyNoInteractions(mailService);
     }
+
+    @Test
+    void newsletterRequestWaitsForTheLinkInTheEmail() {
+        assertTrue(subscriptions.requestSubscription("x@b.vn", null, "NEWSLETTER", false));
+        assertFalse(subscriptions.isSubscribed("x@b.vn"));
+
+        String token = subscriptions.find("x@b.vn").orElseThrow().getUnsubscribeToken();
+        assertTrue(subscriptions.confirm(token));
+        assertTrue(subscriptions.isSubscribed("x@b.vn"));
+
+        // already subscribed: nothing left to confirm
+        assertFalse(subscriptions.requestSubscription("x@b.vn", null, "NEWSLETTER", false));
+    }
+
+    @Test
+    void signUpConsentTakesEffectWhenTheEmailIsVerified() {
+        subscriptions.requestSubscription("y@b.vn", "u1", "REGISTER", false);
+        assertFalse(subscriptions.isSubscribed("y@b.vn"));
+        subscriptions.confirmOwner("y@b.vn");
+        assertTrue(subscriptions.isSubscribed("y@b.vn"));
+    }
+
+    @Test
+    void anUnsubscribedAddressIsNotRevivedByAnOldConfirmationLink() {
+        subscriptions.requestSubscription("z@b.vn", null, "NEWSLETTER", false);
+        String token = subscriptions.find("z@b.vn").orElseThrow().getUnsubscribeToken();
+        assertTrue(subscriptions.unsubscribe(token));
+        assertFalse(subscriptions.confirm(token));
+        assertFalse(subscriptions.isSubscribed("z@b.vn"));
+    }
 }

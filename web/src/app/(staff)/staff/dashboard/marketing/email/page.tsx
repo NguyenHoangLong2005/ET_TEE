@@ -169,7 +169,7 @@ export default function EmailCampaignsPage() {
                 </td>
                 <td className="p-3 text-slate-700">{c.segmentLabel}</td>
                 <td className="p-3 font-mono text-xs">{c.voucherCode ?? "-"}</td>
-                <td className="p-3">{c.campaign.status === "DRAFT" ? "Nháp" : c.campaign.status === "SENDING" ? "Đang gửi…" : `${c.stats.sent}${c.stats.failed ? ` (lỗi ${c.stats.failed})` : ""}`}</td>
+                <td className="p-3">{c.campaign.status === "DRAFT" ? "Nháp" : c.campaign.status === "SENDING" ? "Đang gửi…" : c.campaign.status === "FAILED" ? `Gửi dở dang: ${c.stats.sent}` : `${c.stats.sent}${c.stats.failed ? ` (lỗi ${c.stats.failed})` : ""}`}</td>
                 <td className="p-3">{c.stats.sent ? `${c.stats.opened} (${pct(c.stats.opened, c.stats.sent)})` : "-"}</td>
                 <td className="p-3">{c.voucherCode && c.stats.sent ? `${c.stats.redeemedOrders} · ${Math.round(c.stats.redeemedRevenue).toLocaleString("vi-VN")}đ` : "-"}</td>
                 <td className="p-3 text-right">

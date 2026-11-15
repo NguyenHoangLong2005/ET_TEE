@@ -36,11 +36,28 @@ public class CustomerMarketingController {
 
     /** Home page newsletter form. */
     @PostMapping("/api/public/newsletter")
-    public ResponseEntity<ApiResponse<Void>> newsletter(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> newsletter(@RequestBody Map<String, String> body) {
         User user = currentUser();
-        subscriptions.subscribe(body.get("email"), user == null ? null : user.getId(),
-                MarketingSubscriptionService.SOURCE_NEWSLETTER);
-        return ResponseEntity.ok(ApiResponse.success("Đã đăng ký nhận tin khuyến mãi", null));
+        String email = body.get("email") == null ? "" : body.get("email").trim();
+        // A signed-in, verified customer subscribing their own address needs no confirmation.
+        boolean ownAddress = user != null && user.isEmailVerified() && user.getEmail() != null
+                && user.getEmail().equalsIgnoreCase(email);
+        if (ownAddress) {
+            subscriptions.subscribe(email, user.getId(), MarketingSubscriptionService.SOURCE_NEWSLETTER);
+            String msg = "Đã đăng ký nhận tin khuyến mãi";
+            return ResponseEntity.ok(ApiResponse.success(msg, Map.of("message", msg, "pending", false)));
+        }
+        subscriptions.requestSubscription(email, user == null ? null : user.getId(),
+                MarketingSubscriptionService.SOURCE_NEWSLETTER, true);
+        // Same answer whether or not the address was already on the list (it is not ours to reveal).
+        String msg = "Vui lòng mở email chúng tôi vừa gửi để xác nhận đăng ký.";
+        return ResponseEntity.ok(ApiResponse.success(msg, Map.of("message", msg, "pending", true)));
+    }
+
+    /** Target of the link in the confirmation e-mail. */
+    @PostMapping("/api/public/newsletter/confirm")
+    public ResponseEntity<ApiResponse<Map<String, Boolean>>> confirmNewsletter(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(ApiResponse.success(Map.of("confirmed", subscriptions.confirm(body.get("token")))));
     }
 
     /** One-click unsubscribe from the link in every marketing email. */

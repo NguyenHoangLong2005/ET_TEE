@@ -70,6 +70,9 @@ public class AuthService {
      * (findByEmail so khop chinh xac), va rang buoc UNIQUE LOWER(email) tren DB se
      * chan nhung ban ghi ma ung dung nghi la khac nhau.
      */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MarketingSubscriptionService marketingSubscriptions;
+
     private static String normalizeEmail(String email) {
         return email == null ? null : email.trim().toLowerCase();
     }
@@ -77,17 +80,23 @@ public class AuthService {
     @Transactional
     public String register(AuthDto.RegisterRequest request) {
         request.setEmail(normalizeEmail(request.getEmail()));
-        if (userRepository.existsByEmail(request.getEmail())) {
+        // An account that never confirmed its e-mail proves nothing about who owns the address.
+        // It used to block the real owner from signing up ("Email đã được sử dụng") and kept
+        // whatever name / phone / address the first person typed. Registering again now
+        // replaces those details and the password; the OTP still goes to the address itself.
+        // (generateAndSendOtp enforces the 60s cooldown, which rolls this back if hit.)
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user != null && (user.isEmailVerified() || !"PENDING_VERIFICATION".equals(user.getStatus()))) {
             throw new com.nguyenhoanglong.exception.ApiException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
-
-        User user = new User();
+        if (user == null) {
+            user = new User();
+        }
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        if (request.getAddress() != null && !request.getAddress().trim().isEmpty()) {
-            user.setDefaultShippingAddress(request.getAddress());
-        }
+        user.setDefaultShippingAddress(request.getAddress() != null && !request.getAddress().trim().isEmpty()
+                ? request.getAddress() : null);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setEmailVerified(false);
         user.setStatus("PENDING_VERIFICATION");
@@ -187,6 +196,8 @@ public class AuthService {
             user.setStatus("ACTIVE");
             userRepository.save(user);
             userRepository.flush(); // Force flush to catch SQL exceptions here
+            // The address is now proven: a marketing consent ticked at sign-up takes effect.
+            if (marketingSubscriptions != null) marketingSubscriptions.confirmOwner(user.getEmail());
         } catch (Exception e) {
             org.slf4j.LoggerFactory.getLogger(AuthService.class).error("Failed to persist email verification for user {}", user.getId(), e);
             throw new RuntimeException("Không thể xác thực email. Vui lòng thử lại sau.");
@@ -373,7 +384,9 @@ public class AuthService {
         if (lastTokenOpt.isPresent()) {
             PasswordResetToken lastToken = lastTokenOpt.get();
             if (lastToken.getCreatedAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
-                throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Vui lòng đợi 60 giây trước khi yêu cầu lại mã.");
+                // Same answer as for an unknown e-mail: a 429 here told the caller the account exists.
+                // The code sent less than a minute ago is still valid; no new one is sent.
+                return "Nếu email tồn tại trong hệ thống, mã đặt lại mật khẩu đã được gửi.";
             }
         }
 

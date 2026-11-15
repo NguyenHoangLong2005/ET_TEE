@@ -28,6 +28,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderCode(String orderCode);
     boolean existsByUserId(String userId);
 
+    boolean existsByVoucherId(Long voucherId);
+
+    /** Has the user placed an order that was not cancelled? (cancelled ones don't make a "returning" customer) */
+    boolean existsByUserIdAndStatusNot(String userId, OrderStatus status);
+
     List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
     List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, java.time.LocalDateTime cutoff);
 
@@ -138,12 +143,28 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                 @Param("to") java.time.LocalDateTime to,
                                                 @Param("deliveredStatus") OrderStatus deliveredStatus);
 
+    // ── Revenue: by the day the order was DELIVERED (orders.delivered_at), not the day it was placed ──
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o "
-            + "WHERE o.shopId = :shopId AND o.status = :status AND o.createdAt >= :from AND o.createdAt < :to")
-    Double sumAmountForShopByStatusBetween(@Param("shopId") Long shopId,
-                                           @Param("status") OrderStatus status,
-                                           @Param("from") java.time.LocalDateTime from,
-                                           @Param("to") java.time.LocalDateTime to);
+            + "WHERE o.shopId = :shopId AND o.status IN :statuses AND o.deliveredAt >= :from AND o.deliveredAt < :to")
+    Double sumRevenueForShopBetween(@Param("shopId") Long shopId,
+                                    @Param("statuses") List<OrderStatus> statuses,
+                                    @Param("from") java.time.LocalDateTime from,
+                                    @Param("to") java.time.LocalDateTime to);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o "
+            + "WHERE o.status IN :statuses AND o.deliveredAt >= :from AND o.deliveredAt < :to")
+    Double sumRevenueAllBetween(@Param("statuses") List<OrderStatus> statuses,
+                                @Param("from") java.time.LocalDateTime from,
+                                @Param("to") java.time.LocalDateTime to);
+
+    @Query("SELECT CAST(o.deliveredAt AS date) AS day, COALESCE(SUM(o.totalAmount), 0) AS revenue "
+            + "FROM Order o WHERE o.shopId = :shopId AND o.status IN :statuses "
+            + "AND o.deliveredAt >= :from AND o.deliveredAt < :to "
+            + "GROUP BY CAST(o.deliveredAt AS date)")
+    List<Object[]> aggregateDailyRevenueForShopBetween(@Param("shopId") Long shopId,
+                                                       @Param("statuses") List<OrderStatus> statuses,
+                                                       @Param("from") java.time.LocalDateTime from,
+                                                       @Param("to") java.time.LocalDateTime to);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shopId IS NULL")
     Long countOrdersWithoutShopId();

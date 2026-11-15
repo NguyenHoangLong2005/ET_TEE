@@ -50,6 +50,19 @@ public class OrderService {
     @Autowired
     private SalesNotificationService salesNotificationService;
 
+    @Autowired
+    private OrderStockService orderStockService;
+
+    @Autowired
+    private PayOsService payOsService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private BehaviorEventService behaviorEventService;
+
+    private void forgetPurchase(Order order) {
+        if (behaviorEventService != null) behaviorEventService.forgetPurchase(order);
+    }
+
     @Value("${app.payment.bank.name}")
     private String bankName;
 
@@ -122,7 +135,10 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng điền đầy đủ thông tin liên hệ");
         }
 
-        order.setShippingAddressSnapshot(request.getShippingAddress());
+        if (request.getShippingAddress() == null || request.getShippingAddress().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập địa chỉ giao hàng");
+        }
+        order.setShippingAddressSnapshot(request.getShippingAddress().trim());
         order.setNote(request.getNote());
         
         order.setPaymentMethod(request.getPaymentMethod());
@@ -206,7 +222,9 @@ public class OrderService {
         if (request.getVoucherCode() != null && !request.getVoucherCode().trim().isEmpty()) {
             String userId = user != null ? user.getId() : null;
             // isNewCustomer: a user with prior orders is not new
-            boolean hasPriorOrders = user != null && orderRepository.existsByUserId(user.getId());
+            // Cancelled orders don't count: a customer whose only order was cancelled is still new.
+            boolean hasPriorOrders = user != null
+                    && orderRepository.existsByUserIdAndStatusNot(user.getId(), OrderStatus.CANCELLED);
             boolean isNewCustomer = user != null && !hasPriorOrders;
             Voucher voucher = marketingService.validateVoucher(
                     request.getVoucherCode(),
@@ -232,6 +250,15 @@ public class OrderService {
         double finalTotal = subtotal + order.getShippingFee() - order.getDiscountTotal();
         if (finalTotal < 0) finalTotal = 0.0;
         order.setTotalAmount(finalTotal);
+
+        // A voucher can cover the whole order. There is then nothing to transfer (PayOS refuses a
+        // 0d link), and the order used to wait in PENDING_PAYMENT until it was auto-cancelled.
+        boolean nothingToPay = finalTotal <= 0 && "BANK_TRANSFER".equals(request.getPaymentMethod());
+        if (nothingToPay) {
+            order.setOrderStatus("PENDING_CONFIRMATION");
+            order.setStatus(OrderStatus.PENDING_CONFIRMATION);
+            order.setPaymentStatus("PAID");
+        }
 
         Order savedOrder = orderRepository.save(order);
         if (savedOrder.getStatus() == OrderStatus.PENDING_CONFIRMATION) {
@@ -283,7 +310,7 @@ public class OrderService {
 
         // Send Email
         String bankDetailsHtml = null;
-        if ("BANK_TRANSFER".equals(request.getPaymentMethod())) {
+        if ("BANK_TRANSFER".equals(request.getPaymentMethod()) && !nothingToPay) {
             // Same app.payment.bank.* config the checkout page shows (PaymentConfigController).
             bankDetailsHtml = "<p>Ngân hàng: <strong>" + bankName + "</strong></p>" +
                               "<p>Số tài khoản: <strong>" + bankAccountNumber + "</strong></p>" +
@@ -309,7 +336,8 @@ public class OrderService {
         if (order.getStatus() == OrderStatus.DELIVERED) {
             LocalDateTime deadline = returnDeadline(order);
             res.setReturnDeadline(deadline != null ? deadline.toString() : null);
-            res.setReturnEligible(deadline == null || !LocalDateTime.now().isAfter(deadline));
+            res.setReturnEligible((deadline == null || !LocalDateTime.now().isAfter(deadline))
+                    && !returnAlreadyRejected(order));
         }
         return res;
     }
@@ -384,6 +412,8 @@ public class OrderService {
         Order saved = orderRepository.save(order);
 
         if ("COD".equals(paymentMethod)) {
+            // The customer no longer pays online: close the PayOS link so it cannot be paid later.
+            payOsService.cancelLink(saved, "Khách đổi sang thanh toán khi nhận hàng");
             salesNotificationService.notifyNewOrderAwaitingConfirmation(saved);
             try {
                 OrderStatusHistory history = new OrderStatusHistory();
@@ -449,11 +479,18 @@ public class OrderService {
      * voucher use. A paid order is flagged REFUND_PENDING so the money is not forgotten.
      */
     private Order cancelAndRelease(Order order, String reason) {
+        OrderStatus before = order.getStatus();
         if (order.getItems() != null) {
             for (OrderItem item : order.getItems()) {
                 restoreVariantStock(item);
             }
         }
+        // A customer may cancel while the warehouse is picking: give back what it reserved.
+        orderStockService.releaseReservations(order, before);
+        if (before == OrderStatus.PENDING_PAYMENT && "BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod())) {
+            payOsService.cancelLink(order, reason);
+        }
+        forgetPurchase(order);
 
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelReason(reason);
@@ -523,14 +560,25 @@ public class OrderService {
         }
     }
 
-    /** When the order was delivered, from its status history (the order row keeps no timestamp). */
+    /**
+     * When the order was delivered, from its status history (the order row keeps no timestamp).
+     * The first DELIVERED row is the delivery; a rejected return writes another one
+     * (RETURN_REQUESTED -> DELIVERED), and taking the latest restarted the return window.
+     */
     private LocalDateTime deliveredAt(Order order) {
         return historyRepository.findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
                 .filter(h -> OrderStatus.DELIVERED.name().equals(h.getStatus()))
                 .map(OrderStatusHistory::getCreatedAt)
                 .filter(java.util.Objects::nonNull)
-                .reduce((first, second) -> second)
+                .findFirst()
                 .orElse(order.getUpdatedAt());
+    }
+
+    /** A return request the shop already turned down; the customer cannot simply send it again. */
+    private boolean returnAlreadyRejected(Order order) {
+        return historyRepository.findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+                .anyMatch(h -> OrderStatus.RETURN_REQUESTED.name().equals(h.getFromStatus())
+                        && OrderStatus.DELIVERED.name().equals(h.getStatus()));
     }
 
     private LocalDateTime returnDeadline(Order order) {
@@ -557,6 +605,10 @@ public class OrderService {
         if (deadline != null && LocalDateTime.now().isAfter(deadline)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Đơn hàng đã quá " + RETURN_WINDOW_DAYS + " ngày kể từ khi nhận hàng nên không thể trả. Vui lòng liên hệ CSKH.");
+        }
+        if (returnAlreadyRejected(order)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Yêu cầu trả hàng của đơn này đã bị từ chối. Vui lòng liên hệ CSKH để được hỗ trợ.");
         }
         if (reason == null || reason.trim().length() < 5) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng cho biết lý do trả hàng (tối thiểu 5 ký tự)");

@@ -232,8 +232,54 @@ class AuthServiceTest {
     }
 
     @Test
+    void registerOverAnUnverifiedAccount_replacesItsDetailsAndPassword() {
+        User squatter = new User();
+        squatter.setId("user-9");
+        squatter.setEmail("user@example.com");
+        squatter.setFullName("Someone Else");
+        squatter.setPhone("0999999999");
+        squatter.setPasswordHash("OLD");
+        squatter.setEmailVerified(false);
+        squatter.setStatus("PENDING_VERIFICATION");
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(squatter));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(codeRepository.findByUserIdAndStatus(anyString(), eq("ACTIVE"))).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(anyString())).thenReturn("NEW");
+
+        AuthDto.RegisterRequest req = new AuthDto.RegisterRequest();
+        req.setEmail("user@example.com");
+        req.setFullName("Real Owner");
+        req.setPassword("password1");
+
+        authService.register(req);
+
+        assertThat(squatter.getFullName()).isEqualTo("Real Owner");
+        assertThat(squatter.getPhone()).isNull();
+        assertThat(squatter.getPasswordHash()).isEqualTo("NEW");
+    }
+
+    @Test
+    void registerOverAVerifiedAccount_isStillRefused() {
+        User existing = new User();
+        existing.setId("user-9");
+        existing.setEmail("user@example.com");
+        existing.setEmailVerified(true);
+        existing.setStatus("ACTIVE");
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(existing));
+
+        AuthDto.RegisterRequest req = new AuthDto.RegisterRequest();
+        req.setEmail("user@example.com");
+        req.setFullName("Attacker");
+        req.setPassword("password1");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.register(req))
+                .hasMessageContaining("Email đã được sử dụng");
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
     void registerDoesNotMergeCart_immediately() {
-        when(userRepository.existsByEmail("user@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(inv -> {
             User u = inv.getArgument(0);
             u.setId("user-1");

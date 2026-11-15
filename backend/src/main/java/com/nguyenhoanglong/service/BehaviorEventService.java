@@ -109,6 +109,29 @@ public class BehaviorEventService {
         }
     }
 
+    /**
+     * The order was cancelled or its goods came back: its PURCHASE events no longer describe a sale.
+     * They used to stay, so trending and the recommendation models counted orders that never
+     * happened. Events carry no order code, so they are matched by shopper, product and the
+     * minutes around checkout (recordPurchase runs right after the order is saved). Never throws.
+     */
+    public void forgetPurchase(com.nguyenhoanglong.entity.Order order) {
+        if (order == null || order.getItems() == null || order.getCreatedAt() == null) return;
+        try {
+            String userKey = resolveUserKey(order.getUser() != null ? order.getUser().getId() : null, order.getGuestToken());
+            if (userKey == null) return;
+            java.util.Set<Long> productIds = new java.util.HashSet<>();
+            for (com.nguyenhoanglong.entity.OrderItem item : order.getItems()) {
+                if (item.getProduct() != null && item.getProduct().getId() != null) productIds.add(item.getProduct().getId());
+            }
+            if (productIds.isEmpty()) return;
+            repository.deletePurchases(userKey, productIds,
+                    order.getCreatedAt().minusMinutes(1), order.getCreatedAt().plusMinutes(10));
+        } catch (RuntimeException e) {
+            log.warn("Could not remove PURCHASE events of order {}", order.getOrderCode(), e);
+        }
+    }
+
     /** Called after sign-in: the guest's events now belong to the account. */
     public void mergeGuestIntoUser(String guestToken, String userId) {
         if (userId == null || guestToken == null || guestToken.isBlank()) return;

@@ -217,7 +217,8 @@ export default function OrderDetailsPage() {
   const totalAmount = Number(order.totalAmount ?? 0);
   const subtotal = Number(order.subtotal ?? totalAmount);
   const discountTotal = Number(order.discountTotal ?? 0);
-  const canCancel = ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'PENDING'].includes(order.orderStatus);
+  // Same statuses OrderService.cancelOrder accepts (before packing).
+  const canCancel = ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'PENDING', 'CONFIRMED', 'PICKING'].includes(order.orderStatus);
 
   const inputClass = (name: string) =>
     `w-full rounded-xl border px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${

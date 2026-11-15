@@ -970,7 +970,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       );
     }
     final status = o['orderStatus'] as String?;
-    final canCancel = ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'PENDING'].contains(status);
+    // Same statuses OrderService.cancelOrder accepts (before packing).
+    final canCancel = ['PENDING_PAYMENT', 'PENDING_CONFIRMATION', 'PENDING', 'CONFIRMED', 'PICKING'].contains(status);
     return SubPageScaffold(
       title: 'Đơn hàng #${o['orderCode']}',
       background: const Color(0x80F8FAFC),

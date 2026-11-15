@@ -29,6 +29,30 @@ public class SalesNotificationService {
         this.notificationRepository = notificationRepository;
     }
 
+    /**
+     * Money arrived for an order that was no longer waiting for it (cancelled, switched to COD...).
+     * Never throws, like the method below.
+     */
+    public void notifyPaymentNeedsAttention(Order order, String title, String message) {
+        try {
+            if (order == null || order.getShopId() == null) return;
+            for (User u : userRepository.findByShopId(order.getShopId())) {
+                if (u.getRole() == null || !RECIPIENT_ROLES.contains(u.getRole())) continue;
+                if (!"ACTIVE".equalsIgnoreCase(u.getStatus())) continue;
+                SystemNotification n = new SystemNotification();
+                n.setType("PAYMENT_REVIEW");
+                n.setTitle(title);
+                n.setMessage(message);
+                n.setSeverity("WARNING");
+                n.setTargetUrl("/staff/dashboard/sales/orders");
+                n.setRecipientUserId(u.getId());
+                notificationRepository.save(n);
+            }
+        } catch (Exception ex) {
+            log.warn("Không thể gửi thông báo thanh toán cho đơn {}", order != null ? order.getOrderCode() : null, ex);
+        }
+    }
+
     /** Khong bao gio nem loi: thong bao that bai khong duoc lam hong luong dat hang. */
     public void notifyNewOrderAwaitingConfirmation(Order order) {
         try {

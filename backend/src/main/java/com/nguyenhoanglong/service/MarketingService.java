@@ -352,7 +352,9 @@ public class MarketingService {
         Voucher existing = voucherRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voucher không tồn tại"));
         // Safe delete: If voucher has redemption history, soft-cancel to preserve financial records
-        if (redemptionRepository.existsByVoucherId(id) || (existing.getUsedCount() != null && existing.getUsedCount() > 0)) {
+        // Cancelled orders give their redemption back but still name the voucher (orders.voucher_id).
+        if (redemptionRepository.existsByVoucherId(id) || (existing.getUsedCount() != null && existing.getUsedCount() > 0)
+                || orderRepository.existsByVoucherId(id)) {
             existing.setStatus("CANCELLED");
             existing.setIsActive(false);
             existing.setUpdatedAt(LocalDateTime.now());
@@ -560,7 +562,8 @@ public class MarketingService {
      * The public validate endpoint used to take isNewCustomer from the request body.
      */
     public Voucher validateVoucher(String code, BigDecimal orderSubtotal, String userId) {
-        boolean isNewCustomer = userId != null && !orderRepository.existsByUserId(userId);
+        boolean isNewCustomer = userId != null
+                && !orderRepository.existsByUserIdAndStatusNot(userId, com.nguyenhoanglong.entity.OrderStatus.CANCELLED);
         return validateVoucher(code, orderSubtotal, userId, isNewCustomer);
     }
 

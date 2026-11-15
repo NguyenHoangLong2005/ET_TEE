@@ -14,6 +14,8 @@ public class MarketingSubscription {
 
     public static final String SUBSCRIBED = "SUBSCRIBED";
     public static final String UNSUBSCRIBED = "UNSUBSCRIBED";
+    /** Asked for by someone who has not yet proven they own the address (link in the confirmation e-mail). */
+    public static final String PENDING = "PENDING";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

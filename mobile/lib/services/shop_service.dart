@@ -17,7 +17,12 @@ class CustomerMarketingService {
     }
   }
 
-  static Future<void> subscribeNewsletter(String email) => _api.post('/api/public/newsletter', {'email': email});
+  /// The message to show: usually "check your mailbox to confirm" (double opt-in).
+  static Future<String> subscribeNewsletter(String email) async {
+    final data = await _api.post('/api/public/newsletter', {'email': email});
+    final msg = data is Map ? data['message'] : null;
+    return msg is String && msg.isNotEmpty ? msg : 'Vui lòng kiểm tra email để xác nhận đăng ký.';
+  }
 
   static Future<Map<String, dynamic>> getConsent() async =>
       Map<String, dynamic>.from(await _api.get('/api/account/marketing-consent') as Map);
