@@ -231,6 +231,10 @@ public class UserServiceImpl implements UserService {
             targetUser.setLockedBy(currentAdminIdOrEmail != null ? currentAdminIdOrEmail : "ADMIN");
             targetUser.setLockedAt(LocalDateTime.now());
         } else if ("ACTIVE".equals(newStatus)) {
+            // deleteUser() soft-deletes with BANNED; "unlock" must not bring a deleted account back.
+            if ("BANNED".equalsIgnoreCase(targetUser.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tài khoản đã bị xóa, không thể kích hoạt lại");
+            }
             targetUser.setStatus("ACTIVE");
             targetUser.setLockReason(null);
             targetUser.setLockedBy(null);

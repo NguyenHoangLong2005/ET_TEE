@@ -53,4 +53,14 @@ class ReplenishmentAdvisorTest {
         assertEquals(-3, s.available());
         assertEquals(56, s.suggestedQuantity());
     }
+
+    @Test
+    void ordersNotYetPickedCountAgainstTheShelf() {
+        // 8 on the shelf, nothing reserved, but customers already bought 6 that are not picked yet.
+        var shelfOnly = ReplenishmentAdvisor.suggestion(inv(8, 0, 10), 0);
+        var sellable = ReplenishmentAdvisor.suggestion(inv(8, 0, 10), 0, 2);
+        org.assertj.core.api.Assertions.assertThat(sellable.available()).isEqualTo(2);
+        org.assertj.core.api.Assertions.assertThat(sellable.suggestedQuantity())
+                .isEqualTo(shelfOnly.suggestedQuantity() + 6);
+    }
 }

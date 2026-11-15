@@ -20,6 +20,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
     @Query("SELECT v FROM Voucher v " +
            "WHERE (v.status IS NULL OR v.status = 'ACTIVE') " +
            "AND (v.grantedToCustomerId IS NULL) " +
+           "AND (v.maxUses IS NULL OR v.usedCount IS NULL OR v.usedCount < v.maxUses) " +
            "AND (v.startDate IS NULL OR v.startDate <= :now) " +
            "AND (v.endDate IS NULL OR v.endDate >= :now)")
     List<Voucher> findAllActive(@Param("now") java.time.LocalDateTime now);

@@ -753,8 +753,7 @@ class _NewsletterState extends State<_Newsletter> {
     }
     setState(() => _sending = true);
     try {
-      await CustomerMarketingService.subscribeNewsletter(email);
-      Toast.success('Đã đăng ký! Bạn sẽ nhận email khi ET.TEE có ưu đãi mới.');
+      Toast.success(await CustomerMarketingService.subscribeNewsletter(email));
       _email.clear();
     } catch (e) {
       Toast.error(e is ApiException ? e.message : 'Không đăng ký được, vui lòng thử lại.');

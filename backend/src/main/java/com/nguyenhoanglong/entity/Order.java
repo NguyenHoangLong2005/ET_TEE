@@ -89,6 +89,28 @@ public class Order {
     @Column(name = "sold_counted", nullable = false, columnDefinition = "boolean default false")
     private boolean soldCounted = false;
 
+    /**
+     * When the order first became DELIVERED. Revenue is reported on this date: grouping by
+     * created_at put an order placed in October and delivered in November into October, and
+     * kept changing the figures of days already past.
+     */
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
+    /** Orders whose money counts as revenue. A pending return request is still a sale until approved. */
+    public static final java.util.List<OrderStatus> REVENUE_STATUSES =
+            java.util.List.of(OrderStatus.DELIVERED, OrderStatus.RETURN_REQUESTED);
+
+    public LocalDateTime getDeliveredAt() { return deliveredAt; }
+    public void setDeliveredAt(LocalDateTime deliveredAt) { this.deliveredAt = deliveredAt; }
+
+    /** Keeps the first delivery time; a rejected return goes back to DELIVERED without moving it. */
+    private void stampDeliveryIfNeeded() {
+        if (this.status == OrderStatus.DELIVERED && this.deliveredAt == null) {
+            this.deliveredAt = LocalDateTime.now();
+        }
+    }
+
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
@@ -178,6 +200,7 @@ public class Order {
             try {
                 this.status = OrderStatus.valueOf(orderStatus);
                 startConfirmationSlaIfNeeded();
+                stampDeliveryIfNeeded();
             } catch (Exception ignored) {}
         }
     }
@@ -189,6 +212,7 @@ public class Order {
             this.orderStatus = status.name();
         }
         startConfirmationSlaIfNeeded();
+        stampDeliveryIfNeeded();
     }
 
     /** Thoi han (gio) de nhan vien ban hang xac nhan don ke tu luc don cho xac nhan. */

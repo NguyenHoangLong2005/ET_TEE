@@ -15,4 +15,6 @@ public interface ShopWorkShiftRepository extends JpaRepository<ShopWorkShift, Lo
     List<ShopWorkShift> findByShopIdAndUserId(Long shopId, String userId);
 
     List<ShopWorkShift> findByShopId(Long shopId);
+
+    boolean existsByShopIdAndUserIdAndShiftDateAndShiftTypeIgnoreCase(Long shopId, String userId, LocalDate shiftDate, String shiftType);
 }

@@ -134,6 +134,7 @@ public class CartComplementService {
             if (!any) break;
         }
         List<Complement> items = productService.getActiveProductsInOrder(ids).stream()
+                .filter(com.nguyenhoanglong.util.Availability::inStock)
                 .map(dto -> {
                     String seg = segmentOfId.get(dto.getId());
                     return new Complement(dto, seg, segments.get(seg));

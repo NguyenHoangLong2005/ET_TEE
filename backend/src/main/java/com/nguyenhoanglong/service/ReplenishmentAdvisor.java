@@ -35,9 +35,44 @@ public class ReplenishmentAdvisor {
             OrderStatus.RETURNED, OrderStatus.REFUNDED);
 
     private final OrderItemRepository orderItems;
+    private final com.nguyenhoanglong.repository.ProductVariantRepository variants;
 
-    public ReplenishmentAdvisor(OrderItemRepository orderItems) {
+    public ReplenishmentAdvisor(OrderItemRepository orderItems,
+                                com.nguyenhoanglong.repository.ProductVariantRepository variants) {
         this.orderItems = orderItems;
+        this.variants = variants;
+    }
+
+    /**
+     * Units that can still be sold, per product. The warehouse row only drops on-hand when an order
+     * is packed (and reserves it while picking), so orders placed but not yet picked still looked
+     * like stock on the shelf and the suggestion came out too small. Checkout deducts the variants'
+     * available quantity at once, so their sum is what is really left. A product without variants
+     * falls back to on-hand minus reserved.
+     */
+    public Map<Long, Integer> sellable(Collection<Inventory> items) {
+        Map<Long, Integer> out = new HashMap<>();
+        if (items.isEmpty()) return out;
+        Set<Long> ids = new HashSet<>();
+        items.forEach(i -> ids.add(i.getProductId()));
+        for (Object[] row : variants.sumAvailableByProductIds(ids)) {
+            out.put((Long) row[0], row[1] == null ? 0 : ((Number) row[1]).intValue());
+        }
+        for (Inventory i : items) {
+            out.putIfAbsent(i.getProductId(), nz(i.getQuantityOnHand()) - nz(i.getQuantityReserved()));
+        }
+        return out;
+    }
+
+    /** Rows at or below their reorder level, by sellable stock. */
+    public List<Inventory> lowStock(List<Inventory> items) {
+        Map<Long, Integer> left = sellable(items);
+        List<Inventory> out = new ArrayList<>();
+        for (Inventory i : items) {
+            int reorder = i.getReorderLevel() == null ? 10 : i.getReorderLevel();
+            if (left.getOrDefault(i.getProductId(), 0) <= reorder) out.add(i);
+        }
+        return out;
     }
 
     /** Same fields as the inventory row the page used before, plus the suggestion and its basis. */
@@ -74,21 +109,27 @@ public class ReplenishmentAdvisor {
             allShops.merge(productId, qty, Long::sum);
         }
 
+        Map<Long, Integer> left = sellable(items);
         List<Suggestion> out = new ArrayList<>(items.size());
         for (Inventory inv : items) {
             long sold = inv.getShopId() == null
                     ? allShops.getOrDefault(inv.getProductId(), 0L)
                     : byShop.getOrDefault(inv.getProductId(), Map.of()).getOrDefault(inv.getShopId(), 0L);
-            out.add(suggestion(inv, sold));
+            out.add(suggestion(inv, sold, left.get(inv.getProductId())));
         }
         return out;
     }
 
     static Suggestion suggestion(Inventory inv, long sold) {
+        return suggestion(inv, sold, null);
+    }
+
+    /** @param sellable units still sellable (see {@link #sellable}); null = on-hand minus reserved */
+    static Suggestion suggestion(Inventory inv, long sold, Integer sellable) {
         int onHand = nz(inv.getQuantityOnHand());
         int reserved = nz(inv.getQuantityReserved());
         int reorder = inv.getReorderLevel() == null ? 10 : inv.getReorderLevel();
-        int available = onHand - reserved;
+        int available = sellable != null ? sellable : onHand - reserved;
         int usable = Math.max(0, available);
 
         double daily = sold / (double) WINDOW_DAYS;

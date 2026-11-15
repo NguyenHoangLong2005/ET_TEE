@@ -73,6 +73,65 @@ public class BankTransferPaymentService {
         return saved;
     }
 
+    /** Statuses before the parcel gets a waybill: the COD amount is not fixed on a shipment yet. */
+    private static final java.util.Set<OrderStatus> BEFORE_SHIPMENT = java.util.EnumSet.of(
+            OrderStatus.PENDING_CONFIRMATION, OrderStatus.CONFIRMED, OrderStatus.PICKING, OrderStatus.PACKED);
+
+    /** True while the order is the normal case: a bank transfer still waited for. */
+    public static boolean isAwaitingTransfer(Order order) {
+        return "BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod())
+                && order.getStatus() == OrderStatus.PENDING_PAYMENT && !isPaid(order);
+    }
+
+    /**
+     * A full payment arrived for an order that no longer waits for one. The money used to be
+     * dropped with a log line: a cancelled order kept no trace of the refund owed, and an order
+     * the customer had switched to COD was charged a second time on delivery.
+     * <ul>
+     *   <li>Cancelled, unpaid: flagged REFUND_PENDING so staff return the money.</li>
+     *   <li>Switched to COD and not yet with the courier: it is a paid bank-transfer order again.</li>
+     *   <li>Anything else: left as is, staff are told to check it.</li>
+     * </ul>
+     * Idempotent: a retried webhook finds the order already flagged and does nothing.
+     */
+    @Transactional
+    public Order recordLatePayment(Order order, String changedBy, String detail) {
+        String paymentStatus = order.getPaymentStatus();
+        OrderStatus status = order.getStatus();
+        if (isPaid(order) || "REFUND_PENDING".equalsIgnoreCase(paymentStatus) || "REFUNDED".equalsIgnoreCase(paymentStatus)) {
+            return order;
+        }
+        String reason;
+        if (status == OrderStatus.CANCELLED) {
+            order.setPaymentStatus("REFUND_PENDING");
+            reason = "Nhận được tiền sau khi đơn đã hủy, cần hoàn tiền cho khách. " + detail;
+        } else if ("COD".equalsIgnoreCase(order.getPaymentMethod()) && "COD_PENDING".equalsIgnoreCase(paymentStatus)
+                && BEFORE_SHIPMENT.contains(status)) {
+            order.setPaymentMethod("BANK_TRANSFER");
+            order.setPaymentStatus("PAID");
+            reason = "Khách đã chuyển khoản sau khi đổi sang COD: đơn chuyển lại thành đã thanh toán, không thu hộ. " + detail;
+        } else {
+            salesNotificationService.notifyPaymentNeedsAttention(order, "Tiền chuyển khoản cần kiểm tra",
+                    "Đơn " + order.getOrderCode() + " (" + status + ") nhận được chuyển khoản ngoài luồng. " + detail);
+            return order;
+        }
+        order.setUpdatedAt(LocalDateTime.now());
+        Order saved = orders.save(order);
+
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrderId(saved.getId());
+        history.setFromStatus(status != null ? status.name() : null);
+        history.setStatus(status != null ? status.name() : null);
+        history.setChangedBy(changedBy);
+        history.setReason(reason);
+        historyRepository.save(history);
+
+        salesNotificationService.notifyPaymentNeedsAttention(saved,
+                status == OrderStatus.CANCELLED ? "Đơn đã hủy cần hoàn tiền" : "Đơn COD đã được chuyển khoản",
+                "Đơn " + saved.getOrderCode() + ": " + reason);
+        return saved;
+    }
+
     public static boolean isPaid(Order order) {
         return "PAID".equalsIgnoreCase(order.getPaymentStatus());
     }

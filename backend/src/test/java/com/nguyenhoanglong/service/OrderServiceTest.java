@@ -49,6 +49,8 @@ class OrderServiceTest {
     @Mock private ProductRepository productRepository;
     @Mock private MarketingService marketingService;
     @Mock private SalesNotificationService salesNotificationService;
+    @Mock private OrderStockService orderStockService;
+    @Mock private PayOsService payOsService;
 
     @InjectMocks private OrderService orderService;
 
@@ -115,6 +117,45 @@ class OrderServiceTest {
         req.setCustomerPhone("0900000000");
         req.setCustomerEmail("user@example.com");
         return req;
+    }
+
+    @Test
+    void checkout_withoutShippingAddress_isRejected() {
+        Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
+        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        CheckoutRequest req = checkoutRequest();
+        req.setShippingAddress("   ");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> orderService.checkout(user, null, req))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .hasMessageContaining("địa chỉ giao hàng");
+        org.mockito.Mockito.verifyNoInteractions(variantRepository);
+    }
+
+    @Test
+    void checkout_bankTransferFullyCoveredByVoucher_goesStraightToConfirmationQueue() {
+        Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
+        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        com.nguyenhoanglong.entity.Voucher voucher = new com.nguyenhoanglong.entity.Voucher();
+        voucher.setCode("FREE100");
+        when(marketingService.validateVoucher(any(), any(), any(), org.mockito.ArgumentMatchers.anyBoolean()))
+                .thenReturn(voucher);
+        when(marketingService.computeDiscount(any(), any())).thenAnswer(inv -> {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("discountAmount", inv.getArgument(1)); // discount = whole subtotal
+            return m;
+        });
+        CheckoutRequest req = checkoutRequest();
+        req.setPaymentMethod("BANK_TRANSFER");
+        req.setVoucherCode("FREE100");
+
+        OrderResponse res = orderService.checkout(user, null, req);
+
+        assertThat(res.getTotalAmount()).isZero();
+        assertThat(res.getOrderStatus()).isEqualTo("PENDING_CONFIRMATION");
+        assertThat(res.getPaymentStatus()).isEqualTo("PAID");
     }
 
     @Test

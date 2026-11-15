@@ -42,13 +42,24 @@ export const CustomerMarketingService = {
     }
   },
 
-  async subscribeNewsletter(email: string): Promise<void> {
+  /** Resolves to the message to show: usually "check your mailbox to confirm". */
+  async subscribeNewsletter(email: string): Promise<string> {
     const res = await fetch(`${getApiBaseUrl()}/api/public/newsletter`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ email }),
     });
-    await json<void>(res);
+    const data = await json<{ message?: string } | null>(res);
+    return data?.message || 'Vui lòng kiểm tra email để xác nhận đăng ký.';
+  },
+
+  async confirmNewsletter(token: string): Promise<boolean> {
+    const res = await fetch(`${getApiBaseUrl()}/api/public/newsletter/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    return (await json<{ confirmed: boolean }>(res)).confirmed;
   },
 
   async unsubscribe(token: string): Promise<boolean> {

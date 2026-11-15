@@ -172,15 +172,32 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ProductDto createProduct(ProductDto productDto) {
         LISTING_CACHE.clear();
         Product product = new Product();
+        product.setStatus("ACTIVE");
         applyDtoToProduct(productDto, product);
         Product saved = productRepository.save(product);
+        // Confirming an order looks the product up in inventories; without a row its orders could
+        // not be confirmed (same rule as StoreOwnerServiceImpl.createProduct).
+        if (inventoryRepository.findByProductId(saved.getId()).isEmpty()) {
+            com.nguyenhoanglong.entity.Inventory inv = new com.nguyenhoanglong.entity.Inventory();
+            inv.setProductId(saved.getId());
+            String name = saved.getName() != null ? saved.getName() : "Sản phẩm #" + saved.getId();
+            inv.setProductName(name.length() > 200 ? name.substring(0, 200) : name);
+            inv.setQuantityOnHand(saved.getVariants().stream()
+                    .mapToInt(v -> v.getStock() != null ? v.getStock() : 0).sum());
+            inv.setQuantityReserved(0);
+            inv.setReorderLevel(10);
+            inv.setShopId(1L);
+            inventoryRepository.save(inv);
+        }
         return mapToDto(saved);
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ProductDto updateProduct(Long id, ProductDto productDto) {
         LISTING_CACHE.clear();
         Product product = productRepository.findById(id)
@@ -190,11 +207,27 @@ public class ProductServiceImpl implements ProductService {
         return mapToDto(saved);
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.nguyenhoanglong.repository.InventoryRepository inventoryRepository;
+
+    private static org.springframework.web.server.ResponseStatusException badProduct(String message) {
+        return new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, message);
+    }
+
     private void applyDtoToProduct(ProductDto dto, Product product) {
         if (dto.getName() != null) product.setName(dto.getName());
         if (dto.getSlug() != null) product.setSlug(dto.getSlug());
         if (dto.getDescription() != null) product.setDescription(dto.getDescription());
         if (dto.getBrand() != null) product.setBrand(dto.getBrand());
+        // Same price rules as the store owner's product form.
+        if (dto.getPrice() != null && dto.getPrice().signum() <= 0) throw badProduct("Giá niêm yết phải lớn hơn 0");
+        java.math.BigDecimal listPrice = dto.getPrice() != null ? dto.getPrice() : product.getPrice();
+        if (dto.getSalePrice() != null && (dto.getSalePrice().signum() <= 0
+                || (listPrice != null && dto.getSalePrice().compareTo(listPrice) >= 0))) {
+            throw badProduct("Giá khuyến mãi phải lớn hơn 0 và nhỏ hơn giá niêm yết");
+        }
+        boolean priceChanged = (dto.getPrice() != null && !dto.getPrice().equals(product.getPrice()))
+                || (dto.getSalePrice() != null && !dto.getSalePrice().equals(product.getSalePrice()));
         if (dto.getPrice() != null) product.setPrice(dto.getPrice());
         if (dto.getSalePrice() != null) product.setSalePrice(dto.getSalePrice());
         if (dto.getGender() != null) product.setGender(dto.getGender());
@@ -202,7 +235,13 @@ public class ProductServiceImpl implements ProductService {
         if (dto.getProductType() != null) product.setProductType(dto.getProductType());
         if (dto.getMaterial() != null) product.setMaterial(dto.getMaterial());
         if (dto.getStyle() != null) product.setStyle(dto.getStyle());
-        product.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
+        // An update without a status used to put a paused product back on sale. Deleting has its
+        // own endpoint (open-order check, cart cleanup), so DELETED is not accepted here.
+        if (dto.getStatus() != null) {
+            String st = dto.getStatus().trim().toUpperCase();
+            if (!st.equals("ACTIVE") && !st.equals("INACTIVE")) throw badProduct("Trạng thái không hợp lệ (ACTIVE hoặc INACTIVE)");
+            product.setStatus(st);
+        }
         if (dto.getIsNew() != null) product.setIsNew(dto.getIsNew());
         if (dto.getIsBestSeller() != null) product.setIsBestSeller(dto.getIsBestSeller());
         // Derived from the prices, like the store owner's pricing does: a client-set flag drifted
@@ -222,19 +261,45 @@ public class ProductServiceImpl implements ProductService {
         if (dto.getRecommendationTags() != null) product.setRecommendationTags(new ArrayList<>(dto.getRecommendationTags()));
 
         if (dto.getVariants() != null) {
-            product.getVariants().clear();
+            // Merged by id / SKU, never replaced: clearing the list gave every variant a new id, which
+            // orphaned cart lines and order lines pointing at the old ones, and overwrote stock that
+            // the warehouse manages. Stock is only set for a new variant; changes go through inbound
+            // or an approved adjustment. Variants missing from the request are kept.
+            java.util.Map<Long, ProductVariant> byId = new java.util.HashMap<>();
+            java.util.Map<String, ProductVariant> bySku = new java.util.HashMap<>();
+            for (ProductVariant v : product.getVariants()) {
+                if (v.getId() != null) byId.put(v.getId(), v);
+                if (v.getSku() != null) bySku.put(v.getSku().trim().toLowerCase(), v);
+            }
             for (ProductVariantDto vDto : dto.getVariants()) {
-                ProductVariant variant = new ProductVariant();
-                variant.setSku(vDto.getSku());
-                variant.setColor(vDto.getColor());
-                variant.setColorHex(vDto.getColorHex());
-                variant.setColorCode(vDto.getColorCode());
-                variant.setSize(vDto.getSize());
+                ProductVariant variant = vDto.getId() != null ? byId.get(vDto.getId()) : null;
+                if (variant == null && vDto.getSku() != null) variant = bySku.get(vDto.getSku().trim().toLowerCase());
+                boolean isNew = variant == null;
+                if (isNew) {
+                    if (vDto.getSku() == null || vDto.getSku().isBlank()) throw badProduct("Biến thể mới cần có SKU");
+                    if (variantRepository.existsBySku(vDto.getSku().trim())) throw badProduct("SKU đã tồn tại: " + vDto.getSku());
+                    variant = new ProductVariant();
+                    variant.setSku(vDto.getSku().trim());
+                }
+                if (vDto.getColor() != null) variant.setColor(vDto.getColor());
+                if (vDto.getColorHex() != null) variant.setColorHex(vDto.getColorHex());
+                if (vDto.getColorCode() != null) variant.setColorCode(vDto.getColorCode());
+                if (vDto.getSize() != null) variant.setSize(vDto.getSize());
                 variant.setPrice(vDto.getPrice() != null ? vDto.getPrice() : product.getPrice());
                 variant.setSalePrice(vDto.getSalePrice() != null ? vDto.getSalePrice() : product.getSalePrice());
-                variant.setStock(vDto.getStock() != null ? vDto.getStock() : 0);
-                variant.setAvailableQuantity(vDto.getAvailableQuantity() != null ? vDto.getAvailableQuantity() : variant.getStock());
-                product.addVariant(variant);
+                if (isNew) {
+                    int stock = vDto.getStock() != null ? vDto.getStock() : 0;
+                    if (stock < 0) throw badProduct("Tồn kho của SKU " + variant.getSku() + " không được âm");
+                    variant.setStock(stock);
+                    variant.setAvailableQuantity(stock);
+                    product.addVariant(variant);
+                }
+            }
+        } else if (priceChanged && product.getVariants() != null) {
+            // The cart and checkout charge the variant's price: keep it in step with the product's.
+            for (ProductVariant v : product.getVariants()) {
+                v.setPrice(product.getPrice());
+                v.setSalePrice(product.getSalePrice());
             }
         }
 

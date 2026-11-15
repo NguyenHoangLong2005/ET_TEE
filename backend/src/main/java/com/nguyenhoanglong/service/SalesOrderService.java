@@ -31,6 +31,14 @@ public class SalesOrderService {
     private final SoldCountService soldCountService;
     private final OrderStockService orderStockService;
     private final ShipmentRepository shipmentRepository;
+    private final PayOsService payOsService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private BehaviorEventService behaviorEventService;
+
+    private void forgetPurchase(Order order) {
+        if (behaviorEventService != null) behaviorEventService.forgetPurchase(order);
+    }
 
     public SalesOrderService(
             OrderRepository orders, 
@@ -45,7 +53,9 @@ public class SalesOrderService {
             MarketingService marketingService,
             SoldCountService soldCountService,
             OrderStockService orderStockService,
-            ShipmentRepository shipmentRepository) {
+            ShipmentRepository shipmentRepository,
+            PayOsService payOsService) {
+        this.payOsService = payOsService;
         this.orders = orders;
         this.notes = notes;
         this.reservations = reservations;
@@ -134,15 +144,19 @@ public class SalesOrderService {
             if (row[0] == null) continue;
             String st = String.valueOf(row[0]);
             countByStatus.put(st, ((Number) row[1]).longValue());
-            if ("DELIVERED".equals(st)) deliveredRevenue = ((Number) row[2]).doubleValue();
+            if ("DELIVERED".equals(st) || "RETURN_REQUESTED".equals(st)) deliveredRevenue += ((Number) row[2]).doubleValue();
         }
         long todayCount = 0;
-        double todayRevenue = 0;
         for (Object[] row : today) {
             if (row[0] == null) continue;
             todayCount += ((Number) row[1]).longValue();
-            if ("DELIVERED".equals(String.valueOf(row[0]))) todayRevenue += ((Number) row[2]).doubleValue();
         }
+        // Today's revenue = delivered today, whenever the order was placed (it used to be
+        // "placed today and already delivered", which is almost always 0 for shipped orders).
+        Double todaySum = shopId == null
+                ? orders.sumRevenueAllBetween(Order.REVENUE_STATUSES, startOfDay, endOfDay)
+                : orders.sumRevenueForShopBetween(shopId, Order.REVENUE_STATUSES, startOfDay, endOfDay);
+        double todayRevenue = todaySum != null ? todaySum : 0;
 
         // SLA chi ap dung cho don dang cho xac nhan.
         List<OrderStatus> excluded = java.util.Arrays.stream(OrderStatus.values())
@@ -341,6 +355,7 @@ public class SalesOrderService {
             orderStockService.restoreVariantStock(order);
             orderStockService.restoreWarehouseOnHand(order, OrderStatus.RETURN_REQUESTED);
             soldCountService.syncForStatus(order, target);
+            forgetPurchase(order);
             String paid = order.getPaymentStatus();
             if ("PAID".equalsIgnoreCase(paid) || "COD_COLLECTED".equalsIgnoreCase(paid)) {
                 order.setPaymentStatus("REFUND_PENDING");
@@ -352,9 +367,23 @@ public class SalesOrderService {
         return orders.save(order);
     }
 
+    /** A cancelled order whose money still has to go back to the customer. */
+    private static boolean isCancelledAwaitingRefund(Order order) {
+        return order.getStatus() == OrderStatus.CANCELLED && "REFUND_PENDING".equalsIgnoreCase(order.getPaymentStatus());
+    }
+
     @Transactional
     public Order markRefunded(Long id, String reason) {
         Order order = getOrder(id);
+        if (isCancelledAwaitingRefund(order)) {
+            // CANCELLED is terminal, so the order stays cancelled; only the payment is settled.
+            // Without this a paid-then-cancelled order showed "Chờ hoàn tiền" forever.
+            order.setPaymentStatus("REFUNDED");
+            order.setUpdatedAt(LocalDateTime.now());
+            saveStatusHistory(order.getId(), OrderStatus.CANCELLED, OrderStatus.CANCELLED, resolveUserId(),
+                    reason != null && !reason.isBlank() ? reason.trim() : "Đã hoàn tiền cho khách");
+            return orders.save(order);
+        }
         stateMachine.validateTransition(order.getStatus(), OrderStatus.REFUNDED);
         OrderStatus old = order.getStatus();
         order.setStatus(OrderStatus.REFUNDED);
@@ -425,7 +454,11 @@ public class SalesOrderService {
         }
         order.setUpdatedAt(LocalDateTime.now());
         
-        releaseReservations(order);
+        orderStockService.releaseReservations(order, oldStatus);
+        if (oldStatus == OrderStatus.PENDING_PAYMENT && "BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod())) {
+            payOsService.cancelLink(order, order.getCancelReason());
+        }
+        forgetPurchase(order);
         orderStockService.restoreVariantStock(order);
         // A manager may cancel after packing; those goods had already left the shelf.
         orderStockService.restoreWarehouseOnHand(order, oldStatus);
@@ -491,6 +524,9 @@ public class SalesOrderService {
 
     public List<OrderStatus> getAllowedTransitions(Long id) {
         Order order = getOrder(id);
+        if (isCancelledAwaitingRefund(order)) {
+            return new ArrayList<>(List.of(OrderStatus.REFUNDED));
+        }
         return new ArrayList<>(stateMachine.getAllowedTransitions(order.getStatus()));
     }
 
@@ -537,7 +573,9 @@ public class SalesOrderService {
         order.setCustomerName(customerName.trim());
         order.setCustomerEmail(customerEmail != null && !customerEmail.isBlank() ? customerEmail.trim() : "pos-customer@et.tee");
         order.setCustomerPhone(phone.trim());
-        order.setShippingAddressSnapshot(shippingAddress != null && !shippingAddress.isBlank() ? shippingAddress.trim() : "Tại quầy (POS)");
+        // No delivery address and paid on the spot: the customer walks out with the goods.
+        boolean hasAddress = shippingAddress != null && !shippingAddress.isBlank();
+        order.setShippingAddressSnapshot(hasAddress ? shippingAddress.trim() : "Tại quầy (POS)");
         String method = paymentMethod == null || paymentMethod.isBlank() ? "CASH" : paymentMethod.trim().toUpperCase();
         if (!POS_PAYMENT_METHODS.contains(method)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phương thức thanh toán không hợp lệ: " + paymentMethod);
@@ -545,8 +583,13 @@ public class SalesOrderService {
         order.setPaymentMethod(method);
         // COD: thu tien khi giao hang nen chua thanh toan; con lai da thu tai quay.
         order.setPaymentStatus("COD".equals(method) ? "COD_PENDING" : "PAID");
-        order.setStatus(OrderStatus.CONFIRMED);
-        order.setOrderStatus(OrderStatus.CONFIRMED.name());
+        // A counter sale is finished the moment it is rung up. It used to start at CONFIRMED like
+        // a delivery order and had to be picked, packed and "shipped" to "Tại quầy (POS)" before
+        // it counted as revenue or as sold. Orders with an address, or COD, still ship normally.
+        boolean counterSale = !hasAddress && !"COD".equals(method);
+        OrderStatus initialStatus = counterSale ? OrderStatus.DELIVERED : OrderStatus.CONFIRMED;
+        order.setStatus(initialStatus);
+        order.setOrderStatus(initialStatus.name());
         order.setShopId(resolveShopId() != null ? resolveShopId() : 1L);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
@@ -568,6 +611,13 @@ public class SalesOrderService {
             ProductVariant variant = variantRepository.findByIdWithPessimisticLock(variantIdNum.longValue())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Không tìm thấy biến thể sản phẩm id=" + variantIdNum));
+
+            // Same rule as online checkout: a retired product is not sold at the counter either.
+            if (variant.getProduct() == null || !"ACTIVE".equals(variant.getProduct().getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sản phẩm" + (variant.getProduct() != null ? " '" + variant.getProduct().getName() + "'" : "")
+                                + " đã ngừng kinh doanh");
+            }
 
             if (variant.getAvailableQuantity() == null || variant.getAvailableQuantity() < quantity) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -604,8 +654,23 @@ public class SalesOrderService {
         order.setShippingFee(0.0);
         order.setTotalAmount(total);
 
+        if (counterSale) {
+            // The goods leave the shelf now, which packing does for a shipped order.
+            for (OrderItem item : items) {
+                inventoryRepository.findByProductIdWithLock(item.getProduct().getId()).ifPresent(inv -> {
+                    inv.setQuantityOnHand(Math.max(0, inv.getQuantityOnHand() - item.getQuantity()));
+                    inventoryRepository.save(inv);
+                });
+            }
+        }
+
         Order saved = orders.save(order);
-        saveStatusHistory(saved.getId(), null, OrderStatus.CONFIRMED, resolveUserId(), "Tạo đơn hàng tại quầy (POS)");
+        if (counterSale) {
+            soldCountService.syncForStatus(saved, OrderStatus.DELIVERED);
+            saved = orders.save(saved);
+        }
+        saveStatusHistory(saved.getId(), null, initialStatus, resolveUserId(),
+                counterSale ? "Bán tại quầy (POS), khách nhận hàng ngay" : "Tạo đơn hàng tại quầy (POS)");
         return saved;
     }
 
@@ -614,43 +679,31 @@ public class SalesOrderService {
             return;
         }
         
+        // One warehouse row per product: two sizes of the same product must fit in it together.
+        java.util.Map<Long, Integer> quantityByProduct = new java.util.LinkedHashMap<>();
+        java.util.Map<Long, String> nameByProduct = new java.util.LinkedHashMap<>();
         for (OrderItem item : order.getItems()) {
             Long productId = item.getProduct().getId();
+            quantityByProduct.merge(productId, item.getQuantity() != null ? item.getQuantity() : 0, Integer::sum);
+            nameByProduct.putIfAbsent(productId, item.getProduct().getName());
+        }
+        for (java.util.Map.Entry<Long, Integer> line : quantityByProduct.entrySet()) {
+            Long productId = line.getKey();
+            String name = nameByProduct.get(productId);
             Inventory inventory = (order.getShopId() != null
                     ? inventoryRepository.findByProductIdAndShopId(productId, order.getShopId())
                     : inventoryRepository.findByProductId(productId))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Không tìm thấy tồn kho của chi nhánh cho sản phẩm: " + item.getProduct().getName()));
-            
+                            "Không tìm thấy tồn kho của chi nhánh cho sản phẩm: " + name));
+
             int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
-            if (item.getQuantity() > availableStock) {
+            if (line.getValue() > availableStock) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         String.format("Sản phẩm '%s' không đủ hàng. Yêu cầu: %d, Còn lại: %d",
-                                item.getProduct().getName(), item.getQuantity(), availableStock));
+                                name, line.getValue(), availableStock));
             }
         }
     }
-
-    private void releaseReservations(Order order) {
-        List<StockReservation> orderReservations = reservations.findByOrderId(order.getId());
-        
-        for (StockReservation reservation : orderReservations) {
-            // Chỉ APPROVED mới đang giữ tồn; PENDING/REJECTED chưa giữ, RELEASED đã nhả hoặc đã xuất kho.
-            if (reservation.getStatus() != ReservationStatus.APPROVED) continue;
-            Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
-                    .orElse(null);
-            
-            if (inventory != null) {
-                int newReserved = Math.max(0, inventory.getQuantityReserved() - reservation.getQuantity());
-                inventory.setQuantityReserved(newReserved);
-                inventoryRepository.save(inventory);
-            }
-            
-            reservation.setStatus(ReservationStatus.RELEASED);
-            reservations.save(reservation);
-        }
-    }
-
 
     private void saveStatusHistory(Long orderId, OrderStatus from, OrderStatus to, String userId, String reason) {
         OrderStatusHistory history = new OrderStatusHistory();

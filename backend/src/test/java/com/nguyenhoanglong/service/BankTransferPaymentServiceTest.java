@@ -59,6 +59,38 @@ class BankTransferPaymentServiceTest {
     }
 
     @Test
+    void latePaymentOnCancelledOrderIsFlaggedForRefund() {
+        when(orders.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        Order o = waitingTransfer();
+        o.setStatus(OrderStatus.CANCELLED);
+
+        Order saved = service.recordLatePayment(o, "SEPAY", "tx 1");
+
+        assertThat(saved.getPaymentStatus()).isEqualTo("REFUND_PENDING");
+        assertThat(saved.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(historyRepository).save(any(OrderStatusHistory.class));
+
+        // a retried webhook must not flag it twice
+        service.recordLatePayment(saved, "SEPAY", "tx 1");
+        verify(orders, org.mockito.Mockito.times(1)).save(any(Order.class));
+    }
+
+    @Test
+    void latePaymentOnOrderSwitchedToCodMakesItPrepaidAgain() {
+        when(orders.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        Order o = waitingTransfer();
+        o.setPaymentMethod("COD");
+        o.setPaymentStatus("COD_PENDING");
+        o.setStatus(OrderStatus.CONFIRMED);
+
+        Order saved = service.recordLatePayment(o, "SEPAY", "tx 2");
+
+        assertThat(saved.getPaymentMethod()).isEqualTo("BANK_TRANSFER");
+        assertThat(saved.getPaymentStatus()).isEqualTo("PAID");
+        assertThat(saved.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+    }
+
+    @Test
     void alreadyPaidIsANoOp() {
         Order o = waitingTransfer();
         o.setPaymentStatus("PAID");

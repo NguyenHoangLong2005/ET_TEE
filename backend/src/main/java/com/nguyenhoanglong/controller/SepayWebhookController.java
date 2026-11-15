@@ -92,12 +92,18 @@ public class SepayWebhookController {
             log.warn("SePay tx {}: order {} received {} but total is {}; left unpaid for staff", txId, order.getOrderCode(), amount, due);
             return ok();
         }
+        String detail = "SePay giao dịch " + txId + ", " + amount.toPlainString() + "đ";
         try {
-            bankTransferPaymentService.markPaid(order, "SEPAY",
-                    "Tự động xác nhận chuyển khoản qua SePay (giao dịch " + txId + ", " + amount.toPlainString() + "đ)");
+            if (BankTransferPaymentService.isAwaitingTransfer(order)) {
+                bankTransferPaymentService.markPaid(order, "SEPAY", "Tự động xác nhận chuyển khoản qua " + detail);
+            } else {
+                // Cancelled, expired or switched to COD before the money arrived.
+                log.warn("SePay tx {}: order {} was not waiting for a transfer ({} / {})", txId,
+                        order.getOrderCode(), order.getStatus(), order.getPaymentStatus());
+                bankTransferPaymentService.recordLatePayment(order, "SEPAY", detail);
+            }
         } catch (RuntimeException e) {
-            // e.g. the order was cancelled before the money arrived: needs a refund, not a status flip.
-            log.warn("SePay tx {}: could not mark order {} paid: {}", txId, order.getOrderCode(), e.getMessage());
+            log.warn("SePay tx {}: could not record payment for order {}: {}", txId, order.getOrderCode(), e.getMessage());
         }
         return ok();
     }

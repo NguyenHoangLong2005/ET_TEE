@@ -125,6 +125,9 @@ public class CskhExtendedServiceImpl implements CskhExtendedService {
 
         enforceStaffTicketOwnership(actor, ticket);
 
+        if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket đã đóng, không thể phát voucher đền bù. Vui lòng mở lại ticket trước.");
+        }
         if (ticket.getCustomerId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket chưa được gán cho khách hàng cụ thể để phát voucher");
         }

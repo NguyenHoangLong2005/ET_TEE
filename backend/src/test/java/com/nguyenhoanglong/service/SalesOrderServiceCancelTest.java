@@ -49,6 +49,7 @@ class SalesOrderServiceCancelTest {
     @Mock private MarketingService marketingService;
     @Mock private SoldCountService soldCountService;
     @Mock private ShipmentRepository shipmentRepository;
+    @Mock private PayOsService payOsService;
 
     private SalesOrderService service;
 
@@ -57,7 +58,7 @@ class SalesOrderServiceCancelTest {
         service = new SalesOrderService(
                 orders, notes, reservations, productRepository, userRepository,
                 new OrderStateMachine(), historyRepository, inventoryRepository, variantRepository,
-                marketingService, soldCountService, new OrderStockService(variantRepository, inventoryRepository), shipmentRepository);
+                marketingService, soldCountService, new OrderStockService(variantRepository, inventoryRepository, reservations), shipmentRepository, payOsService);
     }
 
     @Test
@@ -93,6 +94,61 @@ class SalesOrderServiceCancelTest {
         }
 
         assertThat(inv.getQuantityOnHand()).isEqualTo(7);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    private static StockReservation approvedHold(long productId, int quantity) {
+        StockReservation r = new StockReservation();
+        r.setProductId(productId);
+        r.setQuantity(quantity);
+        r.setStatus(com.nguyenhoanglong.entity.ReservationStatus.APPROVED);
+        return r;
+    }
+
+    @Test
+    void releaseReservations_givesBackWhatPickingReserved() {
+        Order order = new Order();
+        order.setId(200L);
+        com.nguyenhoanglong.entity.Inventory inv = new com.nguyenhoanglong.entity.Inventory();
+        inv.setQuantityReserved(5);
+        StockReservation hold = approvedHold(7L, 2);
+        when(reservations.findByOrderId(200L)).thenReturn(List.of(hold));
+        when(inventoryRepository.findByProductIdWithLock(7L)).thenReturn(Optional.of(inv));
+
+        new OrderStockService(variantRepository, inventoryRepository, reservations)
+                .releaseReservations(order, OrderStatus.PICKING);
+
+        assertThat(inv.getQuantityReserved()).isEqualTo(3);
+        assertThat(hold.getStatus()).isEqualTo(com.nguyenhoanglong.entity.ReservationStatus.RELEASED);
+    }
+
+    @Test
+    void releaseReservations_beforePickingTouchesNoStock() {
+        Order order = new Order();
+        order.setId(201L);
+        StockReservation hold = approvedHold(7L, 2);
+        when(reservations.findByOrderId(201L)).thenReturn(List.of(hold));
+
+        new OrderStockService(variantRepository, inventoryRepository, reservations)
+                .releaseReservations(order, OrderStatus.CONFIRMED);
+
+        org.mockito.Mockito.verifyNoInteractions(inventoryRepository);
+        assertThat(hold.getStatus()).isEqualTo(com.nguyenhoanglong.entity.ReservationStatus.RELEASED);
+    }
+
+    @Test
+    void markRefunded_settlesAPaidOrderThatWasCancelled() {
+        Order order = new Order();
+        order.setId(300L);
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus("REFUND_PENDING");
+        when(orders.findById(300L)).thenReturn(Optional.of(order));
+        when(orders.save(any(Order.class))).thenAnswer(a -> a.getArgument(0));
+
+        assertThat(service.getAllowedTransitions(300L)).containsExactly(OrderStatus.REFUNDED);
+        service.markRefunded(300L, null);
+
+        assertThat(order.getPaymentStatus()).isEqualTo("REFUNDED");
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 

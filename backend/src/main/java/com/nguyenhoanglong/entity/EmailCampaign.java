@@ -29,7 +29,7 @@ public class EmailCampaign {
     @Column(name = "segment", nullable = false, length = 30)
     private String segment;
 
-    /** DRAFT | SENDING | SENT */
+    /** DRAFT | SENDING | SENT | FAILED (stopped part-way; see EmailCampaignService.deliver) */
     @Column(name = "status", nullable = false, length = 20)
     private String status = "DRAFT";
 

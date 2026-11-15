@@ -32,6 +32,13 @@ public class ShippingService {
     private final OrderStockService orderStockService;
     private final MarketingService marketingService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private BehaviorEventService behaviorEventService;
+
+    private void forgetPurchase(Order order) {
+        if (behaviorEventService != null) behaviorEventService.forgetPurchase(order);
+    }
+
     public ShippingService(OrderRepository orders,
                            ShipmentRepository shipments,
                            ShippingExceptionRepository exceptions,
@@ -315,6 +322,7 @@ public class ShippingService {
             }
             orderStockService.restoreVariantStock(o);
             orderStockService.restoreWarehouseOnHand(o, before);
+            forgetPurchase(o);
             if (o.getVoucherCode() != null && !o.getVoucherCode().isBlank()) {
                 marketingService.releaseVoucherUsage(o.getId(), o.getOrderCode());
             }
@@ -364,7 +372,11 @@ public class ShippingService {
         // COD is settled at reconciliation (below); a delivered COD order is "money
         // collected, not yet reconciled with the courier" until then.
         if ("COD".equalsIgnoreCase(o.getPaymentMethod())) {
-            o.setPaymentStatus("COD_COLLECTED");
+            // Nothing to collect (a voucher covered the order): no COD to reconcile, so the order is
+            // settled now. It used to stay COD_COLLECTED forever, since 0d parcels never enter
+            // the reconciliation queue.
+            boolean nothingToCollect = s.getCodAmount() == null || s.getCodAmount().signum() <= 0;
+            o.setPaymentStatus(nothingToCollect ? "PAID" : "COD_COLLECTED");
         }
         orders.save(o);
 
@@ -473,7 +485,12 @@ public class ShippingService {
 
                 s.setCodReconciled(true);
                 shipments.save(s);
-                if (s.getOrder() != null && "COD".equalsIgnoreCase(s.getOrder().getPaymentMethod())) {
+                // Only an order still waiting on the courier's money becomes PAID. A returned
+                // order is REFUND_PENDING / REFUNDED by now; reconciling the courier's cash
+                // must not turn it back into a paid order and hide the refund.
+                String paymentStatus = s.getOrder() != null ? s.getOrder().getPaymentStatus() : null;
+                if (s.getOrder() != null && "COD".equalsIgnoreCase(s.getOrder().getPaymentMethod())
+                        && ("COD_COLLECTED".equalsIgnoreCase(paymentStatus) || "COD_PENDING".equalsIgnoreCase(paymentStatus))) {
                     s.getOrder().setPaymentStatus("PAID");
                     orders.save(s.getOrder());
                 }

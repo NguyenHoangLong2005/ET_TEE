@@ -3,8 +3,11 @@ package com.nguyenhoanglong.service;
 import com.nguyenhoanglong.entity.Order;
 import com.nguyenhoanglong.entity.OrderItem;
 import com.nguyenhoanglong.entity.OrderStatus;
+import com.nguyenhoanglong.entity.ReservationStatus;
+import com.nguyenhoanglong.entity.StockReservation;
 import com.nguyenhoanglong.repository.InventoryRepository;
 import com.nguyenhoanglong.repository.ProductVariantRepository;
+import com.nguyenhoanglong.repository.StockReservationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
@@ -27,10 +30,38 @@ public class OrderStockService {
 
     private final ProductVariantRepository variantRepository;
     private final InventoryRepository inventoryRepository;
+    private final StockReservationRepository reservationRepository;
 
-    public OrderStockService(ProductVariantRepository variantRepository, InventoryRepository inventoryRepository) {
+    public OrderStockService(ProductVariantRepository variantRepository, InventoryRepository inventoryRepository,
+                             StockReservationRepository reservationRepository) {
         this.variantRepository = variantRepository;
         this.inventoryRepository = inventoryRepository;
+        this.reservationRepository = reservationRepository;
+    }
+
+    /**
+     * Closes the order's stock holds when it is cancelled. inventories.quantity_reserved is
+     * only held while the order is PICKING (WarehouseService.startPicking adds it, packing
+     * consumes it), so it is given back only for an order cancelled in that status. An
+     * approved hold on a CONFIRMED order never touched quantity_reserved; releasing it used
+     * to subtract stock another order was holding. Customer self-cancel skipped this
+     * entirely and left the picked quantity reserved forever.
+     */
+    public void releaseReservations(Order order, OrderStatus statusBefore) {
+        if (order.getId() == null) return;
+        for (StockReservation r : reservationRepository.findByOrderId(order.getId())) {
+            if (r.getStatus() == ReservationStatus.APPROVED && statusBefore == OrderStatus.PICKING) {
+                int quantity = r.getQuantity() != null ? r.getQuantity() : 0;
+                inventoryRepository.findByProductIdWithLock(r.getProductId()).ifPresent(inv -> {
+                    inv.setQuantityReserved(Math.max(0, inv.getQuantityReserved() - quantity));
+                    inventoryRepository.save(inv);
+                });
+            }
+            if (r.getStatus() == ReservationStatus.APPROVED || r.getStatus() == ReservationStatus.PENDING) {
+                r.setStatus(ReservationStatus.RELEASED);
+                reservationRepository.save(r);
+            }
+        }
     }
 
     /** Undo the checkout deduction, under the same row lock checkout uses. */
