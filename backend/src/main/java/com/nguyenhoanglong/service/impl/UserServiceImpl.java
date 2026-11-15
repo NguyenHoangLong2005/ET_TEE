@@ -314,7 +314,9 @@ public class UserServiceImpl implements UserService {
                     .map(RolePermissionEntity::getPermission)
                     .collect(Collectors.toList());
 
-            if (permissionList.isEmpty()) {
+            // Same rule as JwtAuthenticationFilter: defaults only for a role never configured. A configured
+            // role with no rows was emptied on purpose and has no rights; showing the defaults hid that.
+            if (permissionList.isEmpty() && !rolePermissionService.isRoleConfigured(code)) {
                 permissionList = getDefaultPermissionsForRole(roleEnum);
             }
 

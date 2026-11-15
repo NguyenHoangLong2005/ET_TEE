@@ -63,6 +63,7 @@ public class MarketingService {
         if (banner.getPosition() == null || banner.getPosition().trim().isEmpty()) {
             banner.setPosition("HOME_HERO");
         }
+        requireDateOrder(banner.getStartDate(), banner.getEndDate());
         if (banner.getStatus() == null) banner.setStatus("ACTIVE");
         banner.setIsActive("ACTIVE".equalsIgnoreCase(banner.getStatus()));
         banner.setCreatedBy(createdBy);
@@ -91,9 +92,17 @@ public class MarketingService {
         }
         if (updates.getStartDate() != null) existing.setStartDate(updates.getStartDate());
         if (updates.getEndDate() != null) existing.setEndDate(updates.getEndDate());
+        requireDateOrder(existing.getStartDate(), existing.getEndDate());
         existing.setUpdatedBy(updatedBy);
         existing.setUpdatedAt(LocalDateTime.now());
         return bannerRepository.save(existing);
+    }
+
+    /** A banner ending before it starts was saved and then never shown. Vouchers and campaigns already check this. */
+    private static void requireDateOrder(LocalDateTime start, LocalDateTime end) {
+        if (start != null && end != null && start.isAfter(end)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
+        }
     }
 
     @Transactional
@@ -1283,6 +1292,12 @@ public class MarketingService {
     // ═════════════════════════════════════════════════════════════════════
     // PUBLIC — Product fetch for frontend
     // ═════════════════════════════════════════════════════════════════════
+
+    /** The product, if it can still be bought (not paused, not deleted). */
+    public Optional<Product> findProductOnSale(Long id) {
+        return id == null ? Optional.empty()
+                : productRepository.findById(id).filter(p -> "ACTIVE".equals(p.getStatus()));
+    }
 
     public Product getProductById(Long id) {
         return productRepository.findById(id)

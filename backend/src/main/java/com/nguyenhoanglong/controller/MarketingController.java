@@ -71,24 +71,25 @@ public class MarketingController {
 
     @GetMapping("/trending")
     public ResponseEntity<Map<String, Object>> getTrendingProduct() {
-        List<ProductPlacement> placements = marketingService.getActivePlacementsByKey("HOME_TRENDING");
+        // First placement whose product is still on sale. It used to take the first placement blindly:
+        // a paused product was featured, and a deleted one made the endpoint fail (404) so the block
+        // stayed empty although other placements existed.
         Map<String, Object> response = new HashMap<>();
-        
-        if (placements.isEmpty()) {
-            // Fallback to best seller if no trending placement
-            placements = marketingService.getActivePlacementsByKey("HOME_BEST_SELLER");
+        Product product = null;
+        for (String key : List.of("HOME_TRENDING", "HOME_BEST_SELLER")) {
+            for (ProductPlacement placement : marketingService.getActivePlacementsByKey(key)) {
+                product = marketingService.findProductOnSale(placement.getProductId()).orElse(null);
+                if (product != null) break;
+            }
+            if (product != null) break;
         }
-        
-        if (placements.isEmpty()) {
+
+        if (product == null) {
             response.put("success", true);
             response.put("data", null);
             return ResponseEntity.ok(response);
         }
-        
-        // Get first active placement's product
-        ProductPlacement placement = placements.get(0);
-        Product product = marketingService.getProductById(placement.getProductId());
-        
+
         // Get first image URL from images list
         String imageUrl = "";
         if (product.getImages() != null && !product.getImages().isEmpty()) {
@@ -168,7 +169,13 @@ public class MarketingController {
             @RequestParam(required = false) String key) {
         List<ProductPlacement> data;
         if (key == null || key.isEmpty()) {
-            data = marketingService.getAllPlacements();
+            // Public endpoint: drafts, paused and expired placements are staff data.
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            data = marketingService.getAllPlacements().stream()
+                    .filter(p -> "ACTIVE".equalsIgnoreCase(p.getStatus()))
+                    .filter(p -> p.getStartDate() == null || !p.getStartDate().isAfter(now))
+                    .filter(p -> p.getEndDate() == null || !p.getEndDate().isBefore(now))
+                    .toList();
         } else {
             data = marketingService.getActivePlacementsByKey(key);
         }
