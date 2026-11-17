@@ -33,7 +33,9 @@ TEXT_MODEL = "sentence-transformers/clip-ViT-B-32-multilingual-v1"
 TEXT_MODEL_REVISION = "58edf8cada9e398793dca955574a48cbb7f18be2"
 MODEL = f"img={IMAGE_MODEL}@{IMAGE_MODEL_REVISION[:12]}|txt={TEXT_MODEL}@{TEXT_MODEL_REVISION[:12]}"
 
-MAX_TEXT = 200
+# Product texts built by the backend (ProductEmbeddingService, same as build_text in the notebook) reach
+# ~450 characters; search queries are capped at 200 upstream. The text model truncates at 128 tokens anyway.
+MAX_TEXT = 1000
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 MAX_PIXELS = 4000 * 4000
 

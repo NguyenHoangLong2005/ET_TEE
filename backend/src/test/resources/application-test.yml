@@ -24,6 +24,10 @@ app:
   # scheduled marketing automations / real email off in tests (they are unit-tested directly)
   lifecycle:
     enabled: false
+  # product_embeddings is a pgvector table, absent from the H2 schema
+  embeddings:
+    auto:
+      enabled: false
   marketing:
     email:
       enabled: false
