@@ -207,13 +207,13 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
       else if (sale >= price) e.sale = 'Phải nhỏ hơn giá niêm yết.';
     }
     if (form.images.some((i) => !i.imageUrl.trim())) e.images = 'Có ảnh chưa nhập đường dẫn.';
-    if (!isEdit) {
-      const skus = form.variants.map((v) => v.sku.trim().toLowerCase());
-      if (form.variants.length === 0) e.variants = 'Cần ít nhất một biến thể.';
-      else if (skus.some((s) => !s)) e.variants = 'Mỗi biến thể cần có SKU.';
-      else if (new Set(skus).size !== skus.length) e.variants = 'SKU bị trùng nhau.';
-      else if (form.variants.some((v) => v.stock === '' || Number(v.stock) < 0 || !Number.isInteger(Number(v.stock)))) e.variants = 'Tồn kho phải là số nguyên từ 0 trở lên.';
-    }
+    // Creating: every row. Editing: only the rows added now (existing variants are read-only).
+    const editable = isEdit ? form.variants.filter((v) => v.id == null) : form.variants;
+    const skus = form.variants.map((v) => v.sku.trim().toLowerCase());
+    if (!isEdit && form.variants.length === 0) e.variants = 'Cần ít nhất một biến thể.';
+    else if (editable.some((v) => !v.sku.trim())) e.variants = 'Mỗi biến thể cần có SKU.';
+    else if (new Set(skus).size !== skus.length) e.variants = 'SKU bị trùng nhau.';
+    else if (editable.some((v) => v.stock === '' || Number(v.stock) < 0 || !Number.isInteger(Number(v.stock)))) e.variants = 'Tồn kho phải là số nguyên từ 0 trở lên.';
     // `price` / `sale` are the parsed numbers, only meaningful when `e` has no price errors
     return { e, price, sale } as { e: Record<string, string>; price: number | null; sale: number | null };
   }, [form, isEdit]);
@@ -242,11 +242,12 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
         status: form.active ? 'ACTIVE' : 'INACTIVE',
         images: form.images.map((i, idx) => ({ imageUrl: i.imageUrl.trim(), alt: i.alt.trim(), isPrimary: idx === 0 })),
       };
+      // On edit only the new rows are sent; the server adds them and leaves existing variants alone.
+      payload.variants = form.variants.filter((v) => !isEdit || v.id == null).map((v) => ({
+        sku: v.sku.trim(), color: v.color.trim() || null, colorHex: v.colorHex.trim() || null,
+        size: v.size.trim() || null, stock: Number(v.stock),
+      }));
       if (!isEdit) {
-        payload.variants = form.variants.map((v) => ({
-          sku: v.sku.trim(), color: v.color.trim() || null, colorHex: v.colorHex.trim() || null,
-          size: v.size.trim() || null, stock: Number(v.stock),
-        }));
         await apiClient.post('/api/store-owner/products', payload);
         toast.success('Đã tạo sản phẩm');
       } else {
@@ -484,7 +485,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Biến thể (màu / size)</h4>
-                  {!isEdit && (
+                  {(
                     <Button type="button" size="sm" variant="outline" icon={<Plus className="w-4 h-4" />}
                       onClick={() => set({ variants: [...form.variants, { sku: '', color: '', colorHex: '', size: '', stock: 0 }] })}>
                       Thêm biến thể
@@ -500,7 +501,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {form.variants.length === 0 && <tr><td colSpan={4} className="px-3 py-3 text-center text-slate-400">Sản phẩm chưa có biến thể.</td></tr>}
-                          {form.variants.map((v) => (
+                          {form.variants.filter((v) => v.id != null).map((v) => (
                             <tr key={v.id}>
                               <td className="px-3 py-2 font-mono text-xs">{v.sku}</td>
                               <td className="px-3 py-2">{v.color || '—'}</td>
@@ -511,14 +512,16 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                         </tbody>
                       </table>
                     </div>
-                    <p className="text-xs text-slate-500">Tồn kho không sửa trực tiếp ở đây: để bổ sung hàng, dùng “Nhập bổ sung” ở mục Tồn kho (chọn đúng màu / size), số lượng được cộng vào hàng bán được ngay.</p>
+                    <p className="text-xs text-slate-500">Tồn kho không sửa trực tiếp ở đây: để bổ sung hàng, dùng “Nhập bổ sung” ở mục Tồn kho (chọn đúng màu / size), số lượng được cộng vào hàng bán được ngay. Màu / size mới thì bấm “Thêm biến thể”.</p>
                   </>
-                ) : (
+                ) : null}
+                {(!isEdit || form.variants.some((v) => v.id == null)) && (
                   <>
                     <div className="grid grid-cols-12 gap-2 px-1 text-[11px] font-bold uppercase text-slate-400">
                       <span className="col-span-4">SKU *</span><span className="col-span-3">Màu</span><span className="col-span-2">Size</span><span className="col-span-2">Tồn kho</span><span />
                     </div>
                     {form.variants.map((v, i) => {
+                      if (isEdit && v.id != null) return null; // existing variants are listed above
                       const upd = (patch: Partial<VariantForm>) => set({ variants: form.variants.map((x, k) => (k === i ? { ...x, ...patch } : x)) });
                       return (
                         <div key={i} className="grid grid-cols-12 items-center gap-2">
@@ -526,7 +529,7 @@ export default function ProductFormModal({ productId, onClose, onSaved }: Props)
                           <input className={`${inputClass} col-span-3`} value={v.color} onChange={(e) => upd({ color: e.target.value })} placeholder="Trắng" />
                           <input className={`${inputClass} col-span-2`} value={v.size} onChange={(e) => upd({ size: e.target.value })} placeholder="M" />
                           <input type="number" min="0" className={`${inputClass} col-span-2`} value={v.stock} onChange={(e) => upd({ stock: e.target.value })} />
-                          <button type="button" aria-label="Xóa biến thể" disabled={form.variants.length === 1}
+                          <button type="button" aria-label="Xóa biến thể" disabled={!isEdit && form.variants.length === 1}
                             onClick={() => set({ variants: form.variants.filter((_, k) => k !== i) })}
                             className="justify-self-center p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50 disabled:opacity-30 disabled:pointer-events-none transition-colors">
                             <Trash2 className="w-4 h-4" />

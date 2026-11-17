@@ -1111,6 +1111,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       : 'Thanh toán khi nhận hàng (COD)',
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
+                // A cancelled or returned order that was paid: show that the refund is coming / done.
+                if (o['paymentStatus'] == 'REFUND_PENDING')
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text('Cửa hàng đang hoàn tiền cho bạn.', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
+                  ),
+                if (o['paymentStatus'] == 'REFUNDED')
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text('Đã hoàn tiền.', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.emerald700)),
+                  ),
               ]),
             ),
           const SizedBox(height: 16),

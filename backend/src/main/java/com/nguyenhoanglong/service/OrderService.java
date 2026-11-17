@@ -53,6 +53,22 @@ public class OrderService {
     @Autowired
     private OrderStockService orderStockService;
 
+    @Autowired(required = false)
+    @org.springframework.beans.factory.annotation.Qualifier("taskExecutor")
+    private org.springframework.core.task.TaskExecutor taskExecutor;
+
+    private void runInBackground(Runnable task) {
+        try {
+            if (taskExecutor != null) {
+                taskExecutor.execute(task);
+                return;
+            }
+        } catch (RuntimeException e) {
+            log.warn("Background executor refused a task, running it inline", e);
+        }
+        task.run();
+    }
+
     @Autowired
     private PayOsService payOsService;
 
@@ -89,10 +105,10 @@ public class OrderService {
     public OrderResponse checkout(User user, String guestToken, CheckoutRequest request) {
         Cart cart;
         if (user != null) {
-            cart = cartRepository.findByUserId(user.getId())
+            cart = cartRepository.findByUserIdForUpdate(user.getId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng không tồn tại"));
         } else if (guestToken != null && !guestToken.trim().isEmpty()) {
-            cart = cartRepository.findByGuestToken(guestToken)
+            cart = cartRepository.findByGuestTokenForUpdate(guestToken)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng không tồn tại"));
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu thông tin giỏ hàng");
@@ -181,7 +197,7 @@ public class OrderService {
             variantRepository.save(variant);
 
             // sold_count khong con tang o day: no chi thay doi khi don thuc su
-            // giao thanh cong (xem SoldCountService, goi tu OrderTransitionService /
+            // giao thanh cong (xem SoldCountService, goi tu SalesOrderService /
             // ShippingService.delivered()). Truoc day tang o checkout khien don
             // chua bao gio giao van duoc tinh la "da ban".
 
@@ -319,7 +335,25 @@ public class OrderService {
                               "<p>Vui lòng chuyển khoản trong vòng " + unpaidExpiryHours + " giờ, quá hạn đơn hàng sẽ tự động hủy.</p>";
         }
         String customerEmail = user != null ? user.getEmail() : request.getCustomerEmail();
-        mailService.sendOrderConfirmation(customerEmail, orderCode, savedOrder.getTotalAmount(), request.getPaymentMethod(), bankDetailsHtml);
+        // Sent once the order is committed, off the request thread. It used to run inside this transaction
+        // while the variant rows (and the cart) were locked, so a slow SMTP server held up every other
+        // checkout of the same products, and a checkout that then failed had already mailed the customer.
+        final String mailTo = customerEmail;
+        final String mailBank = bankDetailsHtml;
+        final Double mailTotal = savedOrder.getTotalAmount();
+        final String mailMethod = request.getPaymentMethod();
+        Runnable sendMail = () -> mailService.sendOrderConfirmation(mailTo, orderCode, mailTotal, mailMethod, mailBank);
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            runInBackground(sendMail);
+                        }
+                    });
+        } else {
+            sendMail.run();
+        }
 
         return mapToResponse(savedOrder);
     }

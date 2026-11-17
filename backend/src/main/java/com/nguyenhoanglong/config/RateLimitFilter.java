@@ -28,6 +28,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, Bucket> checkEmailBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> behaviorEventBuckets = new ConcurrentHashMap<>();
     private final Map<String, Bucket> imageSearchBuckets = new ConcurrentHashMap<>();
+    // The newsletter form now e-mails a confirmation link to whatever address is typed, and a guest
+    // checkout mails the order and holds stock: without a limit both could be scripted at will.
+    private final Map<String, Bucket> newsletterBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> checkoutBuckets = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -64,6 +68,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
             Bucket bucket = imageSearchBuckets.computeIfAbsent(ipAddress, k -> createImageSearchBucket());
             if (!bucket.tryConsume(1)) {
                 sendRateLimitResponse(response, "Quá nhiều lượt tìm bằng ảnh. Vui lòng thử lại sau.");
+                return;
+            }
+        } else if (uri.equals("/api/public/newsletter") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = newsletterBuckets.computeIfAbsent(ipAddress, k -> Bucket.builder()
+                    .addLimit(Bandwidth.classic(5, Refill.greedy(5, Duration.ofHours(1)))).build());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều lượt đăng ký nhận tin. Vui lòng thử lại sau.");
+                return;
+            }
+        } else if (uri.equals("/api/orders/checkout") && request.getMethod().equalsIgnoreCase("POST")) {
+            Bucket bucket = checkoutBuckets.computeIfAbsent(ipAddress, k -> Bucket.builder()
+                    .addLimit(Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(10)))).build());
+            if (!bucket.tryConsume(1)) {
+                sendRateLimitResponse(response, "Quá nhiều lượt đặt hàng trong thời gian ngắn. Vui lòng thử lại sau ít phút.");
                 return;
             }
         } else if (uri.equals("/api/events") && request.getMethod().equalsIgnoreCase("POST")) {

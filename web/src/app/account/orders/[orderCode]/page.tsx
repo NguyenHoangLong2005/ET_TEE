@@ -422,6 +422,13 @@ export default function OrderDetailsPage() {
                     ? `Chuyển khoản ngân hàng${order.paymentStatus === 'PAID' ? ' (đã thanh toán)' : ''}`
                     : 'Thanh toán khi nhận hàng (COD)'}
                 </p>
+                {/* A cancelled or returned order that was paid: the customer must see the refund is coming / done. */}
+                {order.paymentStatus === 'REFUND_PENDING' && (
+                  <p className="mt-1 text-xs font-semibold text-amber-700">Cửa hàng đang hoàn tiền cho bạn.</p>
+                )}
+                {order.paymentStatus === 'REFUNDED' && (
+                  <p className="mt-1 text-xs font-semibold text-emerald-700">Đã hoàn tiền.</p>
+                )}
               </div>
             </section>
           )}

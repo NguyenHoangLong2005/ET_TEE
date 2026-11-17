@@ -110,9 +110,33 @@ public class BankTransferPaymentService {
             order.setPaymentMethod("BANK_TRANSFER");
             order.setPaymentStatus("PAID");
             reason = "Khách đã chuyển khoản sau khi đổi sang COD: đơn chuyển lại thành đã thanh toán, không thu hộ. " + detail;
+        } else if ("COD".equalsIgnoreCase(order.getPaymentMethod()) && "COD_PENDING".equalsIgnoreCase(paymentStatus)
+                && (status == OrderStatus.HANDED_TO_CARRIER || status == OrderStatus.SHIPPING)) {
+            // Already with the courier: the parcel must not be paid a second time on delivery. The
+            // waybill's COD amount goes to 0 (reconciliation and the courier's slip read it), and staff
+            // are told to have the courier drop the collection. It used to only raise a notification.
+            order.setPaymentMethod("BANK_TRANSFER");
+            order.setPaymentStatus("PAID");
+            if (shipmentRepository != null) {
+                shipmentRepository.findByOrderId(order.getId())
+                        .filter(sh -> sh.getStatus() != com.nguyenhoanglong.entity.ShipmentStatus.DELIVERED
+                                && sh.getStatus() != com.nguyenhoanglong.entity.ShipmentStatus.RETURNED)
+                        .ifPresent(sh -> {
+                            sh.setCodAmount(java.math.BigDecimal.ZERO);
+                            shipmentRepository.save(sh);
+                        });
+            }
+            reason = "Khách đã chuyển khoản khi đơn COD đang giao: đơn thành đã thanh toán, vận đơn không còn thu hộ."
+                    + " Cần báo hãng vận chuyển không thu tiền khi giao. " + detail;
         } else {
-            salesNotificationService.notifyPaymentNeedsAttention(order, "Tiền chuyển khoản cần kiểm tra",
-                    "Đơn " + order.getOrderCode() + " (" + status + ") nhận được chuyển khoản ngoài luồng. " + detail);
+            // Delivered and paid in cash too, or a state no rule covers: a person has to sort it out.
+            boolean paidTwice = "COD_COLLECTED".equalsIgnoreCase(paymentStatus);
+            salesNotificationService.notifyPaymentNeedsAttention(order,
+                    paidTwice ? "Khách thanh toán hai lần" : "Tiền chuyển khoản cần kiểm tra",
+                    "Đơn " + order.getOrderCode() + " (" + status + ") "
+                            + (paidTwice ? "đã thu tiền mặt khi giao và nhận thêm chuyển khoản: cần hoàn lại khoản chuyển khoản. "
+                                         : "nhận được chuyển khoản ngoài luồng. ")
+                            + detail);
             return order;
         }
         order.setUpdatedAt(LocalDateTime.now());
@@ -127,10 +151,15 @@ public class BankTransferPaymentService {
         historyRepository.save(history);
 
         salesNotificationService.notifyPaymentNeedsAttention(saved,
-                status == OrderStatus.CANCELLED ? "Đơn đã hủy cần hoàn tiền" : "Đơn COD đã được chuyển khoản",
+                status == OrderStatus.CANCELLED ? "Đơn đã hủy cần hoàn tiền"
+                        : status == OrderStatus.HANDED_TO_CARRIER || status == OrderStatus.SHIPPING
+                        ? "Đơn đang giao đã được chuyển khoản: báo hãng không thu hộ" : "Đơn COD đã được chuyển khoản",
                 "Đơn " + saved.getOrderCode() + ": " + reason);
         return saved;
     }
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.nguyenhoanglong.repository.ShipmentRepository shipmentRepository;
 
     public static boolean isPaid(Order order) {
         return "PAID".equalsIgnoreCase(order.getPaymentStatus());

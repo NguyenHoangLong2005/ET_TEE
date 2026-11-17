@@ -122,7 +122,7 @@ class OrderServiceTest {
     @Test
     void checkout_withoutShippingAddress_isRejected() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         CheckoutRequest req = checkoutRequest();
         req.setShippingAddress("   ");
 
@@ -135,7 +135,7 @@ class OrderServiceTest {
     @Test
     void checkout_bankTransferFullyCoveredByVoucher_goesStraightToConfirmationQueue() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
         com.nguyenhoanglong.entity.Voucher voucher = new com.nguyenhoanglong.entity.Voucher();
@@ -161,7 +161,7 @@ class OrderServiceTest {
     @Test
     void checkout_userCart_picksPriceFromVariantNotCart() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 2))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> {
             Order o = inv.getArgument(0);
@@ -198,7 +198,7 @@ class OrderServiceTest {
         // Two sequential checkouts must produce two different codes.
         for (int i = 0; i < 3; i++) {
             Cart cart = makeCart(i + 1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L + i, variant, 1))));
-            when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+            when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
             when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
             when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -216,7 +216,7 @@ class OrderServiceTest {
     @Test
     void checkout_notEnoughStock_throwsAndDoesNotSave() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 11))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         // availableQuantity is 10; requesting 11 must fail.
         when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
 
@@ -232,7 +232,7 @@ class OrderServiceTest {
     void checkout_usesSalePriceWhenPresent() {
         variant.setSalePrice(new BigDecimal("150000"));
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 2))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -248,7 +248,7 @@ class OrderServiceTest {
     @Test
     void checkout_emptyCart_throws() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>());
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         assertThatThrownBy(() -> orderService.checkout(user, null, checkoutRequest()))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("trống");
@@ -257,7 +257,7 @@ class OrderServiceTest {
     @Test
     void checkout_invalidPaymentMethod_throws() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         CheckoutRequest req = checkoutRequest();
         req.setPaymentMethod("BITCOIN");
 
@@ -269,7 +269,7 @@ class OrderServiceTest {
     @Test
     void checkout_bankTransfer_setsPendingPaymentStatus() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
-        when(cartRepository.findByUserId("user-1")).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
         when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 

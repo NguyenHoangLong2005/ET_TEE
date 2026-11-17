@@ -356,6 +356,8 @@ public class SalesOrderService {
             orderStockService.restoreWarehouseOnHand(order, OrderStatus.RETURN_REQUESTED);
             soldCountService.syncForStatus(order, target);
             forgetPurchase(order);
+            // Campaign revenue (analytics CONVERSION rows) kept counting returned orders.
+            marketingService.forgetConversion(order.getId());
             String paid = order.getPaymentStatus();
             if ("PAID".equalsIgnoreCase(paid) || "COD_COLLECTED".equalsIgnoreCase(paid)) {
                 order.setPaymentStatus("REFUND_PENDING");
