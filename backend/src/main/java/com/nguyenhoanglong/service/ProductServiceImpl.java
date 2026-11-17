@@ -43,6 +43,14 @@ public class ProductServiceImpl implements ProductService {
         this.categoryRepository = categoryRepository;
     }
 
+    /** Refreshes the product's CLIP embedding after commit (ProductEmbeddingService); null in plain unit tests. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private org.springframework.context.ApplicationEventPublisher events;
+
+    private void productContentChanged(Long id) {
+        if (events != null && id != null) events.publishEvent(new com.nguyenhoanglong.recsys.ProductContentChangedEvent(id));
+    }
+
     // The DB is remote, so every listing costs several network round-trips.
     // Short-lived cache; cleared on product create/update/delete.
     private static final com.nguyenhoanglong.util.TtlCache<String, PaginatedResponseDto<ProductDto>> LISTING_CACHE =
@@ -193,6 +201,7 @@ public class ProductServiceImpl implements ProductService {
             inv.setShopId(1L);
             inventoryRepository.save(inv);
         }
+        productContentChanged(saved.getId());
         return mapToDto(saved);
     }
 
@@ -204,6 +213,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với id: " + id));
         applyDtoToProduct(productDto, product);
         Product saved = productRepository.save(product);
+        productContentChanged(saved.getId());
         return mapToDto(saved);
     }
 

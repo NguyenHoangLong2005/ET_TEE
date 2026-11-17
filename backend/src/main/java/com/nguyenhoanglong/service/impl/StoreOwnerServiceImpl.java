@@ -53,6 +53,10 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
     @org.springframework.context.annotation.Lazy
     private com.nguyenhoanglong.service.WarehouseService warehouseService;
 
+    /** Refreshes the product's CLIP embedding after commit (ProductEmbeddingService). */
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.context.ApplicationEventPublisher events;
+
     public StoreOwnerServiceImpl(ProductVariantRepository variantRepository,
                                  ManufacturerRepository manufacturerRepository,
                                  SupplierRepository supplierRepository,
@@ -442,6 +446,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
 
         auditProductChange("PRODUCT_CREATE", saved, "Tạo sản phẩm " + saved.getName(), "-");
+        if (events != null) events.publishEvent(new com.nguyenhoanglong.recsys.ProductContentChangedEvent(saved.getId()));
         return toForm(saved);
     }
 
@@ -512,6 +517,7 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
             inventoryRepository.save(inv);
         }
         auditProductChange("PRODUCT_UPDATE", saved, "Sửa sản phẩm " + saved.getName(), before);
+        if (events != null) events.publishEvent(new com.nguyenhoanglong.recsys.ProductContentChangedEvent(saved.getId()));
         return toForm(saved);
     }
 
