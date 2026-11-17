@@ -136,7 +136,12 @@ export default function ProductCard({
             validHoverImage ? 'group-hover:opacity-0' : ''
           }`}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/images/products/placeholder.webp';
+            // Swap to the placeholder once. Without the guard, a failing placeholder fired
+            // onError again forever and the browser kept redrawing the alt text over the card.
+            const img = e.currentTarget;
+            if (img.dataset.fallback) return;
+            img.dataset.fallback = '1';
+            img.src = '/images/products/placeholder.webp';
           }}
         />
 
