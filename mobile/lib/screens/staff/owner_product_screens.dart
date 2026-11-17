@@ -184,13 +184,12 @@ class _OwnerProductFormScreenState extends State<OwnerProductFormScreen> {
       if (sale % 1000 != 0) return 'Giá khuyến mãi phải là bội số của 1.000đ.';
       if (sale >= price) return 'Giá khuyến mãi phải nhỏ hơn giá niêm yết.';
     }
-    if (!_isEdit) {
-      if (_variants.isEmpty) return 'Cần ít nhất một biến thể.';
-      final skus = _variants.map((v) => v.sku.text.trim().toLowerCase()).toList();
-      if (skus.any((s) => s.isEmpty)) return 'Mỗi biến thể cần có SKU.';
-      if (skus.toSet().length != skus.length) return 'SKU bị trùng nhau.';
-      if (_variants.any((v) => (int.tryParse(v.stock.text.trim()) ?? -1) < 0)) return 'Tồn kho phải là số nguyên từ 0 trở lên.';
-    }
+    // Editing: _variants holds only the colours / sizes added now (existing ones are not editable here).
+    if (!_isEdit && _variants.isEmpty) return 'Cần ít nhất một biến thể.';
+    final skus = _variants.map((v) => v.sku.text.trim().toLowerCase()).toList();
+    if (skus.any((s) => s.isEmpty)) return 'Mỗi biến thể cần có SKU.';
+    if (skus.toSet().length != skus.length) return 'SKU bị trùng nhau.';
+    if (_variants.any((v) => (int.tryParse(v.stock.text.trim()) ?? -1) < 0)) return 'Tồn kho phải là số nguyên từ 0 trở lên.';
     return null;
   }
 
@@ -215,7 +214,7 @@ class _OwnerProductFormScreenState extends State<OwnerProductFormScreen> {
       'images': [
         for (var i = 0; i < _images.length; i++) {'imageUrl': _images[i], 'alt': '', 'isPrimary': i == 0},
       ],
-      if (!_isEdit)
+      if (!_isEdit || _variants.isNotEmpty)
         'variants': [
           for (final v in _variants)
             {'sku': v.sku.text.trim(), 'color': t(v.color), 'colorHex': t(v.colorHex), 'size': t(v.size), 'stock': int.parse(v.stock.text.trim())},
@@ -400,8 +399,12 @@ class _OwnerProductFormScreenState extends State<OwnerProductFormScreen> {
                   ],
                 ),
               ]),
-              if (!_isEdit)
-                _card('Biến thể (màu / size)', [
+              if (_isEdit)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 14),
+                  child: NoticeBox('Tồn kho của biến thể đã có được quản lý ở mục Tồn kho / Nhập hàng. Màu / size mới thì thêm ở dưới.'),
+                ),
+              _card(_isEdit ? 'Thêm màu / size mới' : 'Biến thể (màu / size)', [
                   for (var i = 0; i < _variants.length; i++)
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
@@ -433,7 +436,7 @@ class _OwnerProductFormScreenState extends State<OwnerProductFormScreen> {
                             ),
                           ),
                           IconButton(
-                            onPressed: _variants.length == 1 ? null : () => setState(() => _variants.removeAt(i).dispose()),
+                            onPressed: !_isEdit && _variants.length == 1 ? null : () => setState(() => _variants.removeAt(i).dispose()),
                             icon: const Icon(Icons.delete_outline, color: AppColors.slate400),
                           ),
                         ],
@@ -446,12 +449,7 @@ class _OwnerProductFormScreenState extends State<OwnerProductFormScreen> {
                     icon: Icons.add,
                     onPressed: () => setState(() => _variants.add(_Variant())),
                   ),
-                ])
-              else
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 14),
-                  child: NoticeBox('Biến thể và tồn kho của sản phẩm đã có được quản lý ở mục Tồn kho / Nhập hàng.'),
-                ),
+                ]),
               StaffButton(_isEdit ? 'Lưu thay đổi' : 'Tạo sản phẩm', expand: true, height: 48, loading: _saving, onPressed: _saving ? null : _save),
               const SizedBox(height: 24),
             ],

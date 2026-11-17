@@ -266,6 +266,22 @@ public class StaffMarketingController {
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * Publish / unpublish from the post list (web and mobile call it). The endpoint did not exist, so the
+     * toggle always failed and posts could only change status through the full edit form.
+     */
+    @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING, T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
+    @PatchMapping("/posts/{id}/status")
+    public ResponseEntity<MarketingPost> updatePostStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body == null ? null : body.get("status");
+        if (status == null || status.isBlank()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu trạng thái bài viết");
+        }
+        MarketingPost updates = new MarketingPost();
+        updates.setStatus(status);
+        return ResponseEntity.ok(marketingService.updatePost(id, updates, getCurrentUserIdentifier()));
+    }
+
     @PreAuthorize("hasAnyAuthority(T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_BANNER_LANDING, T(com.nguyenhoanglong.constant.PermissionConstants).MANAGE_CAMPAIGN_PROMO)")
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long id) {

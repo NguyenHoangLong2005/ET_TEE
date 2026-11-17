@@ -91,6 +91,21 @@ class BankTransferPaymentServiceTest {
     }
 
     @Test
+    void latePaymentWhileTheCodParcelIsWithTheCourierStopsTheCollection() {
+        when(orders.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        Order o = waitingTransfer();
+        o.setPaymentMethod("COD");
+        o.setPaymentStatus("COD_PENDING");
+        o.setStatus(OrderStatus.SHIPPING);
+
+        Order saved = service.recordLatePayment(o, "SEPAY", "tx 3");
+
+        assertThat(saved.getPaymentMethod()).isEqualTo("BANK_TRANSFER");
+        assertThat(saved.getPaymentStatus()).isEqualTo("PAID");
+        assertThat(saved.getStatus()).isEqualTo(OrderStatus.SHIPPING);
+    }
+
+    @Test
     void alreadyPaidIsANoOp() {
         Order o = waitingTransfer();
         o.setPaymentStatus("PAID");

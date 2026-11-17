@@ -169,22 +169,11 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
 
     private static final BigDecimal PRICE_STEP = BigDecimal.valueOf(1000);
 
-    /**
-     * A deleted product is gone for good (its slug was freed, carts were cleaned). Editing it
-     * or bulk-activating it used to put it back on sale under its "-deleted-" slug.
-     */
-    private static void rejectDeleted(Product product) {
-        if ("DELETED".equalsIgnoreCase(product.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm đã bị xóa");
-        }
-    }
-
     @Override
     @Transactional
     public ShopProductDto updateProductPricing(Long productId, ProductPriceUpdateDto dto) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm với ID: " + productId));
-        rejectDeleted(product);
 
         BigDecimal price = dto.getPrice();
         BigDecimal salePrice = dto.getSalePrice();
@@ -461,7 +450,6 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
     public StoreProductFormDto updateProduct(Long productId, StoreProductFormDto f) {
         Product p = productRepository.findByIdWithDetails(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm với ID: " + productId));
-        rejectDeleted(p);
         validateProductForm(f);
         String before = describePricing(p);
 
@@ -478,7 +466,51 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
         if (f.images != null) applyImages(p, f.images);
 
+        // New colours / sizes (rows without an id). Existing variants stay as they are: their stock is the
+        // warehouse's. There was no way to add a size to a product already on sale; the owner had to
+        // create a duplicate product.
+        int addedStock = 0;
+        if (f.variants != null) {
+            Set<String> skus = new HashSet<>();
+            for (StoreProductFormDto.VariantForm v : f.variants) {
+                if (v.id != null) continue;
+                String sku = trimToNull(v.sku);
+                if (sku == null) throw bad("Biến thể mới cần có SKU");
+                if (sku.length() > 100) throw bad("SKU tối đa 100 ký tự");
+                if (!skus.add(sku.toLowerCase())) throw bad("SKU bị trùng trong form: " + sku);
+                if (variantRepository.existsBySku(sku)) throw new ResponseStatusException(HttpStatus.CONFLICT, "SKU đã tồn tại: " + sku);
+                if (v.stock == null || v.stock < 0) throw bad("Tồn kho của SKU " + sku + " phải từ 0 trở lên");
+                ProductVariant variant = new ProductVariant();
+                variant.setSku(sku);
+                variant.setColor(trimToNull(v.color));
+                variant.setColorHex(trimToNull(v.colorHex));
+                variant.setSize(trimToNull(v.size));
+                variant.setPrice(f.price);
+                variant.setSalePrice(f.salePrice);
+                variant.setStock(v.stock);
+                variant.setAvailableQuantity(v.stock);
+                p.addVariant(variant);
+                addedStock += v.stock;
+            }
+        }
+
         Product saved = productRepository.save(p);
+        if (addedStock > 0) {
+            final int added = addedStock;
+            Inventory inv = inventoryRepository.findByProductIdWithLock(saved.getId()).orElseGet(() -> {
+                Inventory created = new Inventory();
+                created.setProductId(saved.getId());
+                String name = saved.getName();
+                created.setProductName(name.length() > 200 ? name.substring(0, 200) : name);
+                created.setQuantityOnHand(0);
+                created.setQuantityReserved(0);
+                created.setReorderLevel(10);
+                created.setShopId(currentActorShopId());
+                return created;
+            });
+            inv.setQuantityOnHand(inv.getQuantityOnHand() + added);
+            inventoryRepository.save(inv);
+        }
         auditProductChange("PRODUCT_UPDATE", saved, "Sửa sản phẩm " + saved.getName(), before);
         return toForm(saved);
     }
@@ -554,7 +586,6 @@ com.nguyenhoanglong.service.DataAuditService dataAuditService,
         }
         int changed = 0;
         for (Product product : productRepository.findAllById(sanitizeBulkIds(productIds))) {
-            if ("DELETED".equalsIgnoreCase(product.getStatus())) continue;
             String before = describePricing(product);
             switch (act) {
                 case "ACTIVATE" -> {

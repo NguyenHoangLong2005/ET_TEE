@@ -715,6 +715,12 @@ public class MarketingService {
      * Its CONVERSION event goes too, or analytics keeps counting the cancelled
      * order (and its revenue) as a promotion order.
      */
+    /** The order's goods came back: it no longer counts as a promotion sale (the voucher use stays spent). */
+    @Transactional
+    public void forgetConversion(Long orderId) {
+        if (orderId != null) analyticsRepository.deleteConversionsByOrderId(orderId);
+    }
+
     @Transactional
     public void releaseVoucherUsage(Long orderId, String orderCode) {
         List<VoucherRedemption> records = redemptionRepository.findByOrderCode(orderCode);
@@ -887,14 +893,20 @@ public class MarketingService {
 
     @Transactional
     public ProductPlacement createPlacement(ProductPlacement p, String createdBy) {
+        // A client-sent id turned the insert into an overwrite of another placement.
+        p.setId(null);
         if (p.getPlacementKey() == null || p.getPlacementKey().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "placementKey không được trống");
         }
         if (p.getProductId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "productId không được trống");
         }
-        productRepository.findById(p.getProductId())
+        Product placed = productRepository.findById(p.getProductId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại"));
+        if (!"ACTIVE".equals(placed.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sản phẩm đang tạm ngưng bán, không thể trưng bày");
+        }
+        requireDateOrder(p.getStartDate(), p.getEndDate());
 
         if (p.getStatus() == null) p.setStatus("ACTIVE");
         if (p.getPosition() == null || p.getPosition() == 0) {
@@ -918,6 +930,7 @@ public class MarketingService {
         if (updates.getStatus() != null) existing.setStatus(updates.getStatus());
         if (updates.getStartDate() != null) existing.setStartDate(updates.getStartDate());
         if (updates.getEndDate() != null) existing.setEndDate(updates.getEndDate());
+        requireDateOrder(existing.getStartDate(), existing.getEndDate());
         existing.setUpdatedBy(updatedBy);
         existing.setUpdatedAt(LocalDateTime.now());
         return placementRepository.save(existing);
@@ -1009,13 +1022,15 @@ public class MarketingService {
 
     @Transactional
     public MarketingPost createPost(MarketingPost post, String author) {
+        // Same reason as createBanner(): a client-sent id turned the insert into an overwrite of that post.
+        post.setId(null);
         if (post.getTitle() == null || post.getTitle().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tiêu đề bài viết không được để trống");
         }
-        if (post.getSlug() == null || post.getSlug().trim().isEmpty()) {
-            String slug = post.getTitle().toLowerCase().trim().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
-            post.setSlug(slug.isEmpty() ? "post-" + System.currentTimeMillis() : slug);
-        }
+        String requestedSlug = post.getSlug() == null ? "" : postSlug(post.getSlug());
+        String slug = requestedSlug.isEmpty() ? postSlug(post.getTitle()) : requestedSlug;
+        post.setSlug(slug.isEmpty() ? "post-" + System.currentTimeMillis() : slug);
+        post.setStatus(postStatus(post.getStatus() == null ? "DRAFT" : post.getStatus()));
         if (marketingPostRepository.existsBySlug(post.getSlug())) {
             post.setSlug(post.getSlug() + "-" + System.currentTimeMillis());
         }
@@ -1034,8 +1049,8 @@ public class MarketingService {
         MarketingPost existing = marketingPostRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bài viết"));
         if (updates.getTitle() != null) existing.setTitle(updates.getTitle().trim());
-        if (updates.getSlug() != null && !updates.getSlug().trim().isEmpty()) {
-            String newSlug = updates.getSlug().trim();
+        if (updates.getSlug() != null && !postSlug(updates.getSlug()).isEmpty()) {
+            String newSlug = postSlug(updates.getSlug());
             marketingPostRepository.findBySlug(newSlug).ifPresent(other -> {
                 if (!other.getId().equals(existing.getId())) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slug đã được sử dụng");
@@ -1048,13 +1063,37 @@ public class MarketingService {
         if (updates.getCoverImageUrl() != null) existing.setCoverImageUrl(updates.getCoverImageUrl());
         if (updates.getTags() != null) existing.setTags(updates.getTags());
         if (updates.getStatus() != null) {
-            existing.setStatus(updates.getStatus().toUpperCase());
+            existing.setStatus(postStatus(updates.getStatus()));
             if ("PUBLISHED".equalsIgnoreCase(updates.getStatus()) && existing.getPublishedAt() == null) {
                 existing.setPublishedAt(LocalDateTime.now());
             }
         }
         existing.setUpdatedAt(LocalDateTime.now());
         return marketingPostRepository.save(existing);
+    }
+
+    /**
+     * URL slug that keeps Vietnamese words readable: "Bộ sưu tập mùa đông" -> "bo-suu-tap-mua-dong".
+     * Stripping every non a-z character used to drop the accented letters ("b-s-u-t-p-m-a-ng").
+     */
+    static String postSlug(String input) {
+        String s = input == null ? "" : input.trim().toLowerCase().replace('đ', 'd');
+        s = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+        return s.length() > 200 ? s.substring(0, 200).replaceAll("-$", "") : s;
+    }
+
+    private static final Set<String> POST_STATUSES = Set.of("DRAFT", "PUBLISHED", "ARCHIVED");
+
+    /** Public pages and the view counter match 'PUBLISHED' exactly: a lower-case status hid the post. */
+    private static String postStatus(String status) {
+        String s = status.trim().toUpperCase();
+        if (!POST_STATUSES.contains(s)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái bài viết không hợp lệ (DRAFT, PUBLISHED, ARCHIVED)");
+        }
+        return s;
     }
 
     @Transactional

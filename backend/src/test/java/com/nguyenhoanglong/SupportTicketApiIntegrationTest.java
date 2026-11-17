@@ -287,4 +287,16 @@ public class SupportTicketApiIntegrationTest {
         assertNotNull(allStaff);
         assertFalse(allStaff.isEmpty());
     }
+
+    @Test
+    @Transactional
+    @DisplayName("Ticket khách tạo không kèm đơn hàng thuộc cửa hàng duy nhất, nên CSKH thấy được")
+    public void customerTicketWithoutOrderBelongsToTheShop() {
+        User customer = createUser("cust-noorder-" + System.nanoTime() + "@test.local", Role.USER, null);
+        CreateTicketDto dto = new CreateTicketDto();
+        dto.setSubject("Hỏi về size");
+        dto.setInitialMessage("Áo M có vừa 60kg không?");
+        var created = ticketService.createCustomerTicket(customer, dto);
+        assertEquals(1L, created.getShopId());
+    }
 }

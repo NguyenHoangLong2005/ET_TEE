@@ -38,6 +38,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _submitting = false;
   bool _placed = false;
   Map<String, dynamic>? _voucher;
+  // Subtotal the applied discount was computed for; re-checked when the cart changes (like the web).
+  num? _voucherSubtotal;
   bool _voucherLoading = false;
   String? _voucherError;
   List<VoucherOption> _options = [];
@@ -121,12 +123,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _errors[field] = _validate(field, _fields[field]!.text);
       });
 
-  Future<void> _applyVoucher(num subtotal, [String? override]) async {
+  Future<void> _applyVoucher(num subtotal, [String? override, bool revalidating = false]) async {
     final code = (override ?? _code.text).trim().toUpperCase();
-    if (override != null) _code.text = code;
+    if (override != null && !revalidating) _code.text = code;
     if (code.isEmpty) {
       setState(() {
         _voucher = null;
+        _voucherSubtotal = null;
         _voucherError = null;
       });
       return;
@@ -137,12 +140,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
     try {
       final v = await CustomerMarketingService.validateVoucher(code, subtotal);
-      setState(() => _voucher = v);
-      Toast.success('Áp dụng voucher thành công');
+      setState(() {
+        _voucher = v;
+        _voucherSubtotal = subtotal;
+      });
+      if (!revalidating) Toast.success('Áp dụng voucher thành công');
     } catch (e) {
-      final msg = e is ApiException ? e.message : 'Không thể kiểm tra voucher';
+      final reason = e is ApiException ? e.message : 'Không thể kiểm tra voucher';
+      final msg = revalidating ? 'Mã $code không còn áp dụng cho giỏ hàng hiện tại: $reason' : reason;
       setState(() {
         _voucher = null;
+        _voucherSubtotal = null;
         _voucherError = msg;
       });
       Toast.error(msg);
@@ -220,6 +228,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     final subtotal = _subtotal(cartP);
     _maybeLoadVoucherOptions(subtotal);
+    // The discount was computed for the subtotal at apply time; if the cart changed, the old discount
+    // and total stayed on screen. Re-check against the new subtotal (after this frame).
+    if (_voucher != null && !_voucherLoading && _voucherSubtotal != subtotal) {
+      final code = _code.text;
+      _voucherSubtotal = subtotal;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (subtotal <= 0) {
+          setState(() => _voucher = null);
+        } else {
+          _applyVoucher(subtotal, code, true);
+        }
+      });
+    }
     final total = _voucher != null ? toNum(_voucher!['finalTotal']).clamp(0, double.infinity) : subtotal;
 
     return SubPageScaffold(

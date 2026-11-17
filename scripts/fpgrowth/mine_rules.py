@@ -51,7 +51,7 @@ def load():
     cur.execute("""
         SELECT o.id, o.created_at, oi.product_id, oi.quantity
         FROM orders o JOIN order_items oi ON oi.order_id = o.id
-        WHERE o.status NOT IN ('CANCELLED', 'REFUNDED', 'RETURNED')
+        WHERE o.status NOT IN ('CANCELLED', 'REFUNDED', 'RETURNED', 'PENDING_PAYMENT', 'DRAFT')
         ORDER BY o.created_at, o.id
     """)
     lines = cur.fetchall()
