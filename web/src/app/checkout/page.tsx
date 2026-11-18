@@ -18,7 +18,7 @@ import { CustomerMarketingService, VoucherOption } from '@/lib/services/customer
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { cart, fetchCart, isLoading: cartLoading } = useCart();
+  const { cart, fetchCart, isLoading: cartLoading, selectedItems, resetSelection } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Set once the order is placed: the cart empties before the redirect lands, and the
   // "Giỏ hàng trống" screen must not flash in between.
@@ -46,7 +46,8 @@ export default function CheckoutPage() {
 
   // itemTotal is computed by the server from the price rounded to the thousand, the same
   // price checkout charges. Summing raw salePrice/price here showed a different total.
-  const calculateSubtotal = () => (cart?.items || []).reduce((sum, item) => sum + item.itemTotal, 0);
+  // Only the lines ticked on the cart page are bought (all of them unless the customer unticked some).
+  const calculateSubtotal = () => selectedItems.reduce((sum, item) => sum + item.itemTotal, 0);
 
   const applyVoucher = async (codeOverride?: string, revalidating = false) => {
     const code = (codeOverride ?? formData.voucherCode).trim().toUpperCase();
@@ -269,6 +270,8 @@ export default function CheckoutPage() {
       const checkoutPayload = {
         ...formData,
         voucherCode: voucherInfo ? formData.voucherCode.trim() : '',
+        // Lines left unticked stay in the cart after the order.
+        cartItemIds: selectedItems.map(item => item.id),
       };
 
       const res = await fetch(`${getApiBaseUrl()}/api/orders/checkout`, {
@@ -284,6 +287,8 @@ export default function CheckoutPage() {
 
       const orderCode = json.data.orderCode;
       setOrderPlaced(true);
+      // What is left in the cart starts ticked again for the next order.
+      resetSelection();
       fetchCart();
 
       // Bank transfer: hand over to the PayOS checkout page when PayOS is configured; it sends the
@@ -339,7 +344,26 @@ export default function CheckoutPage() {
     );
   }
 
+  if (selectedItems.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <PageBreadcrumb items={[{ label: 'Giỏ hàng', href: '/cart' }, { label: 'Thanh toán' }]} />
+        <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center">
+          <h1 className="text-2xl font-black uppercase text-slate-900 mb-2">Chưa chọn sản phẩm</h1>
+          <p className="mb-6 text-slate-500 text-sm max-w-sm">Hãy chọn trong giỏ hàng những sản phẩm bạn muốn thanh toán.</p>
+          <button
+            onClick={() => router.push('/cart')}
+            className="px-8 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full font-black uppercase text-xs tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all"
+          >
+            Về giỏ hàng
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const subtotal = calculateSubtotal();
+  const leftInCart = cart.items.length - selectedItems.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-12 text-slate-900">
@@ -548,12 +572,22 @@ export default function CheckoutPage() {
         {/* Tóm tắt đơn hàng */}
         <div className="lg:w-1/3">
           <div className="sticky top-24 bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200/80">
-            <h2 className="text-lg font-black mb-6 uppercase tracking-tight text-slate-900 border-b border-slate-200 pb-4">
-              Đơn hàng của bạn
-            </h2>
+            <div className="mb-6 border-b border-slate-200 pb-4 flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-black uppercase tracking-tight text-slate-900">
+                Đơn hàng của bạn
+              </h2>
+              <button type="button" onClick={() => router.push('/cart')} className="text-xs font-bold text-slate-500 hover:text-primary underline shrink-0">
+                Thay đổi
+              </button>
+            </div>
+            {leftInCart > 0 && (
+              <p className="-mt-3 mb-4 text-xs text-slate-500">
+                {leftInCart} sản phẩm không chọn sẽ vẫn ở lại trong giỏ hàng.
+              </p>
+            )}
             
             <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto pr-2 divide-y divide-slate-100">
-              {cart.items.map((item, idx) => (
+              {selectedItems.map((item, idx) => (
                 <div key={item.id} className={`flex gap-4 ${idx > 0 ? 'pt-4' : ''}`}>
                   <div className="w-16 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-slate-200 relative">
                     <SafeImage

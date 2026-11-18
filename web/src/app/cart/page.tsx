@@ -5,15 +5,39 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { isRemoteImage, sanitizeImageUrl } from '@/lib/utils/imageUtils';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { useCart, isPurchasable } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CartRecommendations from '@/components/cart/CartRecommendations';
 import { toast } from 'sonner';
 import PageBreadcrumb from '@/components/ui/PageBreadcrumb';
 import { formatVnd, roundVnd } from '@/lib/utils/price';
 
+/** Native checkbox that can also show the "some selected" dash. */
+function SelectBox({ checked, indeterminate = false, disabled = false, onChange, label }: {
+  checked: boolean; indeterminate?: boolean; disabled?: boolean; onChange: () => void; label: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      checked={checked}
+      disabled={disabled}
+      onChange={onChange}
+      aria-label={label}
+      className="w-5 h-5 shrink-0 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+    />
+  );
+}
+
 export default function CartPage() {
-  const { cart, isLoading, updateQuantity, removeItem } = useCart();
+  const {
+    cart, isLoading, updateQuantity, removeItem, removeItems,
+    selectedItems, isSelected, toggleSelected, setAllSelected,
+  } = useCart();
   const { user } = useAuth();
   const [voucherCode, setVoucherCode] = useState('');
   // appliedSubtotal: the cart subtotal the discount was computed for.
@@ -62,16 +86,24 @@ export default function CartPage() {
     }
   };
 
+  // Only the ticked lines are bought, so totals and the voucher use them, not the whole cart.
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + item.itemTotal, 0);
+  const selectedQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+
   const handleApplyVoucher = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!voucherCode.trim()) return;
-    await validateVoucher(voucherCode.trim().toUpperCase(), cart?.subtotal || 0, false);
+    if (selectedSubtotal <= 0) {
+      toast.error('Hãy chọn sản phẩm muốn mua trước khi áp dụng mã');
+      return;
+    }
+    await validateVoucher(voucherCode.trim().toUpperCase(), selectedSubtotal, false);
   };
 
   // The discount was computed for the subtotal at the time the code was applied; changing a
   // quantity or removing an item kept the old discount and total (even above the new
   // subtotal, or under a minimum order the cart no longer met). Re-check with the server.
-  const currentSubtotal = cart?.subtotal || 0;
+  const currentSubtotal = selectedSubtotal;
   useEffect(() => {
     if (!voucherInfo || voucherInfo.appliedSubtotal === currentSubtotal) return;
     Promise.resolve().then(() => {
@@ -92,7 +124,13 @@ export default function CartPage() {
   }
 
   const isEmpty = !cart || !cart.items || cart.items.length === 0;
-  const subtotal = cart?.subtotal || 0;
+  const purchasableItems = (cart?.items || []).filter(isPurchasable);
+  const allSelected = purchasableItems.length > 0 && selectedItems.length === purchasableItems.length;
+  const someSelected = selectedItems.length > 0 && !allSelected;
+  const nothingSelected = selectedItems.length === 0;
+  // "Xóa đã chọn" removes every ticked line, including ones that cannot be bought right now.
+  const tickedIds = (cart?.items || []).filter((i) => isSelected(i.id)).map((i) => i.id);
+  const payable = voucherInfo ? Math.max(0, voucherInfo.finalTotal) : selectedSubtotal;
   // The code applied here used to be dropped on the way to checkout, so the total shown in
   // the cart (with the discount) was not what checkout charged.
   const checkoutHref = voucherInfo ? `/checkout?voucher=${encodeURIComponent(voucherInfo.code)}` : '/checkout';
@@ -149,17 +187,49 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="hidden lg:grid grid-cols-12 gap-4 pb-4 border-b border-slate-200 text-xs font-black text-slate-400 uppercase tracking-wider">
-              <div className="col-span-6">Sản phẩm</div>
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-200">
+              <label className="flex items-center gap-3 text-sm font-bold text-slate-900 cursor-pointer select-none">
+                <SelectBox
+                  checked={allSelected}
+                  indeterminate={someSelected}
+                  disabled={purchasableItems.length === 0}
+                  onChange={() => setAllSelected(!allSelected)}
+                  label="Chọn tất cả sản phẩm"
+                />
+                <span>Chọn tất cả ({purchasableItems.length})</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => removeItems(tickedIds)}
+                disabled={tickedIds.length === 0}
+                className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 font-medium transition-colors disabled:opacity-40 disabled:hover:text-slate-500"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Xóa đã chọn ({tickedIds.length})
+              </button>
+            </div>
+
+            <div className="hidden lg:grid grid-cols-12 gap-4 py-4 border-b border-slate-200 text-xs font-black text-slate-400 uppercase tracking-wider">
+              <div className="col-span-6 pl-9">Sản phẩm</div>
               <div className="col-span-3 text-center">Số lượng</div>
               <div className="col-span-3 text-right">Tổng cộng</div>
             </div>
 
             <div className="divide-y divide-slate-100">
-              {cart.items.map((item) => (
-                <div key={item.id} className="py-6 flex flex-col sm:flex-row gap-4 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center group">
+              {cart.items.map((item) => {
+                const purchasable = isPurchasable(item);
+                return (
+                <div key={item.id} className={`py-6 flex flex-col sm:flex-row gap-4 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center group ${purchasable ? '' : 'opacity-60'}`}>
                   {/* Product Info */}
                   <div className="col-span-6 flex gap-4">
+                    <div className="flex items-center">
+                      <SelectBox
+                        checked={purchasable && isSelected(item.id)}
+                        disabled={!purchasable}
+                        onChange={() => toggleSelected(item.id)}
+                        label={`Chọn mua ${item.productName}`}
+                      />
+                    </div>
                     <Link href={`/products/${item.productSlug}`} className="w-24 h-[120px] relative bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                       <Image 
                         src={sanitizeImageUrl(item.productImage) || '/images/placeholder.webp'}
@@ -179,6 +249,13 @@ export default function CartPage() {
                         <p>Màu: <span className="font-bold text-slate-900">{item.color}</span></p>
                         <p>Size: <span className="font-bold text-slate-900">{item.size}</span></p>
                       </div>
+                      {!purchasable && (
+                        <p className="text-xs font-bold text-red-600 mb-2">
+                          {item.availableQuantity <= 0
+                            ? 'Hết hàng'
+                            : `Chỉ còn ${item.availableQuantity} sản phẩm, hãy giảm số lượng để mua`}
+                        </p>
+                      )}
                       <div className="lg:hidden text-xs mt-1">
                         {item.salePrice && roundVnd(item.salePrice) < roundVnd(item.price) ? (
                           <div className="flex items-center gap-2">
@@ -271,7 +348,8 @@ export default function CartPage() {
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -284,8 +362,8 @@ export default function CartPage() {
               
               <div className="space-y-3.5 text-xs mb-6 pb-6 border-b border-slate-100">
                 <div className="flex justify-between items-center text-slate-600">
-                  <span>Tạm tính ({cart.totalQuantity} sản phẩm)</span>
-                  <span className="font-bold text-slate-900">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
+                  <span>Tạm tính ({selectedQuantity} sản phẩm đã chọn)</span>
+                  <span className="font-bold text-slate-900">{selectedSubtotal.toLocaleString('vi-VN')}₫</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-600">
                   <span>Phí vận chuyển</span>
@@ -307,7 +385,7 @@ export default function CartPage() {
                   <span className="text-[10px] text-slate-400 font-medium">(Đã bao gồm VAT)</span>
                 </div>
                 <span className="font-black text-2xl text-primary tracking-tight">
-                  {(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : cart.subtotal).toLocaleString('vi-VN')}₫
+                  {payable.toLocaleString('vi-VN')}₫
                 </span>
               </div>
 
@@ -340,13 +418,23 @@ export default function CartPage() {
                 ) : null}
               </form>
 
-              <Link 
-                href={checkoutHref}
-                className="w-full flex items-center justify-center h-13 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-lg gap-2"
-              >
-                <span>Tiến hành thanh toán</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {nothingSelected ? (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full flex items-center justify-center h-13 bg-slate-300 text-white rounded-full font-black uppercase tracking-widest text-xs cursor-not-allowed"
+                >
+                  Chọn sản phẩm để thanh toán
+                </button>
+              ) : (
+                <Link
+                  href={checkoutHref}
+                  className="w-full flex items-center justify-center h-13 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-lg gap-2"
+                >
+                  <span>Thanh toán ({selectedItems.length})</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
 
               <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -372,16 +460,26 @@ export default function CartPage() {
           <div>
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Tổng thanh toán</span>
             <span className="text-lg font-black text-primary tracking-tight">
-              {(voucherInfo ? Math.max(0, voucherInfo.finalTotal) : cart.subtotal).toLocaleString('vi-VN')}₫
+              {payable.toLocaleString('vi-VN')}₫
             </span>
           </div>
-          <Link
-            href={checkoutHref}
-            className="flex-1 max-w-[200px] h-11 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
-          >
-            <span>Thanh toán</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {nothingSelected ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 max-w-[200px] h-11 bg-slate-300 text-white rounded-full font-black uppercase tracking-wider text-xs cursor-not-allowed"
+            >
+              Chưa chọn sản phẩm
+            </button>
+          ) : (
+            <Link
+              href={checkoutHref}
+              className="flex-1 max-w-[200px] h-11 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              <span>Thanh toán ({selectedItems.length})</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
       )}
     </div>

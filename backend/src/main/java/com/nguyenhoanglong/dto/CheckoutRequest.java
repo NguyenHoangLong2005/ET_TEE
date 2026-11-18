@@ -11,6 +11,15 @@ public class CheckoutRequest {
     private String customerEmail;
     private String customerPhone;
 
+    /**
+     * Cart lines (CartItem ids) the customer ticked on the cart page. Null or empty means the
+     * whole cart, which is what older clients (the mobile app) send. Lines left out stay in the cart.
+     */
+    private java.util.List<Long> cartItemIds;
+
+    public java.util.List<Long> getCartItemIds() { return cartItemIds; }
+    public void setCartItemIds(java.util.List<Long> cartItemIds) { this.cartItemIds = cartItemIds; }
+
     public String getShippingAddress() { return shippingAddress; }
     public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
 
