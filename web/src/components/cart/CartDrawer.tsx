@@ -11,7 +11,10 @@ import { formatVnd, roundVnd } from '@/lib/utils/price';
 import CartComplementsStrip from '@/components/cart/CartComplementsStrip';
 
 export default function CartDrawer() {
-  const { cart, isDrawerOpen, closeDrawer, updateQuantity, removeItem } = useCart();
+  const { cart, isDrawerOpen, closeDrawer, updateQuantity, removeItem, selectedItems } = useCart();
+  // The drawer has no checkboxes; it shows what checkout will buy, as chosen on the cart page.
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + item.itemTotal, 0);
+  const partial = !!cart && selectedItems.length < cart.items.length;
 
   // Handle ESC key to close
   useEffect(() => {
@@ -162,18 +165,23 @@ export default function CartDrawer() {
         {/* Footer */}
         {cart && cart.items && cart.items.length > 0 && (
           <div className="border-t border-slate-100 p-6 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.02)] flex-shrink-0">
-            <div className="flex justify-between items-end mb-6">
+            <div className={`flex justify-between items-end ${partial ? 'mb-2' : 'mb-6'}`}>
               <span className="font-black text-slate-900 text-base uppercase tracking-wide">Tổng tiền</span>
-              <span className="font-black text-2xl text-primary tracking-tight">{cart.subtotal.toLocaleString('vi-VN')}₫</span>
+              <span className="font-black text-2xl text-primary tracking-tight">{selectedSubtotal.toLocaleString('vi-VN')}₫</span>
             </div>
+            {partial && (
+              <p className="text-xs text-slate-500 mb-6">
+                Đã chọn {selectedItems.length}/{cart.items.length} sản phẩm để thanh toán. Đổi lựa chọn trong giỏ hàng.
+              </p>
+            )}
             
             <div className="flex flex-col gap-3">
-              <Link 
-                href="/checkout"
+              <Link
+                href={selectedItems.length > 0 ? '/checkout' : '/cart'}
                 onClick={closeDrawer}
                 className="w-full flex items-center justify-center h-12 bg-primary hover:bg-primary-hover text-white rounded-full font-black uppercase tracking-wider text-xs transition-all shadow-md hover:shadow-lg"
               >
-                Thanh toán
+                {selectedItems.length > 0 ? `Thanh toán (${selectedItems.length})` : 'Chọn sản phẩm để thanh toán'}
               </Link>
               <Link 
                 href="/cart"

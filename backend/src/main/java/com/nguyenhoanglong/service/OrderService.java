@@ -118,6 +118,23 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng đang trống");
         }
 
+        // Only the lines the customer selected are bought; no selection means the whole cart.
+        List<CartItem> itemsToBuy;
+        List<Long> selectedIds = request.getCartItemIds();
+        if (selectedIds == null || selectedIds.isEmpty()) {
+            itemsToBuy = new ArrayList<>(cart.getItems());
+        } else {
+            java.util.Set<Long> wanted = new java.util.HashSet<>(selectedIds);
+            itemsToBuy = cart.getItems().stream()
+                    .filter(ci -> wanted.contains(ci.getId()))
+                    .collect(java.util.stream.Collectors.toList());
+            // An id that is not a line of this cart: removed in another tab, or not this customer's.
+            if (itemsToBuy.size() != wanted.size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Một số sản phẩm đã chọn không còn trong giỏ hàng. Vui lòng tải lại giỏ hàng.");
+            }
+        }
+
         Order order = new Order();
         // Generate an unguessable 10-character code using UUID
         String orderCode = "DH" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
@@ -174,7 +191,7 @@ public class OrderService {
         Double subtotal = 0.0;
         List<OrderItem> orderItems = new ArrayList<>();
 
-        for (CartItem cartItem : cart.getItems()) {
+        for (CartItem cartItem : itemsToBuy) {
             // Lock the variant row to prevent concurrent oversell
             ProductVariant variant = variantRepository.findByIdWithPessimisticLock(cartItem.getProductVariant().getId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại"));
@@ -320,8 +337,9 @@ public class OrderService {
             org.slf4j.LoggerFactory.getLogger(OrderService.class).warn("Failed to record order status history", e);
         }
 
-        // Clear cart
-        cart.getItems().clear();
+        // Remove the purchased lines; the ones the customer did not select stay in the cart.
+        // (orphanRemoval deletes the rows.)
+        cart.getItems().removeAll(itemsToBuy);
         cartRepository.save(cart);
 
         // Send Email

@@ -159,6 +159,47 @@ class OrderServiceTest {
     }
 
     @Test
+    void checkout_selectedLines_buysOnlyThoseAndKeepsTheRestInCart() throws Exception {
+        ProductVariant other = new ProductVariant();
+        setField(other, "id", 12L);
+        other.setProduct(variant.getProduct());
+        other.setColor("Trắng");
+        other.setSize("L");
+        other.setPrice(new BigDecimal("150000"));
+        other.setAvailableQuantity(5);
+        other.setStock(5);
+        CartItem bought = cartItem(50L, variant, 2);
+        CartItem kept = cartItem(51L, other, 1);
+        Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(bought, kept)));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
+        when(variantRepository.findByIdWithPessimisticLock(11L)).thenReturn(Optional.of(variant));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        CheckoutRequest req = checkoutRequest();
+        req.setCartItemIds(java.util.List.of(50L));
+
+        OrderResponse res = orderService.checkout(user, null, req);
+
+        assertThat(res.getTotalAmount()).isEqualTo(400000.0);
+        assertThat(cart.getItems()).containsExactly(kept);
+        assertThat(other.getAvailableQuantity()).isEqualTo(5);
+        verify(variantRepository, never()).findByIdWithPessimisticLock(12L);
+    }
+
+    @Test
+    void checkout_selectedIdNotInCart_isRejectedWithoutTouchingStock() {
+        Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 1))));
+        when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));
+        CheckoutRequest req = checkoutRequest();
+        req.setCartItemIds(java.util.List.of(50L, 999L));
+
+        assertThatThrownBy(() -> orderService.checkout(user, null, req))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("không còn trong giỏ hàng");
+        org.mockito.Mockito.verifyNoInteractions(variantRepository);
+        assertThat(cart.getItems()).hasSize(1);
+    }
+
+    @Test
     void checkout_userCart_picksPriceFromVariantNotCart() {
         Cart cart = makeCart(1L, user, null, new ArrayList<>(java.util.List.of(cartItem(50L, variant, 2))));
         when(cartRepository.findByUserIdForUpdate("user-1")).thenReturn(Optional.of(cart));

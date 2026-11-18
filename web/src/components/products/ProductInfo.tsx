@@ -46,7 +46,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const { user } = useAuth();
-  const { cart, addToCart, closeDrawer, fetchCart } = useCart();
+  const { cart, addToCart, closeDrawer, fetchCart, selectOnlyVariant } = useCart();
   const pathname = usePathname();
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
@@ -112,6 +112,8 @@ export default function ProductInfo({ product }: { product: Product }) {
       } else {
         await addToCart(targetVariantId as number, safeQuantity);
       }
+      // "Mua ngay" buys this product alone; the rest of the cart stays for later.
+      if (buyNow) selectOnlyVariant(targetVariantId as number);
       return true;
     } catch (err: unknown) {
       if (buyNow) toast.error(err instanceof Error ? err.message : 'Không thể cập nhật giỏ hàng');
